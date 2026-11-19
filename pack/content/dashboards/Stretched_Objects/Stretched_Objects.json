@@ -1,0 +1,1352 @@
+{
+ "entries": {
+  "resourceKind": [
+   {
+    "resourceKindKey": "federation",
+    "internalId": "resourceKind:id:0_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "global_manager",
+    "internalId": "resourceKind:id:1_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "manager_node",
+    "internalId": "resourceKind:id:2_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "location",
+    "internalId": "resourceKind:id:3_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "sync_channel",
+    "internalId": "resourceKind:id:4_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "edge_cluster",
+    "internalId": "resourceKind:id:5_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "edge_node",
+    "internalId": "resourceKind:id:6_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "rtep_tunnel",
+    "internalId": "resourceKind:id:7_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "tier0",
+    "internalId": "resourceKind:id:8_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "tier1",
+    "internalId": "resourceKind:id:9_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "segment",
+    "internalId": "resourceKind:id:10_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "global_policy",
+    "internalId": "resourceKind:id:11_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "realization",
+    "internalId": "resourceKind:id:12_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "bgp_neighbor",
+    "internalId": "resourceKind:id:13_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "rule",
+    "internalId": "resourceKind:id:14_::_",
+    "adapterKindKey": "NSXFederation"
+   }
+  ],
+  "adapterKind": [
+   {
+    "internalId": "adapterKind:id:0_::_",
+    "adapterKindKey": "NSXFederation"
+   }
+  ],
+  "resource": []
+ },
+ "dashboards": [
+  {
+   "shared": true,
+   "hidden": false,
+   "creationTime": 1795000000000,
+   "autoswitchEnabled": false,
+   "importAttempts": 0,
+   "columnProportion": "1",
+   "importComplete": true,
+   "description": "Stretched Tier-0 and Tier-1 gateways, segments and global security policies with their span, and the realization of each object at each location.",
+   "widgets": [
+    {
+     "tabId": "f7a4cc25-3ce0-5f57-a3ed-175ee7d61031",
+     "collapsed": false,
+     "id": "10f6512e-c266-56d8-9a04-53205c5ecd29",
+     "gridsterCoords": {
+      "w": 7,
+      "x": 1,
+      "h": 8,
+      "y": 1
+     },
+     "state": "",
+     "type": "ResourceList",
+     "title": "Stretched gateways, segments and policies",
+     "config": {
+      "resource": [],
+      "relationshipMode": {
+       "relationshipMode": -1
+      },
+      "additionalColumns": [
+       {
+        "boxLabel": "Span",
+        "metricName": "Locations in span",
+        "metricKey": "realization|span_locations",
+        "resourceKindId": "resourceKind:id:8_::_"
+       },
+       {
+        "boxLabel": "Realized",
+        "metricName": "Locations realized",
+        "metricKey": "realization|realized_locations",
+        "resourceKindId": "resourceKind:id:8_::_"
+       },
+       {
+        "boxLabel": "In error",
+        "metricName": "Locations in error",
+        "metricKey": "realization|error_locations",
+        "resourceKindId": "resourceKind:id:8_::_"
+       },
+       {
+        "boxLabel": "Span",
+        "metricName": "Locations in span",
+        "metricKey": "realization|span_locations",
+        "resourceKindId": "resourceKind:id:9_::_"
+       },
+       {
+        "boxLabel": "Realized",
+        "metricName": "Locations realized",
+        "metricKey": "realization|realized_locations",
+        "resourceKindId": "resourceKind:id:9_::_"
+       },
+       {
+        "boxLabel": "In error",
+        "metricName": "Locations in error",
+        "metricKey": "realization|error_locations",
+        "resourceKindId": "resourceKind:id:9_::_"
+       },
+       {
+        "boxLabel": "Span",
+        "metricName": "Locations in span",
+        "metricKey": "realization|span_locations",
+        "resourceKindId": "resourceKind:id:10_::_"
+       },
+       {
+        "boxLabel": "Realized",
+        "metricName": "Locations realized",
+        "metricKey": "realization|realized_locations",
+        "resourceKindId": "resourceKind:id:10_::_"
+       },
+       {
+        "boxLabel": "In error",
+        "metricName": "Locations in error",
+        "metricKey": "realization|error_locations",
+        "resourceKindId": "resourceKind:id:10_::_"
+       },
+       {
+        "boxLabel": "Span",
+        "metricName": "Locations in span",
+        "metricKey": "realization|span_locations",
+        "resourceKindId": "resourceKind:id:11_::_"
+       },
+       {
+        "boxLabel": "Realized",
+        "metricName": "Locations realized",
+        "metricKey": "realization|realized_locations",
+        "resourceKindId": "resourceKind:id:11_::_"
+       },
+       {
+        "boxLabel": "In error",
+        "metricName": "Locations in error",
+        "metricKey": "realization|error_locations",
+        "resourceKindId": "resourceKind:id:11_::_"
+       }
+      ],
+      "mode": "all",
+      "filterMode": "tagPicker",
+      "tagFilter": {
+       "path": [
+        "/source/kind/kind:resourceKind:id:8_::_",
+        "/source/kind/kind:resourceKind:id:9_::_",
+        "/source/kind/kind:resourceKind:id:10_::_",
+        "/source/kind/kind:resourceKind:id:11_::_"
+       ],
+       "value": {
+        "bus": [],
+        "adapterKind": [],
+        "kind": [
+         "resourceKind:id:8_::_",
+         "resourceKind:id:9_::_",
+         "resourceKind:id:10_::_",
+         "resourceKind:id:11_::_"
+        ],
+        "exclaim": false,
+        "healthRange": [],
+        "maintenanceSchedule": [],
+        "adapterInstance": [],
+        "collector": [],
+        "tier": [],
+        "state": [],
+        "tag": [],
+        "day": [],
+        "status": []
+       }
+      },
+      "depth": 1,
+      "customFilter": {
+       "filter": [],
+       "excludedResources": null,
+       "includedResources": null
+      },
+      "selectFirstRow": {
+       "selectFirstRow": true
+      },
+      "selfProvider": {
+       "selfProvider": true
+      },
+      "title": "Stretched gateways, segments and policies",
+      "refreshInterval": 300,
+      "refreshContent": {
+       "refreshContent": true
+      }
+     },
+     "height": 0,
+     "states": []
+    },
+    {
+     "tabId": "f7a4cc25-3ce0-5f57-a3ed-175ee7d61031",
+     "collapsed": false,
+     "id": "30021d72-3a03-5977-9591-586e1b90670a",
+     "gridsterCoords": {
+      "w": 5,
+      "x": 8,
+      "h": 8,
+      "y": 1
+     },
+     "state": "",
+     "type": "ResourceList",
+     "title": "Realization per location",
+     "config": {
+      "resource": [],
+      "relationshipMode": {
+       "relationshipMode": -1
+      },
+      "additionalColumns": [
+       {
+        "boxLabel": "Realized",
+        "metricName": "Realized",
+        "metricKey": "realized",
+        "resourceKindId": "resourceKind:id:12_::_"
+       }
+      ],
+      "mode": "all",
+      "filterMode": "tagPicker",
+      "tagFilter": {
+       "path": [
+        "/source/kind/kind:resourceKind:id:12_::_"
+       ],
+       "value": {
+        "bus": [],
+        "adapterKind": [],
+        "kind": [
+         "resourceKind:id:12_::_"
+        ],
+        "exclaim": false,
+        "healthRange": [],
+        "maintenanceSchedule": [],
+        "adapterInstance": [],
+        "collector": [],
+        "tier": [],
+        "state": [],
+        "tag": [],
+        "day": [],
+        "status": []
+       }
+      },
+      "depth": 1,
+      "customFilter": {
+       "filter": [],
+       "excludedResources": null,
+       "includedResources": null
+      },
+      "selectFirstRow": {
+       "selectFirstRow": false
+      },
+      "selfProvider": {
+       "selfProvider": true
+      },
+      "title": "Realization per location",
+      "refreshInterval": 300,
+      "refreshContent": {
+       "refreshContent": true
+      }
+     },
+     "height": 0,
+     "states": []
+    },
+    {
+     "tabId": "f7a4cc25-3ce0-5f57-a3ed-175ee7d61031",
+     "collapsed": false,
+     "id": "61724adb-390c-5fb5-a6e4-4550aae99b7e",
+     "gridsterCoords": {
+      "w": 7,
+      "x": 1,
+      "h": 6,
+      "y": 9
+     },
+     "state": "",
+     "type": "Scoreboard",
+     "title": "Selected object: key values",
+     "config": {
+      "visualTheme": 5,
+      "showMetricName": {
+       "showMetricName": true
+      },
+      "valueSize": 24,
+      "boxHeight": null,
+      "showResourceName": {
+       "showResourceName": false
+      },
+      "roundDecimals": 1,
+      "showMetricUnit": {
+       "showMetricUnit": false
+      },
+      "mode": {
+       "layoutMode": "fixedView"
+      },
+      "labelSize": 12,
+      "boxColumns": 3,
+      "periodLength": "last24Hour",
+      "metric": {
+       "mode": "resourceKind",
+       "resourceMetrics": [],
+       "resourceKindMetrics": [
+        {
+         "metricKey": "realization|span_locations",
+         "metricName": "Locations in span",
+         "resourceKindId": "resourceKind:id:8_::_",
+         "resourceKindName": "Stretched Tier-0 Gateway",
+         "isStringMetric": false,
+         "label": "Span",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1001-1"
+        },
+        {
+         "metricKey": "realization|realized_locations",
+         "metricName": "Locations realized",
+         "resourceKindId": "resourceKind:id:8_::_",
+         "resourceKindName": "Stretched Tier-0 Gateway",
+         "isStringMetric": false,
+         "label": "Realized",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1002-1"
+        },
+        {
+         "metricKey": "realization|unrealized_locations",
+         "metricName": "Locations not realized",
+         "resourceKindId": "resourceKind:id:8_::_",
+         "resourceKindName": "Stretched Tier-0 Gateway",
+         "isStringMetric": false,
+         "label": "Not realized",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 0.1,
+         "orangeBound": 0.5,
+         "redBound": 0.9,
+         "colorMethod": 0,
+         "id": "extModel1003-1"
+        },
+        {
+         "metricKey": "realization|error_locations",
+         "metricName": "Locations in error",
+         "resourceKindId": "resourceKind:id:8_::_",
+         "resourceKindName": "Stretched Tier-0 Gateway",
+         "isStringMetric": false,
+         "label": "In error",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 0.1,
+         "orangeBound": 0.5,
+         "redBound": 0.9,
+         "colorMethod": 0,
+         "id": "extModel1004-1"
+        },
+        {
+         "metricKey": "realization|span_locations",
+         "metricName": "Locations in span",
+         "resourceKindId": "resourceKind:id:9_::_",
+         "resourceKindName": "Stretched Tier-1 Gateway",
+         "isStringMetric": false,
+         "label": "Span",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1005-1"
+        },
+        {
+         "metricKey": "realization|realized_locations",
+         "metricName": "Locations realized",
+         "resourceKindId": "resourceKind:id:9_::_",
+         "resourceKindName": "Stretched Tier-1 Gateway",
+         "isStringMetric": false,
+         "label": "Realized",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1006-1"
+        },
+        {
+         "metricKey": "realization|unrealized_locations",
+         "metricName": "Locations not realized",
+         "resourceKindId": "resourceKind:id:9_::_",
+         "resourceKindName": "Stretched Tier-1 Gateway",
+         "isStringMetric": false,
+         "label": "Not realized",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 0.1,
+         "orangeBound": 0.5,
+         "redBound": 0.9,
+         "colorMethod": 0,
+         "id": "extModel1007-1"
+        },
+        {
+         "metricKey": "realization|error_locations",
+         "metricName": "Locations in error",
+         "resourceKindId": "resourceKind:id:9_::_",
+         "resourceKindName": "Stretched Tier-1 Gateway",
+         "isStringMetric": false,
+         "label": "In error",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 0.1,
+         "orangeBound": 0.5,
+         "redBound": 0.9,
+         "colorMethod": 0,
+         "id": "extModel1008-1"
+        },
+        {
+         "metricKey": "realization|span_locations",
+         "metricName": "Locations in span",
+         "resourceKindId": "resourceKind:id:10_::_",
+         "resourceKindName": "Stretched Segment",
+         "isStringMetric": false,
+         "label": "Span",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1009-1"
+        },
+        {
+         "metricKey": "realization|realized_locations",
+         "metricName": "Locations realized",
+         "resourceKindId": "resourceKind:id:10_::_",
+         "resourceKindName": "Stretched Segment",
+         "isStringMetric": false,
+         "label": "Realized",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1010-1"
+        },
+        {
+         "metricKey": "realization|unrealized_locations",
+         "metricName": "Locations not realized",
+         "resourceKindId": "resourceKind:id:10_::_",
+         "resourceKindName": "Stretched Segment",
+         "isStringMetric": false,
+         "label": "Not realized",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 0.1,
+         "orangeBound": 0.5,
+         "redBound": 0.9,
+         "colorMethod": 0,
+         "id": "extModel1011-1"
+        },
+        {
+         "metricKey": "realization|error_locations",
+         "metricName": "Locations in error",
+         "resourceKindId": "resourceKind:id:10_::_",
+         "resourceKindName": "Stretched Segment",
+         "isStringMetric": false,
+         "label": "In error",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 0.1,
+         "orangeBound": 0.5,
+         "redBound": 0.9,
+         "colorMethod": 0,
+         "id": "extModel1012-1"
+        },
+        {
+         "metricKey": "realization|span_locations",
+         "metricName": "Locations in span",
+         "resourceKindId": "resourceKind:id:11_::_",
+         "resourceKindName": "Global Security Policy",
+         "isStringMetric": false,
+         "label": "Span",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1013-1"
+        },
+        {
+         "metricKey": "realization|realized_locations",
+         "metricName": "Locations realized",
+         "resourceKindId": "resourceKind:id:11_::_",
+         "resourceKindName": "Global Security Policy",
+         "isStringMetric": false,
+         "label": "Realized",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1014-1"
+        },
+        {
+         "metricKey": "realization|unrealized_locations",
+         "metricName": "Locations not realized",
+         "resourceKindId": "resourceKind:id:11_::_",
+         "resourceKindName": "Global Security Policy",
+         "isStringMetric": false,
+         "label": "Not realized",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 0.1,
+         "orangeBound": 0.5,
+         "redBound": 0.9,
+         "colorMethod": 0,
+         "id": "extModel1015-1"
+        },
+        {
+         "metricKey": "realization|error_locations",
+         "metricName": "Locations in error",
+         "resourceKindId": "resourceKind:id:11_::_",
+         "resourceKindName": "Global Security Policy",
+         "isStringMetric": false,
+         "label": "In error",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 0.1,
+         "orangeBound": 0.5,
+         "redBound": 0.9,
+         "colorMethod": 0,
+         "id": "extModel1016-1"
+        },
+        {
+         "metricKey": "rules|rules_total",
+         "metricName": "Rules",
+         "resourceKindId": "resourceKind:id:11_::_",
+         "resourceKindName": "Global Security Policy",
+         "isStringMetric": false,
+         "label": "Rules",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1017-1"
+        },
+        {
+         "metricKey": "rules|rules_disabled",
+         "metricName": "Rules disabled",
+         "resourceKindId": "resourceKind:id:11_::_",
+         "resourceKindName": "Global Security Policy",
+         "isStringMetric": false,
+         "label": "Rules disabled",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1018-1"
+        },
+        {
+         "metricKey": "traffic|hit_count",
+         "metricName": "Rule hits (all locations)",
+         "resourceKindId": "resourceKind:id:11_::_",
+         "resourceKindName": "Global Security Policy",
+         "isStringMetric": false,
+         "label": "Rule hits",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1019-1"
+        },
+        {
+         "metricKey": "traffic|hit_count_per_min",
+         "metricName": "Rule hits per minute (all locations)",
+         "resourceKindId": "resourceKind:id:11_::_",
+         "resourceKindName": "Global Security Policy",
+         "isStringMetric": false,
+         "label": "Rule hits/min",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1020-1"
+        },
+        {
+         "metricKey": "realized",
+         "metricName": "Realized",
+         "resourceKindId": "resourceKind:id:12_::_",
+         "resourceKindName": "Stretched Object at Location",
+         "isStringMetric": false,
+         "label": "Realized",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 0.9,
+         "orangeBound": 0.6,
+         "redBound": 0.5,
+         "colorMethod": 0,
+         "id": "extModel1021-1"
+        }
+       ],
+       "subMode": "resourceKindAll"
+      },
+      "showSparkline": {
+       "showSparkline": true
+      },
+      "selfProvider": {
+       "selfProvider": false
+      },
+      "resource": [],
+      "relationshipMode": {
+       "relationshipMode": 0
+      },
+      "depth": 1,
+      "customFilter": {
+       "filter": [],
+       "excludedResources": null,
+       "includedResources": null
+      },
+      "title": "Selected object: key values",
+      "refreshInterval": 300,
+      "refreshContent": {
+       "refreshContent": true
+      }
+     },
+     "height": 0,
+     "states": []
+    },
+    {
+     "tabId": "f7a4cc25-3ce0-5f57-a3ed-175ee7d61031",
+     "collapsed": false,
+     "id": "36d89488-e9c8-57d1-8e7d-2d8ab63c0033",
+     "gridsterCoords": {
+      "w": 5,
+      "x": 8,
+      "h": 12,
+      "y": 9
+     },
+     "state": "",
+     "type": "PropertyList",
+     "title": "Selected object: properties",
+     "config": {
+      "visualTheme": 2,
+      "resource": [],
+      "relationshipMode": {
+       "relationshipMode": 0
+      },
+      "depth": 1,
+      "showMetricFullName": {
+       "metricFullName": false
+      },
+      "selfProvider": {
+       "selfProvider": false
+      },
+      "metric": {
+       "mode": "resourceKind",
+       "resourceMetrics": [],
+       "resourceKindMetrics": [
+        {
+         "metricKey": "status",
+         "metricName": "Consolidated status",
+         "resourceKindId": "resourceKind:id:8_::_",
+         "resourceKindName": "Stretched Tier-0 Gateway",
+         "isStringMetric": true,
+         "label": "Consolidated status",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1022-1"
+        },
+        {
+         "metricKey": "path",
+         "metricName": "Policy path",
+         "resourceKindId": "resourceKind:id:8_::_",
+         "resourceKindName": "Stretched Tier-0 Gateway",
+         "isStringMetric": true,
+         "label": "Policy path",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1023-1"
+        },
+        {
+         "metricKey": "last_modified_user",
+         "metricName": "Last modified by",
+         "resourceKindId": "resourceKind:id:8_::_",
+         "resourceKindName": "Stretched Tier-0 Gateway",
+         "isStringMetric": true,
+         "label": "Last modified by",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1024-1"
+        },
+        {
+         "metricKey": "revision",
+         "metricName": "Revision",
+         "resourceKindId": "resourceKind:id:8_::_",
+         "resourceKindName": "Stretched Tier-0 Gateway",
+         "isStringMetric": true,
+         "label": "Revision",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1025-1"
+        },
+        {
+         "metricKey": "status",
+         "metricName": "Consolidated status",
+         "resourceKindId": "resourceKind:id:9_::_",
+         "resourceKindName": "Stretched Tier-1 Gateway",
+         "isStringMetric": true,
+         "label": "Consolidated status",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1026-1"
+        },
+        {
+         "metricKey": "path",
+         "metricName": "Policy path",
+         "resourceKindId": "resourceKind:id:9_::_",
+         "resourceKindName": "Stretched Tier-1 Gateway",
+         "isStringMetric": true,
+         "label": "Policy path",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1027-1"
+        },
+        {
+         "metricKey": "last_modified_user",
+         "metricName": "Last modified by",
+         "resourceKindId": "resourceKind:id:9_::_",
+         "resourceKindName": "Stretched Tier-1 Gateway",
+         "isStringMetric": true,
+         "label": "Last modified by",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1028-1"
+        },
+        {
+         "metricKey": "revision",
+         "metricName": "Revision",
+         "resourceKindId": "resourceKind:id:9_::_",
+         "resourceKindName": "Stretched Tier-1 Gateway",
+         "isStringMetric": true,
+         "label": "Revision",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1029-1"
+        },
+        {
+         "metricKey": "status",
+         "metricName": "Consolidated status",
+         "resourceKindId": "resourceKind:id:10_::_",
+         "resourceKindName": "Stretched Segment",
+         "isStringMetric": true,
+         "label": "Consolidated status",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1030-1"
+        },
+        {
+         "metricKey": "path",
+         "metricName": "Policy path",
+         "resourceKindId": "resourceKind:id:10_::_",
+         "resourceKindName": "Stretched Segment",
+         "isStringMetric": true,
+         "label": "Policy path",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1031-1"
+        },
+        {
+         "metricKey": "last_modified_user",
+         "metricName": "Last modified by",
+         "resourceKindId": "resourceKind:id:10_::_",
+         "resourceKindName": "Stretched Segment",
+         "isStringMetric": true,
+         "label": "Last modified by",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1032-1"
+        },
+        {
+         "metricKey": "revision",
+         "metricName": "Revision",
+         "resourceKindId": "resourceKind:id:10_::_",
+         "resourceKindName": "Stretched Segment",
+         "isStringMetric": true,
+         "label": "Revision",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1033-1"
+        },
+        {
+         "metricKey": "status",
+         "metricName": "Consolidated status",
+         "resourceKindId": "resourceKind:id:11_::_",
+         "resourceKindName": "Global Security Policy",
+         "isStringMetric": true,
+         "label": "Consolidated status",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1034-1"
+        },
+        {
+         "metricKey": "path",
+         "metricName": "Policy path",
+         "resourceKindId": "resourceKind:id:11_::_",
+         "resourceKindName": "Global Security Policy",
+         "isStringMetric": true,
+         "label": "Policy path",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1035-1"
+        },
+        {
+         "metricKey": "last_modified_user",
+         "metricName": "Last modified by",
+         "resourceKindId": "resourceKind:id:11_::_",
+         "resourceKindName": "Global Security Policy",
+         "isStringMetric": true,
+         "label": "Last modified by",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1036-1"
+        },
+        {
+         "metricKey": "revision",
+         "metricName": "Revision",
+         "resourceKindId": "resourceKind:id:11_::_",
+         "resourceKindName": "Global Security Policy",
+         "isStringMetric": true,
+         "label": "Revision",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1037-1"
+        },
+        {
+         "metricKey": "ha_mode",
+         "metricName": "HA mode",
+         "resourceKindId": "resourceKind:id:8_::_",
+         "resourceKindName": "Stretched Tier-0 Gateway",
+         "isStringMetric": true,
+         "label": "HA mode",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1038-1"
+        },
+        {
+         "metricKey": "primary_location",
+         "metricName": "Primary location",
+         "resourceKindId": "resourceKind:id:8_::_",
+         "resourceKindName": "Stretched Tier-0 Gateway",
+         "isStringMetric": true,
+         "label": "Primary location",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1039-1"
+        },
+        {
+         "metricKey": "tier0",
+         "metricName": "Connected Tier-0",
+         "resourceKindId": "resourceKind:id:9_::_",
+         "resourceKindName": "Stretched Tier-1 Gateway",
+         "isStringMetric": true,
+         "label": "Connected Tier-0",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1040-1"
+        },
+        {
+         "metricKey": "primary_location",
+         "metricName": "Primary location",
+         "resourceKindId": "resourceKind:id:9_::_",
+         "resourceKindName": "Stretched Tier-1 Gateway",
+         "isStringMetric": true,
+         "label": "Primary location",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1041-1"
+        },
+        {
+         "metricKey": "subnets",
+         "metricName": "Subnets",
+         "resourceKindId": "resourceKind:id:10_::_",
+         "resourceKindName": "Stretched Segment",
+         "isStringMetric": true,
+         "label": "Subnets",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1042-1"
+        },
+        {
+         "metricKey": "gateway",
+         "metricName": "Connected gateway",
+         "resourceKindId": "resourceKind:id:10_::_",
+         "resourceKindName": "Stretched Segment",
+         "isStringMetric": true,
+         "label": "Connected gateway",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1043-1"
+        },
+        {
+         "metricKey": "segment_type",
+         "metricName": "Type",
+         "resourceKindId": "resourceKind:id:10_::_",
+         "resourceKindName": "Stretched Segment",
+         "isStringMetric": true,
+         "label": "Type",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1044-1"
+        },
+        {
+         "metricKey": "category",
+         "metricName": "Category",
+         "resourceKindId": "resourceKind:id:11_::_",
+         "resourceKindName": "Global Security Policy",
+         "isStringMetric": true,
+         "label": "Category",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1045-1"
+        },
+        {
+         "metricKey": "scope",
+         "metricName": "Applied to",
+         "resourceKindId": "resourceKind:id:11_::_",
+         "resourceKindName": "Global Security Policy",
+         "isStringMetric": true,
+         "label": "Applied to",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1046-1"
+        },
+        {
+         "metricKey": "status",
+         "metricName": "Realization status",
+         "resourceKindId": "resourceKind:id:12_::_",
+         "resourceKindName": "Stretched Object at Location",
+         "isStringMetric": true,
+         "label": "Realization status",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1047-1"
+        },
+        {
+         "metricKey": "location",
+         "metricName": "Location",
+         "resourceKindId": "resourceKind:id:12_::_",
+         "resourceKindName": "Stretched Object at Location",
+         "isStringMetric": true,
+         "label": "Location",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1048-1"
+        },
+        {
+         "metricKey": "object_type",
+         "metricName": "Object type",
+         "resourceKindId": "resourceKind:id:12_::_",
+         "resourceKindName": "Stretched Object at Location",
+         "isStringMetric": true,
+         "label": "Object type",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1049-1"
+        },
+        {
+         "metricKey": "object_path",
+         "metricName": "Object path",
+         "resourceKindId": "resourceKind:id:12_::_",
+         "resourceKindName": "Stretched Object at Location",
+         "isStringMetric": true,
+         "label": "Object path",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1050-1"
+        }
+       ]
+      },
+      "title": "Selected object: properties",
+      "refreshInterval": 300,
+      "refreshContent": {
+       "refreshContent": true
+      }
+     },
+     "height": 0,
+     "states": []
+    },
+    {
+     "tabId": "f7a4cc25-3ce0-5f57-a3ed-175ee7d61031",
+     "collapsed": false,
+     "id": "4ede0c6e-2ceb-5ab9-aeb6-cebcd5494374",
+     "gridsterCoords": {
+      "w": 7,
+      "x": 1,
+      "h": 6,
+      "y": 15
+     },
+     "state": "",
+     "type": "ResourceRelationshipAdvanced",
+     "title": "Selected object: related objects",
+     "config": {
+      "filterMode": "tagPicker",
+      "tagFilter": null,
+      "resourceId": null,
+      "depth": "1,2",
+      "traversalSpecId": "",
+      "customFilter": {
+       "filter": [],
+       "excludedResources": null,
+       "includedResources": null
+      },
+      "resourceName": null,
+      "selfProvider": {
+       "selfProvider": false
+      },
+      "title": "Selected object: related objects",
+      "refreshInterval": 300,
+      "refreshContent": {
+       "refreshContent": true
+      }
+     },
+     "height": 0,
+     "states": []
+    }
+   ],
+   "states": [],
+   "editAllowed": true,
+   "homeTab": false,
+   "rank": 0,
+   "disabled": false,
+   "id": "f7a4cc25-3ce0-5f57-a3ed-175ee7d61031",
+   "locked": false,
+   "dashboardNavigations": {},
+   "widgetInteractions": [
+    {
+     "widgetIdProvider": "10f6512e-c266-56d8-9a04-53205c5ecd29",
+     "type": "resourceId",
+     "widgetIdReceiver": "61724adb-390c-5fb5-a6e4-4550aae99b7e"
+    },
+    {
+     "widgetIdProvider": "10f6512e-c266-56d8-9a04-53205c5ecd29",
+     "type": "resourceId",
+     "widgetIdReceiver": "36d89488-e9c8-57d1-8e7d-2d8ab63c0033"
+    },
+    {
+     "widgetIdProvider": "10f6512e-c266-56d8-9a04-53205c5ecd29",
+     "type": "resourceId",
+     "widgetIdReceiver": "4ede0c6e-2ceb-5ab9-aeb6-cebcd5494374"
+    },
+    {
+     "widgetIdProvider": "30021d72-3a03-5977-9591-586e1b90670a",
+     "type": "resourceId",
+     "widgetIdReceiver": "61724adb-390c-5fb5-a6e4-4550aae99b7e"
+    },
+    {
+     "widgetIdProvider": "30021d72-3a03-5977-9591-586e1b90670a",
+     "type": "resourceId",
+     "widgetIdReceiver": "36d89488-e9c8-57d1-8e7d-2d8ab63c0033"
+    }
+   ],
+   "namePath": "NSX Federation",
+   "lastUpdateUserId": "dc8f7126-4c23-4621-9011-e5390abe7398",
+   "columnCount": 1,
+   "userId": "dc8f7126-4c23-4621-9011-e5390abe7398",
+   "name": "NSX Federation/Stretched Objects",
+   "gridsterMaxColumns": 12,
+   "lastUpdateTime": 1795000000000
+  }
+ ],
+ "uuid": "69c92593-80f6-532f-8708-81e1bb01db30"
+}

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AdapterKind key="NSXFederation" version="1">
+    <TraversalSpecKinds>
+        <TraversalSpecKind name="NSX Federation" rootAdapterKind="NSXFederation" rootResourceKind="federation"
+                           description="NSX Federation: Global Managers, locations, inter-site connectivity and stretched objects"
+                           usedFor="ALL">
+            <ResourcePath path="NSXFederation::federation||NSXFederation::global_manager::child||NSXFederation::manager_node::child"/>
+            <ResourcePath path="NSXFederation::federation||NSXFederation::global_manager::child||NSXFederation::sync_channel::child"/>
+            <ResourcePath path="NSXFederation::federation||NSXFederation::location::child||NSXFederation::sync_channel::child"/>
+            <ResourcePath path="NSXFederation::federation||NSXFederation::location::child||NSXFederation::edge_cluster::child||NSXFederation::edge_node::child||NSXFederation::rtep_tunnel::child"/>
+            <ResourcePath path="NSXFederation::federation||NSXFederation::tier0::child||NSXFederation::bgp_neighbor::child"/>
+            <ResourcePath path="NSXFederation::federation||NSXFederation::tier0::child||NSXFederation::realization::child"/>
+            <ResourcePath path="NSXFederation::federation||NSXFederation::tier0::child||NSXFederation::tier1::child||NSXFederation::realization::child"/>
+            <ResourcePath path="NSXFederation::federation||NSXFederation::tier0::child||NSXFederation::tier1::child||NSXFederation::segment::child||NSXFederation::realization::child"/>
+            <ResourcePath path="NSXFederation::federation||NSXFederation::tier1::child||NSXFederation::realization::child"/>
+            <ResourcePath path="NSXFederation::federation||NSXFederation::segment::child||NSXFederation::realization::child"/>
+            <ResourcePath path="NSXFederation::federation||NSXFederation::global_policy::child||NSXFederation::realization::child"/>
+            <ResourcePath path="NSXFederation::federation||NSXFederation::global_policy::child||NSXFederation::rule::child"/>
+        </TraversalSpecKind>
+    </TraversalSpecKinds>
+</AdapterKind>

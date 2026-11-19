@@ -1,0 +1,202 @@
+{
+  "customGroups": [
+    {
+      "resourceKind": "Environment",
+      "adapterKind": "Container",
+      "autoResolveMembership": true,
+      "started": true,
+      "name": "NSX Federation - All objects",
+      "description": "Every object of the NSX Federation pack. Scope for policies and notifications.",
+      "membershipDefinition": {
+        "ruleGroups": [
+          {
+            "resourceKind": "federation",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
+            "resourceKind": "global_manager",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
+            "resourceKind": "manager_node",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
+            "resourceKind": "location",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
+            "resourceKind": "sync_channel",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
+            "resourceKind": "edge_cluster",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
+            "resourceKind": "edge_node",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
+            "resourceKind": "rtep_tunnel",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
+            "resourceKind": "bgp_neighbor",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
+            "resourceKind": "tier0",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
+            "resourceKind": "tier1",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
+            "resourceKind": "segment",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
+            "resourceKind": "global_policy",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
+            "resourceKind": "realization",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
+            "resourceKind": "rule",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          }
+        ]
+      }
+    },
+    {
+      "resourceKind": "Environment",
+      "adapterKind": "Container",
+      "autoResolveMembership": true,
+      "started": true,
+      "name": "NSX Federation - Managers and locations",
+      "description": "The federation, its Global Managers and nodes, and its locations.",
+      "membershipDefinition": {
+        "ruleGroups": [
+          {
+            "resourceKind": "federation",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
+            "resourceKind": "global_manager",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
+            "resourceKind": "manager_node",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
+            "resourceKind": "location",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          }
+        ]
+      }
+    },
+    {
+      "resourceKind": "Environment",
+      "adapterKind": "Container",
+      "autoResolveMembership": true,
+      "started": true,
+      "name": "NSX Federation - Inter-site connectivity",
+      "description": "Sync channels, edge clusters, edge nodes, RTEP tunnels and Tier-0 BGP neighbors.",
+      "membershipDefinition": {
+        "ruleGroups": [
+          {
+            "resourceKind": "sync_channel",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
+            "resourceKind": "edge_cluster",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
+            "resourceKind": "edge_node",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
+            "resourceKind": "rtep_tunnel",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
+            "resourceKind": "bgp_neighbor",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          }
+        ]
+      }
+    },
+    {
+      "resourceKind": "Environment",
+      "adapterKind": "Container",
+      "autoResolveMembership": true,
+      "started": true,
+      "name": "NSX Federation - Stretched objects",
+      "description": "Stretched gateways, segments, global security policies, rules and their realization per location.",
+      "membershipDefinition": {
+        "ruleGroups": [
+          {
+            "resourceKind": "tier0",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
+            "resourceKind": "tier1",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
+            "resourceKind": "segment",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
+            "resourceKind": "global_policy",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
+            "resourceKind": "realization",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
+            "resourceKind": "rule",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          }
+        ]
+      }
+    }
+  ]
+}

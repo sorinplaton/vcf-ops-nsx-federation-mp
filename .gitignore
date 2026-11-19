@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+pack/build/
+pack/logs/
+pack/connections.json
+pack/venv*/
+.sdkhome/
+*.pak
