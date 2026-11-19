@@ -571,7 +571,7 @@
         },
         {
          "metricKey": "sync|standby_in_sync",
-         "metricName": "Standby Global Managers in sync (1 = all)",
+         "metricName": "Standby sync healthy (1 = in sync)",
          "resourceKindId": "resourceKind:id:1_::_",
          "resourceKindName": "Global Manager",
          "isStringMetric": false,

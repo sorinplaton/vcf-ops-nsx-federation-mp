@@ -29,7 +29,7 @@ _PKT, _PER_MIN = Units.MISC.PACKETS, Units.RATE.PER_MINUTE
 UNITS = {
     "backup_age_hours": Units.TIME.HOURS, "cert_min_days_to_expiry": Units.TIME.DAYS,
     "collection_duration_s": Units.TIME.SECONDS, "seconds_established": Units.TIME.SECONDS,
-    "api_calls": Units.MISC.CALLS, "api_calls_throttled": Units.MISC.CALLS, "api_errors": Units.MISC.ERRORS, "data_gaps": Units.MISC.CALLS,
+    "api_calls": Units.MISC.CALLS, "api_calls_throttled": Units.MISC.CALLS, "api_errors": Units.MISC.ERRORS, "data_gaps": Units.MISC.CALLS, "api_calls_retried": Units.MISC.CALLS,
     "rx_bytes": Units.DATA_SIZE.BYTE, "tx_bytes": Units.DATA_SIZE.BYTE, "byte_count": Units.DATA_SIZE.BYTE,
     "rx_bytes_per_s": Units.DATA_RATE.BYTE_PER_SECOND, "tx_bytes_per_s": Units.DATA_RATE.BYTE_PER_SECOND,
     "rx_packets": _PKT, "tx_packets": _PKT, "rx_dropped": _PKT, "tx_dropped": _PKT, "rx_blocked": _PKT, "tx_blocked": _PKT,
@@ -66,6 +66,9 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("api_calls_throttled", "NSX API calls throttled"),
         ("api_errors", "NSX API errors"),
         ("data_gaps", "NSX API calls without an answer (data unknown)"),
+        ("api_calls_retried", "NSX API calls retried after a timeout"),
+        ("global_managers_foreign", "Listed Global Managers of another federation"),
+        ("locations_down", "Locations not connected to the Global Manager"),
         ("managers_over_budget", "Managers that used their call budget"),
         ("locations_healthy", "Locations healthy"),
         ("locations_healthy_pct", "Locations healthy (%)"),
@@ -80,6 +83,8 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("standby_configured", "Standby Global Manager configured"),
         ("collection_mode", "Collection mode"),
         ("failed_calls", "NSX API calls without an answer"),
+        ("global_manager_errors", "Global Managers not collected"),
+        ("location_outage", "Locations in outage"),
     ]),
     "global_manager": ("Global Manager", [
         ("reachable", "Reachable by the collector"),
@@ -92,7 +97,7 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("backup_age_hours", "Hours since last successful backup"),
         ("cert_min_days_to_expiry", "Days until the first certificate expires"),
         ("standby_sync_entries", "Standby sync entries reported"),
-        ("standby_in_sync", "Standby Global Managers in sync (1 = all)"),
+        ("standby_in_sync", "Standby sync healthy (1 = in sync)"),
         ("standby_sync_remaining", "Entries left to send to the standby"),
     ], [
         ("mode", "Mode"), ("cluster_status", "Cluster status"), ("version", "Version"),
@@ -102,7 +107,7 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("switchover_status", "Switchover status"),
         ("standby_sync_status", "Standby sync status"),
     ]),
-    "manager_node": ("Global Manager Node", [("online", "Online")],
+    "manager_node": ("Manager Node", [("online", "Online")],
                      [("address", "Address"), ("uuid", "Node UUID")]),
     "location": ("Location", [
         ("gm_connection_up", "Connected to the active Global Manager"),
@@ -209,7 +214,8 @@ _GROUP_BY_KEY = {
     "intersite_bgp_total": "intersite", "intersite_bgp_established": "intersite", "intersite_bgp_down": "intersite",
     "rtep_tunnels_total": "intersite", "rtep_tunnels_bgp_down": "intersite", "rtep_dropped_per_min": "intersite",
     "collection_duration_s": "collection", "api_calls": "collection", "api_calls_throttled": "collection",
-    "api_errors": "collection", "data_gaps": "collection", "managers_over_budget": "collection",
+    "api_errors": "collection", "data_gaps": "collection", "api_calls_retried": "collection",
+    "global_managers_foreign": "global_managers", "locations_down": "locations", "managers_over_budget": "collection",
     "global_managers_configured": "global_managers", "global_managers_reachable": "global_managers",
     "global_managers_unreachable": "global_managers", "global_managers_active": "global_managers",
     "locations_total": "locations", "locations_gm_connected": "locations", "locations_collected": "locations",
@@ -226,6 +232,9 @@ for _k in ("rx_bytes", "tx_bytes", "rx_packets", "tx_packets", "rx_dropped", "tx
     _GROUP_BY_KEY[RATES[_k][0]] = "rates"
 # a type with only one or two metrics keeps them at the top
 _FLAT_KINDS = {"manager_node", "sync_channel"}
+# kinds whose alerts stay quiet while a location is cut off from the Global Manager (see "location_outage")
+OUTAGE_KINDS = {"location", "sync_channel", "edge_cluster", "edge_node", "rtep_tunnel", "bgp_neighbor",
+                "tier0", "tier1", "segment", "global_policy", "realization"}
 
 
 def metric_group(kind: str, key: str) -> Optional[str]:
@@ -273,9 +282,16 @@ def get_adapter_definition() -> AdapterDefinition:
             description="Optional. Comma-separated IDs of global security policies whose rules become objects, "
                         "or * for all. Empty: policy totals only (recommended at scale).",
             required=False, advanced=True)
+        d.define_string_parameter(
+            "federation_name", label="Federation name",
+            description="Optional. Name of the federation object in VCF Operations. Empty: 'NSX Federation' and the "
+                        "first characters of the federation ID. Useful with several federations.",
+            required=False, advanced=True)
         d.define_enum_parameter(
             "certificate_trust", values=["enforce", "report"], label="Certificate trust",
-            description="enforce: a manager whose certificate is not trusted is not collected. "
+            description="enforce: a manager is collected only when its certificate is a trusted one (accepted on the "
+                        "account for a Global Manager, known by the Global Manager for a Local Manager). A manager with "
+                        "no trusted certificate on record is not collected. "
                         "report: it is collected and the mismatch is reported.",
             default="enforce", advanced=True)
         d.define_enum_parameter(
@@ -312,6 +328,8 @@ def get_adapter_definition() -> AdapterDefinition:
                                      is_discrete=mkey in DISCRETE, is_kpi=kpi, is_key_attribute=kpi)
             for pkey, plabel in props:
                 ot.define_string_property(pkey, plabel)
+            if key in OUTAGE_KINDS:
+                ot.define_string_property("location_outage", "Locations in outage")
         return d
 
 
@@ -331,6 +349,7 @@ class Config:
         rp = str(val("rule_policies", "")).strip()
         self.rule_policies = {p.strip() for p in rp.split(",") if p.strip()}
         self.enforce_trust = str(val("certificate_trust", "enforce")) == "enforce"
+        self.federation_name = str(val("federation_name", "")).strip()
         self.link_nsx_objects = str(val("link_nsx_objects", "off")) == "on"
         self.max_parallel = int(val("max_parallel", 8))
         self.timeout = int(val("request_timeout", 30))
@@ -428,6 +447,8 @@ class Collector:
         self.stretched_total = 0
         self.stretched_full = 0
         self.over_budget = 0
+        self.gm_objects: Dict[str, Object] = {}  # Global Manager name -> object
+        self.standby_sync: List[Tuple[Optional[str], int, int]] = []  # (standby name, in sync, entries left)
         # counter values of the previous cycle, for rates: object id -> {"t": epoch, counter: value}
         self.prev_counters: Dict[str, Dict[str, float]] = self.cache.get_any_age("counters") or {}
         self.new_counters: Dict[str, Dict[str, float]] = {}
@@ -507,17 +528,22 @@ class Collector:
             return
         with ThreadPoolExecutor(max_workers=max(1, len(cfg.gm_hosts))) as pool:
             gms = list(pool.map(self.probe_gm, cfg.gm_hosts))
-        reachable = [g for g in gms if g["ok"]]
+        answered = [g for g in gms if g["ok"]]
+        # One account monitors one federation: the federation of the first Global Manager that answers, or the
+        # one seen in earlier cycles. A listed manager of another federation is reported and left out.
+        self.fed_id = self.cache.get_any_age("federation_id") or (answered[0]["federation_id"] if answered else "") or ""
+        if answered and not any(g["federation_id"] == self.fed_id for g in answered):
+            self.fed_id = answered[0]["federation_id"]  # the federation was rebuilt: follow the listed managers
+        foreign = [g for g in answered if g["federation_id"] != self.fed_id]
+        reachable = [g for g in answered if g["federation_id"] == self.fed_id]
         active = [g for g in reachable if str(g["site"].get("active_gm", "")).upper() == "ACTIVE"]
-
-        self.fed_id = (reachable[0]["federation_id"] if reachable else self.cache.get_any_age("federation_id")) or ""
         if not self.fed_id:
             self.result.with_error(
                 "No Global Manager answered and no earlier collection is cached: "
                 + "; ".join(f"{g['host']}: {g['error']}" for g in gms))
             return
         self.cache.put("federation_id", self.fed_id)
-        self.fed = self.result.object(ADAPTER_KIND, "federation", f"NSX Federation {self.fed_id[:8]}",
+        self.fed = self.result.object(ADAPTER_KIND, "federation", cfg.federation_name or f"NSX Federation {self.fed_id[:8]}",
                                       [Identifier("id", self.fed_id)])
         fed = self.fed
 
@@ -561,7 +587,11 @@ class Collector:
                 self.over_budget += 1
             except Exception as e:
                 logger.exception(e)
-        standby_known = len(sites_doc.get("global_managers", [])) > 1 or len(cfg.gm_hosts) > 1
+        # a standby exists when the federation lists one, not when the account lists two addresses
+        modes = [str(g.get("mode", "")).upper() for g in sites_doc.get("global_managers", [])]
+        modes += [str(g["site"].get("active_gm", "")).upper() for g in reachable]
+        standby_known = "STANDBY" in modes
+        self.finish_standby_sync()
         if not standby_known:
             self.event(fed, "No standby Global Manager is configured for this federation", Criticality.WARNING, "standby_configured")
 
@@ -572,12 +602,22 @@ class Collector:
         collected = sum(1 for r in lm_results if r)
         self.finish_policies(lm_sites)
 
+        # -- root cause for alert storms: while a location is cut off from the Global Manager, the objects that
+        # depend on it carry its name, and their alerts stay quiet behind the alert of the location
+        outage = ", ".join(sorted(self.location_names.get(p, p) for p in self.down_locations)) or "none"
+        for o in self.result.objects.values():
+            if o.adapter_type() == ADAPTER_KIND and o.object_type() in OUTAGE_KINDS:
+                o.with_property("location_outage", outage)
+
         # -- step 3: federation object and pack self-health
         failed = sorted(f"{c.host}{p} ({why})" for c in self.clients for p, why in c.failed.items())
         self.metrics(fed, {
             "global_managers_configured": len(cfg.gm_hosts),
             "global_managers_reachable": len(reachable),
-            "global_managers_unreachable": len(cfg.gm_hosts) - len(reachable),
+            "global_managers_unreachable": len(cfg.gm_hosts) - len(answered),
+            "global_managers_foreign": len(foreign),
+            "locations_down": len(self.down_locations) if gm else None,
+            "api_calls_retried": sum(c.retried for c in self.clients),
             "global_managers_active": len(active),
             "locations_total": len(lm_sites),
             "locations_gm_connected": (sum(1 for s in lm_sites if s.get("gm_connection_up"))
@@ -596,6 +636,10 @@ class Collector:
         self.props(fed, {
             "failed_calls": "; ".join(failed[:8]) + (f"; and {len(failed) - 8} more" if len(failed) > 8 else "") or "none",
             "federation_id": self.fed_id,
+            "global_manager_errors": "; ".join(
+                [f"{g['host']}: {g['error']}" for g in gms if not g["ok"]]
+                + [f"{g['host']}: belongs to federation {g['federation_id']}, not to this one" for g in foreign]) or "none",
+            "location_outage": outage,
             "active_global_manager": gm["site"].get("name") if gm else "none",
             "standby_configured": standby_known,
             "collection_mode": mode,
@@ -806,6 +850,7 @@ class Collector:
         site = g["site"]
         name = site.get("name") or g["host"]
         go = self.obj("global_manager", name, f"gm:{site.get('id')}")
+        self.gm_objects[name] = go
         go.add_parent(self.fed)
         cs = client.try_get("/api/v1/cluster/status", default={}) or {}
         mcs = cs.get("mgmt_cluster_status") or {}
@@ -853,6 +898,9 @@ class Collector:
             if sync:
                 self.metrics(go, {"standby_in_sync": int(all(in_sync(s) for s in sync)),
                                   "standby_sync_remaining": sum(int(s.get("remaining_entries_to_send") or 0) for s in sync)})
+                # the same values on each standby object, set once all Global Manager objects exist
+                self.standby_sync = [(s.get("standby_site"), int(in_sync(s)), int(s.get("remaining_entries_to_send") or 0))
+                                     for s in sync]
             # sync channels as seen by the active Global Manager
             for rc in st.get("remote_connections", []):
                 self.channel(go, name, rc)
@@ -878,6 +926,14 @@ class Collector:
             self.event(go, f"NSX alarm {a.get('event_type')}: {a.get('summary', '')}"[:400],
                        Criticality.CRITICAL if sev == "CRITICAL" else Criticality.IMMEDIATE if sev == "HIGH" else Criticality.WARNING)
         return name
+
+    def finish_standby_sync(self) -> None:
+        """A standby Global Manager gets its own sync state, as the active one reports it. After a switchover the
+        former active is a standby and gets a fresh value, not the last one it sent as the active."""
+        for standby, ok, remaining in self.standby_sync:
+            so = self.gm_objects.get(standby)
+            if so is not None:
+                self.metrics(so, {"standby_in_sync": ok, "standby_sync_remaining": remaining})
 
     def backup_and_certs(self, client: NsxClient) -> Tuple[Optional[bool], Optional[float], Optional[str], Optional[float], Optional[str]]:
         """(backup enabled, backup age in hours, last backup result, days to the first certificate expiry, its name).
@@ -969,6 +1025,10 @@ class Collector:
         alarms = summarize_alarms(all_alarms) if client.ok("/api/v1/alarms") else dict.fromkeys(("critical", "high", "other"))
         cs_ok = client.ok("/api/v1/cluster/status")
         b_enabled, b_age, _, c_days, c_name = self.backup_and_certs(client)
+        for node in mcs.get("online_nodes") or []:
+            self.node(lo, node, 1)
+        for node in mcs.get("offline_nodes") or []:
+            self.node(lo, node, 0)
         sync_states = client.try_list("/policy/api/v1/infra/full-sync-states")
         not_done = [s for s in sync_states if str(s.get("last_completed_stage", "")).upper() not in ("COMPLETED", "")]
         self.metrics(lo, {

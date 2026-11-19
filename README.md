@@ -2,7 +2,7 @@
 
 A management pack that monitors NSX Federation (NSX 9.1) in VCF Operations 9.1.1. It is built with the
 [VCF Operations Integration SDK](https://vmware.github.io/vmware-vcf-operations-integration-sdk/introduction)
-in Python. Current version: 1.5.0.
+in Python. Current version: 1.6.0.
 
 This is a lab project, not a Broadcom product. The pack is unsigned and comes with no support. It only reads
 from NSX.
@@ -19,10 +19,12 @@ The design, the install and the tests are described in two blog posts:
   security policies, and the realization of each stretched object at each location. Global firewall rules
   are opt-in per policy.
 - Metrics in 17 groups, with rates computed from the NSX counters, federation rollups and 18 key indicators.
-- 56 alert definitions, 71 symptoms and 30 recommendations, including the 13 federation alarm types of
-  NSX 9.1 as named alerts, the sync state of a standby Global Manager and three alerts on the collection itself.
+- 57 alert definitions, 83 symptoms and 31 recommendations, including the 13 federation alarm types of
+  NSX 9.1 as named alerts, the sync state of a standby Global Manager and four alerts on the collection itself.
 - A failed NSX call is reported as unknown data, not as an empty answer: no alert fires on data that was
   never received, and the federation object lists the calls without an answer.
+- During a location outage, the alerts of the objects that depend on the location stay quiet behind the alert of
+  the location.
 - Four custom groups, three dashboards, five list views, one report and an inventory tree.
 - Optional links from edge nodes and edge clusters to the objects of the built-in NSX integration.
 
@@ -42,6 +44,8 @@ account is enough: the built-in `audit` account was tested.
 | `tools/schemas/` | The SDK schema files for alert definitions and traversal specs. They must stay out of `pack/content` (see the blog) |
 | `tooling/Dockerfile` | An image with the SDK tools (`mp-init`, `mp-test`, `mp-build`) |
 | `install/` | Scripts for the scripted install of an unsigned pack |
+| `tests/` | Test suite with a mock NSX (an anonymised recording of a small federation) |
+| `docs/OPERATIONS.md` | Account settings, certificate trust, sizing, alert behaviour, upgrade |
 
 ## Build
 
@@ -80,7 +84,7 @@ Scripted, with `google-chrome`, `node` and Python `requests` on the host:
 ```bash
 export OPS_HOST=<vcf-operations-fqdn> OPS_PW=<admin password>
 install/upi.sh enableUPI
-install/install_unsigned.sh pack/build/NSXFederation_1.5.0.pak   # turns the switch off at the end
+install/install_unsigned.sh pack/build/NSXFederation_1.6.0.pak   # turns the switch off at the end
 ```
 
 The scripted route uses calls that are internal to the VCF Operations UI. They are unsupported and can

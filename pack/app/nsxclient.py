@@ -6,7 +6,9 @@ Design points (from the enterprise review):
   * cursor paging for every list call
   * certificate trust by pinned certificate (VCF Operations trust store) or by the SHA-256
     thumbprint the Global Manager holds for a Local Manager; a changed certificate is
-    reported as its own condition, not as a plain connection failure
+    reported as its own condition, not as a plain connection failure. Every connection of the
+    session is bound to the fingerprint that was checked (urllib3 assert_fingerprint), so the
+    credentials never travel to a server that presents another certificate
   * a small on-disk cache for slow-moving data (inventory, certificates, backups)
 """
 import hashlib
@@ -22,6 +24,18 @@ import requests
 import urllib3
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+
+class _PinnedAdapter(requests.adapters.HTTPAdapter):
+    """Every TLS connection of the session must present the certificate with this SHA-256 fingerprint."""
+
+    def __init__(self, fingerprint: str) -> None:
+        self._fingerprint = fingerprint
+        super().__init__()
+
+    def init_poolmanager(self, *args: Any, **kwargs: Any) -> None:
+        kwargs["assert_fingerprint"] = self._fingerprint
+        super().init_poolmanager(*args, **kwargs)
 
 CACHE_DIR = os.environ.get("FEDMP_CACHE_DIR", "/tmp/fedmp-cache")
 
@@ -73,6 +87,7 @@ class NsxClient:
         self.calls = 0
         self.throttled = 0
         self.errors = 0
+        self.retried = 0
         self.failed: Dict[str, str] = {}  # optional calls that failed in this cycle: path -> reason
         self.trusted = {f.lower().replace(":", "") for f in (trusted_fingerprints or [])}
         self.enforce_trust = enforce_trust
@@ -92,10 +107,17 @@ class NsxClient:
             return
         host, _, port = self.host.partition(":")
         self.fingerprint = server_cert_sha256(host, int(port or 443), min(self.timeout, 10))
-        if self.enforce_trust and self.trusted and self.fingerprint not in self.trusted:
+        if self.enforce_trust and not self.trusted:
+            raise CertificateNotTrusted(
+                f"{self.host}: no trusted certificate is recorded for this manager (accept its certificate "
+                "on the account, or set certificate trust to 'report')"
+            )
+        if self.enforce_trust and self.fingerprint not in self.trusted:
             raise CertificateNotTrusted(
                 f"{self.host}: certificate {self.fingerprint[:16]}... is not a trusted certificate"
             )
+        # bind the session to the certificate that was just checked
+        self._session.mount("https://", _PinnedAdapter(self.fingerprint))
         self._trust_checked = True
 
     # ---- HTTP --------------------------------------------------------------------
@@ -107,9 +129,17 @@ class NsxClient:
                 if self.calls >= self.call_budget:
                     raise BudgetExceeded(f"{self.host}: call budget {self.call_budget} used")
                 self.calls += 1
-            resp = self._session.get(
-                f"https://{self.host}{path}", params=params, timeout=self.timeout
-            )
+            try:
+                resp = self._session.get(
+                    f"https://{self.host}{path}", params=params, timeout=self.timeout
+                )
+            except (requests.Timeout, requests.ConnectionError):
+                if attempt >= 1:  # one retry on a timeout or a dropped connection
+                    raise
+                with self._lock:
+                    self.retried += 1
+                time.sleep(delay)
+                continue
             if resp.status_code in (429, 503) and attempt < 3:
                 with self._lock:
                     self.throttled += 1

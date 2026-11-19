@@ -2,5 +2,5 @@
 FROM base-adapter:python-1.2.0
 COPY commands.cfg .
 COPY adapter_requirements.txt .
-RUN pip3 install -r adapter_requirements.txt --upgrade
+RUN pip3 install -r adapter_requirements.txt
 COPY app app

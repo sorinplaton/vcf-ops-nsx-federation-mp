@@ -1,0 +1,7622 @@
+{
+"192.0.2.2": {
+"/api/v1/alarms?page_size=500&status=OPEN": {
+"result_count": 27,
+"results": [
+{
+"event_type": "remote_logging_not_configured",
+"feature_name": "logging",
+"id": "331a9978-5fec-cbe9-b8fd-06c8b41f66e7",
+"severity": "MEDIUM",
+"status": "OPEN",
+"summary": "Remote logging not configured."
+},
+{
+"event_type": "remote_logging_not_configured",
+"feature_name": "logging",
+"id": "6f3400fc-180f-f2b5-aabc-6ad9970a2572",
+"severity": "MEDIUM",
+"status": "OPEN",
+"summary": "Remote logging not configured."
+},
+{
+"event_type": "remote_logging_not_configured",
+"feature_name": "logging",
+"id": "31daef71-dac5-a933-8cdc-763cb9cf127a",
+"severity": "MEDIUM",
+"status": "OPEN",
+"summary": "Remote logging not configured."
+},
+{
+"event_type": "minimum_capacity_threshold",
+"feature_name": "capacity",
+"id": "2d82139e-8e7d-4b96-9aac-e2999b389274",
+"severity": "MEDIUM",
+"status": "OPEN",
+"summary": "A minimum capacity threshold has been breached."
+},
+{
+"event_type": "minimum_capacity_threshold",
+"feature_name": "capacity",
+"id": "ad13f5be-8382-d8d2-c018-0267eeebc856",
+"severity": "MEDIUM",
+"status": "OPEN",
+"summary": "A minimum capacity threshold has been breached."
+},
+{
+"event_type": "pool_status_down",
+"feature_name": "load_balancer",
+"id": "eacb9a12-0b05-31df-b2e1-05d0c0ba6108",
+"severity": "MEDIUM",
+"status": "OPEN",
+"summary": "Load balancer pool is down."
+},
+{
+"event_type": "pool_status_down",
+"feature_name": "load_balancer",
+"id": "93add700-779f-de95-fd42-76a7eacb5ec5",
+"severity": "MEDIUM",
+"status": "OPEN",
+"summary": "Load balancer pool is down."
+},
+{
+"event_type": "virtual_server_status_down",
+"feature_name": "load_balancer",
+"id": "370a22bf-9c79-1efb-6211-66d98c26fd3a",
+"severity": "MEDIUM",
+"status": "OPEN",
+"summary": "Load balancer virtual service is down."
+},
+{
+"event_type": "virtual_server_status_down",
+"feature_name": "load_balancer",
+"id": "c328892e-8e51-2df9-61e2-7188980f5154",
+"severity": "MEDIUM",
+"status": "OPEN",
+"summary": "Load balancer virtual service is down."
+},
+{
+"event_type": "pool_status_down",
+"feature_name": "load_balancer",
+"id": "49b5842a-f93f-15c8-ac0b-cae322cf53ea",
+"severity": "MEDIUM",
+"status": "OPEN",
+"summary": "Load balancer pool is down."
+},
+{
+"event_type": "pool_status_down",
+"feature_name": "load_balancer",
+"id": "79689cab-06ef-3eb7-0ba8-ee1b2abd20e5",
+"severity": "MEDIUM",
+"status": "OPEN",
+"summary": "Load balancer pool is down."
+},
+{
+"event_type": "pool_status_down",
+"feature_name": "load_balancer",
+"id": "10e4ee4d-b152-56b5-f31e-89952165f029",
+"severity": "MEDIUM",
+"status": "OPEN",
+"summary": "Load balancer pool is down."
+},
+{
+"event_type": "pool_status_down",
+"feature_name": "load_balancer",
+"id": "ddccbab4-4182-1887-45d6-3f8754f8230e",
+"severity": "MEDIUM",
+"status": "OPEN",
+"summary": "Load balancer pool is down."
+},
+{
+"event_type": "virtual_server_status_down",
+"feature_name": "load_balancer",
+"id": "eb594422-dff0-a62a-f806-ea846334c63c",
+"severity": "MEDIUM",
+"status": "OPEN",
+"summary": "Load balancer virtual service is down."
+},
+{
+"event_type": "virtual_server_status_down",
+"feature_name": "load_balancer",
+"id": "209426af-1446-0ac2-fb4c-78aeeeeed4a0",
+"severity": "MEDIUM",
+"status": "OPEN",
+"summary": "Load balancer virtual service is down."
+},
+{
+"event_type": "virtual_server_status_down",
+"feature_name": "load_balancer",
+"id": "7dfae0e8-c60f-8b4d-c76d-425934af2567",
+"severity": "MEDIUM",
+"status": "OPEN",
+"summary": "Load balancer virtual service is down."
+},
+{
+"event_type": "virtual_server_status_down",
+"feature_name": "load_balancer",
+"id": "de159b88-994f-67c0-0dcf-35e69c11d63a",
+"severity": "MEDIUM",
+"status": "OPEN",
+"summary": "Load balancer virtual service is down."
+},
+{
+"event_type": "license_is_about_to_expire",
+"feature_name": "licenses",
+"id": "c4ad98ab-ae32-db88-b486-834c628574b2",
+"severity": "MEDIUM",
+"status": "OPEN",
+"summary": "License is about to expire."
+},
+{
+"event_type": "mtu_mismatch_within_transport_zone",
+"feature_name": "mtu_check",
+"id": "cff4ac38-7e40-ad2a-c3a3-7cf8e9518a56",
+"severity": "HIGH",
+"status": "OPEN",
+"summary": "MTU configuration mismatch between Transport Nodes attached to the same Transport Zone."
+},
+{
+"event_type": "fail_to_stream_metrics_to_vcf_ops_data_platform",
+"feature_name": "communication",
+"id": "eb78d7d9-3058-515f-5c1c-005d31dcdf27",
+"severity": "HIGH",
+"status": "OPEN",
+"summary": "Failed to stream metrics to the specified VODAP (VCF Ops Data Platform) metrics collector."
+},
+{
+"event_type": "fail_to_stream_metrics_to_vcf_ops_data_platform",
+"feature_name": "communication",
+"id": "dbaf4905-8c9c-9f8c-a12a-bcd47db39372",
+"severity": "HIGH",
+"status": "OPEN",
+"summary": "Failed to stream metrics to the specified VODAP (VCF Ops Data Platform) metrics collector."
+},
+{
+"event_type": "fail_to_stream_metrics_to_vcf_ops_data_platform",
+"feature_name": "communication",
+"id": "f6d2de48-eb99-ce81-deb9-6e9fda4379a3",
+"severity": "HIGH",
+"status": "OPEN",
+"summary": "Failed to stream metrics to the specified VODAP (VCF Ops Data Platform) metrics collector."
+},
+{
+"event_type": "fail_to_stream_metrics_to_vcf_ops_data_platform",
+"feature_name": "communication",
+"id": "6bd01955-4168-c8df-1b23-3484659e8d0c",
+"severity": "HIGH",
+"status": "OPEN",
+"summary": "Failed to stream metrics to the specified VODAP (VCF Ops Data Platform) metrics collector."
+},
+{
+"event_type": "fail_to_stream_metrics_to_vcf_ops_data_platform",
+"feature_name": "communication",
+"id": "ad1e9897-ef2a-3451-b3b3-c263aaa30e5e",
+"severity": "HIGH",
+"status": "OPEN",
+"summary": "Failed to stream metrics to the specified VODAP (VCF Ops Data Platform) metrics collector."
+},
+{
+"event_type": "fail_to_stream_metrics_to_vcf_ops_data_platform",
+"feature_name": "communication",
+"id": "1f97ab0d-5e71-9206-4549-c2d6484ef087",
+"severity": "HIGH",
+"status": "OPEN",
+"summary": "Failed to stream metrics to the specified VODAP (VCF Ops Data Platform) metrics collector."
+},
+{
+"event_type": "fail_to_stream_metrics_to_vcf_ops_data_platform",
+"feature_name": "communication",
+"id": "96901ed6-005f-3de3-997e-d06497a1eefb",
+"severity": "HIGH",
+"status": "OPEN",
+"summary": "Failed to stream metrics to the specified VODAP (VCF Ops Data Platform) metrics collector."
+},
+{
+"event_type": "edge_memory_usage_high",
+"feature_name": "edge_health",
+"id": "12913c26-a0d8-2f23-ee56-99aa698aac12",
+"severity": "MEDIUM",
+"status": "OPEN",
+"summary": "Edge node memory usage is high."
+}
+],
+"sort_ascending": true,
+"sort_by": "_create_time"
+},
+"/api/v1/cluster/backups/overview": {
+"backup_config": {
+"backup_enabled": true,
+"backup_schedule": {
+"resource_type": "IntervalBackupSchedule",
+"seconds_between_backups": 14400
+},
+"inventory_summary_interval": 240,
+"remote_file_server": {
+"directory_path": "/srv/vcf-backup/sddc/nsx-wld01-a.example.test",
+"port": 22,
+"protocol": {
+"authentication_scheme": {
+"scheme_name": "PASSWORD",
+"username": "vcfbackup"
+},
+"protocol_name": "sftp",
+"ssh_fingerprint": "SHA256:VjyQ/YPnv/1TPlRO1kIq9R4t4m2m7HSBYCnKzBKAhOE"
+},
+"server": "192.0.2.1"
+}
+},
+"backup_operation_history": {
+"cluster_backup_statuses": [
+{
+"backup_id": "be46d29b-acca-00a4-8b85-b91b90647c11-1795087187",
+"end_time": 1795087271882,
+"start_time": 1795087187238,
+"success": true
+}
+],
+"inventory_backup_statuses": [
+{
+"backup_id": "inventory-1795098856",
+"end_time": 1795098856490,
+"start_time": 1795098856181,
+"success": true
+}
+],
+"node_backup_statuses": [
+{
+"backup_id": "be46d29b-acca-00a4-8b85-b91b90647c11-1795087187",
+"end_time": 1795087289445,
+"start_time": 1795087187238,
+"success": true
+}
+],
+"overall_backup_status": "SUCCESS"
+},
+"current_backup_operation_status": {
+"operation_type": "none"
+},
+"restore_status": {
+"allowed_actions": [],
+"endpoints": [],
+"not_allowed_actions": [],
+"status": {
+"value": "INITIAL"
+}
+},
+"result_count": 25,
+"results": [
+{
+"ip_address": "192.0.2.3",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"restore_type": [],
+"timestamp": 1795087187000
+},
+{
+"ip_address": "192.0.2.3",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"restore_type": [],
+"timestamp": 1795072787000
+},
+{
+"ip_address": "192.0.2.3",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"restore_type": [],
+"timestamp": 1795058387000
+},
+{
+"ip_address": "192.0.2.3",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"restore_type": [],
+"timestamp": 1795043987000
+},
+{
+"ip_address": "192.0.2.3",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"restore_type": [],
+"timestamp": 1795029587000
+},
+{
+"ip_address": "192.0.2.3",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"restore_type": [],
+"timestamp": 1795015187000
+},
+{
+"ip_address": "192.0.2.3",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"restore_type": [],
+"timestamp": 1795000799000
+},
+{
+"ip_address": "192.0.2.3",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"restore_type": [],
+"timestamp": 1794986387000
+},
+{
+"ip_address": "192.0.2.3",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"restore_type": [],
+"timestamp": 1794971987000
+},
+{
+"ip_address": "192.0.2.3",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"restore_type": [],
+"timestamp": 1794957587000
+},
+{
+"ip_address": "192.0.2.3",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"restore_type": [],
+"timestamp": 1794943189000
+},
+{
+"ip_address": "192.0.2.3",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"restore_type": [],
+"timestamp": 1794931092000
+},
+{
+"ip_address": "192.0.2.3",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"restore_type": [],
+"timestamp": 1794916692000
+},
+{
+"ip_address": "192.0.2.3",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"restore_type": [],
+"timestamp": 1794902292000
+},
+{
+"ip_address": "192.0.2.3",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"restore_type": [],
+"timestamp": 1794887892000
+},
+{
+"ip_address": "192.0.2.3",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"restore_type": [],
+"timestamp": 1794873492000
+},
+{
+"ip_address": "192.0.2.3",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"restore_type": [],
+"timestamp": 1794865081000
+},
+{
+"ip_address": "192.0.2.3",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"restore_type": [],
+"timestamp": 1794850681000
+},
+{
+"ip_address": "192.0.2.3",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"restore_type": [],
+"timestamp": 1794836281000
+},
+{
+"ip_address": "192.0.2.3",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"restore_type": [],
+"timestamp": 1794821881000
+},
+{
+"ip_address": "192.0.2.3",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"restore_type": [],
+"timestamp": 1794807481000
+},
+{
+"ip_address": "192.0.2.3",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"restore_type": [],
+"timestamp": 1794793081000
+},
+{
+"ip_address": "192.0.2.3",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"restore_type": [],
+"timestamp": 1794778681000
+},
+{
+"ip_address": "192.0.2.3",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"restore_type": [],
+"timestamp": 1794764281000
+},
+{
+"ip_address": "192.0.2.3",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"restore_type": [],
+"timestamp": 1794749881000
+}
+],
+"sort_ascending": false,
+"sort_by": "timestamp"
+},
+"/api/v1/cluster/status": {
+"cluster_id": "6a5b34d0-23d0-a6a9-29c1-6eefbe51c932",
+"control_cluster_status": {
+"status": "STABLE"
+},
+"detailed_cluster_status": {
+"cluster_id": "6a5b34d0-23d0-a6a9-29c1-6eefbe51c932",
+"groups": [
+{
+"group_id": "6a15cb24-0047-4957-16a0-f1e2347dd32e",
+"group_status": "STABLE",
+"group_type": "DATASTORE",
+"leaders": [],
+"members": [
+{
+"member_fqdn": "nsx-wld01-01a.example.test",
+"member_ip": "192.0.2.3",
+"member_status": "UP",
+"member_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11"
+}
+]
+},
+{
+"group_id": "69fb2a92-9776-973f-d302-d61b88f78900",
+"group_status": "STABLE",
+"group_type": "CLUSTER_BOOT_MANAGER",
+"leaders": [
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 14137,
+"service_name": "cluster-manager"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-wld01-01a.example.test",
+"member_ip": "192.0.2.3",
+"member_status": "UP",
+"member_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11"
+}
+]
+},
+{
+"group_id": "0065e1f4-6e47-5e30-ad9d-247cf667841d",
+"group_status": "STABLE",
+"group_type": "CONTROLLER",
+"leaders": [
+{
+"leader_uuid": "6ed6441c-2535-be83-4d55-5dfb08181008",
+"lease_version": 14160,
+"service_name": "ShardingService"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-wld01-01a.example.test",
+"member_ip": "192.0.2.3",
+"member_status": "UP",
+"member_uuid": "6ed6441c-2535-be83-4d55-5dfb08181008"
+}
+]
+},
+{
+"group_id": "0fb9d679-6960-0c35-b133-f36778ff2c36",
+"group_status": "STABLE",
+"group_type": "MANAGER",
+"leaders": [
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13409,
+"service_name": "POLICY_SVC_POLICY_SERVICE_INSERTION_EW"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13407,
+"service_name": "L2LogicalSwitchStateWorker-L2KeyValue"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13410,
+"service_name": "MtuCheckQuartzSetupServiceImpl"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13412,
+"service_name": "POLICY_SVC_PROJECT"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13409,
+"service_name": "POLICY_SVC_CONTEXT_PROFILE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13402,
+"service_name": "POLICY_SVC_FLOOD_PROTECTION_PROFILES_PROVIDER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13406,
+"service_name": "POLICY_SVC_POLICY_TRANSPORT_ZONE_PROFILE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13410,
+"service_name": "POLICY_SVC_IPFIX_L2_PROFILE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13408,
+"service_name": "FirewallOperationPersistedQueueProcessor"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13410,
+"service_name": "UPGRADE-CONSISTENCY-CHECK-POLICY-RESOURCE-CONSUMER-SERVICE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13411,
+"service_name": "OpsClusterService"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13408,
+"service_name": "ODS_DYNAMIC_RUNBOOK_TN_LISTENER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13409,
+"service_name": "POLICY_SVC_ODS_DYNAMIC_RUNBOOK_INSTANCE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13405,
+"service_name": "POLICY_SVC_ALB_LCM"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13411,
+"service_name": "POLICY_SVC_IPFIX_DFW_PROFILE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13405,
+"service_name": "POLICY_SVC_TIER0"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13413,
+"service_name": "RealizationOperationalStatusTrackerWorker-AggSvc-Routing_BgpNeighborStatusPerNode"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13410,
+"service_name": "MpHeartbeatMessageListener"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13418,
+"service_name": "POLICY_SVC_IDFW_IDS_TOGGLE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13411,
+"service_name": "POLICY_SVC_IPFIX_DFW_GROUP_PROFILE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13409,
+"service_name": "POLICY_IPAM_ALARM_LEADERSHIP_LISTENER_SERVICE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13397,
+"service_name": "POLICY_SVC_POLICY_EDGE_CLUSTER_PROVIDER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13404,
+"service_name": "POLICY_SVC_EDGE_TRANSPORT_NODE_TROUBLESHOOT_PROVIDER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13412,
+"service_name": "POLICY_SVC_TLS_PROFILE_PROVIDER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13413,
+"service_name": "POLICY_SVC_TLS_FQDN_STATE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13414,
+"service_name": "LM_NOTIFICATION_MANAGER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13409,
+"service_name": "HealthCheckRequestMonitor"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13413,
+"service_name": "POLICY_SVC_SCX_TOGGLE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13408,
+"service_name": "POLICY_SVC_SESSION_TIMER_PROFILES_PROVIDER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13404,
+"service_name": "POLICY_SVC_FIREWALL"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13408,
+"service_name": "POLICY_SVC_POLICY_UC_DEPLOYMENT_CONFIG"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13402,
+"service_name": "RealizationOperationalStatusTrackerWorker-AggSvc-Routing_LogicalRoutersPerNode"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13406,
+"service_name": "ActivityPurger"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13404,
+"service_name": "POLICY_SVC_EDGE_FIREWALL"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13404,
+"service_name": "LbAlarmShardingServiceImpl"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13414,
+"service_name": "POLICY_SVC_INITIALIZER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13414,
+"service_name": "POLICY_SVC_L7_ACCESS_PROFILE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13410,
+"service_name": "ActiveStateStreamListenerService"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13410,
+"service_name": "POLICY-INTENT-CLEANUP-SERVICE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13408,
+"service_name": "POLICY_SVC_SECURITY_PROFILE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13411,
+"service_name": "POLICY_SVC_POLICY_FIREWALL_IDENTITY_STORE_ELS_MAPPING_PROVIDER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13409,
+"service_name": "GROUP_ALARM_LEADERSHIP_LISTENER_SERVICE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13412,
+"service_name": "SECURITY_LICENSE_USAGE_METER_TASK"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13410,
+"service_name": "POLICY_SVC_LATENCY_STAT_PROFILE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13405,
+"service_name": "POLICY_SVC_PORTMIRRORINGINSTANCE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13413,
+"service_name": "POLICY_SVC_TAG_BULK_OPERATION"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13418,
+"service_name": "POLICY_SVC_IDS_GLOBAL_CONFIG"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13406,
+"service_name": "IntelligenceClusterConfigWorker-IntelligenceClusterConfig"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13413,
+"service_name": "POLICY_SVC_CERTIFICATE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13411,
+"service_name": "FirewallPersistenceQueueProcessor"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13412,
+"service_name": "POLICY_SVC_MALWARE_PREVENTION_PROFILE_PROVIDER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13416,
+"service_name": "FirewallStatsPersistedQueueProcessor"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13408,
+"service_name": "POLICY_SVC_IDS_SIGNATURES_COMP_FILE_PROVIDER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13410,
+"service_name": "POLICY_SVC_FIREWALL_CPU_MEMORY_THRESHOLDS_PROFILE_PROVIDER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13414,
+"service_name": "POLICY_SVC_GENERAL_SECURITY_PROFILES_PROVIDER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13412,
+"service_name": "SECURITY_BUNDLE_AUTO_DOWNLOAD_TASK"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13406,
+"service_name": "POLICY_SVC_METADATA_PROXY"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13407,
+"service_name": "POLICY_SVC_VM_TAG_REPLICATION_POLICY_PROVIDER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13415,
+"service_name": "LM_CONSUMER_SERVICE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13407,
+"service_name": "DirServiceDbDaemon"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13411,
+"service_name": "TnContainerStatusTsdbListener"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13407,
+"service_name": "RealizationOperationalStatusTrackerWorker-AggSvc-Vpn_IPSecVpnServiceSummary"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13410,
+"service_name": "POLICY_SVC_SSP_SECURITY_FEED_MAPPING_PROVIDER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13415,
+"service_name": "POLICY_SVC_IPAM"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13411,
+"service_name": "POLICY_SVC_BYOD_POLICY_SERVICE_INSERTION"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13405,
+"service_name": "POLICY_SVC_REDIRECTION_FIREWALL"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13411,
+"service_name": "GEO_IP_BUNDLE_AUTO_DOWNLOAD_TASK"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13410,
+"service_name": "POLICY_SVC_VPC_SUBNET"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13407,
+"service_name": "LiveTraceMessageManager"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13407,
+"service_name": "POLICY_SVC_MAC_DISCOVERY"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13411,
+"service_name": "ManualHealthCheckMonitor"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13412,
+"service_name": "ClusterNodeConfigProcessor"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13407,
+"service_name": "POLICY_SVC_POLICY_FQDN_ANALYSIS_CONFIG_PROVIDER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13403,
+"service_name": "POLICY_SVC_IPFIXSWITCHCOLLECTION"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13411,
+"service_name": "POLICY_PURGE_TASK_INITIALIZER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13411,
+"service_name": "VCSyncShardingServiceImpl"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13413,
+"service_name": "POLICY_SVC_IPFIX_L2_GLOBAL_PROFILE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13410,
+"service_name": "POLICY_SVC_CLUSTER_CONTROL_PLANE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13406,
+"service_name": "POLICY_SVC_POLICY_URL_CATEGORIZATION_CONFIG_PROVIDER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13403,
+"service_name": "RealizationServiceMaintenanceManager"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13413,
+"service_name": "IP_REPUTATION_FEED_DOWNLOAD_TASK"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13408,
+"service_name": "POLICY_SVC_FORWARDING"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13409,
+"service_name": "VidbMaintainer"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13407,
+"service_name": "RemoteLoggingServerCheckService"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13413,
+"service_name": "TNStateWorker-TransportNodeState"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13409,
+"service_name": "POLICY_SVC_IDS_SECTION_PROVIDER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13415,
+"service_name": "TraceflowCacheManager"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13414,
+"service_name": "POLICY_SVC_REAL_TIME_ETHERNET_PROFILE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13413,
+"service_name": "POLICY_SVC_POLICY_FIREWALL_IDENTITY_STORE_AND_LDAP_SERVER_PROVIDER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13413,
+"service_name": "IpfixAppliedToStreamListener"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13405,
+"service_name": "TransportNodeStatusMessageListener"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13410,
+"service_name": "POLICY_SVC_ROUTE_CONTROLLER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13416,
+"service_name": "ServiceConfigChangeWorker-GiServiceProfile"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13410,
+"service_name": "POLICY_SVC_IDS_THRESHOLD_CONFIG_FILE_PROVIDER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13412,
+"service_name": "POLICY_SVC_POLICY_GUEST_INTROSPECTION"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13405,
+"service_name": "POLICY_SVC_PORTMIRRORINGPROFILE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13411,
+"service_name": "POLICY_SVC_QOS_PROFILE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13407,
+"service_name": "QuartzSetupServiceImpl"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13414,
+"service_name": "LicensingShardingServiceImpl"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13410,
+"service_name": "BgpBfdTroubleshootReverseUpgradeWorker-ManagerClusterVersion"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13405,
+"service_name": "POLICY_SVC_BASE_HOST_SWITCH_PROFILE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13404,
+"service_name": "IDS_AUTO_DOWNLOAD_TASK"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13417,
+"service_name": "POLICY_SVC_LOADBALANCER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13405,
+"service_name": "POLICY_SVC_VPN"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13411,
+"service_name": "POLICY_SVC_SEGMENTPORT"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13406,
+"service_name": "SECURITY_ALARM_SERVICE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13420,
+"service_name": "UnderlayRouteWorker-UnderlayRouteRefreshTrigger"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13408,
+"service_name": "POLICY_SVC_FIREWALL_SCHEDULER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13417,
+"service_name": "VDLS_NSX_ENDPOINT_LISTENER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13413,
+"service_name": "AutoHealthCheckMonitor"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13419,
+"service_name": "POLICY_SVC_IDS_CONTAINER_CLUSTER_PROFILE_PROVIDER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13407,
+"service_name": "GEO_IP_ALARM_SERVICE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13406,
+"service_name": "POLICY_SVC_DNS"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13408,
+"service_name": "POLICY_SVC_VPC"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13403,
+"service_name": "POLICY_SVC_IDS_STANDALONE_HOST_CONFIG"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13405,
+"service_name": "POLICY_SVC_NSXI_NDR_UA_AGENT"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13412,
+"service_name": "POLICY_SVC_SHA_DYNAMIC_PLUGIN"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13413,
+"service_name": "POLICY_SVC_NETWORK_SPAN"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13407,
+"service_name": "POLICY_SVC_SEGMENT"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13411,
+"service_name": "ShaClusterServiceImpl"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13404,
+"service_name": "AUTO_DRAFT_PURGE_TASK"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13414,
+"service_name": "COMMON_AGENT_SERVICE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13411,
+"service_name": "CentralNodeConfigService"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13408,
+"service_name": "POLICY_SVC_SHA_PLUGIN_PROFILE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13407,
+"service_name": "POLICY_SVC_HEALTHCHECK_MANUAL_CONFIG"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13401,
+"service_name": "MirrorStackMonitorImpl"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13411,
+"service_name": "POLICY_SVC_NATRULE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13413,
+"service_name": "LM_SITE_OFFBOARDING"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13405,
+"service_name": "POLICY_SVC_POLICY_PLATFORM_DEPLOYMENT_CONFIG"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13408,
+"service_name": "POLICY_SVC_FIREWALL_DTLS_SECURITY_PROFILE_PROVIDER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13420,
+"service_name": "POLICY_SVC_FIREWALL_IDENTITY"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13413,
+"service_name": "POLICY_SVC_SECURITY_FEATURE_EXCLUDE_LIST_PROVIDER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13407,
+"service_name": "POLICY_SVC_ODS_RUNBOOK_PROFILE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13406,
+"service_name": "ServiceInsertionPersistenceQueueProcessor"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13409,
+"service_name": "POLICY_SVC_CVX_SECURITY"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13412,
+"service_name": "ShardingMaster"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13408,
+"service_name": "ALARMS_REFRESH_TASK"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13414,
+"service_name": "POLICY_SVC_INTELLIGENCE_FLOW_COLLECTION_ENTITY_INFO"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13412,
+"service_name": "CentralConfigProcessor"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13411,
+"service_name": "IDS_PCAP_TASK"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13409,
+"service_name": "POLICY_SVC_IPFIX_L2_COLLECTOR_PROFILE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13406,
+"service_name": "RealizationOperationalStatusTrackerWorker-AggSvc-Vpn_L2VpnServiceSummary"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13421,
+"service_name": "POLICY_SVC_METRIC_GLOBAL_CONFIG"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13401,
+"service_name": "POLICY_SVC_NSSERVICEGROUP"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13415,
+"service_name": "OdsDynamicRunbookClusterStreamListener"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13407,
+"service_name": "INTELLIGENCE_AGENT_SERVICE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13406,
+"service_name": "POLICY_SVC_LM_SITE_SPAN"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13407,
+"service_name": "TransportNodeMessageListener"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13413,
+"service_name": "POLICY_SVC_DFW_SESSION_TIMER_PROFILE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13405,
+"service_name": "POLICY_SVC_SECURITY_FEATURE_TOGGLE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13414,
+"service_name": "POLICY_SVC_IDS_GATEWAY_POLICY_PROVIDER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13408,
+"service_name": "OdsPredefinedRunbookService"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13406,
+"service_name": "DATA-CONSISTENCY-CHECKER-SERVICE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13415,
+"service_name": "POLICY_SVC_SHA_MONITOR_PROFILE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13410,
+"service_name": "POLICY_SVC_OPS_GLOBAL_CONFIG"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13407,
+"service_name": "NodeStatusPropertiesStreamListenerService"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13405,
+"service_name": "POLICY_SVC_ROUTING"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13416,
+"service_name": "POLICY_SVC_METRICS_UA_AGENT"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13407,
+"service_name": "POLICY_SVC_IDS_PROFILE_PROVIDER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13408,
+"service_name": "CertificateShardingServiceImpl"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13417,
+"service_name": "POLICY_SVC_IPFIXDFWCOLLECTORPROFILE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13414,
+"service_name": "POLICY_SVC_GROUPING"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13408,
+"service_name": "PLATFORM_AGENT_SERVICE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13405,
+"service_name": "ServiceConfigChangeWorker-ServiceConfig"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13406,
+"service_name": "capacity_dashboard"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13415,
+"service_name": "POLICY_SVC_FIREWALL_DTLS_CONFIG_PROFILE_PROVIDER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13408,
+"service_name": "POLICY_SVC_GLOBAL"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13414,
+"service_name": "IntelligenceHostConfigWorker-IntelligenceHostConfig"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13409,
+"service_name": "RealizationOperationalStatusTrackerWorker-AggSvc-Routing_GreTunnelPerNode"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13408,
+"service_name": "POLICY_SVC_NSSERVICE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13415,
+"service_name": "POLICY_SVC_TRANSPORT_NODE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13420,
+"service_name": "POLICY_SVC_IP_DISCOVERY"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13413,
+"service_name": "POLICY_SVC_DISCOVERY"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13406,
+"service_name": "POLICY_SVC_POLICY_SERVICE_INSERTION"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13399,
+"service_name": "COMMON_AGENT_ALARM_SERVICE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13406,
+"service_name": "POLICY_SVC_DFW_EXCLUDE_LIST"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13412,
+"service_name": "DataReaper"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13410,
+"service_name": "POLICY_SVC_POLICY_FIREWALL_IDENTITY_STORE_SITE_MAPPING_PROVIDER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13401,
+"service_name": "POLICY_SVC_IDS_GATEWAY_SECTION_PROVIDER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13416,
+"service_name": "POLICY_SVC_IDS_SITE_VERSION_MAPPING_PROVIDER"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13405,
+"service_name": "TransportNodeStatusTsdbListener"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13410,
+"service_name": "POLICY_SVC_CONNECTIVITY_POLICY"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13410,
+"service_name": "IdfwDbDaemon"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13405,
+"service_name": "NodeStatusPropertiesMsgListener"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13406,
+"service_name": "POLICY_SVC_EDGE_TRANSPORT_NODE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13410,
+"service_name": "POLICY_SVC_POLICY_TRANSPORT_ZONE"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13421,
+"service_name": "CmStatusEventCallBack"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13413,
+"service_name": "POLICY_SVC_TIER1"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13407,
+"service_name": "POLICY_SVC_CONNECTIVITY"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13414,
+"service_name": "POLICY_SVC_TRACE_GLOBAL_CONFIG"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 13409,
+"service_name": "POLICY_SVC_GATEWAY_QOS_PROFILE"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-wld01-01a.example.test",
+"member_ip": "192.0.2.3",
+"member_status": "UP",
+"member_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11"
+}
+]
+},
+{
+"group_id": "e2f381d6-b5c7-e0cc-94ac-3cc1f699788e",
+"group_status": "STABLE",
+"group_type": "HTTPS",
+"leaders": [
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 14135,
+"service_name": "api"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-wld01-01a.example.test",
+"member_ip": "192.0.2.3",
+"member_status": "UP",
+"member_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11"
+}
+]
+},
+{
+"group_id": "dd4016ec-5da0-4669-c2d0-00c9e2e59fa0",
+"group_status": "STABLE",
+"group_type": "SITE_MANAGER",
+"leaders": [
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 14171,
+"service_name": "site-manager"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-wld01-01a.example.test",
+"member_ip": "192.0.2.3",
+"member_status": "UP",
+"member_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11"
+}
+]
+},
+{
+"group_id": "939d8c4d-858a-c8ed-ee42-0ae56512ee0f",
+"group_status": "STABLE",
+"group_type": "MONITORING",
+"leaders": [
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 14155,
+"service_name": "ShardingMaster"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 14154,
+"service_name": "monitoring"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 14154,
+"service_name": "CoordinatedDataCollectionLeader"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-wld01-01a.example.test",
+"member_ip": "192.0.2.3",
+"member_status": "UP",
+"member_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11"
+}
+]
+},
+{
+"group_id": "a6dcccd1-0f4f-cb31-8188-fafb9003eb10",
+"group_status": "STABLE",
+"group_type": "IDPS_REPORTING",
+"leaders": [
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 14131,
+"service_name": "GEO_IP_STATS"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 14132,
+"service_name": "IP_REPUTATION"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 14127,
+"service_name": "IDS_PCAP_PURGE_TASK"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 14127,
+"service_name": "URL_CATEGORIZATION"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 14128,
+"service_name": "IDS_EVENT_DATA_PURGE_TASK"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-wld01-01a.example.test",
+"member_ip": "192.0.2.3",
+"member_status": "UP",
+"member_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11"
+}
+]
+},
+{
+"group_id": "99fc4a18-1553-149a-bbb5-3f3b5186c63c",
+"group_status": "STABLE",
+"group_type": "CM-INVENTORY",
+"leaders": [
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 14154,
+"service_name": "ShardingMaster"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-wld01-01a.example.test",
+"member_ip": "192.0.2.3",
+"member_status": "UP",
+"member_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11"
+}
+]
+},
+{
+"group_id": "e2a6b38a-51d5-1692-1b63-33e36861972c",
+"group_status": "STABLE",
+"group_type": "MESSAGING-MANAGER",
+"leaders": [
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 14165,
+"service_name": "messaging-manager"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-wld01-01a.example.test",
+"member_ip": "192.0.2.3",
+"member_status": "UP",
+"member_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11"
+}
+]
+},
+{
+"group_id": "06b461af-fcac-5090-f22a-0ad68740545e",
+"group_status": "STABLE",
+"group_type": "ASYNC_REPLICATOR",
+"leaders": [
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 14168,
+"service_name": "ArAlarmService"
+},
+{
+"leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"lease_version": 14170,
+"service_name": "ShardingMaster"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-wld01-01a.example.test",
+"member_ip": "192.0.2.3",
+"member_status": "UP",
+"member_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11"
+}
+]
+},
+{
+"group_id": "1bcac931-e40b-8953-fe0c-e98bae815993",
+"group_status": "STABLE",
+"group_type": "CORFU_NONCONFIG",
+"leaders": [],
+"members": [
+{
+"member_fqdn": "nsx-wld01-01a.example.test",
+"member_ip": "192.0.2.3",
+"member_status": "UP",
+"member_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11"
+}
+]
+}
+],
+"overall_status": "STABLE"
+},
+"mgmt_cluster_status": {
+"offline_nodes": [],
+"online_nodes": [
+{
+"mgmt_cluster_listen_ip_address": "192.0.2.3",
+"uuid": "be46d29b-acca-00a4-8b85-b91b90647c11"
+}
+],
+"status": "STABLE"
+},
+"node_services_status": {
+"services": [
+{
+"nodes": [
+{
+"node_fqdn": "nsx-wld01-01a.example.test",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"node_ipv4": "192.0.2.3",
+"status": "UP"
+}
+],
+"service_name": "SEARCH"
+},
+{
+"nodes": [
+{
+"node_fqdn": "nsx-wld01-01a.example.test",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"node_ipv4": "192.0.2.3",
+"status": "UP"
+}
+],
+"service_name": "SHA"
+},
+{
+"nodes": [
+{
+"node_fqdn": "nsx-wld01-01a.example.test",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"node_ipv4": "192.0.2.3",
+"status": "UP"
+}
+],
+"service_name": "APPLIANCE_PROXY"
+}
+]
+},
+"overall_status": "STABLE"
+},
+"/api/v1/edge-clusters/a2225e06-d12a-4b5b-868d-f4805dd57139/inter-site/status": {
+"edge_cluster_id": "a2225e06-d12a-4b5b-868d-f4805dd57139",
+"edge_cluster_name": "fed-ec-a",
+"last_update_timestamp": 1795099025184,
+"member_status": [
+{
+"established_bgp_sessions": 2,
+"neighbor_status": [
+{
+"connection_state": "ESTABLISHED",
+"neighbor_address": "192.0.2.16",
+"remote_site": {
+"is_valid": true,
+"target_display_name": "site-a-wld03",
+"target_id": "50adcaea-7448-8f66-da51-251459b09927"
+},
+"source_address": "192.0.2.15"
+},
+{
+"connection_state": "ESTABLISHED",
+"neighbor_address": "192.0.2.17",
+"remote_site": {
+"is_valid": true,
+"target_display_name": "site-a-wld03",
+"target_id": "50adcaea-7448-8f66-da51-251459b09927"
+},
+"source_address": "192.0.2.15"
+}
+],
+"status": "UP",
+"total_bgp_sessions": 2,
+"transport_node": {
+"is_valid": true,
+"target_id": "47ee7a1e-e214-13e8-3cbc-73ab9ed92e23",
+"target_type": "TransportNode"
+}
+},
+{
+"established_bgp_sessions": 2,
+"neighbor_status": [
+{
+"connection_state": "ESTABLISHED",
+"neighbor_address": "192.0.2.16",
+"remote_site": {
+"is_valid": true,
+"target_display_name": "site-a-wld03",
+"target_id": "50adcaea-7448-8f66-da51-251459b09927"
+},
+"source_address": "192.0.2.14"
+},
+{
+"connection_state": "ESTABLISHED",
+"neighbor_address": "192.0.2.17",
+"remote_site": {
+"is_valid": true,
+"target_display_name": "site-a-wld03",
+"target_id": "50adcaea-7448-8f66-da51-251459b09927"
+},
+"source_address": "192.0.2.14"
+}
+],
+"status": "UP",
+"total_bgp_sessions": 2,
+"transport_node": {
+"is_valid": true,
+"target_id": "0c93aefb-3c4d-45cd-4e06-3a368184f76a",
+"target_type": "TransportNode"
+}
+}
+],
+"overall_status": "UP"
+},
+"/api/v1/sites/status": {
+"active_standby_sync_statuses": null,
+"remote_connections": [
+{
+"site_name": "gm-site-a",
+"stubs": [
+{
+"address": "192.0.2.4",
+"connection_up": true
+}
+]
+},
+{
+"site_name": "site-a-wld03",
+"stubs": [
+{
+"address": "192.0.2.7",
+"connection_up": true
+}
+]
+},
+{
+"site_name": "gm-site-b",
+"stubs": [
+{
+"address": "192.0.2.5",
+"connection_up": true
+}
+]
+}
+]
+},
+"/api/v1/transport-nodes/0c93aefb-3c4d-45cd-4e06-3a368184f76a/inter-site/statistics": {
+"last_update_timestamp": 1795099025325,
+"stats_per_site": [
+{
+"remote_site": {
+"is_valid": true,
+"target_display_name": "site-a-wld03",
+"target_id": "50adcaea-7448-8f66-da51-251459b09927"
+},
+"rx": {
+"blocked_packets": 0,
+"dropped_packets": 41,
+"total_bytes": 26529191,
+"total_packets": 351075
+},
+"stats_per_tunnel": [
+{
+"rx": {
+"blocked_packets": 0,
+"dropped_packets": 41,
+"total_bytes": 13447210,
+"total_packets": 178133
+},
+"tunnel_destination_address": "192.0.2.16",
+"tunnel_source_address": "192.0.2.14",
+"tx": {
+"blocked_packets": 0,
+"dropped_packets": 0,
+"total_bytes": 21225209,
+"total_packets": 177594
+}
+},
+{
+"rx": {
+"blocked_packets": 0,
+"dropped_packets": 0,
+"total_bytes": 13081981,
+"total_packets": 172942
+},
+"tunnel_destination_address": "192.0.2.17",
+"tunnel_source_address": "192.0.2.14",
+"tx": {
+"blocked_packets": 0,
+"dropped_packets": 0,
+"total_bytes": 20601804,
+"total_packets": 172125
+}
+}
+],
+"tx": {
+"blocked_packets": 0,
+"dropped_packets": 0,
+"total_bytes": 41827013,
+"total_packets": 349719
+}
+}
+],
+"transport_node_id": "0c93aefb-3c4d-45cd-4e06-3a368184f76a"
+},
+"/api/v1/transport-nodes/47ee7a1e-e214-13e8-3cbc-73ab9ed92e23/inter-site/statistics": {
+"last_update_timestamp": 1795099025254,
+"stats_per_site": [
+{
+"remote_site": {
+"is_valid": true,
+"target_display_name": "site-a-wld03",
+"target_id": "50adcaea-7448-8f66-da51-251459b09927"
+},
+"rx": {
+"blocked_packets": 0,
+"dropped_packets": 0,
+"total_bytes": 25408936,
+"total_packets": 334451
+},
+"stats_per_tunnel": [
+{
+"rx": {
+"blocked_packets": 0,
+"dropped_packets": 0,
+"total_bytes": 12879143,
+"total_packets": 169873
+},
+"tunnel_destination_address": "192.0.2.17",
+"tunnel_source_address": "192.0.2.15",
+"tx": {
+"blocked_packets": 0,
+"dropped_packets": 0,
+"total_bytes": 20400312,
+"total_packets": 170298
+}
+},
+{
+"rx": {
+"blocked_packets": 0,
+"dropped_packets": 0,
+"total_bytes": 12529793,
+"total_packets": 164578
+},
+"tunnel_destination_address": "192.0.2.16",
+"tunnel_source_address": "192.0.2.15",
+"tx": {
+"blocked_packets": 0,
+"dropped_packets": 0,
+"total_bytes": 19534149,
+"total_packets": 162422
+}
+}
+],
+"tx": {
+"blocked_packets": 0,
+"dropped_packets": 0,
+"total_bytes": 39934461,
+"total_packets": 332720
+}
+}
+],
+"transport_node_id": "47ee7a1e-e214-13e8-3cbc-73ab9ed92e23"
+},
+"/api/v1/transport-nodes?node_types=EdgeNode&page_size=500": {
+"result_count": 2,
+"results": [
+{
+"display_name": "edge-wld01-01a",
+"failure_domain_id": "61ecd848-0a52-05eb-c3b9-d5d1e0edf7a7",
+"id": "0c93aefb-3c4d-45cd-4e06-3a368184f76a",
+"is_overridden": false,
+"maintenance_mode": "DISABLED",
+"node_id": "0c93aefb-3c4d-45cd-4e06-3a368184f76a",
+"resource_type": "TransportNode"
+},
+{
+"display_name": "edge-wld01-02a",
+"failure_domain_id": "61ecd848-0a52-05eb-c3b9-d5d1e0edf7a7",
+"id": "47ee7a1e-e214-13e8-3cbc-73ab9ed92e23",
+"is_overridden": false,
+"maintenance_mode": "DISABLED",
+"node_id": "47ee7a1e-e214-13e8-3cbc-73ab9ed92e23",
+"resource_type": "TransportNode"
+}
+],
+"sort_ascending": true,
+"sort_by": "create_time"
+},
+"/api/v1/trust-management/certificates?details=true&page_size=500": {
+"result_count": 19,
+"results": [
+{
+"details": [
+{
+"not_after": 1861864495000,
+"subject_cn": "cluster-nsx-wld01-01a.example.test"
+}
+],
+"display_name": "MGMT_CLUSTER site 6241f0a1-eb90-457d-85b1-3ebc53fb030d",
+"id": "74a04cf0-c239-6493-6d7c-0eb460afbbf7"
+},
+{
+"details": [
+{
+"not_after": 4944184492000,
+"subject_cn": "cluster-manager"
+}
+],
+"display_name": "CBM_CLUSTER_MANAGER node be46d29b-acca-00a4-8b85-b91b90647c11",
+"id": "19b1b6b3-760a-499b-c1c6-648a76cb2258"
+},
+{
+"details": [
+{
+"not_after": 4944184506000,
+"subject_cn": "corfu"
+}
+],
+"display_name": "CBM_CORFU node be46d29b-acca-00a4-8b85-b91b90647c11",
+"id": "c2508a11-6f5d-b49c-0ec1-d1ad59369c6b"
+},
+{
+"details": [
+{
+"not_after": 2105944480000,
+"subject_cn": "VMware-NSX-ApplProxyHub-CCP"
+}
+],
+"display_name": "APH node be46d29b-acca-00a4-8b85-b91b90647c11",
+"id": "219c0e78-da81-8fa3-3bf1-6c5c189f64ae"
+},
+{
+"details": [
+{
+"not_after": 2105944825000,
+"subject_cn": "local-manager"
+}
+],
+"display_name": "LocalManager",
+"id": "225ee78e-416e-9636-c6a1-3ad7d7c98234"
+},
+{
+"details": [
+{
+"not_after": 1852793023000,
+"subject_cn": "nsx-wld01-01a.example.test"
+}
+],
+"display_name": "894e3cff-272d-c2ae-55b8-9dd7c5ff726e",
+"id": "9f582502-54a9-5cbe-3fe5-a35140c01d89"
+},
+{
+"details": [
+{
+"not_after": 1852793037000,
+"subject_cn": "nsx-wld01-a.example.test"
+}
+],
+"display_name": "2219c3c4-4300-47a9-37fc-59f2062322c4",
+"id": "02bb37be-ef17-48e7-6d5f-7988990a0f86"
+},
+{
+"details": [
+{
+"not_after": 2105681960000,
+"subject_cn": "CA"
+}
+],
+"display_name": "cm-vc-wld01-a.example.test",
+"id": "9ba38a1f-5f91-760d-9f0d-bd6e7ced880a"
+},
+{
+"details": [
+{
+"not_after": 1853696362000,
+"subject_cn": "vc-wld01-a.example.test"
+}
+],
+"display_name": "cm-machine-ssl-vc-wld01-a.example.test",
+"id": "55cb690d-79d4-117d-cc23-7c8c5607fed5"
+},
+{
+"details": [
+{
+"not_after": 1823698520000,
+"subject_cn": "defaultingress.local"
+}
+],
+"display_name": "lb-9cc3e951-8fe3-b01a-e428-61fc0930edbf",
+"id": "567b0861-144d-c8d7-dae5-b3a8af95e286"
+},
+{
+"details": [
+{
+"not_after": 2110245160000,
+"subject_cn": "global-manager"
+}
+],
+"display_name": "74e65acd-7e8d-3317-e5cc-32d20fcd4f1e",
+"id": "74e65acd-7e8d-3317-e5cc-32d20fcd4f1e"
+},
+{
+"details": [
+{
+"not_after": 2110244647000,
+"subject_cn": "VMware-NSX-ApplProxyHub-CCP"
+}
+],
+"display_name": "Site certificate UID=915d38e3-0779-51b6-25c9-1fd49cee54ab,CN=VMware-NSX-ApplProxyHub-CCP,1.2.840.113549.1.9.1=#161b73736c2d63657274696669636174657340766d776172652e636f6d,O=VMware\\, Inc.,L=Palo Alto,ST=California,C=US",
+"id": "ba453335-028a-ce19-9715-7521f44ae9ee"
+},
+{
+"details": [
+{
+"not_after": 1866164669000,
+"subject_cn": "cluster-nsx-gm-01a.example.test"
+}
+],
+"display_name": "Site certificate C=US,ST=CA,L=Palo Alto,O=VMware Inc.,OU=NSX,CN=cluster-nsx-gm-01a.example.test",
+"id": "1f132b37-e01c-5ffb-37d3-81709483561d"
+},
+{
+"details": [
+{
+"not_after": 2110294571000,
+"subject_cn": "local-manager"
+}
+],
+"display_name": "f28b057e-7fe7-3c97-a48b-21ea2f63cfc6",
+"id": "f28b057e-7fe7-3c97-a48b-21ea2f63cfc6"
+},
+{
+"details": [
+{
+"not_after": 2110293769000,
+"subject_cn": "VMware-NSX-ApplProxyHub-CCP"
+}
+],
+"display_name": "Site certificate UID=2336ef12-9b94-a33e-401c-a520a8ab79b7,CN=VMware-NSX-ApplProxyHub-CCP,1.2.840.113549.1.9.1=#161b73736c2d63657274696669636174657340766d776172652e636f6d,O=VMware\\, Inc.,L=Palo Alto,ST=California,C=US",
+"id": "f21d3c01-b548-2d9d-b190-17b5f4fffed3"
+},
+{
+"details": [
+{
+"not_after": 2105627647000,
+"subject_cn": "CA"
+}
+],
+"display_name": "Site certificate OU=VMware Engineering,O=vc-mgmt-a.example.test,ST=California,C=US,DC=local,DC=vsphere,CN=CA",
+"id": "a0317f79-53b5-5a6c-ea99-9260a9223372"
+},
+{
+"details": [
+{
+"not_after": 2110417943000,
+"subject_cn": "global-manager"
+}
+],
+"display_name": "d33cae47-149c-dccc-6930-21fb6a2ac57f",
+"id": "d33cae47-149c-dccc-6930-21fb6a2ac57f"
+},
+{
+"details": [
+{
+"not_after": 2110417571000,
+"subject_cn": "VMware-NSX-ApplProxyHub-CCP"
+}
+],
+"display_name": "Site certificate UID=5716ff38-012e-de7c-29a9-1803690b8eeb,CN=VMware-NSX-ApplProxyHub-CCP,1.2.840.113549.1.9.1=#161b73736c2d63657274696669636174657340766d776172652e636f6d,O=VMware\\, Inc.,L=Palo Alto,ST=California,C=US",
+"id": "4c534ec3-bf7a-9839-b17d-aea3c13dcdd3"
+},
+{
+"details": [
+{
+"not_after": 1866337588000,
+"subject_cn": "cluster-nsx-gm-01b.example.test"
+}
+],
+"display_name": "Site certificate C=US,ST=CA,L=Palo Alto,O=VMware Inc.,OU=NSX,CN=cluster-nsx-gm-01b.example.test",
+"id": "d482cadb-b007-3f08-1c24-b09d5d9a6473"
+}
+]
+},
+"/policy/api/v1/global-infra/domains/default/security-policies/fed-demo/statistics": {
+"result_count": 1,
+"results": [
+{
+"enforcement_point": "/infra/sites/default/enforcement-points/default",
+"statistics": {
+"internal_section_id": "55611de7-c4aa-04df-03a1-ab8a6dfb7b0f",
+"result_count": 1,
+"results": [
+{
+"byte_count": 0,
+"hit_count": 0,
+"internal_rule_id": "1000004",
+"l7_accept_count": 0,
+"l7_reject_count": 0,
+"l7_reject_with_response_count": 0,
+"max_popularity_index": 0,
+"max_session_count": 0,
+"packet_count": 0,
+"popularity_index": 0,
+"session_count": 0,
+"total_session_count": 0
+}
+]
+}
+}
+]
+},
+"/policy/api/v1/global-infra/tier-0s/fed-t0/locale-services/site-a-wld01/bgp/neighbors/status?page_size=500": {
+"result_count": 8,
+"results": [
+{
+"address_families": [
+{
+"in_prefix_count": 33,
+"out_prefix_count": 2,
+"type": "IPV4_UNICAST"
+}
+],
+"announced_capabilities": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"hostName advHostName"
+],
+"connection_drop_count": 0,
+"connection_state": "ESTABLISHED",
+"edge_path": "/global-infra/sites/site-a-wld01/enforcement-points/default/edge-clusters/a2225e06-d12a-4b5b-868d-f4805dd57139/edge-nodes/0",
+"established_connection_count": 1,
+"graceful_restart_mode": "HELPER_ONLY",
+"hold_time": 180,
+"keep_alive_interval": 60,
+"last_update_timestamp": 1795099027708,
+"local_port": 55198,
+"messages_received": 1504,
+"messages_sent": 1471,
+"negotiated_capability": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"hostName rcvHostName"
+],
+"neighbor_address": "192.0.2.8",
+"neighbor_router_id": "192.0.2.8",
+"remote_as_number": "65000",
+"remote_port": 179,
+"source_address": "192.0.2.12",
+"tier0_path": "/global-infra/tier-0s/fed-t0",
+"time_since_established": 87973,
+"total_in_prefix_count": 33,
+"total_out_prefix_count": 2,
+"type": "USER"
+},
+{
+"address_families": [
+{
+"in_prefix_count": 37,
+"out_prefix_count": 37,
+"type": "IPV4_UNICAST"
+},
+{
+"in_prefix_count": 0,
+"out_prefix_count": 0,
+"type": "IPV6_UNICAST"
+}
+],
+"announced_capabilities": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"IPv6 Unicast",
+"hostName advHostName",
+"addPath IPv6 Unicast Rx"
+],
+"connection_drop_count": 0,
+"connection_state": "ESTABLISHED",
+"edge_path": "/global-infra/sites/site-a-wld01/enforcement-points/default/edge-clusters/a2225e06-d12a-4b5b-868d-f4805dd57139/edge-nodes/0",
+"established_connection_count": 1,
+"graceful_restart_mode": "DISABLE",
+"hold_time": 3,
+"keep_alive_interval": 1,
+"last_update_timestamp": 1795099027708,
+"local_port": 64988,
+"messages_received": 87977,
+"messages_sent": 87980,
+"negotiated_capability": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"IPv6 Unicast",
+"hostName rcvHostName",
+"addPath IPv6 Unicast Rx"
+],
+"neighbor_address": "169.254.32.4",
+"neighbor_edge_node": "/global-infra/sites/site-a-wld01/enforcement-points/default/edge-clusters/a2225e06-d12a-4b5b-868d-f4805dd57139/edge-nodes/1",
+"neighbor_router_id": "192.0.2.13",
+"remote_as_number": "65110",
+"remote_port": 179,
+"source_address": "169.254.32.3",
+"tier0_path": "/global-infra/tier-0s/fed-t0",
+"time_since_established": 87974,
+"total_in_prefix_count": 37,
+"total_out_prefix_count": 37,
+"type": "INTER_SR"
+},
+{
+"address_families": [
+{
+"in_prefix_count": 37,
+"out_prefix_count": 37,
+"type": "IPV4_UNICAST"
+},
+{
+"in_prefix_count": 0,
+"out_prefix_count": 0,
+"type": "IPV6_UNICAST"
+}
+],
+"announced_capabilities": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"IPv6 Unicast",
+"hostName advHostName",
+"addPath IPv6 Unicast Rx"
+],
+"connection_drop_count": 0,
+"connection_state": "ESTABLISHED",
+"edge_path": "/global-infra/sites/site-a-wld01/enforcement-points/default/edge-clusters/a2225e06-d12a-4b5b-868d-f4805dd57139/edge-nodes/0",
+"established_connection_count": 1,
+"graceful_restart_mode": "DISABLE",
+"hold_time": 3,
+"keep_alive_interval": 1,
+"last_update_timestamp": 1795099027708,
+"local_port": 179,
+"messages_received": 87981,
+"messages_sent": 87985,
+"negotiated_capability": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"IPv6 Unicast",
+"hostName rcvHostName",
+"addPath IPv6 Unicast Rx"
+],
+"neighbor_address": "169.254.32.6",
+"neighbor_router_id": "192.0.2.10",
+"remote_as_number": "65110",
+"remote_port": 49987,
+"remote_site": {
+"target_display_name": "site-a-wld03",
+"target_id": "50adcaea-7448-8f66-da51-251459b09927"
+},
+"source_address": "169.254.32.3",
+"tier0_path": "/global-infra/tier-0s/fed-t0",
+"time_since_established": 87974,
+"total_in_prefix_count": 37,
+"total_out_prefix_count": 37,
+"type": "INTER_SR"
+},
+{
+"address_families": [
+{
+"in_prefix_count": 37,
+"out_prefix_count": 37,
+"type": "IPV4_UNICAST"
+},
+{
+"in_prefix_count": 0,
+"out_prefix_count": 0,
+"type": "IPV6_UNICAST"
+}
+],
+"announced_capabilities": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"IPv6 Unicast",
+"hostName advHostName",
+"addPath IPv6 Unicast Rx"
+],
+"connection_drop_count": 0,
+"connection_state": "ESTABLISHED",
+"edge_path": "/global-infra/sites/site-a-wld01/enforcement-points/default/edge-clusters/a2225e06-d12a-4b5b-868d-f4805dd57139/edge-nodes/0",
+"established_connection_count": 1,
+"graceful_restart_mode": "DISABLE",
+"hold_time": 3,
+"keep_alive_interval": 1,
+"last_update_timestamp": 1795099027708,
+"local_port": 179,
+"messages_received": 87982,
+"messages_sent": 87985,
+"negotiated_capability": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"IPv6 Unicast",
+"hostName rcvHostName",
+"addPath IPv6 Unicast Rx"
+],
+"neighbor_address": "169.254.32.7",
+"neighbor_router_id": "192.0.2.11",
+"remote_as_number": "65110",
+"remote_port": 59212,
+"remote_site": {
+"target_display_name": "site-a-wld03",
+"target_id": "50adcaea-7448-8f66-da51-251459b09927"
+},
+"source_address": "169.254.32.3",
+"tier0_path": "/global-infra/tier-0s/fed-t0",
+"time_since_established": 87974,
+"total_in_prefix_count": 37,
+"total_out_prefix_count": 37,
+"type": "INTER_SR"
+},
+{
+"address_families": [
+{
+"in_prefix_count": 33,
+"out_prefix_count": 2,
+"type": "IPV4_UNICAST"
+}
+],
+"announced_capabilities": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"hostName advHostName"
+],
+"connection_drop_count": 0,
+"connection_state": "ESTABLISHED",
+"edge_path": "/global-infra/sites/site-a-wld01/enforcement-points/default/edge-clusters/a2225e06-d12a-4b5b-868d-f4805dd57139/edge-nodes/1",
+"established_connection_count": 1,
+"graceful_restart_mode": "HELPER_ONLY",
+"hold_time": 180,
+"keep_alive_interval": 60,
+"last_update_timestamp": 1795099027708,
+"local_port": 53758,
+"messages_received": 1543,
+"messages_sent": 1500,
+"negotiated_capability": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"hostName rcvHostName"
+],
+"neighbor_address": "192.0.2.8",
+"neighbor_router_id": "192.0.2.8",
+"remote_as_number": "65000",
+"remote_port": 179,
+"source_address": "192.0.2.13",
+"tier0_path": "/global-infra/tier-0s/fed-t0",
+"time_since_established": 89331,
+"total_in_prefix_count": 33,
+"total_out_prefix_count": 2,
+"type": "USER"
+},
+{
+"address_families": [
+{
+"in_prefix_count": 37,
+"out_prefix_count": 37,
+"type": "IPV4_UNICAST"
+},
+{
+"in_prefix_count": 0,
+"out_prefix_count": 0,
+"type": "IPV6_UNICAST"
+}
+],
+"announced_capabilities": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"IPv6 Unicast",
+"hostName advHostName",
+"addPath IPv6 Unicast Rx"
+],
+"connection_drop_count": 1,
+"connection_state": "ESTABLISHED",
+"edge_path": "/global-infra/sites/site-a-wld01/enforcement-points/default/edge-clusters/a2225e06-d12a-4b5b-868d-f4805dd57139/edge-nodes/1",
+"established_connection_count": 2,
+"graceful_restart_mode": "DISABLE",
+"hold_time": 3,
+"keep_alive_interval": 1,
+"last_update_timestamp": 1795099027708,
+"local_port": 179,
+"messages_received": 88942,
+"messages_sent": 88941,
+"negotiated_capability": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"IPv6 Unicast",
+"hostName rcvHostName",
+"addPath IPv6 Unicast Rx"
+],
+"neighbor_address": "169.254.32.6",
+"neighbor_router_id": "192.0.2.10",
+"remote_as_number": "65110",
+"remote_port": 56081,
+"remote_site": {
+"target_display_name": "site-a-wld03",
+"target_id": "50adcaea-7448-8f66-da51-251459b09927"
+},
+"source_address": "169.254.32.4",
+"tier0_path": "/global-infra/tier-0s/fed-t0",
+"time_since_established": 88012,
+"total_in_prefix_count": 37,
+"total_out_prefix_count": 37,
+"type": "INTER_SR"
+},
+{
+"address_families": [
+{
+"in_prefix_count": 37,
+"out_prefix_count": 37,
+"type": "IPV4_UNICAST"
+},
+{
+"in_prefix_count": 0,
+"out_prefix_count": 0,
+"type": "IPV6_UNICAST"
+}
+],
+"announced_capabilities": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"IPv6 Unicast",
+"hostName advHostName",
+"addPath IPv6 Unicast Rx"
+],
+"connection_drop_count": 0,
+"connection_state": "ESTABLISHED",
+"edge_path": "/global-infra/sites/site-a-wld01/enforcement-points/default/edge-clusters/a2225e06-d12a-4b5b-868d-f4805dd57139/edge-nodes/1",
+"established_connection_count": 1,
+"graceful_restart_mode": "DISABLE",
+"hold_time": 3,
+"keep_alive_interval": 1,
+"last_update_timestamp": 1795099027708,
+"local_port": 179,
+"messages_received": 89215,
+"messages_sent": 89214,
+"negotiated_capability": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"IPv6 Unicast",
+"hostName rcvHostName",
+"addPath IPv6 Unicast Rx"
+],
+"neighbor_address": "169.254.32.7",
+"neighbor_router_id": "192.0.2.11",
+"remote_as_number": "65110",
+"remote_port": 51657,
+"remote_site": {
+"target_display_name": "site-a-wld03",
+"target_id": "50adcaea-7448-8f66-da51-251459b09927"
+},
+"source_address": "169.254.32.4",
+"tier0_path": "/global-infra/tier-0s/fed-t0",
+"time_since_established": 89209,
+"total_in_prefix_count": 37,
+"total_out_prefix_count": 37,
+"type": "INTER_SR"
+},
+{
+"address_families": [
+{
+"in_prefix_count": 37,
+"out_prefix_count": 37,
+"type": "IPV4_UNICAST"
+},
+{
+"in_prefix_count": 0,
+"out_prefix_count": 0,
+"type": "IPV6_UNICAST"
+}
+],
+"announced_capabilities": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"IPv6 Unicast",
+"hostName advHostName",
+"addPath IPv6 Unicast Rx"
+],
+"connection_drop_count": 1,
+"connection_state": "ESTABLISHED",
+"edge_path": "/global-infra/sites/site-a-wld01/enforcement-points/default/edge-clusters/a2225e06-d12a-4b5b-868d-f4805dd57139/edge-nodes/1",
+"established_connection_count": 2,
+"graceful_restart_mode": "DISABLE",
+"hold_time": 3,
+"keep_alive_interval": 1,
+"last_update_timestamp": 1795099027708,
+"local_port": 179,
+"messages_received": 89306,
+"messages_sent": 89301,
+"negotiated_capability": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"IPv6 Unicast",
+"hostName rcvHostName",
+"addPath IPv6 Unicast Rx"
+],
+"neighbor_address": "169.254.32.3",
+"neighbor_edge_node": "/global-infra/sites/site-a-wld01/enforcement-points/default/edge-clusters/a2225e06-d12a-4b5b-868d-f4805dd57139/edge-nodes/0",
+"neighbor_router_id": "192.0.2.12",
+"remote_as_number": "65110",
+"remote_port": 64988,
+"source_address": "169.254.32.4",
+"tier0_path": "/global-infra/tier-0s/fed-t0",
+"time_since_established": 87973,
+"total_in_prefix_count": 37,
+"total_out_prefix_count": 37,
+"type": "INTER_SR"
+}
+]
+},
+"/policy/api/v1/global-infra/tier-0s/fed-t0/locale-services?page_size=500": {
+"result_count": 1,
+"results": [
+{
+"bfd_profile_path": "/global-infra/bfd-profiles/default",
+"display_name": "site-a-wld01",
+"edge_cluster_path": "/global-infra/sites/site-a-wld01/enforcement-points/default/edge-clusters/a2225e06-d12a-4b5b-868d-f4805dd57139",
+"id": "site-a-wld01",
+"marked_for_delete": false,
+"overridden": false,
+"owner_id": "3988c2c1-47cc-9cac-a699-c073485173ca",
+"parent_path": "/global-infra/tier-0s/fed-t0",
+"path": "/global-infra/tier-0s/fed-t0/locale-services/site-a-wld01",
+"realization_id": "d9934207-dc9d-4d1b-1bae-4335ee3fd42e",
+"relative_path": "site-a-wld01",
+"remote_path": "",
+"resource_type": "LocaleServices",
+"route_redistribution_config": {
+"bgp_enabled": true,
+"ospf_enabled": false,
+"redistribution_rules": [
+{
+"destinations": [
+"BGP"
+],
+"name": "t1-connected",
+"route_redistribution_types": [
+"TIER1_CONNECTED",
+"TIER1_STATIC"
+]
+}
+]
+},
+"unique_id": "d9934207-dc9d-4d1b-1bae-4335ee3fd42e"
+}
+],
+"sort_ascending": true,
+"sort_by": "display_name"
+},
+"/policy/api/v1/global-infra/tier-0s?page_size=500": {
+"result_count": 1,
+"results": [
+{
+"advanced_config": {
+"connectivity": "ON",
+"forwarding_up_timer": 5
+},
+"default_rule_logging": false,
+"disable_firewall": true,
+"display_name": "fed-t0",
+"enable_rd_per_edge": false,
+"failover_mode": "NON_PREEMPTIVE",
+"federation_config": {
+"global_overlay_id": 204025,
+"transit_segment_id": "95670968-df41-5c74-bbaf-cafad410334f"
+},
+"force_whitelisting": false,
+"ha_mode": "ACTIVE_ACTIVE",
+"id": "fed-t0",
+"internal_transit_subnets": [
+"169.254.0.0/24"
+],
+"intersite_config": {
+"intersite_transit_subnet": "169.254.32.0/20",
+"last_admin_active_epoch": 1794963617
+},
+"ipv6_profile_paths": [
+"/global-infra/ipv6-ndra-profiles/default",
+"/global-infra/ipv6-dad-profiles/default"
+],
+"marked_for_delete": false,
+"multi_vrf_inter_sr_routing": false,
+"overridden": false,
+"owner_id": "3988c2c1-47cc-9cac-a699-c073485173ca",
+"parent_path": "/global-infra",
+"path": "/global-infra/tier-0s/fed-t0",
+"realization_id": "cb885621-abe5-9eb4-fd65-a12415b008fd",
+"relative_path": "fed-t0",
+"remote_path": "",
+"resource_type": "Tier0",
+"stateful_services": {
+"enabled": false,
+"redirection_policy": "IP_HASH"
+},
+"transit_subnets": [
+"100.64.0.0/16"
+],
+"unique_id": "cb885621-abe5-9eb4-fd65-a12415b008fd",
+"vrf_transit_subnets": [
+"169.254.2.0/23"
+]
+}
+],
+"sort_ascending": true,
+"sort_by": "display_name"
+},
+"/policy/api/v1/infra/full-sync-states?page_size=500": {
+"result_count": 1,
+"results": [
+{
+"display_name": "GM-2-LM-FULL-SYNC",
+"full_sync_id": "GM-2-LM-FULL-SYNC",
+"id": "GM-2-LM-FULL-SYNC",
+"last_completed_stage": "COMPLETED",
+"last_upate_time": 1795092332872,
+"last_update_time": 1795092332872,
+"marked_for_delete": false,
+"overridden": false,
+"owner_id": "6241f0a1-eb90-457d-85b1-3ebc53fb030d",
+"parent_path": "/infra",
+"path": "/infra/full-sync-states/GM-2-LM-FULL-SYNC",
+"realization_id": "79a899ed-0f80-20f6-b524-dbe06923aff0",
+"relative_path": "GM-2-LM-FULL-SYNC",
+"remote_path": "/orgs/default/projects/default/infra/full-sync-states/GM-2-LM-FULL-SYNC--site-a-wld01",
+"resource_type": "FullSyncState",
+"start_time": 1795092317117,
+"unique_id": "79a899ed-0f80-20f6-b524-dbe06923aff0"
+}
+],
+"sort_ascending": true,
+"sort_by": "display_name"
+},
+"/policy/api/v1/infra/sites/default/enforcement-points/default/edge-clusters?page_size=500": {
+"result_count": 1,
+"results": [
+{
+"deployment_type": "VIRTUAL_MACHINE",
+"display_name": "fed-ec-a",
+"edge_cluster_profile": "/infra/sites/default/enforcement-points/default/edge-cluster-high-availability-profiles/c238e591-084a-8e98-6699-de7f12b56d93",
+"id": "a2225e06-d12a-4b5b-868d-f4805dd57139",
+"inter_site_forwarding_enabled": true,
+"marked_for_delete": false,
+"member_node_type": "EDGE_NODE",
+"nsx_id": "a2225e06-d12a-4b5b-868d-f4805dd57139",
+"overridden": false,
+"owner_id": "6241f0a1-eb90-457d-85b1-3ebc53fb030d",
+"parent_path": "/infra/sites/default/enforcement-points/default",
+"password_managed_by_vcf": false,
+"path": "/infra/sites/default/enforcement-points/default/edge-clusters/a2225e06-d12a-4b5b-868d-f4805dd57139",
+"policy_edge_nodes": [
+{
+"edge_transport_node_path": "/infra/sites/default/enforcement-points/default/edge-transport-nodes/edge-wld01-02a",
+"id": "0",
+"member_index": 0,
+"policy_edge_node_path": "/infra/sites/default/enforcement-points/default/edge-clusters/a2225e06-d12a-4b5b-868d-f4805dd57139/edge-nodes/0"
+},
+{
+"edge_transport_node_path": "/infra/sites/default/enforcement-points/default/edge-transport-nodes/edge-wld01-01a",
+"id": "1",
+"member_index": 1,
+"policy_edge_node_path": "/infra/sites/default/enforcement-points/default/edge-clusters/a2225e06-d12a-4b5b-868d-f4805dd57139/edge-nodes/1"
+}
+],
+"realization_id": "a2225e06-d12a-4b5b-868d-f4805dd57139",
+"relative_path": "a2225e06-d12a-4b5b-868d-f4805dd57139",
+"remote_path": "/orgs/default/projects/default/infra/sites/site-a-wld01/enforcement-points/default/edge-clusters/a2225e06-d12a-4b5b-868d-f4805dd57139",
+"resource_type": "PolicyEdgeCluster",
+"rtep_ips": [
+"192.0.2.15",
+"192.0.2.14"
+],
+"unique_id": "a2225e06-d12a-4b5b-868d-f4805dd57139"
+}
+],
+"sort_ascending": true,
+"sort_by": "display_name"
+}
+},
+"192.0.2.4": {
+"/api/v1/alarms?page_size=500&status=OPEN": {
+"result_count": 1,
+"results": [
+{
+"event_type": "remote_logging_not_configured",
+"feature_name": "logging",
+"id": "5d04c49d-88a5-03e4-8ed9-c26d29e9b4ca",
+"severity": "MEDIUM",
+"status": "OPEN",
+"summary": "Remote logging not configured."
+}
+],
+"sort_ascending": true,
+"sort_by": "_create_time"
+},
+"/api/v1/cluster/backups/overview": {
+"backup_config": {
+"backup_enabled": false,
+"backup_schedule": {
+"resource_type": "IntervalBackupSchedule",
+"seconds_between_backups": 3600
+},
+"inventory_summary_interval": 240,
+"remote_file_server": {
+"port": 22,
+"protocol": {
+"authentication_scheme": {
+"scheme_name": "PASSWORD"
+},
+"protocol_name": "sftp"
+}
+}
+},
+"backup_operation_history": {
+"cluster_backup_statuses": [],
+"inventory_backup_statuses": [],
+"node_backup_statuses": [],
+"overall_backup_status": "NOT_AVAILABLE"
+},
+"current_backup_operation_status": {
+"operation_type": "none"
+},
+"restore_status": {
+"allowed_actions": [],
+"endpoints": [],
+"not_allowed_actions": [],
+"status": {
+"value": "INITIAL"
+}
+},
+"result_count": 0,
+"results": []
+},
+"/api/v1/cluster/status": {
+"cluster_id": "41524980-46ef-c9e8-53e7-0e238f48f128",
+"detailed_cluster_status": {
+"cluster_id": "41524980-46ef-c9e8-53e7-0e238f48f128",
+"groups": [
+{
+"group_id": "6a15cb24-0047-4957-16a0-f1e2347dd32e",
+"group_status": "STABLE",
+"group_type": "DATASTORE",
+"leaders": [],
+"members": [
+{
+"member_fqdn": "nsx-gm-01a.example.test",
+"member_ip": "192.0.2.4",
+"member_status": "UP",
+"member_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b"
+}
+]
+},
+{
+"group_id": "69fb2a92-9776-973f-d302-d61b88f78900",
+"group_status": "STABLE",
+"group_type": "CLUSTER_BOOT_MANAGER",
+"leaders": [
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14189,
+"service_name": "cluster-manager"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-gm-01a.example.test",
+"member_ip": "192.0.2.4",
+"member_status": "UP",
+"member_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b"
+}
+]
+},
+{
+"group_id": "0fb9d679-6960-0c35-b133-f36778ff2c36",
+"group_status": "STABLE",
+"group_type": "MANAGER",
+"leaders": [
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14176,
+"service_name": "LicensingShardingServiceImpl"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14176,
+"service_name": "ShardingMaster"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14181,
+"service_name": "CertificateShardingServiceImpl"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14178,
+"service_name": "NodeStatusPropertiesStreamListenerService"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14176,
+"service_name": "CmStatusEventCallBack"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14180,
+"service_name": "ActivityPurger"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14180,
+"service_name": "ActiveStateStreamListenerService"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14183,
+"service_name": "VidbMaintainer"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14176,
+"service_name": "RemoteLoggingServerCheckService"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-gm-01a.example.test",
+"member_ip": "192.0.2.4",
+"member_status": "UP",
+"member_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b"
+}
+]
+},
+{
+"group_id": "e2f381d6-b5c7-e0cc-94ac-3cc1f699788e",
+"group_status": "STABLE",
+"group_type": "HTTPS",
+"leaders": [
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14190,
+"service_name": "api"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-gm-01a.example.test",
+"member_ip": "192.0.2.4",
+"member_status": "UP",
+"member_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b"
+}
+]
+},
+{
+"group_id": "dd4016ec-5da0-4669-c2d0-00c9e2e59fa0",
+"group_status": "STABLE",
+"group_type": "SITE_MANAGER",
+"leaders": [
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14235,
+"service_name": "site-manager"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-gm-01a.example.test",
+"member_ip": "192.0.2.4",
+"member_status": "UP",
+"member_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b"
+}
+]
+},
+{
+"group_id": "939d8c4d-858a-c8ed-ee42-0ae56512ee0f",
+"group_status": "STABLE",
+"group_type": "MONITORING",
+"leaders": [
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14204,
+"service_name": "monitoring"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14204,
+"service_name": "CoordinatedDataCollectionLeader"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14204,
+"service_name": "ShardingMaster"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-gm-01a.example.test",
+"member_ip": "192.0.2.4",
+"member_status": "UP",
+"member_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b"
+}
+]
+},
+{
+"group_id": "c7b5700a-06bb-7318-662a-67f7333d0930",
+"group_status": "STABLE",
+"group_type": "GLOBAL_MANAGER",
+"leaders": [
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14146,
+"service_name": "GLOBAL_DFW_CONFIG_CREATION_TASK"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14150,
+"service_name": "UPGRADE-CONSISTENCY-CHECK-POLICY-RESOURCE-CONSUMER-SERVICE"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14150,
+"service_name": "POLICY_IPAM_ALARM_LEADERSHIP_LISTENER_SERVICE"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14156,
+"service_name": "ActivityPurger"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14146,
+"service_name": "LbAlarmShardingServiceImpl"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14153,
+"service_name": "POLICY_SVC_INITIALIZER"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14146,
+"service_name": "POLICY-INTENT-CLEANUP-SERVICE"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14153,
+"service_name": "GM_OPERATIONAL_STATE"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14149,
+"service_name": "GM_DELETE_PROCESSOR_SERVICE-5"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14154,
+"service_name": "GM_CONFIG_ONBOARDING_SERVICE"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14149,
+"service_name": "REF_OBJECT_CLEANUP_TASK"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14149,
+"service_name": "GM_DELETE_PROCESSOR_SERVICE-4"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14154,
+"service_name": "VidbMaintainer"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14148,
+"service_name": "POLICY_PURGE_TASK_INITIALIZER"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14154,
+"service_name": "LicensingShardingServiceImpl"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14151,
+"service_name": "IDS_AUTO_DOWNLOAD_TASK"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14148,
+"service_name": "QuartzSetupServiceImpl"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14153,
+"service_name": "GM_DELETE_PROCESSOR_SERVICE-3"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14151,
+"service_name": "GM_BROKER_SERVICE"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14159,
+"service_name": "ENFORCEMENT_POINT_RELOAD_TASK"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14149,
+"service_name": "GM-NOTIFICATION-MANAGER"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14152,
+"service_name": "GM_DELETE_PROCESSOR_SERVICE-2"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14154,
+"service_name": "AUTO_DRAFT_PURGE_TASK"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14152,
+"service_name": "GM_DELETE_PROCESSOR_SERVICE-1"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14150,
+"service_name": "ShardingMaster"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14146,
+"service_name": "IDS_PCAP_TASK"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14154,
+"service_name": "CertificateShardingServiceImpl"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-gm-01a.example.test",
+"member_ip": "192.0.2.4",
+"member_status": "UP",
+"member_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b"
+}
+]
+},
+{
+"group_id": "99fc4a18-1553-149a-bbb5-3f3b5186c63c",
+"group_status": "STABLE",
+"group_type": "CM-INVENTORY",
+"leaders": [
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14197,
+"service_name": "ShardingMaster"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-gm-01a.example.test",
+"member_ip": "192.0.2.4",
+"member_status": "UP",
+"member_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b"
+}
+]
+},
+{
+"group_id": "e2a6b38a-51d5-1692-1b63-33e36861972c",
+"group_status": "STABLE",
+"group_type": "MESSAGING-MANAGER",
+"leaders": [
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14238,
+"service_name": "messaging-manager"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-gm-01a.example.test",
+"member_ip": "192.0.2.4",
+"member_status": "UP",
+"member_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b"
+}
+]
+},
+{
+"group_id": "06b461af-fcac-5090-f22a-0ad68740545e",
+"group_status": "STABLE",
+"group_type": "ASYNC_REPLICATOR",
+"leaders": [
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14229,
+"service_name": "ShardingMaster"
+},
+{
+"leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"lease_version": 14226,
+"service_name": "ArAlarmService"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-gm-01a.example.test",
+"member_ip": "192.0.2.4",
+"member_status": "UP",
+"member_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b"
+}
+]
+}
+],
+"overall_status": "STABLE"
+},
+"mgmt_cluster_status": {
+"offline_nodes": [],
+"online_nodes": [
+{
+"mgmt_cluster_listen_ip_address": "192.0.2.4",
+"uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b"
+}
+],
+"status": "STABLE"
+}
+},
+"/api/v1/sites": {
+"epoch": 4,
+"id": "5de412d9-e962-06d7-c23c-a08d35c8c938",
+"is_saas": false,
+"is_vmsp": false,
+"sites": [
+{
+"active_gm": "ACTIVE",
+"aph_list": [
+{
+"address": "192.0.2.4",
+"certificate": "",
+"fqdn": "nsx-gm-01a.example.test",
+"ipv6_address": "",
+"node_id": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"port": 1236,
+"use_fqdn": false,
+"uuid": "915d38e3-0779-51b6-25c9-1fd49cee54ab"
+}
+],
+"cert_hash": "88e05e49ce023917fb300499007658c8eb89570193d419a53e6f51365497d8d8",
+"cluster_id": "41524980-46ef-c9e8-53e7-0e238f48f128",
+"config_version": 10,
+"export_type": "unrestricted",
+"grpc_info": [],
+"id": "3988c2c1-47cc-9cac-a699-c073485173ca",
+"is_federated": false,
+"is_grpc_capable": false,
+"is_local": true,
+"name": "gm-site-a",
+"node_type": "GM",
+"site_version": "9.1.1.0100.25762940",
+"split_brain": false,
+"system_id": 0,
+"trust_manager_cert": "omitted",
+"vip_ip": "0.0.0.0"
+},
+{
+"active_gm": "NONE",
+"aph_list": [
+{
+"address": "192.0.2.7",
+"certificate": "",
+"fqdn": "nsx-shared-01a.example.test",
+"ipv6_address": "",
+"node_id": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"port": 1236,
+"use_fqdn": false,
+"uuid": "2336ef12-9b94-a33e-401c-a520a8ab79b7"
+}
+],
+"cert_hash": "3d1710fcf1d632d2f1a21028a14f875920588221f458e80e9116e73bc692906e",
+"cluster_id": "09bf7bee-88e4-ee8d-13e3-131260a80662",
+"config_version": 9,
+"export_type": "unrestricted",
+"grpc_info": [],
+"id": "50adcaea-7448-8f66-da51-251459b09927",
+"is_federated": true,
+"is_grpc_capable": false,
+"is_local": false,
+"name": "site-a-wld03",
+"node_type": "LM",
+"site_version": "9.1.1.0.25691509",
+"split_brain": false,
+"system_id": 0,
+"trust_manager_cert": "omitted",
+"vip_ip": "192.0.2.6"
+},
+{
+"active_gm": "NONE",
+"aph_list": [
+{
+"address": "192.0.2.3",
+"certificate": "",
+"fqdn": "nsx-wld01-01a.example.test",
+"ipv6_address": "",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"port": 1236,
+"use_fqdn": false,
+"uuid": "7ba5ca76-f4f1-41cb-24a9-f0b85867b07b"
+}
+],
+"cert_hash": "caff5b67c9d8cd54ae43cb6ab112335abef3dc14704e8536589374452ae52960",
+"cluster_id": "6a5b34d0-23d0-a6a9-29c1-6eefbe51c932",
+"config_version": 10,
+"export_type": "unrestricted",
+"grpc_info": [],
+"id": "6241f0a1-eb90-457d-85b1-3ebc53fb030d",
+"is_federated": true,
+"is_grpc_capable": false,
+"is_local": false,
+"name": "site-a-wld01",
+"node_type": "LM",
+"site_version": "9.1.1.0.25691509",
+"split_brain": false,
+"system_id": 0,
+"trust_manager_cert": "omitted",
+"vip_ip": "192.0.2.2"
+},
+{
+"active_gm": "STANDBY",
+"aph_list": [
+{
+"address": "192.0.2.5",
+"certificate": "",
+"fqdn": "nsx-gm-01b.example.test",
+"ipv6_address": "",
+"node_id": "72b34481-fb66-68cb-d83f-effab90784dc",
+"port": 1236,
+"use_fqdn": false,
+"uuid": "5716ff38-012e-de7c-29a9-1803690b8eeb"
+}
+],
+"cert_hash": "677ae3c0d3feff83eca7f471f475c55c03a69ba2e3dd2b5d1fd978430c5691c6",
+"cluster_id": "7ea6e2da-02df-7ca1-d171-91febd41ded7",
+"config_version": 7,
+"export_type": "unrestricted",
+"grpc_info": [],
+"id": "f32a55eb-7fe3-c37e-b20e-19ddec40da65",
+"is_federated": false,
+"is_grpc_capable": false,
+"is_local": false,
+"name": "gm-site-b",
+"node_type": "GM",
+"site_version": "9.1.1.0100.25762940",
+"split_brain": false,
+"system_id": 0,
+"trust_manager_cert": "omitted",
+"vip_ip": "0.0.0.0"
+}
+],
+"timestamp": 19
+},
+"/api/v1/sites/self": {
+"epoch": 4,
+"id": "5de412d9-e962-06d7-c23c-a08d35c8c938",
+"is_saas": false,
+"is_vmsp": false,
+"site": {
+"active_gm": "ACTIVE",
+"aph_list": [
+{
+"address": "192.0.2.4",
+"certificate": "",
+"fqdn": "nsx-gm-01a.example.test",
+"ipv6_address": "",
+"node_id": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"port": 1236,
+"use_fqdn": false,
+"uuid": "915d38e3-0779-51b6-25c9-1fd49cee54ab"
+}
+],
+"cert_hash": "88e05e49ce023917fb300499007658c8eb89570193d419a53e6f51365497d8d8",
+"cluster_id": "41524980-46ef-c9e8-53e7-0e238f48f128",
+"config_version": 10,
+"export_type": "unrestricted",
+"grpc_info": [],
+"id": "3988c2c1-47cc-9cac-a699-c073485173ca",
+"is_federated": false,
+"is_grpc_capable": false,
+"is_local": false,
+"name": "gm-site-a",
+"node_type": "GM",
+"site_version": "9.1.1.0100.25762940",
+"split_brain": false,
+"system_id": 0,
+"trust_manager_cert": "omitted",
+"vip_ip": "0.0.0.0"
+}
+},
+"/api/v1/sites/status": {
+"active_standby_sync_statuses": [
+{
+"full_sync_status": {
+"completed_at": "seconds: 1795092255\nnanos: 209449526\n",
+"snapshot_version": "2506732",
+"status": "COMPLETE",
+"sync_id": "3137e516-19d1-ff81-c387-aba5ce8a043f",
+"sync_type": "STANDARD"
+},
+"is_data_consistent": false,
+"percentage_completed": 100,
+"remaining_entries_to_send": 0,
+"standby_site": "gm-site-b",
+"status": "ONGOING",
+"sync_type": "DELTA_SYNC"
+}
+],
+"remote_connections": [
+{
+"site_name": "site-a-wld03",
+"stubs": [
+{
+"address": "192.0.2.7",
+"connection_up": true
+}
+]
+},
+{
+"site_name": "site-a-wld01",
+"stubs": [
+{
+"address": "192.0.2.3",
+"connection_up": true
+}
+]
+},
+{
+"site_name": "gm-site-b",
+"stubs": [
+{
+"address": "192.0.2.5",
+"connection_up": true
+}
+]
+}
+]
+},
+"/api/v1/sites/switchover-status": {
+"current_step": {
+"name": "Switchover Complete",
+"parts": [
+{
+"error": "",
+"name": "switch_step_6_name",
+"percentage": 100,
+"status": "COMPLETE"
+}
+]
+},
+"current_step_number": 6,
+"note": "",
+"number_of_steps": 6,
+"overall_status": "COMPLETE"
+},
+"/api/v1/trust-management/certificates?details=true&page_size=500": {
+"result_count": 13,
+"results": [
+{
+"details": [
+{
+"not_after": 1866164669000,
+"subject_cn": "cluster-nsx-gm-01a.example.test"
+}
+],
+"display_name": "MGMT_CLUSTER site 3988c2c1-47cc-9cac-a699-c073485173ca",
+"id": "e939065f-cc5b-53c0-7401-2611666a7e97"
+},
+{
+"details": [
+{
+"not_after": 2110244647000,
+"subject_cn": "VMware-NSX-ApplProxyHub-CCP"
+}
+],
+"display_name": "APH_TN node 6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"id": "e9e27c69-2c90-f55f-e014-b274b78a32bf"
+},
+{
+"details": [
+{
+"not_after": 4948484660000,
+"subject_cn": "cluster-manager"
+}
+],
+"display_name": "CBM_CLUSTER_MANAGER node 6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"id": "0aa11af3-dc5e-b584-a65f-f8a7dadc6166"
+},
+{
+"details": [
+{
+"not_after": 4948484676000,
+"subject_cn": "corfu"
+}
+],
+"display_name": "CBM_CORFU node 6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"id": "945e9af3-ef32-3b60-7156-faf4c5a2265d"
+},
+{
+"details": [
+{
+"not_after": 2110245160000,
+"subject_cn": "global-manager"
+}
+],
+"display_name": "GlobalManager",
+"id": "58d75706-c129-a1a0-038c-b26ae0ed415f"
+},
+{
+"details": [
+{
+"not_after": 2105944825000,
+"subject_cn": "local-manager"
+}
+],
+"display_name": "6c3808de-73fe-ec68-71a8-f9ac5b2e3638",
+"id": "6c3808de-73fe-ec68-71a8-f9ac5b2e3638"
+},
+{
+"details": [
+{
+"not_after": 2105627647000,
+"subject_cn": "CA"
+}
+],
+"display_name": "Site certificate OU=VMware Engineering,O=vc-mgmt-a.example.test,ST=California,C=US,DC=local,DC=vsphere,CN=CA",
+"id": "3ebd62f5-0b77-f82d-6637-f506d4ea61f7"
+},
+{
+"details": [
+{
+"not_after": 2105944480000,
+"subject_cn": "VMware-NSX-ApplProxyHub-CCP"
+}
+],
+"display_name": "Site certificate UID=7ba5ca76-f4f1-41cb-24a9-f0b85867b07b,CN=VMware-NSX-ApplProxyHub-CCP,1.2.840.113549.1.9.1=#161b73736c2d63657274696669636174657340766d776172652e636f6d,O=VMware\\, Inc.,L=Palo Alto,ST=California,C=US",
+"id": "38480f9b-8eef-a001-cdb2-0e1c5644c17c"
+},
+{
+"details": [
+{
+"not_after": 2110294571000,
+"subject_cn": "local-manager"
+}
+],
+"display_name": "0b43ed71-24ba-14de-957a-a6e2f89dbbc7",
+"id": "0b43ed71-24ba-14de-957a-a6e2f89dbbc7"
+},
+{
+"details": [
+{
+"not_after": 2110293769000,
+"subject_cn": "VMware-NSX-ApplProxyHub-CCP"
+}
+],
+"display_name": "Site certificate UID=2336ef12-9b94-a33e-401c-a520a8ab79b7,CN=VMware-NSX-ApplProxyHub-CCP,1.2.840.113549.1.9.1=#161b73736c2d63657274696669636174657340766d776172652e636f6d,O=VMware\\, Inc.,L=Palo Alto,ST=California,C=US",
+"id": "1727e476-f197-43e0-fd62-4c2297b0b0e6"
+},
+{
+"details": [
+{
+"not_after": 2110417943000,
+"subject_cn": "global-manager"
+}
+],
+"display_name": "8ed6305a-3ecb-3034-324e-cddd0869033a",
+"id": "8ed6305a-3ecb-3034-324e-cddd0869033a"
+},
+{
+"details": [
+{
+"not_after": 2110417571000,
+"subject_cn": "VMware-NSX-ApplProxyHub-CCP"
+}
+],
+"display_name": "Site certificate UID=5716ff38-012e-de7c-29a9-1803690b8eeb,CN=VMware-NSX-ApplProxyHub-CCP,1.2.840.113549.1.9.1=#161b73736c2d63657274696669636174657340766d776172652e636f6d,O=VMware\\, Inc.,L=Palo Alto,ST=California,C=US",
+"id": "061139e0-3b5c-d0b9-2652-882a0cd9df5b"
+},
+{
+"details": [
+{
+"not_after": 1866337588000,
+"subject_cn": "cluster-nsx-gm-01b.example.test"
+}
+],
+"display_name": "Site certificate C=US,ST=CA,L=Palo Alto,O=VMware Inc.,OU=NSX,CN=cluster-nsx-gm-01b.example.test",
+"id": "58762b56-441e-1b48-65df-ecda09731f63"
+}
+]
+},
+"/global-manager/api/v1/global-infra/domains/default/security-policies/fed-demo": {
+"category": "Application",
+"display_name": "fed-demo",
+"id": "fed-demo",
+"internal_sequence_number": 50000000,
+"is_default": false,
+"lock_modified_time": 0,
+"locked": false,
+"logging_enabled": false,
+"marked_for_delete": false,
+"overridden": false,
+"owner_id": "3988c2c1-47cc-9cac-a699-c073485173ca",
+"parent_path": "/global-infra/domains/default",
+"path": "/global-infra/domains/default/security-policies/fed-demo",
+"relative_path": "fed-demo",
+"remote_path": "",
+"resource_type": "SecurityPolicy",
+"rule_count": 1,
+"rules": [
+{
+"action": "DROP",
+"destination_groups": [
+"/global-infra/domains/default/groups/fed-vm-str-b"
+],
+"destinations_excluded": false,
+"direction": "IN_OUT",
+"disabled": true,
+"display_name": "deny-icmp-a-to-b",
+"id": "deny-icmp-a-to-b",
+"ip_protocol": "IPV4_IPV6",
+"is_default": false,
+"logged": true,
+"marked_for_delete": false,
+"overridden": false,
+"owner_id": "3988c2c1-47cc-9cac-a699-c073485173ca",
+"parent_path": "/global-infra/domains/default/security-policies/fed-demo",
+"path": "/global-infra/domains/default/security-policies/fed-demo/rules/deny-icmp-a-to-b",
+"profiles": [
+"ANY"
+],
+"relative_path": "deny-icmp-a-to-b",
+"remote_path": "",
+"resource_type": "Rule",
+"rule_id": 1000004,
+"scope": [
+"ANY"
+],
+"sequence_number": 10,
+"services": [
+"/global-infra/services/ICMP-ALL"
+],
+"source_groups": [
+"/global-infra/domains/default/groups/fed-vm-str-a"
+],
+"sources_excluded": false,
+"unique_id": "32c4193f-5228-66ee-a593-3cdf4aae95da"
+}
+],
+"scope": [
+"ANY"
+],
+"sequence_number": 0,
+"stateful": true,
+"target_type": "DFW",
+"tcp_strict": true,
+"unique_id": "55611de7-c4aa-04df-03a1-ab8a6dfb7b0f"
+},
+"/global-manager/api/v1/global-infra/domains/default/security-policies?page_size=500": {
+"result_count": 2,
+"results": [
+{
+"category": "Infrastructure",
+"display_name": "Global Default Malicious IP Block Rules",
+"id": "default-malicious-ip-block-rules",
+"internal_sequence_number": 9999998,
+"is_default": true,
+"lock_modified_time": 0,
+"locked": false,
+"logging_enabled": false,
+"marked_for_delete": false,
+"overridden": false,
+"owner_id": "3988c2c1-47cc-9cac-a699-c073485173ca",
+"parent_path": "/global-infra/domains/default",
+"path": "/global-infra/domains/default/security-policies/default-malicious-ip-block-rules",
+"relative_path": "default-malicious-ip-block-rules",
+"remote_path": "",
+"resource_type": "SecurityPolicy",
+"scope": [
+"ANY"
+],
+"sequence_number": 9999998,
+"stateful": true,
+"tcp_strict": false,
+"unique_id": "5c33bfbe-e9c6-fe4c-a360-48c0c43d98b4"
+},
+{
+"category": "Application",
+"display_name": "fed-demo",
+"id": "fed-demo",
+"internal_sequence_number": 50000000,
+"is_default": false,
+"lock_modified_time": 0,
+"locked": false,
+"logging_enabled": false,
+"marked_for_delete": false,
+"overridden": false,
+"owner_id": "3988c2c1-47cc-9cac-a699-c073485173ca",
+"parent_path": "/global-infra/domains/default",
+"path": "/global-infra/domains/default/security-policies/fed-demo",
+"relative_path": "fed-demo",
+"remote_path": "",
+"resource_type": "SecurityPolicy",
+"scope": [
+"ANY"
+],
+"sequence_number": 0,
+"stateful": true,
+"target_type": "DFW",
+"tcp_strict": true,
+"unique_id": "55611de7-c4aa-04df-03a1-ab8a6dfb7b0f"
+}
+],
+"sort_ascending": true,
+"sort_by": "internal_sequence_number"
+},
+"/global-manager/api/v1/global-infra/domains/site-a-wld01/security-policies?page_size=500": {
+"result_count": 0,
+"results": [],
+"sort_ascending": true,
+"sort_by": "internal_sequence_number"
+},
+"/global-manager/api/v1/global-infra/domains/site-a-wld03/security-policies?page_size=500": {
+"result_count": 0,
+"results": [],
+"sort_ascending": true,
+"sort_by": "internal_sequence_number"
+},
+"/global-manager/api/v1/global-infra/domains?page_size=500": {
+"result_count": 3,
+"results": [
+{
+"display_name": "Global",
+"id": "default",
+"marked_for_delete": false,
+"overridden": false,
+"owner_id": "3988c2c1-47cc-9cac-a699-c073485173ca",
+"parent_path": "/global-infra",
+"path": "/global-infra/domains/default",
+"relative_path": "default",
+"remote_path": "",
+"resource_type": "Domain",
+"unique_id": "318f2b0f-5baf-59e8-6bd0-d20f4321c37a"
+},
+{
+"display_name": "site-a-wld01",
+"id": "site-a-wld01",
+"marked_for_delete": false,
+"overridden": false,
+"owner_id": "3988c2c1-47cc-9cac-a699-c073485173ca",
+"parent_path": "/global-infra",
+"path": "/global-infra/domains/site-a-wld01",
+"relative_path": "site-a-wld01",
+"remote_path": "",
+"resource_type": "Domain",
+"unique_id": "56e4894b-be9d-aa79-8f62-1df4e218d7cb"
+},
+{
+"display_name": "site-a-wld03",
+"id": "site-a-wld03",
+"marked_for_delete": false,
+"overridden": false,
+"owner_id": "3988c2c1-47cc-9cac-a699-c073485173ca",
+"parent_path": "/global-infra",
+"path": "/global-infra/domains/site-a-wld03",
+"relative_path": "site-a-wld03",
+"remote_path": "",
+"resource_type": "Domain",
+"unique_id": "ddcbf382-2946-c6c2-d47f-659e8488ff4e"
+}
+],
+"sort_ascending": true,
+"sort_by": "display_name"
+},
+"/global-manager/api/v1/global-infra/federation-config": {
+"site_config": [
+{
+"rtep_ips": [
+"192.0.2.15",
+"192.0.2.14"
+],
+"site_id": "6241f0a1-eb90-457d-85b1-3ebc53fb030d",
+"site_index": 1,
+"site_path": "/global-infra/sites/site-a-wld01"
+},
+{
+"rtep_ips": [
+"192.0.2.16",
+"192.0.2.17"
+],
+"site_id": "50adcaea-7448-8f66-da51-251459b09927",
+"site_index": 2,
+"site_path": "/global-infra/sites/site-a-wld03"
+}
+]
+},
+"/global-manager/api/v1/global-infra/global-managers?page_size=500": {
+"result_count": 2,
+"results": [
+{
+"connection_info": [],
+"display_name": "gm-site-a",
+"fail_if_rtt_exceeded": true,
+"federation_id": "5de412d9-e962-06d7-c23c-a08d35c8c938",
+"id": "gm-site-a",
+"marked_for_delete": false,
+"maximum_rtt": 250,
+"mode": "ACTIVE",
+"overridden": false,
+"owner_id": "3988c2c1-47cc-9cac-a699-c073485173ca",
+"parent_path": "/global-infra",
+"path": "/global-infra/global-managers/gm-site-a",
+"relative_path": "gm-site-a",
+"remote_path": "",
+"resource_type": "GlobalManager",
+"site_id": "3988c2c1-47cc-9cac-a699-c073485173ca",
+"unique_id": "aa5cd85e-7725-37f8-1438-cd00660c627e"
+},
+{
+"connection_info": [],
+"display_name": "gm-site-b",
+"fail_if_rtt_exceeded": true,
+"federation_id": "5de412d9-e962-06d7-c23c-a08d35c8c938",
+"id": "gm-site-b",
+"marked_for_delete": false,
+"maximum_rtt": 250,
+"mode": "STANDBY",
+"overridden": false,
+"owner_id": "3988c2c1-47cc-9cac-a699-c073485173ca",
+"parent_path": "/global-infra",
+"path": "/global-infra/global-managers/gm-site-b",
+"relative_path": "gm-site-b",
+"remote_path": "",
+"resource_type": "GlobalManager",
+"site_id": "f32a55eb-7fe3-c37e-b20e-19ddec40da65",
+"unique_id": "535aba7d-0c51-9d76-1b45-5902e791033c"
+}
+],
+"sort_ascending": true,
+"sort_by": "display_name"
+},
+"/global-manager/api/v1/global-infra/realized-state/status?intent_path=/global-infra/domains/default/security-policies/fed-demo": {
+"consolidated_status": {
+"consolidated_status": "SUCCESS"
+},
+"consolidated_status_per_enforcement_point": [
+{
+"consolidated_status": {
+"consolidated_status": "SUCCESS"
+},
+"enforcement_point_id": "default",
+"resource_type": "ConsolidatedStatusPerEnforcementPoint",
+"site_path": "/global-infra/sites/site-a-wld03"
+},
+{
+"consolidated_status": {
+"consolidated_status": "SUCCESS"
+},
+"enforcement_point_id": "default",
+"resource_type": "ConsolidatedStatusPerEnforcementPoint",
+"site_path": "/global-infra/sites/site-a-wld01"
+}
+],
+"intent_path": "/global-infra/domains/default/security-policies/fed-demo",
+"intent_version": "1",
+"publish_status": "SUCCESS",
+"site_uuid": "83477877-1ffd-e202-1f7f-e06b533c69cd"
+},
+"/global-manager/api/v1/global-infra/realized-state/status?intent_path=/global-infra/segments/fed-local-a": {
+"consolidated_status": {
+"consolidated_status": "SUCCESS"
+},
+"consolidated_status_per_enforcement_point": [
+{
+"consolidated_status": {
+"consolidated_status": "SUCCESS"
+},
+"enforcement_point_id": "default",
+"resource_type": "ConsolidatedStatusPerEnforcementPoint",
+"site_path": "/global-infra/sites/site-a-wld01"
+}
+],
+"intent_path": "/global-infra/segments/fed-local-a",
+"intent_version": "0",
+"publish_status": "SUCCESS",
+"site_uuid": "83477877-1ffd-e202-1f7f-e06b533c69cd"
+},
+"/global-manager/api/v1/global-infra/realized-state/status?intent_path=/global-infra/segments/fed-local-b": {
+"consolidated_status": {
+"consolidated_status": "SUCCESS"
+},
+"consolidated_status_per_enforcement_point": [
+{
+"consolidated_status": {
+"consolidated_status": "SUCCESS"
+},
+"enforcement_point_id": "default",
+"resource_type": "ConsolidatedStatusPerEnforcementPoint",
+"site_path": "/global-infra/sites/site-a-wld03"
+}
+],
+"intent_path": "/global-infra/segments/fed-local-b",
+"intent_version": "0",
+"publish_status": "SUCCESS",
+"site_uuid": "83477877-1ffd-e202-1f7f-e06b533c69cd"
+},
+"/global-manager/api/v1/global-infra/realized-state/status?intent_path=/global-infra/segments/fed-stretched": {
+"consolidated_status": {
+"consolidated_status": "SUCCESS"
+},
+"consolidated_status_per_enforcement_point": [
+{
+"consolidated_status": {
+"consolidated_status": "SUCCESS"
+},
+"enforcement_point_id": "default",
+"resource_type": "ConsolidatedStatusPerEnforcementPoint",
+"site_path": "/global-infra/sites/site-a-wld03"
+},
+{
+"consolidated_status": {
+"consolidated_status": "SUCCESS"
+},
+"enforcement_point_id": "default",
+"resource_type": "ConsolidatedStatusPerEnforcementPoint",
+"site_path": "/global-infra/sites/site-a-wld01"
+}
+],
+"intent_path": "/global-infra/segments/fed-stretched",
+"intent_version": "0",
+"publish_status": "SUCCESS",
+"site_uuid": "83477877-1ffd-e202-1f7f-e06b533c69cd"
+},
+"/global-manager/api/v1/global-infra/realized-state/status?intent_path=/global-infra/segments/fed-uplink-a": {
+"consolidated_status": {
+"consolidated_status": "SUCCESS"
+},
+"consolidated_status_per_enforcement_point": [
+{
+"consolidated_status": {
+"consolidated_status": "SUCCESS"
+},
+"enforcement_point_id": "default",
+"resource_type": "ConsolidatedStatusPerEnforcementPoint",
+"site_path": "/global-infra/sites/site-a-wld01"
+}
+],
+"intent_path": "/global-infra/segments/fed-uplink-a",
+"intent_version": "0",
+"publish_status": "SUCCESS",
+"site_uuid": "83477877-1ffd-e202-1f7f-e06b533c69cd"
+},
+"/global-manager/api/v1/global-infra/realized-state/status?intent_path=/global-infra/segments/fed-uplink-b": {
+"consolidated_status": {
+"consolidated_status": "SUCCESS"
+},
+"consolidated_status_per_enforcement_point": [
+{
+"consolidated_status": {
+"consolidated_status": "SUCCESS"
+},
+"enforcement_point_id": "default",
+"resource_type": "ConsolidatedStatusPerEnforcementPoint",
+"site_path": "/global-infra/sites/site-a-wld03"
+}
+],
+"intent_path": "/global-infra/segments/fed-uplink-b",
+"intent_version": "0",
+"publish_status": "SUCCESS",
+"site_uuid": "83477877-1ffd-e202-1f7f-e06b533c69cd"
+},
+"/global-manager/api/v1/global-infra/realized-state/status?intent_path=/global-infra/tier-0s/fed-t0": {
+"consolidated_status": {
+"consolidated_status": "SUCCESS"
+},
+"consolidated_status_per_enforcement_point": [
+{
+"consolidated_status": {
+"consolidated_status": "SUCCESS"
+},
+"enforcement_point_id": "default",
+"resource_type": "ConsolidatedStatusPerEnforcementPoint",
+"site_path": "/global-infra/sites/site-a-wld03"
+},
+{
+"consolidated_status": {
+"consolidated_status": "SUCCESS"
+},
+"enforcement_point_id": "default",
+"resource_type": "ConsolidatedStatusPerEnforcementPoint",
+"site_path": "/global-infra/sites/site-a-wld01"
+}
+],
+"intent_path": "/global-infra/tier-0s/fed-t0",
+"intent_version": "1",
+"publish_status": "SUCCESS",
+"site_uuid": "83477877-1ffd-e202-1f7f-e06b533c69cd"
+},
+"/global-manager/api/v1/global-infra/realized-state/status?intent_path=/global-infra/tier-1s/fed-t1": {
+"consolidated_status": {
+"consolidated_status": "SUCCESS"
+},
+"consolidated_status_per_enforcement_point": [
+{
+"consolidated_status": {
+"consolidated_status": "SUCCESS"
+},
+"enforcement_point_id": "default",
+"resource_type": "ConsolidatedStatusPerEnforcementPoint",
+"site_path": "/global-infra/sites/site-a-wld03"
+},
+{
+"consolidated_status": {
+"consolidated_status": "SUCCESS"
+},
+"enforcement_point_id": "default",
+"resource_type": "ConsolidatedStatusPerEnforcementPoint",
+"site_path": "/global-infra/sites/site-a-wld01"
+}
+],
+"intent_path": "/global-infra/tier-1s/fed-t1",
+"intent_version": "0",
+"publish_status": "SUCCESS",
+"site_uuid": "83477877-1ffd-e202-1f7f-e06b533c69cd"
+},
+"/global-manager/api/v1/global-infra/realized-state/status?intent_path=/global-infra/tier-1s/fed-t1-a": {
+"consolidated_status": {
+"consolidated_status": "SUCCESS"
+},
+"consolidated_status_per_enforcement_point": [
+{
+"consolidated_status": {
+"consolidated_status": "SUCCESS"
+},
+"enforcement_point_id": "default",
+"resource_type": "ConsolidatedStatusPerEnforcementPoint",
+"site_path": "/global-infra/sites/site-a-wld01"
+}
+],
+"intent_path": "/global-infra/tier-1s/fed-t1-a",
+"intent_version": "0",
+"publish_status": "SUCCESS",
+"site_uuid": "83477877-1ffd-e202-1f7f-e06b533c69cd"
+},
+"/global-manager/api/v1/global-infra/realized-state/status?intent_path=/global-infra/tier-1s/fed-t1-b": {
+"consolidated_status": {
+"consolidated_status": "SUCCESS"
+},
+"consolidated_status_per_enforcement_point": [
+{
+"consolidated_status": {
+"consolidated_status": "SUCCESS"
+},
+"enforcement_point_id": "default",
+"resource_type": "ConsolidatedStatusPerEnforcementPoint",
+"site_path": "/global-infra/sites/site-a-wld03"
+}
+],
+"intent_path": "/global-infra/tier-1s/fed-t1-b",
+"intent_version": "0",
+"publish_status": "SUCCESS",
+"site_uuid": "83477877-1ffd-e202-1f7f-e06b533c69cd"
+},
+"/global-manager/api/v1/global-infra/segments?page_size=500": {
+"result_count": 5,
+"results": [
+{
+"admin_state": "UP",
+"advanced_config": {
+"connectivity": "ON",
+"hybrid": false,
+"inter_router": false,
+"local_egress": false,
+"multicast": true,
+"urpf_mode": "STRICT"
+},
+"connectivity_path": "/global-infra/tier-1s/fed-t1-a",
+"display_name": "fed-local-a",
+"federation_config": {
+"global_overlay_id": 226553
+},
+"id": "fed-local-a",
+"marked_for_delete": false,
+"overridden": false,
+"owner_id": "3988c2c1-47cc-9cac-a699-c073485173ca",
+"parent_path": "/global-infra",
+"path": "/global-infra/segments/fed-local-a",
+"relative_path": "fed-local-a",
+"remote_path": "",
+"replication_mode": "MTEP",
+"resource_type": "Segment",
+"subnets": [
+{
+"gateway_address": "172.30.11.1/24",
+"network": "172.30.11.0/24"
+}
+],
+"type": "ROUTED",
+"unique_id": "4449c755-237b-531c-c6f1-eedd871cb1e7"
+},
+{
+"admin_state": "UP",
+"advanced_config": {
+"connectivity": "ON",
+"hybrid": false,
+"inter_router": false,
+"local_egress": false,
+"multicast": true,
+"urpf_mode": "STRICT"
+},
+"connectivity_path": "/global-infra/tier-1s/fed-t1-b",
+"display_name": "fed-local-b",
+"federation_config": {
+"global_overlay_id": 179449
+},
+"id": "fed-local-b",
+"marked_for_delete": false,
+"overridden": false,
+"owner_id": "3988c2c1-47cc-9cac-a699-c073485173ca",
+"parent_path": "/global-infra",
+"path": "/global-infra/segments/fed-local-b",
+"relative_path": "fed-local-b",
+"remote_path": "",
+"replication_mode": "MTEP",
+"resource_type": "Segment",
+"subnets": [
+{
+"gateway_address": "172.30.12.1/24",
+"network": "172.30.12.0/24"
+}
+],
+"type": "ROUTED",
+"unique_id": "3abd9ce4-f136-c929-1f70-dc70c0ba4260"
+},
+{
+"admin_state": "UP",
+"advanced_config": {
+"connectivity": "ON",
+"hybrid": false,
+"inter_router": false,
+"local_egress": false,
+"multicast": true,
+"urpf_mode": "STRICT"
+},
+"connectivity_path": "/global-infra/tier-1s/fed-t1",
+"display_name": "fed-stretched",
+"federation_config": {
+"global_overlay_id": 258297
+},
+"id": "fed-stretched",
+"marked_for_delete": false,
+"overridden": false,
+"owner_id": "3988c2c1-47cc-9cac-a699-c073485173ca",
+"parent_path": "/global-infra",
+"path": "/global-infra/segments/fed-stretched",
+"relative_path": "fed-stretched",
+"remote_path": "",
+"replication_mode": "MTEP",
+"resource_type": "Segment",
+"subnets": [
+{
+"gateway_address": "172.30.10.1/24",
+"network": "172.30.10.0/24"
+}
+],
+"type": "ROUTED",
+"unique_id": "e0406182-1e58-9775-c6ad-60d455fa9089"
+},
+{
+"admin_state": "UP",
+"advanced_config": {
+"connectivity": "ON",
+"hybrid": false,
+"inter_router": false,
+"local_egress": false,
+"multicast": true,
+"urpf_mode": "STRICT"
+},
+"display_name": "fed-uplink-a",
+"federation_config": {
+"global_overlay_id": 368889
+},
+"id": "fed-uplink-a",
+"marked_for_delete": false,
+"overridden": false,
+"owner_id": "3988c2c1-47cc-9cac-a699-c073485173ca",
+"parent_path": "/global-infra",
+"path": "/global-infra/segments/fed-uplink-a",
+"relative_path": "fed-uplink-a",
+"remote_path": "",
+"replication_mode": "MTEP",
+"resource_type": "Segment",
+"transport_zone_path": "/global-infra/sites/site-a-wld01/enforcement-points/default/transport-zones/6f931c78-4165-141b-6248-59ff85deaddc",
+"type": "DISCONNECTED",
+"unique_id": "9b2e2bfe-a153-cfdc-dc3b-f975a9c56375",
+"vlan_ids": [
+"19"
+]
+},
+{
+"admin_state": "UP",
+"advanced_config": {
+"connectivity": "ON",
+"hybrid": false,
+"inter_router": false,
+"local_egress": false,
+"multicast": true,
+"urpf_mode": "STRICT"
+},
+"display_name": "fed-uplink-b",
+"federation_config": {
+"global_overlay_id": 140537
+},
+"id": "fed-uplink-b",
+"marked_for_delete": false,
+"overridden": false,
+"owner_id": "3988c2c1-47cc-9cac-a699-c073485173ca",
+"parent_path": "/global-infra",
+"path": "/global-infra/segments/fed-uplink-b",
+"relative_path": "fed-uplink-b",
+"remote_path": "",
+"replication_mode": "MTEP",
+"resource_type": "Segment",
+"transport_zone_path": "/global-infra/sites/site-a-wld03/enforcement-points/default/transport-zones/6f931c78-4165-141b-6248-59ff85deaddc",
+"type": "DISCONNECTED",
+"unique_id": "fd82221e-b397-8759-9cc4-e7a0c592e03f",
+"vlan_ids": [
+"20"
+]
+}
+],
+"sort_ascending": true,
+"sort_by": "display_name"
+},
+"/global-manager/api/v1/global-infra/sites?page_size=500": {
+"result_count": 2,
+"results": [
+{
+"display_name": "site-a-wld01",
+"fail_if_rtep_misconfigured": true,
+"fail_if_rtt_exceeded": true,
+"id": "site-a-wld01",
+"marked_for_delete": false,
+"maximum_rtt": 250,
+"overridden": false,
+"owner_id": "3988c2c1-47cc-9cac-a699-c073485173ca",
+"parent_path": "/global-infra",
+"path": "/global-infra/sites/site-a-wld01",
+"relative_path": "site-a-wld01",
+"remote_path": "",
+"resource_type": "Site",
+"site_connection_info": [
+{
+"fqdn": "192.0.2.2",
+"thumbprint": "bd149870096ddbf99ae47907377ddeb71fa5cd994f1a1ae48e3562ca94102367",
+"username": "admin"
+}
+],
+"site_number": 1,
+"unique_id": "6241f0a1-eb90-457d-85b1-3ebc53fb030d"
+},
+{
+"display_name": "site-a-wld03",
+"fail_if_rtep_misconfigured": true,
+"fail_if_rtt_exceeded": true,
+"id": "site-a-wld03",
+"marked_for_delete": false,
+"maximum_rtt": 250,
+"overridden": false,
+"owner_id": "3988c2c1-47cc-9cac-a699-c073485173ca",
+"parent_path": "/global-infra",
+"path": "/global-infra/sites/site-a-wld03",
+"relative_path": "site-a-wld03",
+"remote_path": "",
+"resource_type": "Site",
+"site_connection_info": [
+{
+"fqdn": "192.0.2.6",
+"thumbprint": "68b177ca0022efea1a230a71dfdb3072f15b0c2f1de0d8130016900233a9db01",
+"username": "admin"
+}
+],
+"site_number": 2,
+"unique_id": "50adcaea-7448-8f66-da51-251459b09927"
+}
+],
+"sort_ascending": true,
+"sort_by": "display_name"
+},
+"/global-manager/api/v1/global-infra/tier-0s?page_size=500": {
+"result_count": 1,
+"results": [
+{
+"advanced_config": {
+"connectivity": "ON",
+"forwarding_up_timer": 5
+},
+"default_rule_logging": false,
+"disable_firewall": true,
+"display_name": "fed-t0",
+"enable_rd_per_edge": false,
+"failover_mode": "NON_PREEMPTIVE",
+"federation_config": {
+"global_overlay_id": 204025,
+"transit_segment_id": "95670968-df41-5c74-bbaf-cafad410334f"
+},
+"force_whitelisting": false,
+"ha_mode": "ACTIVE_ACTIVE",
+"id": "fed-t0",
+"internal_transit_subnets": [
+"169.254.0.0/24"
+],
+"intersite_config": {
+"intersite_transit_subnet": "169.254.32.0/20",
+"last_admin_active_epoch": 1794963617
+},
+"ipv6_profile_paths": [
+"/global-infra/ipv6-ndra-profiles/default",
+"/global-infra/ipv6-dad-profiles/default"
+],
+"marked_for_delete": false,
+"multi_vrf_inter_sr_routing": false,
+"overridden": false,
+"owner_id": "3988c2c1-47cc-9cac-a699-c073485173ca",
+"parent_path": "/global-infra",
+"path": "/global-infra/tier-0s/fed-t0",
+"relative_path": "fed-t0",
+"remote_path": "",
+"resource_type": "Tier0",
+"stateful_services": {
+"enabled": false,
+"redirection_policy": "IP_HASH"
+},
+"transit_subnets": [
+"100.64.0.0/16"
+],
+"unique_id": "cb885621-abe5-9eb4-fd65-a12415b008fd",
+"vrf_transit_subnets": [
+"169.254.2.0/23"
+]
+}
+],
+"sort_ascending": true,
+"sort_by": "display_name"
+},
+"/global-manager/api/v1/global-infra/tier-1s?page_size=500": {
+"result_count": 3,
+"results": [
+{
+"advanced_config": {
+"centralized_mode_enabled": false,
+"traffic_back_to_source": false
+},
+"default_rule_logging": false,
+"disable_firewall": true,
+"display_name": "fed-t1",
+"enable_standby_relocation": false,
+"failover_mode": "NON_PREEMPTIVE",
+"federation_config": {
+"global_overlay_id": 364793,
+"transit_segment_id": "163deeb2-8f3d-7a0a-dd0b-b23747f66e67"
+},
+"force_whitelisting": false,
+"id": "fed-t1",
+"intersite_config": {
+"intersite_transit_subnet": "169.254.32.0/20",
+"last_admin_active_epoch": 1794963687
+},
+"ipv6_profile_paths": [
+"/global-infra/ipv6-ndra-profiles/default",
+"/global-infra/ipv6-dad-profiles/default"
+],
+"marked_for_delete": false,
+"overridden": false,
+"owner_id": "3988c2c1-47cc-9cac-a699-c073485173ca",
+"parent_path": "/global-infra",
+"path": "/global-infra/tier-1s/fed-t1",
+"pool_allocation": "ROUTING",
+"relative_path": "fed-t1",
+"remote_path": "",
+"resource_type": "Tier1",
+"route_advertisement_types": [
+"TIER1_CONNECTED"
+],
+"tier0_path": "/global-infra/tier-0s/fed-t0",
+"unique_id": "4432eab2-3c39-fed2-f83a-0893a2d1f6da"
+},
+{
+"advanced_config": {
+"centralized_mode_enabled": false,
+"traffic_back_to_source": false
+},
+"default_rule_logging": false,
+"disable_firewall": true,
+"display_name": "fed-t1-a",
+"enable_standby_relocation": false,
+"failover_mode": "NON_PREEMPTIVE",
+"federation_config": {
+"global_overlay_id": 93433,
+"transit_segment_id": "9dea0bf6-ae85-73b7-8385-2dd75f786da1"
+},
+"force_whitelisting": false,
+"ha_mode": "ACTIVE_STANDBY",
+"id": "fed-t1-a",
+"intersite_config": {
+"intersite_transit_subnet": "169.254.32.0/20",
+"last_admin_active_epoch": 1794963688
+},
+"ipv6_profile_paths": [
+"/global-infra/ipv6-ndra-profiles/default",
+"/global-infra/ipv6-dad-profiles/default"
+],
+"marked_for_delete": false,
+"overridden": false,
+"owner_id": "3988c2c1-47cc-9cac-a699-c073485173ca",
+"parent_path": "/global-infra",
+"path": "/global-infra/tier-1s/fed-t1-a",
+"pool_allocation": "ROUTING",
+"relative_path": "fed-t1-a",
+"remote_path": "",
+"resource_type": "Tier1",
+"route_advertisement_types": [
+"TIER1_CONNECTED"
+],
+"tier0_path": "/global-infra/tier-0s/fed-t0",
+"unique_id": "489975fc-0fc9-cd05-9ccf-76d4e36e2f36"
+},
+{
+"advanced_config": {
+"centralized_mode_enabled": false,
+"traffic_back_to_source": false
+},
+"default_rule_logging": false,
+"disable_firewall": true,
+"display_name": "fed-t1-b",
+"enable_standby_relocation": false,
+"failover_mode": "NON_PREEMPTIVE",
+"federation_config": {
+"global_overlay_id": 196857,
+"transit_segment_id": "c99efc82-7f41-7e62-2c37-038c909e4051"
+},
+"force_whitelisting": false,
+"ha_mode": "ACTIVE_STANDBY",
+"id": "fed-t1-b",
+"intersite_config": {
+"intersite_transit_subnet": "169.254.32.0/20",
+"last_admin_active_epoch": 1794963692
+},
+"ipv6_profile_paths": [
+"/global-infra/ipv6-ndra-profiles/default",
+"/global-infra/ipv6-dad-profiles/default"
+],
+"marked_for_delete": false,
+"overridden": false,
+"owner_id": "3988c2c1-47cc-9cac-a699-c073485173ca",
+"parent_path": "/global-infra",
+"path": "/global-infra/tier-1s/fed-t1-b",
+"pool_allocation": "ROUTING",
+"relative_path": "fed-t1-b",
+"remote_path": "",
+"resource_type": "Tier1",
+"route_advertisement_types": [
+"TIER1_CONNECTED"
+],
+"tier0_path": "/global-infra/tier-0s/fed-t0",
+"unique_id": "135a230c-11db-329c-513d-7a90bdca0a5c"
+}
+],
+"sort_ascending": true,
+"sort_by": "display_name"
+}
+},
+"192.0.2.5": {
+"/api/v1/alarms?page_size=500&status=OPEN": {
+"result_count": 1,
+"results": [
+{
+"event_type": "remote_logging_not_configured",
+"feature_name": "logging",
+"id": "e9bd03e2-3f11-7fba-8eb2-afdfc322a4c8",
+"severity": "MEDIUM",
+"status": "OPEN",
+"summary": "Remote logging not configured."
+}
+],
+"sort_ascending": true,
+"sort_by": "_create_time"
+},
+"/api/v1/cluster/backups/overview": {
+"backup_config": {
+"backup_enabled": false,
+"backup_schedule": {
+"resource_type": "IntervalBackupSchedule",
+"seconds_between_backups": 3600
+},
+"inventory_summary_interval": 240,
+"remote_file_server": {
+"port": 22,
+"protocol": {
+"authentication_scheme": {
+"scheme_name": "PASSWORD"
+},
+"protocol_name": "sftp"
+}
+}
+},
+"backup_operation_history": {
+"cluster_backup_statuses": [],
+"inventory_backup_statuses": [],
+"node_backup_statuses": [],
+"overall_backup_status": "NOT_AVAILABLE"
+},
+"current_backup_operation_status": {
+"operation_type": "none"
+},
+"restore_status": {
+"allowed_actions": [],
+"endpoints": [],
+"not_allowed_actions": [],
+"status": {
+"value": "INITIAL"
+}
+},
+"result_count": 0,
+"results": []
+},
+"/api/v1/cluster/status": {
+"cluster_id": "7ea6e2da-02df-7ca1-d171-91febd41ded7",
+"detailed_cluster_status": {
+"cluster_id": "7ea6e2da-02df-7ca1-d171-91febd41ded7",
+"groups": [
+{
+"group_id": "6a15cb24-0047-4957-16a0-f1e2347dd32e",
+"group_status": "STABLE",
+"group_type": "DATASTORE",
+"leaders": [],
+"members": [
+{
+"member_fqdn": "nsx-gm-01b.example.test",
+"member_ip": "192.0.2.5",
+"member_status": "UP",
+"member_uuid": "72b34481-fb66-68cb-d83f-effab90784dc"
+}
+]
+},
+{
+"group_id": "69fb2a92-9776-973f-d302-d61b88f78900",
+"group_status": "STABLE",
+"group_type": "CLUSTER_BOOT_MANAGER",
+"leaders": [
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3757,
+"service_name": "cluster-manager"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-gm-01b.example.test",
+"member_ip": "192.0.2.5",
+"member_status": "UP",
+"member_uuid": "72b34481-fb66-68cb-d83f-effab90784dc"
+}
+]
+},
+{
+"group_id": "0fb9d679-6960-0c35-b133-f36778ff2c36",
+"group_status": "STABLE",
+"group_type": "MANAGER",
+"leaders": [
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3722,
+"service_name": "ActivityPurger"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3722,
+"service_name": "ActiveStateStreamListenerService"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3722,
+"service_name": "VidbMaintainer"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3722,
+"service_name": "RemoteLoggingServerCheckService"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3722,
+"service_name": "LicensingShardingServiceImpl"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3722,
+"service_name": "ShardingMaster"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3722,
+"service_name": "NodeStatusPropertiesStreamListenerService"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3722,
+"service_name": "CertificateShardingServiceImpl"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3722,
+"service_name": "CmStatusEventCallBack"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-gm-01b.example.test",
+"member_ip": "192.0.2.5",
+"member_status": "UP",
+"member_uuid": "72b34481-fb66-68cb-d83f-effab90784dc"
+}
+]
+},
+{
+"group_id": "e2f381d6-b5c7-e0cc-94ac-3cc1f699788e",
+"group_status": "STABLE",
+"group_type": "HTTPS",
+"leaders": [
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3710,
+"service_name": "api"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-gm-01b.example.test",
+"member_ip": "192.0.2.5",
+"member_status": "UP",
+"member_uuid": "72b34481-fb66-68cb-d83f-effab90784dc"
+}
+]
+},
+{
+"group_id": "939d8c4d-858a-c8ed-ee42-0ae56512ee0f",
+"group_status": "STABLE",
+"group_type": "MONITORING",
+"leaders": [
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3727,
+"service_name": "ShardingMaster"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3727,
+"service_name": "monitoring"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3727,
+"service_name": "CoordinatedDataCollectionLeader"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-gm-01b.example.test",
+"member_ip": "192.0.2.5",
+"member_status": "UP",
+"member_uuid": "72b34481-fb66-68cb-d83f-effab90784dc"
+}
+]
+},
+{
+"group_id": "c7b5700a-06bb-7318-662a-67f7333d0930",
+"group_status": "STABLE",
+"group_type": "GLOBAL_MANAGER",
+"leaders": [
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3705,
+"service_name": "GM_BROKER_SERVICE"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3711,
+"service_name": "ENFORCEMENT_POINT_RELOAD_TASK"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3705,
+"service_name": "GM-NOTIFICATION-MANAGER"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3705,
+"service_name": "GM_DELETE_PROCESSOR_SERVICE-2"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3705,
+"service_name": "AUTO_DRAFT_PURGE_TASK"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3711,
+"service_name": "GM_DELETE_PROCESSOR_SERVICE-1"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3710,
+"service_name": "ShardingMaster"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3711,
+"service_name": "IDS_PCAP_TASK"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3711,
+"service_name": "CertificateShardingServiceImpl"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3705,
+"service_name": "GLOBAL_DFW_CONFIG_CREATION_TASK"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3705,
+"service_name": "UPGRADE-CONSISTENCY-CHECK-POLICY-RESOURCE-CONSUMER-SERVICE"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3705,
+"service_name": "POLICY_IPAM_ALARM_LEADERSHIP_LISTENER_SERVICE"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3705,
+"service_name": "POLICY_SVC_INITIALIZER"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3705,
+"service_name": "LbAlarmShardingServiceImpl"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3704,
+"service_name": "POLICY-INTENT-CLEANUP-SERVICE"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3711,
+"service_name": "ActivityPurger"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3711,
+"service_name": "GM_OPERATIONAL_STATE"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3705,
+"service_name": "GM_CONFIG_ONBOARDING_SERVICE"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3711,
+"service_name": "GM_DELETE_PROCESSOR_SERVICE-5"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3711,
+"service_name": "GM_DELETE_PROCESSOR_SERVICE-4"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3705,
+"service_name": "REF_OBJECT_CLEANUP_TASK"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3705,
+"service_name": "POLICY_PURGE_TASK_INITIALIZER"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3711,
+"service_name": "VidbMaintainer"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3705,
+"service_name": "QuartzSetupServiceImpl"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3705,
+"service_name": "GM_DELETE_PROCESSOR_SERVICE-3"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3711,
+"service_name": "LicensingShardingServiceImpl"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3705,
+"service_name": "IDS_AUTO_DOWNLOAD_TASK"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-gm-01b.example.test",
+"member_ip": "192.0.2.5",
+"member_status": "UP",
+"member_uuid": "72b34481-fb66-68cb-d83f-effab90784dc"
+}
+]
+},
+{
+"group_id": "99fc4a18-1553-149a-bbb5-3f3b5186c63c",
+"group_status": "STABLE",
+"group_type": "CM-INVENTORY",
+"leaders": [
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3725,
+"service_name": "ShardingMaster"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-gm-01b.example.test",
+"member_ip": "192.0.2.5",
+"member_status": "UP",
+"member_uuid": "72b34481-fb66-68cb-d83f-effab90784dc"
+}
+]
+},
+{
+"group_id": "e2a6b38a-51d5-1692-1b63-33e36861972c",
+"group_status": "STABLE",
+"group_type": "MESSAGING-MANAGER",
+"leaders": [
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3748,
+"service_name": "messaging-manager"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-gm-01b.example.test",
+"member_ip": "192.0.2.5",
+"member_status": "UP",
+"member_uuid": "72b34481-fb66-68cb-d83f-effab90784dc"
+}
+]
+},
+{
+"group_id": "06b461af-fcac-5090-f22a-0ad68740545e",
+"group_status": "STABLE",
+"group_type": "ASYNC_REPLICATOR",
+"leaders": [
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3717,
+"service_name": "ShardingMaster"
+},
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3716,
+"service_name": "ArAlarmService"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-gm-01b.example.test",
+"member_ip": "192.0.2.5",
+"member_status": "UP",
+"member_uuid": "72b34481-fb66-68cb-d83f-effab90784dc"
+}
+]
+},
+{
+"group_id": "dd4016ec-5da0-4669-c2d0-00c9e2e59fa0",
+"group_status": "STABLE",
+"group_type": "SITE_MANAGER",
+"leaders": [
+{
+"leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
+"lease_version": 3753,
+"service_name": "site-manager"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-gm-01b.example.test",
+"member_ip": "192.0.2.5",
+"member_status": "UP",
+"member_uuid": "72b34481-fb66-68cb-d83f-effab90784dc"
+}
+]
+}
+],
+"overall_status": "STABLE"
+},
+"mgmt_cluster_status": {
+"offline_nodes": [],
+"online_nodes": [
+{
+"mgmt_cluster_listen_ip_address": "192.0.2.5",
+"uuid": "72b34481-fb66-68cb-d83f-effab90784dc"
+}
+],
+"status": "STABLE"
+}
+},
+"/api/v1/sites/self": {
+"epoch": 4,
+"id": "5de412d9-e962-06d7-c23c-a08d35c8c938",
+"is_saas": false,
+"is_vmsp": false,
+"site": {
+"active_gm": "STANDBY",
+"aph_list": [
+{
+"address": "192.0.2.5",
+"certificate": "",
+"fqdn": "nsx-gm-01b.example.test",
+"ipv6_address": "",
+"node_id": "72b34481-fb66-68cb-d83f-effab90784dc",
+"port": 1236,
+"use_fqdn": false,
+"uuid": "5716ff38-012e-de7c-29a9-1803690b8eeb"
+}
+],
+"cert_hash": "677ae3c0d3feff83eca7f471f475c55c03a69ba2e3dd2b5d1fd978430c5691c6",
+"cluster_id": "7ea6e2da-02df-7ca1-d171-91febd41ded7",
+"config_version": 7,
+"export_type": "unrestricted",
+"grpc_info": [],
+"id": "f32a55eb-7fe3-c37e-b20e-19ddec40da65",
+"is_federated": false,
+"is_grpc_capable": false,
+"is_local": false,
+"name": "gm-site-b",
+"node_type": "GM",
+"site_version": "9.1.1.0100.25762940",
+"split_brain": false,
+"system_id": 0,
+"trust_manager_cert": "omitted",
+"vip_ip": "0.0.0.0"
+}
+},
+"/api/v1/trust-management/certificates?details=true&page_size=500": {
+"result_count": 13,
+"results": [
+{
+"details": [
+{
+"not_after": 1866337588000,
+"subject_cn": "cluster-nsx-gm-01b.example.test"
+}
+],
+"display_name": "MGMT_CLUSTER site f32a55eb-7fe3-c37e-b20e-19ddec40da65",
+"id": "bcedf243-89fc-cd9c-94a7-d730b2b0cb3b"
+},
+{
+"details": [
+{
+"not_after": 2110417571000,
+"subject_cn": "VMware-NSX-ApplProxyHub-CCP"
+}
+],
+"display_name": "APH_TN node 72b34481-fb66-68cb-d83f-effab90784dc",
+"id": "f69907e1-13dc-1926-7838-2a0bb0a5f8f3"
+},
+{
+"details": [
+{
+"not_after": 4948657584000,
+"subject_cn": "cluster-manager"
+}
+],
+"display_name": "CBM_CLUSTER_MANAGER node 72b34481-fb66-68cb-d83f-effab90784dc",
+"id": "f7def569-9949-acfd-f3d1-503bd641c74d"
+},
+{
+"details": [
+{
+"not_after": 4948657596000,
+"subject_cn": "corfu"
+}
+],
+"display_name": "CBM_CORFU node 72b34481-fb66-68cb-d83f-effab90784dc",
+"id": "ea094c21-a66b-3f06-39b5-fe36432c5980"
+},
+{
+"details": [
+{
+"not_after": 2110417943000,
+"subject_cn": "global-manager"
+}
+],
+"display_name": "GlobalManager",
+"id": "e9041b8d-fc00-cb47-6388-a34aa961cbfb"
+},
+{
+"details": [
+{
+"not_after": 2105944825000,
+"subject_cn": "local-manager"
+}
+],
+"display_name": "3f5c50cb-5da4-ff12-cb95-04c71ad4835e",
+"id": "3f5c50cb-5da4-ff12-cb95-04c71ad4835e"
+},
+{
+"details": [
+{
+"not_after": 2110294571000,
+"subject_cn": "local-manager"
+}
+],
+"display_name": "ead2c61f-384e-d821-a32f-b6ed4db8bdc0",
+"id": "ead2c61f-384e-d821-a32f-b6ed4db8bdc0"
+},
+{
+"details": [
+{
+"not_after": 2110245160000,
+"subject_cn": "global-manager"
+}
+],
+"display_name": "7f2ccc4b-1e41-5373-f0dd-f13d737e4b09",
+"id": "7f2ccc4b-1e41-5373-f0dd-f13d737e4b09"
+},
+{
+"details": [
+{
+"not_after": 2105627647000,
+"subject_cn": "CA"
+}
+],
+"display_name": "Site certificate OU=VMware Engineering,O=vc-mgmt-a.example.test,ST=California,C=US,DC=local,DC=vsphere,CN=CA",
+"id": "cb06f541-e332-ca9c-c1e5-c8340b8f154a"
+},
+{
+"details": [
+{
+"not_after": 2105944480000,
+"subject_cn": "VMware-NSX-ApplProxyHub-CCP"
+}
+],
+"display_name": "Site certificate UID=7ba5ca76-f4f1-41cb-24a9-f0b85867b07b,CN=VMware-NSX-ApplProxyHub-CCP,1.2.840.113549.1.9.1=#161b73736c2d63657274696669636174657340766d776172652e636f6d,O=VMware\\, Inc.,L=Palo Alto,ST=California,C=US",
+"id": "1a6a73a5-96cb-a641-38d0-ffd1581d29e4"
+},
+{
+"details": [
+{
+"not_after": 2110293769000,
+"subject_cn": "VMware-NSX-ApplProxyHub-CCP"
+}
+],
+"display_name": "Site certificate UID=2336ef12-9b94-a33e-401c-a520a8ab79b7,CN=VMware-NSX-ApplProxyHub-CCP,1.2.840.113549.1.9.1=#161b73736c2d63657274696669636174657340766d776172652e636f6d,O=VMware\\, Inc.,L=Palo Alto,ST=California,C=US",
+"id": "6ef9fad9-f088-f584-4aa7-f6a7da63c341"
+},
+{
+"details": [
+{
+"not_after": 2110244647000,
+"subject_cn": "VMware-NSX-ApplProxyHub-CCP"
+}
+],
+"display_name": "Site certificate UID=915d38e3-0779-51b6-25c9-1fd49cee54ab,CN=VMware-NSX-ApplProxyHub-CCP,1.2.840.113549.1.9.1=#161b73736c2d63657274696669636174657340766d776172652e636f6d,O=VMware\\, Inc.,L=Palo Alto,ST=California,C=US",
+"id": "0b7e9ec2-add4-2c5c-867d-dc1e7628ff78"
+},
+{
+"details": [
+{
+"not_after": 1866164669000,
+"subject_cn": "cluster-nsx-gm-01a.example.test"
+}
+],
+"display_name": "Site certificate C=US,ST=CA,L=Palo Alto,O=VMware Inc.,OU=NSX,CN=cluster-nsx-gm-01a.example.test",
+"id": "0929f11f-a390-a030-ef3f-297578f62ef7"
+}
+]
+}
+},
+"192.0.2.6": {
+"/api/v1/alarms?page_size=500&status=OPEN": {
+"result_count": 6,
+"results": [
+{
+"event_type": "remote_logging_not_configured",
+"feature_name": "logging",
+"id": "2d0877d8-6f1d-4976-5f44-d328dd953a9b",
+"severity": "MEDIUM",
+"status": "OPEN",
+"summary": "Remote logging not configured."
+},
+{
+"event_type": "remote_logging_not_configured",
+"feature_name": "logging",
+"id": "ef58fe80-966c-89c6-7887-905d7b5e8731",
+"severity": "MEDIUM",
+"status": "OPEN",
+"summary": "Remote logging not configured."
+},
+{
+"event_type": "remote_logging_not_configured",
+"feature_name": "logging",
+"id": "7c018a88-2efe-b3f8-30b8-49971ee66679",
+"severity": "MEDIUM",
+"status": "OPEN",
+"summary": "Remote logging not configured."
+},
+{
+"event_type": "minimum_capacity_threshold",
+"feature_name": "capacity",
+"id": "634985cf-b43a-cf9a-873f-e9cfcdd18bc3",
+"severity": "MEDIUM",
+"status": "OPEN",
+"summary": "A minimum capacity threshold has been breached."
+},
+{
+"event_type": "minimum_capacity_threshold",
+"feature_name": "capacity",
+"id": "4f7e1101-bd52-fb69-4f68-0f2ebe41ae91",
+"severity": "MEDIUM",
+"status": "OPEN",
+"summary": "A minimum capacity threshold has been breached."
+},
+{
+"event_type": "mtu_mismatch_within_transport_zone",
+"feature_name": "mtu_check",
+"id": "c31616bd-37c7-bdff-4e39-bfdf86c9a6da",
+"severity": "HIGH",
+"status": "OPEN",
+"summary": "MTU configuration mismatch between Transport Nodes attached to the same Transport Zone."
+}
+],
+"sort_ascending": true,
+"sort_by": "_create_time"
+},
+"/api/v1/cluster/backups/overview": {
+"backup_config": {
+"backup_enabled": true,
+"backup_schedule": {
+"resource_type": "IntervalBackupSchedule",
+"seconds_between_backups": 14400
+},
+"inventory_summary_interval": 240,
+"remote_file_server": {
+"directory_path": "/srv/vcf-backup/sddc/nsx-shared-a.example.test",
+"port": 22,
+"protocol": {
+"authentication_scheme": {
+"scheme_name": "PASSWORD",
+"username": "vcfbackup"
+},
+"protocol_name": "sftp",
+"ssh_fingerprint": "SHA256:VjyQ/YPnv/1TPlRO1kIq9R4t4m2m7HSBYCnKzBKAhOE"
+},
+"server": "192.0.2.1"
+}
+},
+"backup_operation_history": {
+"cluster_backup_statuses": [
+{
+"backup_id": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac-1795088601",
+"end_time": 1795088696180,
+"start_time": 1795088601835,
+"success": true
+}
+],
+"inventory_backup_statuses": [
+{
+"backup_id": "inventory-1795098941",
+"end_time": 1795098942072,
+"start_time": 1795098941735,
+"success": true
+}
+],
+"node_backup_statuses": [
+{
+"backup_id": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac-1795088601",
+"end_time": 1795088729802,
+"start_time": 1795088601835,
+"success": true
+}
+],
+"overall_backup_status": "SUCCESS"
+},
+"current_backup_operation_status": {
+"operation_type": "none"
+},
+"restore_status": {
+"allowed_actions": [],
+"endpoints": [],
+"not_allowed_actions": [],
+"status": {
+"value": "INITIAL"
+}
+},
+"result_count": 10,
+"results": [
+{
+"ip_address": "192.0.2.7",
+"node_id": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"restore_type": [],
+"timestamp": 1795088601000
+},
+{
+"ip_address": "192.0.2.7",
+"node_id": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"restore_type": [],
+"timestamp": 1795074201000
+},
+{
+"ip_address": "192.0.2.7",
+"node_id": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"restore_type": [],
+"timestamp": 1795059801000
+},
+{
+"ip_address": "192.0.2.7",
+"node_id": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"restore_type": [],
+"timestamp": 1795045401000
+},
+{
+"ip_address": "192.0.2.7",
+"node_id": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"restore_type": [],
+"timestamp": 1795031001000
+},
+{
+"ip_address": "192.0.2.7",
+"node_id": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"restore_type": [],
+"timestamp": 1795016601000
+},
+{
+"ip_address": "192.0.2.7",
+"node_id": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"restore_type": [],
+"timestamp": 1795002201000
+},
+{
+"ip_address": "192.0.2.7",
+"node_id": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"restore_type": [],
+"timestamp": 1794987802000
+},
+{
+"ip_address": "192.0.2.7",
+"node_id": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"restore_type": [],
+"timestamp": 1794973401000
+},
+{
+"ip_address": "192.0.2.7",
+"node_id": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"restore_type": [],
+"timestamp": 1794959002000
+}
+],
+"sort_ascending": false,
+"sort_by": "timestamp"
+},
+"/api/v1/cluster/status": {
+"cluster_id": "09bf7bee-88e4-ee8d-13e3-131260a80662",
+"control_cluster_status": {
+"status": "STABLE"
+},
+"detailed_cluster_status": {
+"cluster_id": "09bf7bee-88e4-ee8d-13e3-131260a80662",
+"groups": [
+{
+"group_id": "6a15cb24-0047-4957-16a0-f1e2347dd32e",
+"group_status": "STABLE",
+"group_type": "DATASTORE",
+"leaders": [],
+"members": [
+{
+"member_fqdn": "nsx-shared-01a.example.test",
+"member_ip": "192.0.2.7",
+"member_status": "UP",
+"member_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac"
+}
+]
+},
+{
+"group_id": "69fb2a92-9776-973f-d302-d61b88f78900",
+"group_status": "STABLE",
+"group_type": "CLUSTER_BOOT_MANAGER",
+"leaders": [
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 14828,
+"service_name": "cluster-manager"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-shared-01a.example.test",
+"member_ip": "192.0.2.7",
+"member_status": "UP",
+"member_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac"
+}
+]
+},
+{
+"group_id": "0065e1f4-6e47-5e30-ad9d-247cf667841d",
+"group_status": "STABLE",
+"group_type": "CONTROLLER",
+"leaders": [
+{
+"leader_uuid": "353d1a71-3abf-4528-9b27-9ef755cc590f",
+"lease_version": 12584,
+"service_name": "ShardingService"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-shared-01a.example.test",
+"member_ip": "192.0.2.7",
+"member_status": "UP",
+"member_uuid": "353d1a71-3abf-4528-9b27-9ef755cc590f"
+}
+]
+},
+{
+"group_id": "0fb9d679-6960-0c35-b133-f36778ff2c36",
+"group_status": "STABLE",
+"group_type": "MANAGER",
+"leaders": [
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13879,
+"service_name": "COMMON_AGENT_ALARM_SERVICE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13874,
+"service_name": "POLICY_SVC_DFW_EXCLUDE_LIST"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13874,
+"service_name": "DataReaper"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13880,
+"service_name": "POLICY_SVC_POLICY_FIREWALL_IDENTITY_STORE_SITE_MAPPING_PROVIDER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13875,
+"service_name": "POLICY_SVC_IDS_GATEWAY_SECTION_PROVIDER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13873,
+"service_name": "POLICY_SVC_IDS_SITE_VERSION_MAPPING_PROVIDER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13874,
+"service_name": "POLICY_SVC_CONNECTIVITY_POLICY"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13871,
+"service_name": "TransportNodeStatusTsdbListener"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13873,
+"service_name": "IdfwDbDaemon"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13875,
+"service_name": "NodeStatusPropertiesMsgListener"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13874,
+"service_name": "POLICY_SVC_EDGE_TRANSPORT_NODE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13877,
+"service_name": "POLICY_SVC_POLICY_TRANSPORT_ZONE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13881,
+"service_name": "CmStatusEventCallBack"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13876,
+"service_name": "POLICY_SVC_TIER1"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13869,
+"service_name": "POLICY_SVC_CONNECTIVITY"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13872,
+"service_name": "POLICY_SVC_TRACE_GLOBAL_CONFIG"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13866,
+"service_name": "POLICY_SVC_GATEWAY_QOS_PROFILE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13877,
+"service_name": "L2LogicalSwitchStateWorker-L2KeyValue"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13876,
+"service_name": "MtuCheckQuartzSetupServiceImpl"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13872,
+"service_name": "POLICY_SVC_PROJECT"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13875,
+"service_name": "POLICY_SVC_CONTEXT_PROFILE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13879,
+"service_name": "POLICY_SVC_FLOOD_PROTECTION_PROFILES_PROVIDER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13881,
+"service_name": "POLICY_SVC_POLICY_TRANSPORT_ZONE_PROFILE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13875,
+"service_name": "POLICY_SVC_IPFIX_L2_PROFILE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13874,
+"service_name": "FirewallOperationPersistedQueueProcessor"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13879,
+"service_name": "UPGRADE-CONSISTENCY-CHECK-POLICY-RESOURCE-CONSUMER-SERVICE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13874,
+"service_name": "OpsClusterService"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13885,
+"service_name": "ODS_DYNAMIC_RUNBOOK_TN_LISTENER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13883,
+"service_name": "POLICY_SVC_ODS_DYNAMIC_RUNBOOK_INSTANCE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13871,
+"service_name": "POLICY_SVC_POLICY_SERVICE_INSERTION_EW"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13880,
+"service_name": "POLICY_SVC_IPFIX_DFW_PROFILE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13871,
+"service_name": "RealizationOperationalStatusTrackerWorker-AggSvc-Routing_BgpNeighborStatusPerNode"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13870,
+"service_name": "POLICY_SVC_TIER0"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13876,
+"service_name": "MpHeartbeatMessageListener"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13872,
+"service_name": "POLICY_SVC_IDFW_IDS_TOGGLE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13873,
+"service_name": "POLICY_SVC_IPFIX_DFW_GROUP_PROFILE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13876,
+"service_name": "POLICY_SVC_ALB_LCM"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13871,
+"service_name": "POLICY_IPAM_ALARM_LEADERSHIP_LISTENER_SERVICE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13879,
+"service_name": "POLICY_SVC_POLICY_EDGE_CLUSTER_PROVIDER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13872,
+"service_name": "POLICY_SVC_EDGE_TRANSPORT_NODE_TROUBLESHOOT_PROVIDER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13876,
+"service_name": "POLICY_SVC_TLS_PROFILE_PROVIDER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13868,
+"service_name": "POLICY_SVC_TLS_FQDN_STATE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 12264,
+"service_name": "LM_NOTIFICATION_MANAGER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13884,
+"service_name": "HealthCheckRequestMonitor"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13877,
+"service_name": "POLICY_SVC_SCX_TOGGLE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13879,
+"service_name": "POLICY_SVC_SESSION_TIMER_PROFILES_PROVIDER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13874,
+"service_name": "POLICY_SVC_FIREWALL"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13877,
+"service_name": "POLICY_SVC_POLICY_UC_DEPLOYMENT_CONFIG"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13877,
+"service_name": "RealizationOperationalStatusTrackerWorker-AggSvc-Routing_LogicalRoutersPerNode"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13880,
+"service_name": "POLICY_SVC_EDGE_FIREWALL"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13871,
+"service_name": "LbAlarmShardingServiceImpl"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13873,
+"service_name": "POLICY_SVC_INITIALIZER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13870,
+"service_name": "ActiveStateStreamListenerService"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13878,
+"service_name": "POLICY_SVC_L7_ACCESS_PROFILE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13872,
+"service_name": "POLICY-INTENT-CLEANUP-SERVICE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13871,
+"service_name": "POLICY_SVC_SECURITY_PROFILE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13870,
+"service_name": "POLICY_SVC_POLICY_FIREWALL_IDENTITY_STORE_ELS_MAPPING_PROVIDER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13874,
+"service_name": "GROUP_ALARM_LEADERSHIP_LISTENER_SERVICE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13881,
+"service_name": "SECURITY_LICENSE_USAGE_METER_TASK"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13882,
+"service_name": "ActivityPurger"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13883,
+"service_name": "POLICY_SVC_PORTMIRRORINGINSTANCE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13869,
+"service_name": "POLICY_SVC_TAG_BULK_OPERATION"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13877,
+"service_name": "POLICY_SVC_IDS_GLOBAL_CONFIG"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13881,
+"service_name": "IntelligenceClusterConfigWorker-IntelligenceClusterConfig"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13878,
+"service_name": "POLICY_SVC_CERTIFICATE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13883,
+"service_name": "POLICY_SVC_LATENCY_STAT_PROFILE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13879,
+"service_name": "FirewallPersistenceQueueProcessor"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13878,
+"service_name": "POLICY_SVC_MALWARE_PREVENTION_PROFILE_PROVIDER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13875,
+"service_name": "FirewallStatsPersistedQueueProcessor"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13874,
+"service_name": "POLICY_SVC_IDS_SIGNATURES_COMP_FILE_PROVIDER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13869,
+"service_name": "POLICY_SVC_FIREWALL_CPU_MEMORY_THRESHOLDS_PROFILE_PROVIDER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13872,
+"service_name": "POLICY_SVC_GENERAL_SECURITY_PROFILES_PROVIDER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13874,
+"service_name": "SECURITY_BUNDLE_AUTO_DOWNLOAD_TASK"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13873,
+"service_name": "POLICY_SVC_METADATA_PROXY"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13877,
+"service_name": "POLICY_SVC_VM_TAG_REPLICATION_POLICY_PROVIDER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 12263,
+"service_name": "LM_CONSUMER_SERVICE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13874,
+"service_name": "DirServiceDbDaemon"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13874,
+"service_name": "TnContainerStatusTsdbListener"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13874,
+"service_name": "RealizationOperationalStatusTrackerWorker-AggSvc-Vpn_IPSecVpnServiceSummary"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13872,
+"service_name": "POLICY_SVC_SSP_SECURITY_FEED_MAPPING_PROVIDER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13875,
+"service_name": "POLICY_SVC_IPAM"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13878,
+"service_name": "POLICY_SVC_BYOD_POLICY_SERVICE_INSERTION"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13875,
+"service_name": "POLICY_SVC_REDIRECTION_FIREWALL"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13883,
+"service_name": "GEO_IP_BUNDLE_AUTO_DOWNLOAD_TASK"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13870,
+"service_name": "LiveTraceMessageManager"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13877,
+"service_name": "POLICY_SVC_VPC_SUBNET"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13870,
+"service_name": "POLICY_SVC_MAC_DISCOVERY"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13873,
+"service_name": "ManualHealthCheckMonitor"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13879,
+"service_name": "ClusterNodeConfigProcessor"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13873,
+"service_name": "POLICY_SVC_POLICY_FQDN_ANALYSIS_CONFIG_PROVIDER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13869,
+"service_name": "POLICY_SVC_IPFIXSWITCHCOLLECTION"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13880,
+"service_name": "POLICY_PURGE_TASK_INITIALIZER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13873,
+"service_name": "VCSyncShardingServiceImpl"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13879,
+"service_name": "POLICY_SVC_IPFIX_L2_GLOBAL_PROFILE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13878,
+"service_name": "POLICY_SVC_CLUSTER_CONTROL_PLANE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13872,
+"service_name": "POLICY_SVC_POLICY_URL_CATEGORIZATION_CONFIG_PROVIDER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13879,
+"service_name": "IP_REPUTATION_FEED_DOWNLOAD_TASK"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13873,
+"service_name": "RealizationServiceMaintenanceManager"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13864,
+"service_name": "POLICY_SVC_FORWARDING"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13880,
+"service_name": "VidbMaintainer"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13873,
+"service_name": "RemoteLoggingServerCheckService"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13878,
+"service_name": "POLICY_SVC_IDS_SECTION_PROVIDER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13877,
+"service_name": "TraceflowCacheManager"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13874,
+"service_name": "POLICY_SVC_REAL_TIME_ETHERNET_PROFILE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13882,
+"service_name": "POLICY_SVC_POLICY_FIREWALL_IDENTITY_STORE_AND_LDAP_SERVER_PROVIDER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13877,
+"service_name": "IpfixAppliedToStreamListener"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13877,
+"service_name": "TransportNodeStatusMessageListener"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13879,
+"service_name": "ServiceConfigChangeWorker-GiServiceProfile"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13877,
+"service_name": "POLICY_SVC_ROUTE_CONTROLLER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13875,
+"service_name": "POLICY_SVC_IDS_THRESHOLD_CONFIG_FILE_PROVIDER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13881,
+"service_name": "TNStateWorker-TransportNodeState"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13869,
+"service_name": "POLICY_SVC_POLICY_GUEST_INTROSPECTION"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13874,
+"service_name": "POLICY_SVC_PORTMIRRORINGPROFILE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13879,
+"service_name": "POLICY_SVC_QOS_PROFILE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13873,
+"service_name": "QuartzSetupServiceImpl"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13872,
+"service_name": "LicensingShardingServiceImpl"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13879,
+"service_name": "BgpBfdTroubleshootReverseUpgradeWorker-ManagerClusterVersion"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13877,
+"service_name": "POLICY_SVC_BASE_HOST_SWITCH_PROFILE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13879,
+"service_name": "IDS_AUTO_DOWNLOAD_TASK"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13878,
+"service_name": "POLICY_SVC_LOADBALANCER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13870,
+"service_name": "POLICY_SVC_VPN"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13869,
+"service_name": "POLICY_SVC_SEGMENTPORT"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13876,
+"service_name": "SECURITY_ALARM_SERVICE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13866,
+"service_name": "UnderlayRouteWorker-UnderlayRouteRefreshTrigger"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13872,
+"service_name": "POLICY_SVC_FIREWALL_SCHEDULER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13871,
+"service_name": "VDLS_NSX_ENDPOINT_LISTENER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13875,
+"service_name": "AutoHealthCheckMonitor"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13883,
+"service_name": "POLICY_SVC_IDS_CONTAINER_CLUSTER_PROFILE_PROVIDER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13872,
+"service_name": "GEO_IP_ALARM_SERVICE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13871,
+"service_name": "POLICY_SVC_DNS"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13875,
+"service_name": "POLICY_SVC_VPC"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13869,
+"service_name": "POLICY_SVC_IDS_STANDALONE_HOST_CONFIG"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13876,
+"service_name": "POLICY_SVC_NSXI_NDR_UA_AGENT"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13876,
+"service_name": "POLICY_SVC_SHA_DYNAMIC_PLUGIN"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13879,
+"service_name": "POLICY_SVC_SEGMENT"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13877,
+"service_name": "ShaClusterServiceImpl"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13876,
+"service_name": "AUTO_DRAFT_PURGE_TASK"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13876,
+"service_name": "COMMON_AGENT_SERVICE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13873,
+"service_name": "POLICY_SVC_NETWORK_SPAN"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13882,
+"service_name": "CentralNodeConfigService"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13872,
+"service_name": "POLICY_SVC_SHA_PLUGIN_PROFILE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13880,
+"service_name": "POLICY_SVC_HEALTHCHECK_MANUAL_CONFIG"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13876,
+"service_name": "POLICY_SVC_NATRULE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13873,
+"service_name": "MirrorStackMonitorImpl"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13875,
+"service_name": "LM_SITE_OFFBOARDING"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13879,
+"service_name": "POLICY_SVC_POLICY_PLATFORM_DEPLOYMENT_CONFIG"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13873,
+"service_name": "POLICY_SVC_FIREWALL_DTLS_SECURITY_PROFILE_PROVIDER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13874,
+"service_name": "POLICY_SVC_FIREWALL_IDENTITY"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13883,
+"service_name": "POLICY_SVC_SECURITY_FEATURE_EXCLUDE_LIST_PROVIDER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13869,
+"service_name": "POLICY_SVC_ODS_RUNBOOK_PROFILE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13879,
+"service_name": "POLICY_SVC_CVX_SECURITY"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13877,
+"service_name": "ShardingMaster"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13873,
+"service_name": "ALARMS_REFRESH_TASK"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13877,
+"service_name": "POLICY_SVC_INTELLIGENCE_FLOW_COLLECTION_ENTITY_INFO"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13875,
+"service_name": "ServiceInsertionPersistenceQueueProcessor"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13878,
+"service_name": "IDS_PCAP_TASK"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13879,
+"service_name": "POLICY_SVC_IPFIX_L2_COLLECTOR_PROFILE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13876,
+"service_name": "CentralConfigProcessor"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13876,
+"service_name": "RealizationOperationalStatusTrackerWorker-AggSvc-Vpn_L2VpnServiceSummary"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13878,
+"service_name": "POLICY_SVC_METRIC_GLOBAL_CONFIG"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13872,
+"service_name": "POLICY_SVC_NSSERVICEGROUP"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13875,
+"service_name": "OdsDynamicRunbookClusterStreamListener"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13873,
+"service_name": "INTELLIGENCE_AGENT_SERVICE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13874,
+"service_name": "POLICY_SVC_LM_SITE_SPAN"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13876,
+"service_name": "TransportNodeMessageListener"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13872,
+"service_name": "POLICY_SVC_DFW_SESSION_TIMER_PROFILE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13876,
+"service_name": "POLICY_SVC_SECURITY_FEATURE_TOGGLE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13876,
+"service_name": "POLICY_SVC_IDS_GATEWAY_POLICY_PROVIDER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13880,
+"service_name": "OdsPredefinedRunbookService"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13871,
+"service_name": "DATA-CONSISTENCY-CHECKER-SERVICE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13874,
+"service_name": "POLICY_SVC_SHA_MONITOR_PROFILE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13871,
+"service_name": "POLICY_SVC_OPS_GLOBAL_CONFIG"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13873,
+"service_name": "NodeStatusPropertiesStreamListenerService"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13874,
+"service_name": "POLICY_SVC_ROUTING"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13877,
+"service_name": "POLICY_SVC_METRICS_UA_AGENT"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13864,
+"service_name": "POLICY_SVC_IDS_PROFILE_PROVIDER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13874,
+"service_name": "CertificateShardingServiceImpl"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13878,
+"service_name": "POLICY_SVC_IPFIXDFWCOLLECTORPROFILE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13875,
+"service_name": "POLICY_SVC_GROUPING"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13875,
+"service_name": "PLATFORM_AGENT_SERVICE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13876,
+"service_name": "ServiceConfigChangeWorker-ServiceConfig"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13873,
+"service_name": "capacity_dashboard"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13870,
+"service_name": "POLICY_SVC_FIREWALL_DTLS_CONFIG_PROFILE_PROVIDER"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13884,
+"service_name": "IntelligenceHostConfigWorker-IntelligenceHostConfig"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13876,
+"service_name": "POLICY_SVC_GLOBAL"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13876,
+"service_name": "RealizationOperationalStatusTrackerWorker-AggSvc-Routing_GreTunnelPerNode"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13878,
+"service_name": "POLICY_SVC_NSSERVICE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13874,
+"service_name": "POLICY_SVC_TRANSPORT_NODE"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13874,
+"service_name": "POLICY_SVC_IP_DISCOVERY"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13873,
+"service_name": "POLICY_SVC_DISCOVERY"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 13878,
+"service_name": "POLICY_SVC_POLICY_SERVICE_INSERTION"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-shared-01a.example.test",
+"member_ip": "192.0.2.7",
+"member_status": "UP",
+"member_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac"
+}
+]
+},
+{
+"group_id": "e2f381d6-b5c7-e0cc-94ac-3cc1f699788e",
+"group_status": "STABLE",
+"group_type": "HTTPS",
+"leaders": [
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 14850,
+"service_name": "api"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-shared-01a.example.test",
+"member_ip": "192.0.2.7",
+"member_status": "UP",
+"member_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac"
+}
+]
+},
+{
+"group_id": "a6dcccd1-0f4f-cb31-8188-fafb9003eb10",
+"group_status": "STABLE",
+"group_type": "IDPS_REPORTING",
+"leaders": [
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 14854,
+"service_name": "GEO_IP_STATS"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 14849,
+"service_name": "IP_REPUTATION"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 14851,
+"service_name": "IDS_PCAP_PURGE_TASK"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 14854,
+"service_name": "URL_CATEGORIZATION"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 14852,
+"service_name": "IDS_EVENT_DATA_PURGE_TASK"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-shared-01a.example.test",
+"member_ip": "192.0.2.7",
+"member_status": "UP",
+"member_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac"
+}
+]
+},
+{
+"group_id": "99fc4a18-1553-149a-bbb5-3f3b5186c63c",
+"group_status": "STABLE",
+"group_type": "CM-INVENTORY",
+"leaders": [
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 14846,
+"service_name": "ShardingMaster"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-shared-01a.example.test",
+"member_ip": "192.0.2.7",
+"member_status": "UP",
+"member_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac"
+}
+]
+},
+{
+"group_id": "e2a6b38a-51d5-1692-1b63-33e36861972c",
+"group_status": "STABLE",
+"group_type": "MESSAGING-MANAGER",
+"leaders": [
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 14852,
+"service_name": "messaging-manager"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-shared-01a.example.test",
+"member_ip": "192.0.2.7",
+"member_status": "UP",
+"member_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac"
+}
+]
+},
+{
+"group_id": "06b461af-fcac-5090-f22a-0ad68740545e",
+"group_status": "STABLE",
+"group_type": "ASYNC_REPLICATOR",
+"leaders": [
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 14894,
+"service_name": "ArAlarmService"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 14894,
+"service_name": "ShardingMaster"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-shared-01a.example.test",
+"member_ip": "192.0.2.7",
+"member_status": "UP",
+"member_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac"
+}
+]
+},
+{
+"group_id": "dd4016ec-5da0-4669-c2d0-00c9e2e59fa0",
+"group_status": "STABLE",
+"group_type": "SITE_MANAGER",
+"leaders": [
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 14850,
+"service_name": "site-manager"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-shared-01a.example.test",
+"member_ip": "192.0.2.7",
+"member_status": "UP",
+"member_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac"
+}
+]
+},
+{
+"group_id": "939d8c4d-858a-c8ed-ee42-0ae56512ee0f",
+"group_status": "STABLE",
+"group_type": "MONITORING",
+"leaders": [
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 14871,
+"service_name": "monitoring"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 14872,
+"service_name": "CoordinatedDataCollectionLeader"
+},
+{
+"leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"lease_version": 14874,
+"service_name": "ShardingMaster"
+}
+],
+"members": [
+{
+"member_fqdn": "nsx-shared-01a.example.test",
+"member_ip": "192.0.2.7",
+"member_status": "UP",
+"member_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac"
+}
+]
+},
+{
+"group_id": "1bcac931-e40b-8953-fe0c-e98bae815993",
+"group_status": "STABLE",
+"group_type": "CORFU_NONCONFIG",
+"leaders": [],
+"members": [
+{
+"member_fqdn": "nsx-shared-01a.example.test",
+"member_ip": "192.0.2.7",
+"member_status": "UP",
+"member_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac"
+}
+]
+}
+],
+"overall_status": "STABLE"
+},
+"mgmt_cluster_status": {
+"offline_nodes": [],
+"online_nodes": [
+{
+"mgmt_cluster_listen_ip_address": "192.0.2.7",
+"uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac"
+}
+],
+"status": "STABLE"
+},
+"node_services_status": {
+"services": [
+{
+"nodes": [
+{
+"node_fqdn": "nsx-shared-01a.example.test",
+"node_id": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"node_ipv4": "192.0.2.7",
+"status": "UP"
+}
+],
+"service_name": "SEARCH"
+},
+{
+"nodes": [
+{
+"node_fqdn": "nsx-shared-01a.example.test",
+"node_id": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"node_ipv4": "192.0.2.7",
+"status": "UP"
+}
+],
+"service_name": "SHA"
+},
+{
+"nodes": [
+{
+"node_fqdn": "nsx-shared-01a.example.test",
+"node_id": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"node_ipv4": "192.0.2.7",
+"status": "UP"
+}
+],
+"service_name": "APPLIANCE_PROXY"
+}
+]
+},
+"overall_status": "STABLE"
+},
+"/api/v1/edge-clusters/b8b3e2c2-68e2-31ba-2c5c-fa0756d703f2/inter-site/status": {
+"edge_cluster_id": "b8b3e2c2-68e2-31ba-2c5c-fa0756d703f2",
+"edge_cluster_name": "fed-ec-b",
+"last_update_timestamp": 1795099029264,
+"member_status": [
+{
+"established_bgp_sessions": 2,
+"neighbor_status": [
+{
+"connection_state": "ESTABLISHED",
+"neighbor_address": "192.0.2.14",
+"remote_site": {
+"is_valid": true,
+"target_display_name": "site-a-wld01",
+"target_id": "6241f0a1-eb90-457d-85b1-3ebc53fb030d"
+},
+"source_address": "192.0.2.16"
+},
+{
+"connection_state": "ESTABLISHED",
+"neighbor_address": "192.0.2.15",
+"remote_site": {
+"is_valid": true,
+"target_display_name": "site-a-wld01",
+"target_id": "6241f0a1-eb90-457d-85b1-3ebc53fb030d"
+},
+"source_address": "192.0.2.16"
+}
+],
+"status": "UP",
+"total_bgp_sessions": 2,
+"transport_node": {
+"is_valid": true,
+"target_id": "9ef468d8-416e-e3d0-6421-7caf10983154",
+"target_type": "TransportNode"
+}
+},
+{
+"established_bgp_sessions": 2,
+"neighbor_status": [
+{
+"connection_state": "ESTABLISHED",
+"neighbor_address": "192.0.2.14",
+"remote_site": {
+"is_valid": true,
+"target_display_name": "site-a-wld01",
+"target_id": "6241f0a1-eb90-457d-85b1-3ebc53fb030d"
+},
+"source_address": "192.0.2.17"
+},
+{
+"connection_state": "ESTABLISHED",
+"neighbor_address": "192.0.2.15",
+"remote_site": {
+"is_valid": true,
+"target_display_name": "site-a-wld01",
+"target_id": "6241f0a1-eb90-457d-85b1-3ebc53fb030d"
+},
+"source_address": "192.0.2.17"
+}
+],
+"status": "UP",
+"total_bgp_sessions": 2,
+"transport_node": {
+"is_valid": true,
+"target_id": "acecccf4-0920-e63d-7543-33bad9937189",
+"target_type": "TransportNode"
+}
+}
+],
+"overall_status": "UP"
+},
+"/api/v1/sites/status": {
+"active_standby_sync_statuses": null,
+"remote_connections": [
+{
+"site_name": "gm-site-a",
+"stubs": [
+{
+"address": "192.0.2.4",
+"connection_up": true
+}
+]
+},
+{
+"site_name": "site-a-wld01",
+"stubs": [
+{
+"address": "192.0.2.3",
+"connection_up": true
+}
+]
+},
+{
+"site_name": "gm-site-b",
+"stubs": [
+{
+"address": "192.0.2.5",
+"connection_up": true
+}
+]
+}
+]
+},
+"/api/v1/transport-nodes/9ef468d8-416e-e3d0-6421-7caf10983154/inter-site/statistics": {
+"last_update_timestamp": 1795099029358,
+"stats_per_site": [
+{
+"remote_site": {
+"is_valid": true,
+"target_display_name": "site-a-wld01",
+"target_id": "6241f0a1-eb90-457d-85b1-3ebc53fb030d"
+},
+"rx": {
+"blocked_packets": 0,
+"dropped_packets": 34,
+"total_bytes": 25799588,
+"total_packets": 340029
+},
+"stats_per_tunnel": [
+{
+"rx": {
+"blocked_packets": 0,
+"dropped_packets": 33,
+"total_bytes": 13411422,
+"total_packets": 177599
+},
+"tunnel_destination_address": "192.0.2.14",
+"tunnel_source_address": "192.0.2.16",
+"tx": {
+"blocked_packets": 0,
+"dropped_packets": 0,
+"total_bytes": 21286276,
+"total_packets": 178143
+}
+},
+{
+"rx": {
+"blocked_packets": 0,
+"dropped_packets": 1,
+"total_bytes": 12388166,
+"total_packets": 162430
+},
+"tunnel_destination_address": "192.0.2.15",
+"tunnel_source_address": "192.0.2.16",
+"tx": {
+"blocked_packets": 0,
+"dropped_packets": 0,
+"total_bytes": 19772439,
+"total_packets": 164588
+}
+}
+],
+"tx": {
+"blocked_packets": 0,
+"dropped_packets": 0,
+"total_bytes": 41058715,
+"total_packets": 342731
+}
+}
+],
+"transport_node_id": "9ef468d8-416e-e3d0-6421-7caf10983154"
+},
+"/api/v1/transport-nodes/acecccf4-0920-e63d-7543-33bad9937189/inter-site/statistics": {
+"last_update_timestamp": 1795099029565,
+"stats_per_site": [
+{
+"remote_site": {
+"is_valid": true,
+"target_display_name": "site-a-wld01",
+"target_id": "6241f0a1-eb90-457d-85b1-3ebc53fb030d"
+},
+"rx": {
+"blocked_packets": 0,
+"dropped_packets": 7,
+"total_bytes": 25936457,
+"total_packets": 342436
+},
+"stats_per_tunnel": [
+{
+"rx": {
+"blocked_packets": 0,
+"dropped_packets": 6,
+"total_bytes": 13028738,
+"total_packets": 172131
+},
+"tunnel_destination_address": "192.0.2.14",
+"tunnel_source_address": "192.0.2.17",
+"tx": {
+"blocked_packets": 0,
+"dropped_packets": 0,
+"total_bytes": 20692624,
+"total_packets": 172952
+}
+},
+{
+"rx": {
+"blocked_packets": 0,
+"dropped_packets": 1,
+"total_bytes": 12907719,
+"total_packets": 170305
+},
+"tunnel_destination_address": "192.0.2.15",
+"tunnel_source_address": "192.0.2.17",
+"tx": {
+"blocked_packets": 0,
+"dropped_packets": 0,
+"total_bytes": 20354731,
+"total_packets": 169883
+}
+}
+],
+"tx": {
+"blocked_packets": 0,
+"dropped_packets": 0,
+"total_bytes": 41047355,
+"total_packets": 342835
+}
+}
+],
+"transport_node_id": "acecccf4-0920-e63d-7543-33bad9937189"
+},
+"/api/v1/transport-nodes?node_types=EdgeNode&page_size=500": {
+"result_count": 2,
+"results": [
+{
+"display_name": "edge-shared-01a",
+"failure_domain_id": "61ecd848-0a52-05eb-c3b9-d5d1e0edf7a7",
+"id": "9ef468d8-416e-e3d0-6421-7caf10983154",
+"is_overridden": false,
+"maintenance_mode": "DISABLED",
+"node_id": "9ef468d8-416e-e3d0-6421-7caf10983154",
+"resource_type": "TransportNode"
+},
+{
+"display_name": "edge-shared-02a",
+"failure_domain_id": "61ecd848-0a52-05eb-c3b9-d5d1e0edf7a7",
+"id": "acecccf4-0920-e63d-7543-33bad9937189",
+"is_overridden": false,
+"maintenance_mode": "DISABLED",
+"node_id": "acecccf4-0920-e63d-7543-33bad9937189",
+"resource_type": "TransportNode"
+}
+],
+"sort_ascending": true,
+"sort_by": "create_time"
+},
+"/api/v1/trust-management/certificates?details=true&page_size=500": {
+"result_count": 18,
+"results": [
+{
+"details": [
+{
+"not_after": 1866213783000,
+"subject_cn": "cluster-nsx-shared-01a.example.test"
+}
+],
+"display_name": "MGMT_CLUSTER site 50adcaea-7448-8f66-da51-251459b09927",
+"id": "b16d9c5b-0d00-6600-883a-145ff6d6d3b7"
+},
+{
+"details": [
+{
+"not_after": 4948533780000,
+"subject_cn": "cluster-manager"
+}
+],
+"display_name": "CBM_CLUSTER_MANAGER node d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"id": "d42657e6-7a25-6f5d-043b-a24847751557"
+},
+{
+"details": [
+{
+"not_after": 4948533794000,
+"subject_cn": "corfu"
+}
+],
+"display_name": "CBM_CORFU node d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"id": "c2f07abc-08e2-dee1-3819-25ebeaaa3271"
+},
+{
+"details": [
+{
+"not_after": 2110293769000,
+"subject_cn": "VMware-NSX-ApplProxyHub-CCP"
+}
+],
+"display_name": "APH node d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"id": "c533982c-323c-67ec-07e2-fb9c00efbf94"
+},
+{
+"details": [
+{
+"not_after": 2110294571000,
+"subject_cn": "local-manager"
+}
+],
+"display_name": "LocalManager",
+"id": "b6c2c633-5357-d6ce-6e03-26b0c7b978a2"
+},
+{
+"details": [
+{
+"not_after": 1857166817000,
+"subject_cn": "nsx-shared-01a.example.test"
+}
+],
+"display_name": "88c9d0c2-6ce6-e8a2-e2a9-1893b7b4b455",
+"id": "720243a1-db3b-9b2d-bc39-07fc002458c7"
+},
+{
+"details": [
+{
+"not_after": 1857166870000,
+"subject_cn": "nsx-shared-a.example.test"
+}
+],
+"display_name": "a83cb529-af20-4123-bd60-f8c06ce8f353",
+"id": "f26deba4-a41b-199d-ea4f-e330ebcb4b08"
+},
+{
+"details": [
+{
+"not_after": 1858046131000,
+"subject_cn": "vc-wld03-a.example.test"
+}
+],
+"display_name": "cm-machine-ssl-vc-wld03-a.example.test",
+"id": "01cbbbaa-7a71-5b93-6d0d-7ff128cd64f6"
+},
+{
+"details": [
+{
+"not_after": 2110031730000,
+"subject_cn": "CA"
+}
+],
+"display_name": "cm-vc-wld03-a.example.test",
+"id": "536a3300-cbd6-43a8-b761-7ff0279387f9"
+},
+{
+"details": [
+{
+"not_after": 2105944825000,
+"subject_cn": "local-manager"
+}
+],
+"display_name": "88e1f4dc-dbfd-5d80-808c-c46f1ff9d4ef",
+"id": "88e1f4dc-dbfd-5d80-808c-c46f1ff9d4ef"
+},
+{
+"details": [
+{
+"not_after": 2110245160000,
+"subject_cn": "global-manager"
+}
+],
+"display_name": "3e410d1b-3e43-37c0-a542-f9dde47a0378",
+"id": "3e410d1b-3e43-37c0-a542-f9dde47a0378"
+},
+{
+"details": [
+{
+"not_after": 2105627647000,
+"subject_cn": "CA"
+}
+],
+"display_name": "Site certificate OU=VMware Engineering,O=vc-mgmt-a.example.test,ST=California,C=US,DC=local,DC=vsphere,CN=CA",
+"id": "fa1b3ccc-0cf6-3238-883c-8ade7b90ee6c"
+},
+{
+"details": [
+{
+"not_after": 2105944480000,
+"subject_cn": "VMware-NSX-ApplProxyHub-CCP"
+}
+],
+"display_name": "Site certificate UID=7ba5ca76-f4f1-41cb-24a9-f0b85867b07b,CN=VMware-NSX-ApplProxyHub-CCP,1.2.840.113549.1.9.1=#161b73736c2d63657274696669636174657340766d776172652e636f6d,O=VMware\\, Inc.,L=Palo Alto,ST=California,C=US",
+"id": "f816c600-3611-1a65-1e3d-832ae1af622a"
+},
+{
+"details": [
+{
+"not_after": 2110244647000,
+"subject_cn": "VMware-NSX-ApplProxyHub-CCP"
+}
+],
+"display_name": "Site certificate UID=915d38e3-0779-51b6-25c9-1fd49cee54ab,CN=VMware-NSX-ApplProxyHub-CCP,1.2.840.113549.1.9.1=#161b73736c2d63657274696669636174657340766d776172652e636f6d,O=VMware\\, Inc.,L=Palo Alto,ST=California,C=US",
+"id": "bf612c2c-8f4a-2559-e407-1f04fe1a576c"
+},
+{
+"details": [
+{
+"not_after": 1866164669000,
+"subject_cn": "cluster-nsx-gm-01a.example.test"
+}
+],
+"display_name": "Site certificate C=US,ST=CA,L=Palo Alto,O=VMware Inc.,OU=NSX,CN=cluster-nsx-gm-01a.example.test",
+"id": "89529874-24cb-d4d9-341f-0408e0f55bde"
+},
+{
+"details": [
+{
+"not_after": 2110417943000,
+"subject_cn": "global-manager"
+}
+],
+"display_name": "51e2fd58-a2b2-3dc7-44a2-0f5bc4ef94c8",
+"id": "51e2fd58-a2b2-3dc7-44a2-0f5bc4ef94c8"
+},
+{
+"details": [
+{
+"not_after": 2110417571000,
+"subject_cn": "VMware-NSX-ApplProxyHub-CCP"
+}
+],
+"display_name": "Site certificate UID=5716ff38-012e-de7c-29a9-1803690b8eeb,CN=VMware-NSX-ApplProxyHub-CCP,1.2.840.113549.1.9.1=#161b73736c2d63657274696669636174657340766d776172652e636f6d,O=VMware\\, Inc.,L=Palo Alto,ST=California,C=US",
+"id": "2dc958d4-dcb4-52b7-fac3-b36a536b4d6b"
+},
+{
+"details": [
+{
+"not_after": 1866337588000,
+"subject_cn": "cluster-nsx-gm-01b.example.test"
+}
+],
+"display_name": "Site certificate C=US,ST=CA,L=Palo Alto,O=VMware Inc.,OU=NSX,CN=cluster-nsx-gm-01b.example.test",
+"id": "639360b6-70bf-e8a1-5559-0a6f8bf3cff3"
+}
+]
+},
+"/policy/api/v1/global-infra/domains/default/security-policies/fed-demo/statistics": {
+"result_count": 1,
+"results": [
+{
+"enforcement_point": "/infra/sites/default/enforcement-points/default",
+"statistics": {
+"internal_section_id": "55611de7-c4aa-04df-03a1-ab8a6dfb7b0f",
+"result_count": 1,
+"results": [
+{
+"byte_count": 0,
+"hit_count": 0,
+"internal_rule_id": "1000004",
+"l7_accept_count": 0,
+"l7_reject_count": 0,
+"l7_reject_with_response_count": 0,
+"max_popularity_index": 0,
+"max_session_count": 0,
+"packet_count": 0,
+"popularity_index": 0,
+"session_count": 0,
+"total_session_count": 0
+}
+]
+}
+}
+]
+},
+"/policy/api/v1/global-infra/tier-0s/fed-t0/locale-services/site-a-wld03/bgp/neighbors/status?page_size=500": {
+"result_count": 8,
+"results": [
+{
+"address_families": [
+{
+"in_prefix_count": 33,
+"out_prefix_count": 2,
+"type": "IPV4_UNICAST"
+}
+],
+"announced_capabilities": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"hostName advHostName"
+],
+"connection_drop_count": 0,
+"connection_state": "ESTABLISHED",
+"edge_path": "/global-infra/sites/site-a-wld03/enforcement-points/default/edge-clusters/b8b3e2c2-68e2-31ba-2c5c-fa0756d703f2/edge-nodes/0",
+"established_connection_count": 1,
+"graceful_restart_mode": "HELPER_ONLY",
+"hold_time": 180,
+"keep_alive_interval": 60,
+"last_update_timestamp": 1795099032823,
+"local_port": 61322,
+"messages_received": 1507,
+"messages_sent": 1473,
+"negotiated_capability": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"hostName rcvHostName"
+],
+"neighbor_address": "192.0.2.9",
+"neighbor_router_id": "192.0.2.8",
+"remote_as_number": "65000",
+"remote_port": 179,
+"source_address": "192.0.2.10",
+"tier0_path": "/global-infra/tier-0s/fed-t0",
+"time_since_established": 88132,
+"total_in_prefix_count": 33,
+"total_out_prefix_count": 2,
+"type": "USER"
+},
+{
+"address_families": [
+{
+"in_prefix_count": 37,
+"out_prefix_count": 37,
+"type": "IPV4_UNICAST"
+},
+{
+"in_prefix_count": 0,
+"out_prefix_count": 0,
+"type": "IPV6_UNICAST"
+}
+],
+"announced_capabilities": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"IPv6 Unicast",
+"hostName advHostName",
+"addPath IPv6 Unicast Rx"
+],
+"connection_drop_count": 0,
+"connection_state": "ESTABLISHED",
+"edge_path": "/global-infra/sites/site-a-wld03/enforcement-points/default/edge-clusters/b8b3e2c2-68e2-31ba-2c5c-fa0756d703f2/edge-nodes/0",
+"established_connection_count": 1,
+"graceful_restart_mode": "DISABLE",
+"hold_time": 3,
+"keep_alive_interval": 1,
+"last_update_timestamp": 1795099032823,
+"local_port": 56081,
+"messages_received": 88021,
+"messages_sent": 88020,
+"negotiated_capability": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"IPv6 Unicast",
+"hostName rcvHostName",
+"addPath IPv6 Unicast Rx"
+],
+"neighbor_address": "169.254.32.4",
+"neighbor_router_id": "192.0.2.13",
+"remote_as_number": "65110",
+"remote_port": 179,
+"remote_site": {
+"target_display_name": "site-a-wld01",
+"target_id": "6241f0a1-eb90-457d-85b1-3ebc53fb030d"
+},
+"source_address": "169.254.32.6",
+"tier0_path": "/global-infra/tier-0s/fed-t0",
+"time_since_established": 88016,
+"total_in_prefix_count": 37,
+"total_out_prefix_count": 37,
+"type": "INTER_SR"
+},
+{
+"address_families": [
+{
+"in_prefix_count": 37,
+"out_prefix_count": 37,
+"type": "IPV4_UNICAST"
+},
+{
+"in_prefix_count": 0,
+"out_prefix_count": 0,
+"type": "IPV6_UNICAST"
+}
+],
+"announced_capabilities": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"IPv6 Unicast",
+"hostName advHostName",
+"addPath IPv6 Unicast Rx"
+],
+"connection_drop_count": 0,
+"connection_state": "ESTABLISHED",
+"edge_path": "/global-infra/sites/site-a-wld03/enforcement-points/default/edge-clusters/b8b3e2c2-68e2-31ba-2c5c-fa0756d703f2/edge-nodes/0",
+"established_connection_count": 1,
+"graceful_restart_mode": "DISABLE",
+"hold_time": 3,
+"keep_alive_interval": 1,
+"last_update_timestamp": 1795099032823,
+"local_port": 62519,
+"messages_received": 88137,
+"messages_sent": 88139,
+"negotiated_capability": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"IPv6 Unicast",
+"hostName rcvHostName",
+"addPath IPv6 Unicast Rx"
+],
+"neighbor_address": "169.254.32.7",
+"neighbor_edge_node": "/global-infra/sites/site-a-wld03/enforcement-points/default/edge-clusters/b8b3e2c2-68e2-31ba-2c5c-fa0756d703f2/edge-nodes/1",
+"neighbor_router_id": "192.0.2.11",
+"remote_as_number": "65110",
+"remote_port": 179,
+"source_address": "169.254.32.6",
+"tier0_path": "/global-infra/tier-0s/fed-t0",
+"time_since_established": 88132,
+"total_in_prefix_count": 37,
+"total_out_prefix_count": 37,
+"type": "INTER_SR"
+},
+{
+"address_families": [
+{
+"in_prefix_count": 37,
+"out_prefix_count": 37,
+"type": "IPV4_UNICAST"
+},
+{
+"in_prefix_count": 0,
+"out_prefix_count": 0,
+"type": "IPV6_UNICAST"
+}
+],
+"announced_capabilities": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"IPv6 Unicast",
+"hostName advHostName",
+"addPath IPv6 Unicast Rx"
+],
+"connection_drop_count": 0,
+"connection_state": "ESTABLISHED",
+"edge_path": "/global-infra/sites/site-a-wld03/enforcement-points/default/edge-clusters/b8b3e2c2-68e2-31ba-2c5c-fa0756d703f2/edge-nodes/0",
+"established_connection_count": 1,
+"graceful_restart_mode": "DISABLE",
+"hold_time": 3,
+"keep_alive_interval": 1,
+"last_update_timestamp": 1795099032823,
+"local_port": 49987,
+"messages_received": 87989,
+"messages_sent": 87985,
+"negotiated_capability": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"IPv6 Unicast",
+"hostName rcvHostName",
+"addPath IPv6 Unicast Rx"
+],
+"neighbor_address": "169.254.32.3",
+"neighbor_router_id": "192.0.2.12",
+"remote_as_number": "65110",
+"remote_port": 179,
+"remote_site": {
+"target_display_name": "site-a-wld01",
+"target_id": "6241f0a1-eb90-457d-85b1-3ebc53fb030d"
+},
+"source_address": "169.254.32.6",
+"tier0_path": "/global-infra/tier-0s/fed-t0",
+"time_since_established": 87977,
+"total_in_prefix_count": 37,
+"total_out_prefix_count": 37,
+"type": "INTER_SR"
+},
+{
+"address_families": [
+{
+"in_prefix_count": 33,
+"out_prefix_count": 2,
+"type": "IPV4_UNICAST"
+}
+],
+"announced_capabilities": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"hostName advHostName"
+],
+"connection_drop_count": 0,
+"connection_state": "ESTABLISHED",
+"edge_path": "/global-infra/sites/site-a-wld03/enforcement-points/default/edge-clusters/b8b3e2c2-68e2-31ba-2c5c-fa0756d703f2/edge-nodes/1",
+"established_connection_count": 1,
+"graceful_restart_mode": "HELPER_ONLY",
+"hold_time": 180,
+"keep_alive_interval": 60,
+"last_update_timestamp": 1795099032823,
+"local_port": 58383,
+"messages_received": 1531,
+"messages_sent": 1495,
+"negotiated_capability": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"hostName rcvHostName"
+],
+"neighbor_address": "192.0.2.9",
+"neighbor_router_id": "192.0.2.8",
+"remote_as_number": "65000",
+"remote_port": 179,
+"source_address": "192.0.2.11",
+"tier0_path": "/global-infra/tier-0s/fed-t0",
+"time_since_established": 89430,
+"total_in_prefix_count": 33,
+"total_out_prefix_count": 2,
+"type": "USER"
+},
+{
+"address_families": [
+{
+"in_prefix_count": 37,
+"out_prefix_count": 37,
+"type": "IPV4_UNICAST"
+},
+{
+"in_prefix_count": 0,
+"out_prefix_count": 0,
+"type": "IPV6_UNICAST"
+}
+],
+"announced_capabilities": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"IPv6 Unicast",
+"hostName advHostName",
+"addPath IPv6 Unicast Rx"
+],
+"connection_drop_count": 0,
+"connection_state": "ESTABLISHED",
+"edge_path": "/global-infra/sites/site-a-wld03/enforcement-points/default/edge-clusters/b8b3e2c2-68e2-31ba-2c5c-fa0756d703f2/edge-nodes/1",
+"established_connection_count": 1,
+"graceful_restart_mode": "DISABLE",
+"hold_time": 3,
+"keep_alive_interval": 1,
+"last_update_timestamp": 1795099032823,
+"local_port": 51657,
+"messages_received": 89219,
+"messages_sent": 89220,
+"negotiated_capability": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"IPv6 Unicast",
+"hostName rcvHostName",
+"addPath IPv6 Unicast Rx"
+],
+"neighbor_address": "169.254.32.4",
+"neighbor_router_id": "192.0.2.13",
+"remote_as_number": "65110",
+"remote_port": 179,
+"remote_site": {
+"target_display_name": "site-a-wld01",
+"target_id": "6241f0a1-eb90-457d-85b1-3ebc53fb030d"
+},
+"source_address": "169.254.32.7",
+"tier0_path": "/global-infra/tier-0s/fed-t0",
+"time_since_established": 89215,
+"total_in_prefix_count": 37,
+"total_out_prefix_count": 37,
+"type": "INTER_SR"
+},
+{
+"address_families": [
+{
+"in_prefix_count": 37,
+"out_prefix_count": 37,
+"type": "IPV4_UNICAST"
+},
+{
+"in_prefix_count": 0,
+"out_prefix_count": 0,
+"type": "IPV6_UNICAST"
+}
+],
+"announced_capabilities": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"IPv6 Unicast",
+"hostName advHostName",
+"addPath IPv6 Unicast Rx"
+],
+"connection_drop_count": 1,
+"connection_state": "ESTABLISHED",
+"edge_path": "/global-infra/sites/site-a-wld03/enforcement-points/default/edge-clusters/b8b3e2c2-68e2-31ba-2c5c-fa0756d703f2/edge-nodes/1",
+"established_connection_count": 2,
+"graceful_restart_mode": "DISABLE",
+"hold_time": 3,
+"keep_alive_interval": 1,
+"last_update_timestamp": 1795099032823,
+"local_port": 179,
+"messages_received": 89284,
+"messages_sent": 89281,
+"negotiated_capability": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"IPv6 Unicast",
+"hostName rcvHostName",
+"addPath IPv6 Unicast Rx"
+],
+"neighbor_address": "169.254.32.6",
+"neighbor_edge_node": "/global-infra/sites/site-a-wld03/enforcement-points/default/edge-clusters/b8b3e2c2-68e2-31ba-2c5c-fa0756d703f2/edge-nodes/0",
+"neighbor_router_id": "192.0.2.10",
+"remote_as_number": "65110",
+"remote_port": 62519,
+"source_address": "169.254.32.7",
+"tier0_path": "/global-infra/tier-0s/fed-t0",
+"time_since_established": 88135,
+"total_in_prefix_count": 37,
+"total_out_prefix_count": 37,
+"type": "INTER_SR"
+},
+{
+"address_families": [
+{
+"in_prefix_count": 37,
+"out_prefix_count": 37,
+"type": "IPV4_UNICAST"
+},
+{
+"in_prefix_count": 0,
+"out_prefix_count": 0,
+"type": "IPV6_UNICAST"
+}
+],
+"announced_capabilities": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"IPv6 Unicast",
+"hostName advHostName",
+"addPath IPv6 Unicast Rx"
+],
+"connection_drop_count": 1,
+"connection_state": "ESTABLISHED",
+"edge_path": "/global-infra/sites/site-a-wld03/enforcement-points/default/edge-clusters/b8b3e2c2-68e2-31ba-2c5c-fa0756d703f2/edge-nodes/1",
+"established_connection_count": 2,
+"graceful_restart_mode": "DISABLE",
+"hold_time": 3,
+"keep_alive_interval": 1,
+"last_update_timestamp": 1795099032823,
+"local_port": 59212,
+"messages_received": 89137,
+"messages_sent": 89131,
+"negotiated_capability": [
+"addPath IPv4 Unicast Rx",
+"4byteAs",
+"routeRefresh",
+"IPv4 Unicast",
+"IPv6 Unicast",
+"hostName rcvHostName",
+"addPath IPv6 Unicast Rx"
+],
+"neighbor_address": "169.254.32.3",
+"neighbor_router_id": "192.0.2.12",
+"remote_as_number": "65110",
+"remote_port": 179,
+"remote_site": {
+"target_display_name": "site-a-wld01",
+"target_id": "6241f0a1-eb90-457d-85b1-3ebc53fb030d"
+},
+"source_address": "169.254.32.7",
+"tier0_path": "/global-infra/tier-0s/fed-t0",
+"time_since_established": 87980,
+"total_in_prefix_count": 37,
+"total_out_prefix_count": 37,
+"type": "INTER_SR"
+}
+]
+},
+"/policy/api/v1/global-infra/tier-0s/fed-t0/locale-services?page_size=500": {
+"result_count": 1,
+"results": [
+{
+"bfd_profile_path": "/global-infra/bfd-profiles/default",
+"display_name": "site-a-wld03",
+"edge_cluster_path": "/global-infra/sites/site-a-wld03/enforcement-points/default/edge-clusters/b8b3e2c2-68e2-31ba-2c5c-fa0756d703f2",
+"id": "site-a-wld03",
+"marked_for_delete": false,
+"overridden": false,
+"owner_id": "3988c2c1-47cc-9cac-a699-c073485173ca",
+"parent_path": "/global-infra/tier-0s/fed-t0",
+"path": "/global-infra/tier-0s/fed-t0/locale-services/site-a-wld03",
+"realization_id": "98243aa1-c3ae-db2c-8ca7-c48b62152067",
+"relative_path": "site-a-wld03",
+"remote_path": "",
+"resource_type": "LocaleServices",
+"route_redistribution_config": {
+"bgp_enabled": true,
+"ospf_enabled": false,
+"redistribution_rules": [
+{
+"destinations": [
+"BGP"
+],
+"name": "t1-connected",
+"route_redistribution_types": [
+"TIER1_CONNECTED",
+"TIER1_STATIC"
+]
+}
+]
+},
+"unique_id": "98243aa1-c3ae-db2c-8ca7-c48b62152067"
+}
+],
+"sort_ascending": true,
+"sort_by": "display_name"
+},
+"/policy/api/v1/global-infra/tier-0s?page_size=500": {
+"result_count": 1,
+"results": [
+{
+"advanced_config": {
+"connectivity": "ON",
+"forwarding_up_timer": 5
+},
+"default_rule_logging": false,
+"disable_firewall": true,
+"display_name": "fed-t0",
+"enable_rd_per_edge": false,
+"failover_mode": "NON_PREEMPTIVE",
+"federation_config": {
+"global_overlay_id": 204025,
+"transit_segment_id": "95670968-df41-5c74-bbaf-cafad410334f"
+},
+"force_whitelisting": false,
+"ha_mode": "ACTIVE_ACTIVE",
+"id": "fed-t0",
+"internal_transit_subnets": [
+"169.254.0.0/24"
+],
+"intersite_config": {
+"intersite_transit_subnet": "169.254.32.0/20",
+"last_admin_active_epoch": 1794963617
+},
+"ipv6_profile_paths": [
+"/global-infra/ipv6-ndra-profiles/default",
+"/global-infra/ipv6-dad-profiles/default"
+],
+"marked_for_delete": false,
+"multi_vrf_inter_sr_routing": false,
+"overridden": false,
+"owner_id": "3988c2c1-47cc-9cac-a699-c073485173ca",
+"parent_path": "/global-infra",
+"path": "/global-infra/tier-0s/fed-t0",
+"realization_id": "cb885621-abe5-9eb4-fd65-a12415b008fd",
+"relative_path": "fed-t0",
+"remote_path": "",
+"resource_type": "Tier0",
+"stateful_services": {
+"enabled": false,
+"redirection_policy": "IP_HASH"
+},
+"transit_subnets": [
+"100.64.0.0/16"
+],
+"unique_id": "cb885621-abe5-9eb4-fd65-a12415b008fd",
+"vrf_transit_subnets": [
+"169.254.2.0/23"
+]
+}
+],
+"sort_ascending": true,
+"sort_by": "display_name"
+},
+"/policy/api/v1/infra/full-sync-states?page_size=500": {
+"result_count": 1,
+"results": [
+{
+"display_name": "GM-2-LM-FULL-SYNC",
+"full_sync_id": "GM-2-LM-FULL-SYNC",
+"id": "GM-2-LM-FULL-SYNC",
+"last_completed_stage": "COMPLETED",
+"last_upate_time": 1795092329909,
+"last_update_time": 1795092329909,
+"marked_for_delete": false,
+"overridden": false,
+"owner_id": "50adcaea-7448-8f66-da51-251459b09927",
+"parent_path": "/infra",
+"path": "/infra/full-sync-states/GM-2-LM-FULL-SYNC",
+"realization_id": "001f0527-47f9-9c40-493c-cb8822a6cbb0",
+"relative_path": "GM-2-LM-FULL-SYNC",
+"remote_path": "/orgs/default/projects/default/infra/full-sync-states/GM-2-LM-FULL-SYNC--site-a-wld03",
+"resource_type": "FullSyncState",
+"start_time": 1795092315742,
+"unique_id": "001f0527-47f9-9c40-493c-cb8822a6cbb0"
+}
+],
+"sort_ascending": true,
+"sort_by": "display_name"
+},
+"/policy/api/v1/infra/sites/default/enforcement-points/default/edge-clusters?page_size=500": {
+"result_count": 1,
+"results": [
+{
+"deployment_type": "VIRTUAL_MACHINE",
+"display_name": "fed-ec-b",
+"edge_cluster_profile": "/infra/sites/default/enforcement-points/default/edge-cluster-high-availability-profiles/c238e591-084a-8e98-6699-de7f12b56d93",
+"id": "b8b3e2c2-68e2-31ba-2c5c-fa0756d703f2",
+"inter_site_forwarding_enabled": true,
+"marked_for_delete": false,
+"member_node_type": "EDGE_NODE",
+"nsx_id": "b8b3e2c2-68e2-31ba-2c5c-fa0756d703f2",
+"overridden": false,
+"owner_id": "50adcaea-7448-8f66-da51-251459b09927",
+"parent_path": "/infra/sites/default/enforcement-points/default",
+"password_managed_by_vcf": false,
+"path": "/infra/sites/default/enforcement-points/default/edge-clusters/b8b3e2c2-68e2-31ba-2c5c-fa0756d703f2",
+"policy_edge_nodes": [
+{
+"edge_transport_node_path": "/infra/sites/default/enforcement-points/default/edge-transport-nodes/edge-shared-01a",
+"id": "1",
+"member_index": 1,
+"policy_edge_node_path": "/infra/sites/default/enforcement-points/default/edge-clusters/b8b3e2c2-68e2-31ba-2c5c-fa0756d703f2/edge-nodes/1"
+},
+{
+"edge_transport_node_path": "/infra/sites/default/enforcement-points/default/edge-transport-nodes/edge-shared-02a",
+"id": "0",
+"member_index": 0,
+"policy_edge_node_path": "/infra/sites/default/enforcement-points/default/edge-clusters/b8b3e2c2-68e2-31ba-2c5c-fa0756d703f2/edge-nodes/0"
+}
+],
+"realization_id": "b8b3e2c2-68e2-31ba-2c5c-fa0756d703f2",
+"relative_path": "b8b3e2c2-68e2-31ba-2c5c-fa0756d703f2",
+"remote_path": "/orgs/default/projects/default/infra/sites/site-a-wld03/enforcement-points/default/edge-clusters/b8b3e2c2-68e2-31ba-2c5c-fa0756d703f2",
+"resource_type": "PolicyEdgeCluster",
+"rtep_ips": [
+"192.0.2.16",
+"192.0.2.17"
+],
+"unique_id": "b8b3e2c2-68e2-31ba-2c5c-fa0756d703f2"
+}
+],
+"sort_ascending": true,
+"sort_by": "display_name"
+}
+}
+}

@@ -3,7 +3,8 @@
 Run it inside the tooling image, from the repository root:
   docker run --rm --network host -v $PWD:/work -e GM_HOSTS=gm1.example.com,gm2.example.com \
       -e NSX_USER=admin -e NSX_PASSWORD=... fedmp-tooling python tools/localrun.py
-Optional: LM_USER and LM_PASSWORD (Local Managers, if different), RULE_POLICIES, LINK=on,
+Optional: LM_USER and LM_PASSWORD (Local Managers, if different), TRUST=enforce|report (default report),
+RULE_POLICIES, LINK=on,
 SHOW=<object kinds, comma separated>.
 """
 import collections, json, os, sys
@@ -13,7 +14,7 @@ import adapter
 from aria.ops.adapter_instance import AdapterInstance
 ident = lambda k, v: {"key": k, "value": v, "is_part_of_uniqueness": True}
 params = {"gm_hosts": os.environ["GM_HOSTS"], "rule_policies": os.environ.get("RULE_POLICIES", ""),
-          "certificate_trust": "enforce", "link_nsx_objects": os.environ.get("LINK", "off")}
+          "certificate_trust": os.environ.get("TRUST", "report"), "link_nsx_objects": os.environ.get("LINK", "off")}
 ai = AdapterInstance({"adapter_key": {"adapter_kind": "NSXFederation", "object_kind": "NSXFederation_adapter_instance",
       "name": "local", "identifiers": [ident(k, v) for k, v in params.items()]},
       "credential_config": {"credential_key": "nsx_credential", "credential_fields": [
@@ -25,7 +26,7 @@ d = adapter.get_adapter_definition()
 print("definition ok:", len(d.to_json()["object_types"]), "object types")
 tr = adapter.test(ai); print("test:", tr.get_json())
 j = adapter.collect(ai).get_json()
-print("error:", j.get("error_message"))
+print("error:", j.get("errorMessage") or j.get("error_message"))
 objs = j.get("result", [])
 print("objects:", len(objs), dict(collections.Counter(o["key"]["objectKind"] for o in objs)))
 only = os.environ.get("SHOW", "")

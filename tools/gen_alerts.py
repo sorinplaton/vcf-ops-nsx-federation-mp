@@ -34,6 +34,7 @@ S = {
     "fed_throttled":   ("federation", "NSX throttles the API calls of the collection", "warning", "metric", "api_calls_throttled", ">", 0),
     "fed_slow":        ("federation", "The collection takes more than 4 minutes", "warning", "metric", "collection_duration_s", ">", 240),
     "fed_degraded":    ("federation", "The collection runs in degraded mode", "immediate", "property", "collection_mode", "contains", "degraded"),
+    "fed_foreign":     ("federation", "A listed Global Manager belongs to another federation", "warning", "metric", "global_managers_foreign", ">", 0),
     # global manager
     "gm_cluster":      ("global_manager", "Global Manager cluster status is not STABLE", "critical", "property", "cluster_status", "!=", "STABLE"),
     "gm_node_offline": ("global_manager", "A Global Manager node is offline", "immediate", "metric", "nodes_offline", ">", 0),
@@ -118,6 +119,20 @@ for ev, (sev, name, _d, _r) in GM_ALARMS.items():
         S[p + ev] = (ALARM_KINDS[p][0], f"{ALARM_KINDS[p][1]} raised NSX alarm {ev}", sev, "event", None, "regex",
                      f"NSX alarm {ev}:(?s).*")
 
+# ---- alert storms: while a location is cut off from the Global Manager, the alerts of the objects that depend
+# on it stay quiet behind the alert of the location. The adapter writes the names of such locations to the
+# property "location_outage" of these objects ("none" otherwise); each alert below also requires that the
+# outage symptom is NOT triggered.
+OUTAGE_KINDS = {"location": "Location", "sync_channel": "Sync channel", "edge_cluster": "Edge cluster",
+                "edge_node": "Edge node", "rtep_tunnel": "RTEP tunnel", "bgp_neighbor": "Tier-0 BGP neighbor",
+                "tier0": "Tier-0 gateway", "tier1": "Tier-1 gateway", "segment": "Segment",
+                "global_policy": "Global security policy", "realization": "Stretched object at a location"}
+for _k in OUTAGE_KINDS:
+    S["outage_" + _k] = (_k, "A location of the federation is cut off from the Global Manager", "info", "property",
+                         "location_outage", "!=", "none")
+QUIET = {"loc_intersite", "chan_down", "edge_bgp_down", "ec_status", "tun_bgp_down", "tun_drops", "t0_error", "t1_error",
+         "seg_error", "pol_error", "bgp_down", "real_missing"}
+
 # ---- wait and cancel cycles: conditions that can flap need two cycles (10 minutes) to raise and to clear
 WAIT = {k: (2, 2) for k in ("chan_down", "loc_bgp_down", "loc_bgp_none", "edge_bgp_none", "tun_bgp_down",
                             "tun_rx_drops", "tun_tx_drops", "bgp_down", "bgp_no_prefix")}
@@ -146,6 +161,8 @@ R = {
             "Check the load of the manager named in the NSX alarms.",
     "degraded": "No Global Manager answered, so the collection uses the list of locations it cached earlier and collects the "
                 "Local Managers only. Check the Global Manager addresses of the account and the alert on the Global Managers.",
+    "foreign": "One account monitors one federation. Remove the address named in the property 'Global Managers not collected' "
+               "from this account and create a second account for the other federation.",
     "budget": "The collection of this cycle is partial. Raise 'API call budget per manager and cycle' in the advanced settings "
               "of the adapter instance, or lengthen the collection interval.",
     "cluster": "Open System, Appliances on the manager and check the state of each node and service group. Restore or redeploy "
@@ -216,6 +233,8 @@ A = [
      "The collection takes most of its interval, or NSX throttles its API calls.", APP, PERF, [["fed_throttled"], ["fed_slow"]], "load"),
     ("fed_degraded", "federation", "NSX Federation collection runs without a Global Manager",
      "No Global Manager answered. The Local Managers are collected from a cached list of locations.", APP, AVAIL, [["fed_degraded"]], "degraded"),
+    ("fed_foreign", "federation", "NSX Federation account lists a Global Manager of another federation",
+     "A Global Manager address of the account answers for another federation. It is not collected.", APP, CONF, [["fed_foreign"]], "foreign"),
     ("gm_cluster", "global_manager", "Global Manager cluster is degraded",
      "The Global Manager cluster is not stable or a node is offline.", NET, AVAIL, [["gm_cluster"], ["gm_node_offline"]], "cluster"),
     ("gm_standby_sync", "global_manager", "Standby Global Manager is not in sync",
@@ -304,6 +323,10 @@ def symptoms_xml():
     return out
 
 
+A = [(k, kind, name, desc, typ, sub, [s + ["!outage_" + kind] for s in sets] if k in QUIET else sets, rec)
+     for k, kind, name, desc, typ, sub, sets, rec in A]
+
+
 def alerts_xml(with_recs=True):
     out = ["    <AlertDefinitions>"]
     for k, kind, name, desc, typ, sub, sets, rec in A:
@@ -315,7 +338,8 @@ def alerts_xml(with_recs=True):
             if len(s) == 1:
                 return [f'{pad}<SymptomSet applyOn="self" operator="and" ref="{sid(s[0])}"/>']
             return [f'{pad}<SymptomSet applyOn="self" operator="and">'] + \
-                   [f'{pad}    <Symptom ref="{sid(x)}"/>' for x in s] + [f"{pad}</SymptomSet>"]
+                   [f'{pad}    <Symptom ref="{sid(x.lstrip("!"))}"' + (' negateCondition="true"' if x.startswith("!") else "") + "/>"
+                    for x in s] + [f"{pad}</SymptomSet>"]
         if len(sets) == 1:
             out += one(sets[0], " " * 16)
         else:
@@ -346,7 +370,7 @@ def doc(parts):
 
 if __name__ == "__main__":
     for k, *_r, sets, rec in A:
-        assert rec in R and all(x in S for s in sets for x in s), k
+        assert rec in R and all(x.lstrip("!") in S for s in sets for x in s), k
     path = os.path.join(ROOT, "pack/content/alertdefs/nsxfederation_alerts.xml")
     open(path, "w").write(doc([alerts_xml(), symptoms_xml(), recs_xml()]))
     print("wrote", path, len(A), "alerts", len(S), "symptoms", len(R), "recommendations")

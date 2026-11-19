@@ -60,6 +60,13 @@
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-degraded"/></Recommendations>
             </State>
         </AlertDefinition>
+        <AlertDefinition adapterKind="NSXFederation" description="A Global Manager address of the account answers for another federation. It is not collected." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-fed_foreign" name="NSX Federation account lists a Global Manager of another federation" resourceKind="federation" subType="22" type="15" waitCycle="1" cancelCycle="1">
+            <State severity="automatic">
+                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-fed_foreign"/>
+                <Impact key="health" type="badge"/>
+                <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-foreign"/></Recommendations>
+            </State>
+        </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="The Global Manager cluster is not stable or a node is offline." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-gm_cluster" name="Global Manager cluster is degraded" resourceKind="global_manager" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
                 <SymptomSets operator="or">
@@ -129,10 +136,14 @@
         <AlertDefinition adapterKind="NSXFederation" description="Inter-site (RTEP) BGP sessions of this location are not established. Critical when none is established." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-loc_intersite" name="Inter-site BGP sessions of the location are down" resourceKind="location" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
                 <SymptomSets operator="or">
-                    <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-loc_bgp_down"/>
+                    <SymptomSet applyOn="self" operator="and">
+                        <Symptom ref="SymptomDefinition-NSXFederation-loc_bgp_down"/>
+                        <Symptom ref="SymptomDefinition-NSXFederation-outage_location" negateCondition="true"/>
+                    </SymptomSet>
                     <SymptomSet applyOn="self" operator="and">
                         <Symptom ref="SymptomDefinition-NSXFederation-loc_bgp_none"/>
                         <Symptom ref="SymptomDefinition-NSXFederation-loc_bgp_has"/>
+                        <Symptom ref="SymptomDefinition-NSXFederation-outage_location" negateCondition="true"/>
                     </SymptomSet>
                 </SymptomSets>
                 <Impact key="health" type="badge"/>
@@ -178,7 +189,10 @@
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="The connection between two managers of the federation is down." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-chan_down" name="Federation sync channel is down" resourceKind="sync_channel" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-chan_down"/>
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-chan_down"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_sync_channel" negateCondition="true"/>
+                </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-channel"/></Recommendations>
             </State>
@@ -188,6 +202,7 @@
                 <SymptomSet applyOn="self" operator="and">
                     <Symptom ref="SymptomDefinition-NSXFederation-edge_bgp_none"/>
                     <Symptom ref="SymptomDefinition-NSXFederation-edge_bgp_has"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_edge_node" negateCondition="true"/>
                 </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-intersite"/></Recommendations>
@@ -195,14 +210,20 @@
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="NSX reports an inter-site status other than UP for this edge cluster." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-ec_status" name="Inter-site status of the edge cluster is not UP" resourceKind="edge_cluster" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-ec_status"/>
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-ec_status"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_edge_cluster" negateCondition="true"/>
+                </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-intersite"/></Recommendations>
             </State>
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="The inter-site BGP session carried by this RTEP tunnel is not established." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-tun_bgp_down" name="RTEP tunnel inter-site BGP session is down" resourceKind="rtep_tunnel" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-tun_bgp_down"/>
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-tun_bgp_down"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_rtep_tunnel" negateCondition="true"/>
+                </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-intersite"/></Recommendations>
             </State>
@@ -210,8 +231,14 @@
         <AlertDefinition adapterKind="NSXFederation" description="The tunnel drops more than 60 packets per minute in one direction." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-tun_drops" name="RTEP tunnel is dropping packets" resourceKind="rtep_tunnel" subType="19" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
                 <SymptomSets operator="or">
-                    <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-tun_rx_drops"/>
-                    <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-tun_tx_drops"/>
+                    <SymptomSet applyOn="self" operator="and">
+                        <Symptom ref="SymptomDefinition-NSXFederation-tun_rx_drops"/>
+                        <Symptom ref="SymptomDefinition-NSXFederation-outage_rtep_tunnel" negateCondition="true"/>
+                    </SymptomSet>
+                    <SymptomSet applyOn="self" operator="and">
+                        <Symptom ref="SymptomDefinition-NSXFederation-tun_tx_drops"/>
+                        <Symptom ref="SymptomDefinition-NSXFederation-outage_rtep_tunnel" negateCondition="true"/>
+                    </SymptomSet>
                 </SymptomSets>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-tunnel_drops"/></Recommendations>
@@ -219,35 +246,50 @@
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="At least one location of the span reports an error for this gateway." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-t0_error" name="Stretched Tier-0 gateway is in error at a location" resourceKind="tier0" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-t0_error"/>
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-t0_error"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_tier0" negateCondition="true"/>
+                </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-object_error"/></Recommendations>
             </State>
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="At least one location of the span reports an error for this gateway." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-t1_error" name="Stretched Tier-1 gateway is in error at a location" resourceKind="tier1" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-t1_error"/>
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-t1_error"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_tier1" negateCondition="true"/>
+                </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-object_error"/></Recommendations>
             </State>
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="At least one location of the span reports an error for this segment." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-seg_error" name="Stretched segment is in error at a location" resourceKind="segment" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-seg_error"/>
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-seg_error"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_segment" negateCondition="true"/>
+                </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-object_error"/></Recommendations>
             </State>
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="At least one location of the span reports an error for this policy." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-pol_error" name="Global security policy is in error at a location" resourceKind="global_policy" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-pol_error"/>
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-pol_error"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_global_policy" negateCondition="true"/>
+                </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-object_error"/></Recommendations>
             </State>
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="A BGP session of a stretched Tier-0 gateway is not established." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-bgp_down" name="Tier-0 BGP neighbor of a stretched gateway is down" resourceKind="bgp_neighbor" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-bgp_down"/>
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-bgp_down"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_bgp_neighbor" negateCondition="true"/>
+                </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-bgp"/></Recommendations>
             </State>
@@ -265,7 +307,10 @@
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="A stretched gateway, segment or security policy is not realized at one location of its span." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-real_missing" name="Stretched object is not realized at a location" resourceKind="realization" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-real_missing"/>
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-real_missing"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_realization" negateCondition="true"/>
+                </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-realization"/></Recommendations>
             </State>
@@ -479,6 +524,11 @@
         <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-fed_degraded" name="The collection runs in degraded mode" resourceKind="federation" waitCycle="1" cancelCycle="1">
             <State severity="immediate">
                 <Condition key="collection_mode" operator="contains" thresholdType="static" type="property" value="degraded" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-fed_foreign" name="A listed Global Manager belongs to another federation" resourceKind="federation" waitCycle="1" cancelCycle="1">
+            <State severity="warning">
+                <Condition key="global_managers|global_managers_foreign" operator="&gt;" thresholdType="static" type="metric" value="0" valueType="numeric"/>
             </State>
         </SymptomDefinition>
         <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-gm_cluster" name="Global Manager cluster status is not STABLE" resourceKind="global_manager" waitCycle="1" cancelCycle="1">
@@ -791,6 +841,61 @@
                 <Condition eventMsg="NSX alarm rtep_connectivity_lost:(?s).*" eventSubType="5" eventType="11" operator="regex" type="msg_event"/>
             </State>
         </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-outage_location" name="A location of the federation is cut off from the Global Manager" resourceKind="location" waitCycle="1" cancelCycle="1">
+            <State severity="info">
+                <Condition key="location_outage" operator="!=" thresholdType="static" type="property" value="none" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-outage_sync_channel" name="A location of the federation is cut off from the Global Manager" resourceKind="sync_channel" waitCycle="1" cancelCycle="1">
+            <State severity="info">
+                <Condition key="location_outage" operator="!=" thresholdType="static" type="property" value="none" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-outage_edge_cluster" name="A location of the federation is cut off from the Global Manager" resourceKind="edge_cluster" waitCycle="1" cancelCycle="1">
+            <State severity="info">
+                <Condition key="location_outage" operator="!=" thresholdType="static" type="property" value="none" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-outage_edge_node" name="A location of the federation is cut off from the Global Manager" resourceKind="edge_node" waitCycle="1" cancelCycle="1">
+            <State severity="info">
+                <Condition key="location_outage" operator="!=" thresholdType="static" type="property" value="none" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-outage_rtep_tunnel" name="A location of the federation is cut off from the Global Manager" resourceKind="rtep_tunnel" waitCycle="1" cancelCycle="1">
+            <State severity="info">
+                <Condition key="location_outage" operator="!=" thresholdType="static" type="property" value="none" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-outage_bgp_neighbor" name="A location of the federation is cut off from the Global Manager" resourceKind="bgp_neighbor" waitCycle="1" cancelCycle="1">
+            <State severity="info">
+                <Condition key="location_outage" operator="!=" thresholdType="static" type="property" value="none" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-outage_tier0" name="A location of the federation is cut off from the Global Manager" resourceKind="tier0" waitCycle="1" cancelCycle="1">
+            <State severity="info">
+                <Condition key="location_outage" operator="!=" thresholdType="static" type="property" value="none" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-outage_tier1" name="A location of the federation is cut off from the Global Manager" resourceKind="tier1" waitCycle="1" cancelCycle="1">
+            <State severity="info">
+                <Condition key="location_outage" operator="!=" thresholdType="static" type="property" value="none" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-outage_segment" name="A location of the federation is cut off from the Global Manager" resourceKind="segment" waitCycle="1" cancelCycle="1">
+            <State severity="info">
+                <Condition key="location_outage" operator="!=" thresholdType="static" type="property" value="none" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-outage_global_policy" name="A location of the federation is cut off from the Global Manager" resourceKind="global_policy" waitCycle="1" cancelCycle="1">
+            <State severity="info">
+                <Condition key="location_outage" operator="!=" thresholdType="static" type="property" value="none" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-outage_realization" name="A location of the federation is cut off from the Global Manager" resourceKind="realization" waitCycle="1" cancelCycle="1">
+            <State severity="info">
+                <Condition key="location_outage" operator="!=" thresholdType="static" type="property" value="none" valueType="string"/>
+            </State>
+        </SymptomDefinition>
     </SymptomDefinitions>
     <Recommendations>
         <Recommendation key="Recommendation-df-NSXFederation-active_gm"><Description>Open the Global Manager UI (System, Location Manager) and check which Global Manager is active. If the active Global Manager is lost, follow the NSX Federation disaster recovery procedure and make the standby active.</Description></Recommendation>
@@ -800,6 +905,7 @@
         <Recommendation key="Recommendation-df-NSXFederation-gaps"><Description>Some NSX API calls of the collection failed, so part of the data is unknown and the alerts that depend on it are not evaluated. Read the property 'NSX API calls without an answer' on the federation object: it lists the manager, the call and the HTTP status. HTTP 403 points to missing rights of the collection account, HTTP 5xx or a timeout to a manager under load or a service that is down.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-load"><Description>The collection is close to the limits of the managers or of the collection interval. Lengthen the collection interval of the account, reduce the policies whose rules are collected, or lower 'Managers collected in parallel'. Check the load of the manager named in the NSX alarms.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-degraded"><Description>No Global Manager answered, so the collection uses the list of locations it cached earlier and collects the Local Managers only. Check the Global Manager addresses of the account and the alert on the Global Managers.</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-foreign"><Description>One account monitors one federation. Remove the address named in the property 'Global Managers not collected' from this account and create a second account for the other federation.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-budget"><Description>The collection of this cycle is partial. Raise 'API call budget per manager and cycle' in the advanced settings of the adapter instance, or lengthen the collection interval.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-cluster"><Description>Open System, Appliances on the manager and check the state of each node and service group. Restore or redeploy the failed node.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-backup"><Description>Configure a backup target and a schedule under System, Backup and Restore on the manager, then run a backup and confirm that it succeeds. A Global Manager can only be restored from its own backup.</Description></Recommendation>
