@@ -2,7 +2,7 @@
 
 A management pack that monitors NSX Federation (NSX 9.1) in VCF Operations 9.1.1. It is built with the
 [VCF Operations Integration SDK](https://vmware.github.io/vmware-vcf-operations-integration-sdk/introduction)
-in Python. Current version: 1.7.4.
+in Python. Current version: 1.7.5.
 
 This is a lab project, not a Broadcom product. The pack is unsigned and comes with no support. It only reads
 from NSX.
@@ -22,8 +22,8 @@ alert, is in [docs/FEATURES.md](docs/FEATURES.md). In short:
   security policies, and the realization of each stretched object at each location. Global firewall rules
   are opt-in per policy.
 - Metrics in 17 groups, with rates computed from the NSX counters, federation rollups and 18 key indicators.
-- 63 alert definitions, 95 symptoms and 34 recommendations, including the 13 federation alarm types of
-  NSX 9.1 as named alerts, the sync state of a standby Global Manager and four alerts on the collection itself.
+- 63 alert definitions, 98 symptoms and 34 recommendations, including the 13 federation alarm types of
+  NSX 9.1 as named alerts, the sync state of a standby Global Manager and alerts on the collection itself.
 - A failed NSX call is reported as unknown data, not as an empty answer: no alert fires on data that was
   never received, and the federation object lists the calls without an answer.
 - During a location outage, the alerts of the objects that depend on the location stay quiet behind the alert of
@@ -93,7 +93,7 @@ Scripted, with `google-chrome`, `node` and Python `requests` on the host:
 ```bash
 export OPS_HOST=<vcf-operations-fqdn> OPS_PW=<admin password>
 install/upi.sh enableUPI
-install/install_unsigned.sh pack/build/NSXFederation_1.7.4.pak   # turns the switch off at the end
+install/install_unsigned.sh pack/build/NSXFederation_1.7.5.pak   # turns the switch off at the end
 ```
 
 The scripted route uses calls that are internal to the VCF Operations UI. They are unsupported and can

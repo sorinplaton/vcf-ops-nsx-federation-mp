@@ -192,6 +192,16 @@ class NsxClient:
             if count:
                 self.errors += 1
 
+    def absent(self, path: str) -> bool:
+        """True when `path` answered HTTP 404. The failure is then forgotten: the object does not exist on this
+        manager, which is an answer, not a gap in the data."""
+        with self._lock:
+            if self.failed.get(path) == "HTTP 404":
+                del self.failed[path]
+                self.errors = max(0, self.errors - 1)
+                return True
+        return False
+
     def ok(self, path: str) -> bool:
         """False if an optional call to `path` failed in this cycle: its data is unknown, not empty."""
         return path not in self.failed

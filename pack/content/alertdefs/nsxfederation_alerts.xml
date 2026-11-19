@@ -56,7 +56,7 @@
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-load"/></Recommendations>
             </State>
         </AlertDefinition>
-        <AlertDefinition adapterKind="NSXFederation" description="No Global Manager answered. The Local Managers are collected from a cached list of locations." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-fed_degraded" name="NSX Federation collection runs without a Global Manager" resourceKind="federation" subType="18" type="15" waitCycle="1" cancelCycle="1">
+        <AlertDefinition adapterKind="NSXFederation" description="No Global Manager answered, none is active, or the active one did not return its locations. The Local Managers are collected from the last known list of locations." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-fed_degraded" name="NSX Federation collection runs without a Global Manager" resourceKind="federation" subType="18" type="15" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
                 <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-fed_degraded"/>
                 <Impact key="health" type="badge"/>
@@ -146,6 +146,10 @@
                     <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-gm_backup_off"/>
                     <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-gm_backup_old"/>
                     <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-gm_backup_fail"/>
+                    <SymptomSet applyOn="self" operator="and">
+                        <Symptom ref="SymptomDefinition-NSXFederation-gm_backup_never"/>
+                        <Symptom ref="SymptomDefinition-NSXFederation-gm_backup_off" negateCondition="true"/>
+                    </SymptomSet>
                 </SymptomSets>
                 <Impact key="risk" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-backup"/></Recommendations>
@@ -213,11 +217,16 @@
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-version"/></Recommendations>
             </State>
         </AlertDefinition>
-        <AlertDefinition adapterKind="NSXFederation" description="Backup is not configured on the Local Manager or the last successful backup is older than 24 hours." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-loc_backup" name="Local Manager backup is missing or old" resourceKind="location" subType="21" type="19" waitCycle="1" cancelCycle="1">
+        <AlertDefinition adapterKind="NSXFederation" description="Backup is not configured on the Local Manager, no backup has run, the last successful backup is older than 24 hours, or the last backup failed." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-loc_backup" name="Local Manager backup is missing, old or failed" resourceKind="location" subType="21" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
                 <SymptomSets operator="or">
                     <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-loc_backup_off"/>
                     <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-loc_backup_old"/>
+                    <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-loc_backup_fail"/>
+                    <SymptomSet applyOn="self" operator="and">
+                        <Symptom ref="SymptomDefinition-NSXFederation-loc_backup_never"/>
+                        <Symptom ref="SymptomDefinition-NSXFederation-loc_backup_off" negateCondition="true"/>
+                    </SymptomSet>
                 </SymptomSets>
                 <Impact key="risk" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-backup"/></Recommendations>
@@ -727,6 +736,11 @@
                 <Condition key="backup_last_result" operator="=" thresholdType="static" type="property" value="FAILED" valueType="string"/>
             </State>
         </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-gm_backup_never" name="No backup of the Global Manager has run" resourceKind="global_manager" waitCycle="1" cancelCycle="1">
+            <State severity="immediate">
+                <Condition key="backup_last_result" operator="=" thresholdType="static" type="property" value="NONE" valueType="string"/>
+            </State>
+        </SymptomDefinition>
         <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-gm_standby_sync" name="A standby Global Manager is not in sync" resourceKind="global_manager" waitCycle="3" cancelCycle="2">
             <State severity="immediate">
                 <Condition key="sync|standby_in_sync" operator="&lt;" thresholdType="static" type="metric" value="1" valueType="numeric"/>
@@ -757,7 +771,7 @@
                 <Condition key="certificate_trust" operator="contains" thresholdType="static" type="property" value="NOT TRUSTED" valueType="string"/>
             </State>
         </SymptomDefinition>
-        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-loc_full_sync" name="A full sync did not complete" resourceKind="location" waitCycle="1" cancelCycle="1">
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-loc_full_sync" name="A full sync did not complete" resourceKind="location" waitCycle="2" cancelCycle="1">
             <State severity="immediate">
                 <Condition key="sync|full_sync_failed" operator="&gt;" thresholdType="static" type="metric" value="0" valueType="numeric"/>
             </State>
@@ -790,6 +804,16 @@
         <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-loc_backup_old" name="Last successful Local Manager backup is older than 24 hours" resourceKind="location" waitCycle="1" cancelCycle="1">
             <State severity="warning">
                 <Condition key="backup|backup_age_hours" operator="&gt;" thresholdType="static" type="metric" value="24" valueType="numeric"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-loc_backup_fail" name="Last Local Manager backup failed" resourceKind="location" waitCycle="1" cancelCycle="1">
+            <State severity="warning">
+                <Condition key="backup_last_result" operator="=" thresholdType="static" type="property" value="FAILED" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-loc_backup_never" name="No backup of the Local Manager has run" resourceKind="location" waitCycle="1" cancelCycle="1">
+            <State severity="warning">
+                <Condition key="backup_last_result" operator="=" thresholdType="static" type="property" value="NONE" valueType="string"/>
             </State>
         </SymptomDefinition>
         <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-loc_cert_30" name="A Local Manager certificate expires in less than 30 days" resourceKind="location" waitCycle="1" cancelCycle="1">
@@ -882,7 +906,7 @@
                 <Condition key="prefixes|prefixes_in" operator="&lt;" thresholdType="static" type="metric" value="1" valueType="numeric"/>
             </State>
         </SymptomDefinition>
-        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-real_missing" name="Stretched object is not realized at this location" resourceKind="realization" waitCycle="1" cancelCycle="1">
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-real_missing" name="Stretched object is not realized at this location" resourceKind="realization" waitCycle="2" cancelCycle="1">
             <State severity="warning">
                 <Condition key="realized" operator="&lt;" thresholdType="static" type="metric" value="1" valueType="numeric"/>
             </State>
@@ -1075,7 +1099,7 @@
         <Recommendation key="Recommendation-df-NSXFederation-standby"><Description>Deploy a standby Global Manager in another site and add it under System, Location Manager, Add Standby Global Manager. Without a standby the global configuration cannot be changed if the active Global Manager is lost. See https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vcf-9-0-and-later/9-0/advanced-network-management/administration-guide/managing-nsx-t-in-multiple-locations/nsx-t-federation/disaster-recovery-using-federation.html</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-gaps"><Description>Some NSX API calls of the collection failed, so part of the data is unknown and the alerts that depend on it are not evaluated. Read the property 'NSX API calls without an answer' on the federation object: it lists the manager, the call and the HTTP status. HTTP 403 points to missing rights of the collection account, HTTP 5xx or a timeout to a manager under load or a service that is down.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-load"><Description>The collection is close to the limits of the managers or of the collection interval. Lengthen the collection interval of the account, reduce the policies whose rules are collected, or lower 'Managers collected in parallel'. Check the load of the manager named in the NSX alarms.</Description></Recommendation>
-        <Recommendation key="Recommendation-df-NSXFederation-degraded"><Description>No Global Manager answered, so the collection uses the list of locations it cached earlier and collects the Local Managers only. Check the Global Manager addresses of the account and the alert on the Global Managers.</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-degraded"><Description>No Global Manager answered, none is active, or the active one did not return its locations (the property 'Collection mode' says which), so the collection uses the list of locations it cached earlier and collects the Local Managers only. Check the Global Manager addresses of the account and the alert on the Global Managers.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-foreign"><Description>One account monitors one federation. Remove the address named in the property 'Global Managers not collected' from this account and create a second account for the other federation.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-gm_none"><Description>A Global Manager that comes back after a failover has no role until it is added again as the standby. In the UI of the active Global Manager, open System, Location Manager and make it the standby. See https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vcf-9-0-and-later/9-0/advanced-network-management/administration-guide/managing-nsx-t-in-multiple-locations/nsx-t-federation/disaster-recovery-using-federation.html</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-gm_version"><Description>Upgrade the Global Manager that is behind. NSX refuses a switchover while the active and the standby Global Manager run different versions. See https://knowledge.broadcom.com/external/article/449461</Description></Recommendation>

@@ -54,6 +54,7 @@ S = {
     "gm_backup_off":   ("global_manager", "Backup is not configured on the Global Manager", "immediate", "property", "backup_enabled", "=", "False"),
     "gm_backup_old":   ("global_manager", "Last successful Global Manager backup is older than 24 hours", "immediate", "metric", "backup_age_hours", ">", 24),
     "gm_backup_fail":  ("global_manager", "Last Global Manager backup failed", "immediate", "property", "backup_last_result", "=", "FAILED"),
+    "gm_backup_never": ("global_manager", "No backup of the Global Manager has run", "immediate", "property", "backup_last_result", "=", "NONE"),
     "gm_standby_sync": ("global_manager", "A standby Global Manager is not in sync", "immediate", "metric", "standby_in_sync", "<", 1),
     "gm_cert_30":      ("global_manager", "A Global Manager certificate expires in less than 30 days", "warning", "metric", "cert_min_days_to_expiry", "<", 30),
     "gm_cert_7":       ("global_manager", "A Global Manager certificate expires in less than 7 days", "critical", "metric", "cert_min_days_to_expiry", "<", 7),
@@ -68,6 +69,8 @@ S = {
     "loc_version":     ("location", "Location version differs from the Global Manager", "info", "property", "version_matches_gm", "=", "False"),
     "loc_backup_off":  ("location", "Backup is not configured on the Local Manager", "warning", "property", "backup_enabled", "=", "False"),
     "loc_backup_old":  ("location", "Last successful Local Manager backup is older than 24 hours", "warning", "metric", "backup_age_hours", ">", 24),
+    "loc_backup_fail": ("location", "Last Local Manager backup failed", "warning", "property", "backup_last_result", "=", "FAILED"),
+    "loc_backup_never": ("location", "No backup of the Local Manager has run", "warning", "property", "backup_last_result", "=", "NONE"),
     "loc_cert_30":     ("location", "A Local Manager certificate expires in less than 30 days", "warning", "metric", "cert_min_days_to_expiry", "<", 30),
     "loc_cert_7":      ("location", "A Local Manager certificate expires in less than 7 days", "critical", "metric", "cert_min_days_to_expiry", "<", 7),
     "loc_cluster":     ("location", "Local Manager cluster status is not STABLE", "immediate", "property", "cluster_status", "!=", "STABLE"),
@@ -149,7 +152,9 @@ QUIET = {"loc_intersite", "chan_down", "edge_bgp_down", "ec_status", "tun_bgp_do
 WAIT = {k: (2, 2) for k in ("chan_down", "loc_bgp_down", "loc_bgp_none", "edge_bgp_none", "tun_bgp_down",
                             "tun_rx_drops", "tun_tx_drops", "bgp_down", "bgp_no_prefix")}
 WAIT.update({"tun_rx_dt": (3, 3), "tun_tx_dt": (3, 3), "gm_standby_sync": (3, 2), "loc_repl": (2, 2),
-             "fed_gaps": (2, 2), "fed_throttled": (3, 2), "fed_slow": (2, 2)})
+             "fed_gaps": (2, 2), "fed_throttled": (3, 2), "fed_slow": (2, 2),
+             # a full sync or a change in progress is not a fault: these two wait for a second cycle
+             "loc_full_sync": (2, 1), "real_missing": (2, 1)})
 # an outage symptom outlives the symptoms it keeps quiet, so that their alerts do not fire in the cycles in which
 # the outage is over and they are not cancelled yet
 WAIT.update({"outage_" + k: (1, 3) for k in OUTAGE_KINDS})
@@ -176,7 +181,8 @@ R = {
     "load": "The collection is close to the limits of the managers or of the collection interval. Lengthen the collection "
             "interval of the account, reduce the policies whose rules are collected, or lower 'Managers collected in parallel'. "
             "Check the load of the manager named in the NSX alarms.",
-    "degraded": "No Global Manager answered, so the collection uses the list of locations it cached earlier and collects the "
+    "degraded": "No Global Manager answered, none is active, or the active one did not return its locations (the property "
+                "'Collection mode' says which), so the collection uses the list of locations it cached earlier and collects the "
                 "Local Managers only. Check the Global Manager addresses of the account and the alert on the Global Managers.",
     "foreign": "One account monitors one federation. Remove the address named in the property 'Global Managers not collected' "
                "from this account and create a second account for the other federation.",
@@ -259,7 +265,8 @@ A = [
     ("fed_load", "federation", "NSX Federation collection is slow or throttled",
      "The collection takes most of its interval, or NSX throttles its API calls.", APP, PERF, [["fed_throttled"], ["fed_slow"]], "load"),
     ("fed_degraded", "federation", "NSX Federation collection runs without a Global Manager",
-     "No Global Manager answered. The Local Managers are collected from a cached list of locations.", APP, AVAIL, [["fed_degraded"]], "degraded"),
+     "No Global Manager answered, none is active, or the active one did not return its locations. The Local Managers are collected "
+     "from the last known list of locations.", APP, AVAIL, [["fed_degraded"]], "degraded"),
     ("fed_foreign", "federation", "NSX Federation account lists a Global Manager of another federation",
      "A Global Manager address of the account answers for another federation. It is not collected.", APP, CONF, [["fed_foreign"]], "foreign"),
     ("gm_mode_none", "global_manager", "Global Manager has no role in the federation",
@@ -286,7 +293,7 @@ A = [
      NET, AVAIL, [["gm_standby_sync"]], "gm_sync"),
     ("gm_backup", "global_manager", "Global Manager backup is missing, old or failed",
      "Backup is not configured on the Global Manager, the last successful backup is older than 24 hours, or the last backup failed.",
-     NET, COMPL, [["gm_backup_off"], ["gm_backup_old"], ["gm_backup_fail"]], "backup"),
+     NET, COMPL, [["gm_backup_off"], ["gm_backup_old"], ["gm_backup_fail"], ["gm_backup_never", "!gm_backup_off"]], "backup"),
     ("gm_cert", "global_manager", "Global Manager certificate is about to expire",
      "A certificate of the Global Manager expires in less than 30 days (warning) or 7 days (critical).", NET, CONF, [["gm_cert_30"], ["gm_cert_7"]], "cert"),
     ("loc_gm_down", "location", "Location lost its connection to the active Global Manager",
@@ -302,8 +309,9 @@ A = [
      NET, AVAIL, [["loc_bgp_down"], ["loc_bgp_none", "!loc_bgp_zero"]], "intersite"),
     ("loc_version", "location", "Location and Global Manager run different NSX releases",
      "The Local Manager and the Global Manager run different NSX releases. A different patch level is not reported.", NET, COMPL, [["loc_version"]], "version"),
-    ("loc_backup", "location", "Local Manager backup is missing or old",
-     "Backup is not configured on the Local Manager or the last successful backup is older than 24 hours.", NET, COMPL, [["loc_backup_off"], ["loc_backup_old"]], "backup"),
+    ("loc_backup", "location", "Local Manager backup is missing, old or failed",
+     "Backup is not configured on the Local Manager, no backup has run, the last successful backup is older than 24 hours, or the last backup failed.",
+     NET, COMPL, [["loc_backup_off"], ["loc_backup_old"], ["loc_backup_fail"], ["loc_backup_never", "!loc_backup_off"]], "backup"),
     ("loc_cert", "location", "Local Manager certificate is about to expire",
      "A certificate of the Local Manager expires in less than 30 days (warning) or 7 days (critical).", NET, CONF, [["loc_cert_30"], ["loc_cert_7"]], "cert"),
     ("loc_cluster", "location", "Local Manager cluster is degraded",

@@ -79,7 +79,7 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("stale_objects_deleted", "Objects deleted because they no longer exist in NSX"),
         ("managers_over_budget", "Managers that used their call budget"),
         ("locations_healthy", "Locations healthy"),
-        ("locations_healthy_pct", "Locations healthy (%)"),
+        ("locations_healthy_pct", "Share of locations healthy"),
         ("rtep_tunnels_total", "RTEP tunnels"),
         ("rtep_tunnels_bgp_down", "RTEP tunnels with inter-site BGP down"),
         ("rtep_dropped_per_min", "RTEP packets dropped per minute, all tunnels"),
@@ -153,6 +153,7 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("local_manager_address", "Local Manager address"), ("rtep_ips", "RTEP addresses"),
         ("maximum_rtt_ms", "Maximum RTT setting (ms)"), ("cluster_status", "Local Manager cluster status"),
         ("full_sync_stage", "Last full sync stage"), ("backup_enabled", "Backup enabled"),
+        ("backup_last_result", "Last backup result"),
         ("cert_first_to_expire", "First certificate to expire"), ("certificate_trust", "Certificate trust"),
         ("collector_error", "Collector error"),
         ("release_newer_than_gm", "NSX release newer than the Global Manager"),
@@ -595,6 +596,9 @@ class Collector:
         # NSX cluster IDs the built-in NSX integration monitors (None = unknown), asked once an hour
         self.builtin_clusters: Optional[List[str]] = self.cache.cached("builtin_nsx_clusters", SLOW_TTL, self.ops.nsx_cluster_ids)
         self.standby_sync: List[Tuple[Optional[str], int, int, Optional[float]]] = []  # (name, in sync, entries left, full sync age h)
+        self.standby_since: Dict[str, float] = {}  # standby name -> minutes out of sync
+        self.active_name: Optional[str] = None
+        self.sync_read = False  # the active Global Manager answered the sync status call in this cycle
         # counter values of the previous cycle, for rates: object id -> {"t": epoch, counter: value}
         self.prev_counters: Dict[str, Dict[str, float]] = self.cache.get_any_age("counters") or {}
         self.new_counters: Dict[str, Dict[str, float]] = {}
@@ -731,12 +735,14 @@ class Collector:
         if not sites_doc:
             # No active Global Manager: keep monitoring the locations from the last known list.
             sites_doc = self.cache.get_any_age("sites_doc") or {}
-            mode = "degraded: location list from cache" if sites_doc else "degraded: no location list"
+            why = "no Global Manager answers" if not reachable else "no active Global Manager" if not gm else \
+                "the active Global Manager did not return its locations"
+            mode = f"degraded ({why}): location list from cache" if sites_doc else f"degraded ({why}): no location list"
             if not sites_doc:
                 inventory = inventory or self.from_inventory()
                 if inventory.get("locations"):
                     sites_doc = {"locations": inventory["locations"], "global_managers": []}
-                    mode = "degraded: location list from VCF Operations"
+                    mode = f"degraded ({why}): location list from VCF Operations"
 
         # Global Manager objects (active and standby); the standby is an object of its own.
         gm_names = []
@@ -1211,7 +1217,7 @@ class Collector:
         if not is_active:  # values the active Global Manager reports; a former active must not keep its own
             role = "not applicable (standby)" if mode == "STANDBY" else f"not reported (mode {mode})"
             self.props(go, {"switchover_status": role, "standby_sync_status": role, "standby_data_consistent": role})
-            self.metrics(go, {"standby_sync_entries": 0, "standby_out_of_sync_minutes": 0})
+            self.metrics(go, {"standby_sync_entries": 0})
         if is_active:
             so = client.try_get("/api/v1/sites/switchover-status", default={}) or {}
             st = client.try_get("/api/v1/sites/status", default={}) or {}
@@ -1232,6 +1238,7 @@ class Collector:
                 return state in ("SUCCESS", "SYNCED", "IN_SYNC") or (
                     state in ("ONGOING", "SYNCHRONIZING", "IN_PROGRESS")
                     and str(s.get("sync_type", "")).upper() == "DELTA_SYNC" and full == "COMPLETE")
+            self.active_name, self.sync_read = name, client.ok("/api/v1/sites/status")
             if not sync and client.ok("/api/v1/sites/status"):
                 self.metrics(go, {"standby_in_sync": 1, "standby_sync_remaining": 0, "standby_out_of_sync_minutes": 0})
                 self.cache.put("standby_out_of_sync_since", {})
@@ -1248,6 +1255,7 @@ class Collector:
                 now = time.time()
                 since = {n: since.get(n, now) for n, ok, _r, _a in self.standby_sync if not ok}
                 self.cache.put("standby_out_of_sync_since", since)
+                self.standby_since = {n: round((now - v) / 60.0, 1) for n, v in since.items()}
                 ages = [now - e for e in (epoch_seconds((s.get("full_sync_status") or {}).get("completed_at")) for s in sync) if e]
                 self.metrics(go, {
                     "standby_out_of_sync_minutes": round(max((now - v for v in since.values()), default=0.0) / 60.0, 1),
@@ -1314,7 +1322,14 @@ class Collector:
             so = self.gm_objects.get(standby)
             if so is not None:
                 self.metrics(so, {"standby_in_sync": ok, "standby_sync_remaining": remaining,
-                                  "standby_full_sync_age_hours": full_age})
+                                  "standby_full_sync_age_hours": full_age,
+                                  "standby_out_of_sync_minutes": self.standby_since.get(standby, 0)})
+        # 3. A Global Manager that is neither the active nor a standby the active reports (mode NONE, or removed
+        # from the federation) has no sync state: a last "not in sync" must not stay on it for ever.
+        listed = {s[0] for s in self.standby_sync}
+        for name, go in self.gm_objects.items():
+            if name not in listed and name != self.active_name and self.sync_read:
+                self.metrics(go, {"standby_in_sync": 1, "standby_sync_remaining": 0, "standby_out_of_sync_minutes": 0})
 
     def backup_and_certs(self, client: NsxClient) -> Tuple[Optional[bool], Optional[float], Optional[str], Optional[float], Optional[str]]:
         """(backup enabled, backup age in hours, last backup result, days to the first certificate expiry, its name).
@@ -1421,7 +1436,8 @@ class Collector:
         all_alarms = client.try_list("/api/v1/alarms", {"status": "OPEN"})
         alarms = summarize_alarms(all_alarms) if client.ok("/api/v1/alarms") else dict.fromkeys(("critical", "high", "other"))
         cs_ok = client.ok("/api/v1/cluster/status")
-        b_enabled, b_age, _, c_days, c_name = self.backup_and_certs(client)
+        b_enabled, b_age, b_result, c_days, c_name = self.backup_and_certs(client)
+        self.props(lo, {"backup_last_result": b_result})
         for node in mcs.get("online_nodes") or []:
             self.node(lo, node, 1)
         for node in mcs.get("offline_nodes") or []:
@@ -1567,6 +1583,9 @@ class Collector:
                 continue  # not realized at this location: there are no statistics to read
             stats_path = f"{LGI}/domains/{pol.get('domain_id', 'default')}/security-policies/{pol['id']}/statistics"
             stats = client.try_get(stats_path, default={}) or {}
+            if client.absent(stats_path):
+                loc.setdefault("_policy_absent", set()).add(pol["path"])  # not on this manager: nothing to count
+                continue
             if not client.ok(stats_path):
                 continue  # unknown, not zero: a zero would give a false rate in the next cycle
             totals = {"hit_count": 0, "packet_count": 0, "byte_count": 0, "session_count": 0}
@@ -1621,7 +1640,7 @@ class Collector:
             total_hits = 0
             rule_totals: Dict[str, Dict[str, int]] = {}
             span = self.span_of.get(pol["path"]) or {loc["path"] for loc in lm_sites}
-            members = [loc for loc in lm_sites if loc["path"] in span]
+            members = [loc for loc in lm_sites if loc["path"] in span and pol["path"] not in loc.get("_policy_absent", ())]
             complete = bool(members) and all(loc.get("_reached") and pol["path"] in (loc.get("_policy_hits") or {})
                                              for loc in members)
             for loc in lm_sites:

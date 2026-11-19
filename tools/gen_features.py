@@ -45,11 +45,15 @@ def alert_rows(kind):
         quiet = any(s.startswith("!outage_") for group in sets for s in group)
         gm_quiet = any(s == "!chan_gm_outage" for group in sets for s in group)
         sev = max((ga.S[s][2] for group in positive for s in group), key=SEVERITY.index)
-        waits = sorted({ga.WAIT[s] for group in positive for s in group if s in ga.WAIT})
+        waits = sorted({ga.WAIT.get(s, (1, 1)) for group in positive for s in group})
         trigger = "; or ".join(" and ".join(condition(s) for s in group) for group in positive)
         notes = []
-        if waits:
-            notes.append("after %d cycles, clears after %d" % waits[-1])
+        if waits != [(1, 1)]:
+            if len(waits) == 1:
+                notes.append("after %d cycles, clears after %d" % waits[0])
+            else:  # the conditions of the alert do not all wait the same number of cycles
+                notes.append("after %d to %d cycles depending on the condition, clears after %d to %d" % (
+                    min(w for w, _ in waits), max(w for w, _ in waits), min(c for _, c in waits), max(c for _, c in waits)))
         if quiet:
             notes.append("quiet while a location it depends on is in outage")
         if gm_quiet:

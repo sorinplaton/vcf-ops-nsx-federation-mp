@@ -486,7 +486,7 @@
         },
         {
          "metricKey": "locations|locations_healthy_pct",
-         "metricName": "Locations healthy (%)",
+         "metricName": "Share of locations healthy",
          "resourceKindId": "resourceKind:id:0_::_",
          "resourceKindName": "NSX Federation",
          "isStringMetric": false,

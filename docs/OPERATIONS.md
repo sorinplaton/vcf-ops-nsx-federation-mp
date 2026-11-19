@@ -44,7 +44,7 @@ Calls per collection cycle, as measured with the test suite:
 
 The first cycle after a start reads every object, so the budget of 2000 calls per manager covers about 1,900
   stretched objects in that cycle; the following cycles need about a sixth. Above that, raise the budget and check
-the metric "Collection duration (s)": a cycle has to finish inside the collection interval (5 minutes by default).
+the metric "Collection duration": a cycle has to finish inside the collection interval (5 minutes by default).
 The alert "NSX Federation collection is slow or throttled" fires above 4 minutes or when NSX answers HTTP 429.
 NSX limits each client to 100 requests per second by default.
 
@@ -58,7 +58,8 @@ to the property "Locations in outage" of the objects that depend on it: the loca
 edge nodes and BGP neighbors, the tunnels and sync channels with one end at that location, the stretched objects
 whose span includes it and their realization there, and the Global Managers. The alerts of these objects require
 that the property reads "none", so they stay quiet and the alert of the location itself is the one to act on.
-They fire again in the cycle after the location is back. Objects of the other locations are not affected: a fault
+If the fault is still there, they fire once the outage symptom has cleared, three cycles after the location is
+back. Objects of the other locations are not affected: a fault
 there raises its alert.
 
 The alarm alerts of the Global Manager and of the locations are quiet in the same way, except the alarms between
@@ -83,7 +84,11 @@ On the federation object:
 | NSX API calls without an answer (property) | Manager, call and HTTP status of each failed call |
 | NSX API calls retried after a timeout | A call is retried once after a timeout or a dropped connection |
 | Global Managers not collected | Address and reason: not reachable, certificate not trusted, or another federation |
-| Collection mode | `normal`, or `degraded` when no Global Manager answers and the location list comes from the cache or from VCF Operations |
+| Collection mode | `normal`, or `degraded` with the reason (no Global Manager answers, none is active, or the active one did not return its locations) and where the location list comes from (the cache or VCF Operations) |
+
+A policy whose statistics a Local Manager answers with HTTP 404 does not exist on that manager: it is not counted
+as a failed call. A "full sync did not complete" or "not realized" condition has to last two cycles before its
+alert fires, so a sync or a change in progress raises nothing.
 
 A sync channel for which the active Global Manager lists no connection detail is reported as unknown: no value is
 sent, and VCF Operations keeps the last one.

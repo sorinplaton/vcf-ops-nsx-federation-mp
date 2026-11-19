@@ -365,7 +365,7 @@ def test_location_list_from_vcf_operations_when_the_cache_is_empty(nsx, ops):
         os.remove(os.path.join(nsxclient.CACHE_DIR, f_))
     nsx.fail = ["/api/v1/sites/self"]  # and no Global Manager answers
     r = run()
-    assert fed(r)["p"]["collection_mode"] == "degraded: location list from VCF Operations"
+    assert fed(r)["p"]["collection_mode"] == "degraded (no Global Manager answers): location list from VCF Operations"
     assert len(r["location"]) == 2 and len(r["rtep_tunnel"]) == 8 and r["_error"] is None
 
 
@@ -843,4 +843,56 @@ def test_metric_labels_carry_no_unit():
     for kind, (_l, metrics, _p) in adapter.MODEL.items():
         for key, label in metrics:
             if key in adapter.UNITS:  # VCF Operations adds the unit to the label
-                assert not re.search(r"\((s|ms|min|h|hours ago|min ago)\)", label), (kind, key, label)
+                assert not re.search(r"\((s|ms|min|h|%|hours ago|min ago)\)", label), (kind, key, label)
+
+
+# ---- review of 1.7.4
+
+def test_a_policy_absent_from_a_local_manager_is_not_a_data_gap(nsx):
+    nsx.data[GM_HOSTS[0]][POLICY_STATUS]["consolidated_status_per_enforcement_point"] = []  # span unknown
+    for h in local_managers(nsx):
+        del nsx.data[h][STATS]  # the Local Managers answer 404 for its statistics
+    r = run()
+    assert fed(r)["m"]["collection|data_gaps"] == 0 and fed(r)["m"]["collection|api_errors"] == 0
+    assert "traffic|hit_count" not in r["global_policy"]["fed-demo"]["m"]
+
+
+def test_a_standby_shows_how_long_it_has_been_out_of_sync(nsx, clock):
+    status = nsx.data[GM_HOSTS[0]][SITES_STATUS]["active_standby_sync_statuses"][0]
+    status["status"], status["full_sync_status"]["status"] = "ERROR", "FAILED"
+    run()
+    clock["now"] += 900
+    r = run()
+    for g in r["global_manager"].values():
+        assert g["m"]["sync|standby_in_sync"] == 0 and g["m"]["sync|standby_out_of_sync_minutes"] == 15
+
+
+def test_a_global_manager_with_no_role_does_not_stay_out_of_sync(nsx):
+    status = nsx.data[GM_HOSTS[0]][SITES_STATUS]
+    status["active_standby_sync_statuses"][0]["status"] = "ERROR"
+    run()
+    status["active_standby_sync_statuses"] = []  # the active no longer reports it
+    nsx.data[GM_HOSTS[1]]["/api/v1/sites/self"]["site"]["active_gm"] = "NONE"
+    r = run()
+    lost = next(g for g in r["global_manager"].values() if g["p"]["mode"] == "NONE")
+    assert lost["m"]["sync|standby_in_sync"] == 1 and lost["p"]["switchover_status"] == "not reported (mode NONE)"
+
+
+def test_the_collection_mode_says_why_it_is_degraded(nsx):
+    run()
+    nsx.data[GM_HOSTS[0]]["/api/v1/sites/self"]["site"]["active_gm"] = "STANDBY"  # both answer, none is active
+    assert fed(run())["p"]["collection_mode"] == "degraded (no active Global Manager): location list from cache"
+
+
+def test_backup_result_is_sent_for_locations(nsx):
+    r = run()
+    assert all(l["p"]["backup_last_result"] in ("SUCCESS", "FAILED", "NONE") for l in r["location"].values())
+
+
+def test_a_backup_that_never_ran_has_an_alert():
+    etree = pytest.importorskip("lxml.etree")
+    doc = etree.parse(os.path.join(ROOT, "pack", "content", "alertdefs", "nsxfederation_alerts.xml"))
+    for kind in ("gm", "loc"):
+        alert = next(a for a in doc.iter("AlertDefinition") if a.get("id").endswith(f"-{kind}_backup"))
+        refs = {(s.get("ref").split("-")[-1], s.get("negateCondition")) for s in alert.iter("Symptom")}
+        assert (f"{kind}_backup_never", None) in refs and (f"{kind}_backup_off", "true") in refs
