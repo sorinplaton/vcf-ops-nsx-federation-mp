@@ -46,20 +46,27 @@ def alert_rows(kind):
         gm_quiet = any(s == "!chan_gm_outage" for group in sets for s in group)
         sev = max((ga.S[s][2] for group in positive for s in group), key=SEVERITY.index)
         waits = sorted({ga.WAIT.get(s, (1, 1)) for group in positive for s in group})
-        trigger = "; or ".join(" and ".join(condition(s) for s in group) for group in positive)
+        # conditions that must NOT hold are shown too, except the outage ones (see the notes)
+        def part(group):
+            shown = [condition(s) for s in group if not s.startswith("!")]
+            shown += ["not: " + condition(s[1:]) for s in group if s.startswith("!") and "outage" not in s]
+            return " and ".join(shown)
+        trigger = "; or ".join(part(group) for group in sets)
         notes = []
         if waits != [(1, 1)]:
             if len(waits) == 1:
                 notes.append("after %d cycles, clears after %d" % waits[0])
             else:  # the conditions of the alert do not all wait the same number of cycles
-                notes.append("after %d to %d cycles depending on the condition, clears after %d to %d" % (
-                    min(w for w, _ in waits), max(w for w, _ in waits), min(c for _, c in waits), max(c for _, c in waits)))
+                cancel = sorted({c for _, c in waits})
+                notes.append("after %d to %d cycles depending on the condition, clears after %s" % (
+                    min(w for w, _ in waits), max(w for w, _ in waits),
+                    "%d" % cancel[0] if len(cancel) == 1 else "%d to %d" % (cancel[0], cancel[-1])))
         if quiet:
             notes.append("quiet while a location it depends on is in outage")
         if gm_quiet:
             notes.append("quiet while its Global Manager does not answer")
         rows.append(f"| {cell(name)} | {sev.capitalize()} | {'Risk' if k in ga.RISK else 'Health'} | {cell(trigger)}"
-                    f"{'. ' + '; '.join(notes).capitalize() if notes else ''} | {cell(ga.R[rec])} |")
+                    f"{'. ' + (lambda s: s[:1].upper() + s[1:])('; '.join(notes)) if notes else ''} | {cell(ga.R[rec])} |")
     return rows
 
 

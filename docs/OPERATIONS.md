@@ -83,12 +83,13 @@ On the federation object:
 | NSX API calls without an answer | Calls that failed in the last cycle. The data behind them is unknown and is not sent |
 | NSX API calls without an answer (property) | Manager, call and HTTP status of each failed call |
 | NSX API calls retried after a timeout | A call is retried once after a timeout or a dropped connection |
-| Global Managers not collected | Address and reason: not reachable, certificate not trusted, or another federation |
+| Global Managers not collected | Address and reason: not reachable, certificate not trusted, or another federation. A Global Manager seen in an earlier cycle that does not answer reads 0 on its metric "Reachable" |
 | Collection mode | `normal`, or `degraded` with the reason (no Global Manager answers, none is active, or the active one did not return its locations) and where the location list comes from (the cache or VCF Operations) |
 
-A policy whose statistics a Local Manager answers with HTTP 404 does not exist on that manager: it is not counted
-as a failed call. A "full sync did not complete" or "not realized" condition has to last two cycles before its
-alert fires, so a sync or a change in progress raises nothing.
+A policy whose statistics a Local Manager answers with HTTP 404, and whose span does not show it at that location,
+does not exist on that manager: it is not counted as a failed call. Where the policy is realized, a 404 is a failed
+call and its counters are not sent for that cycle. A "full sync did not complete" or "not realized" condition has to last two cycles before its
+alert fires, so a sync or a change that completes within a cycle or two raises nothing.
 
 A sync channel for which the active Global Manager lists no connection detail is reported as unknown: no value is
 sent, and VCF Operations keeps the last one.

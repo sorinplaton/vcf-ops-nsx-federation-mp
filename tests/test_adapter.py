@@ -896,3 +896,30 @@ def test_a_backup_that_never_ran_has_an_alert():
         alert = next(a for a in doc.iter("AlertDefinition") if a.get("id").endswith(f"-{kind}_backup"))
         refs = {(s.get("ref").split("-")[-1], s.get("negateCondition")) for s in alert.iter("Symptom")}
         assert (f"{kind}_backup_never", None) in refs and (f"{kind}_backup_off", "true") in refs
+
+
+# ---- last review of 1.7.5
+
+def test_a_404_where_the_policy_is_realized_is_a_gap_not_a_drop(nsx, clock):
+    for h in local_managers(nsx):
+        nsx.data[h][STATS]["results"][0]["statistics"]["results"][0]["hit_count"] = 1000
+    for _ in range(2):
+        r = run()
+        clock["now"] += 300
+    bad = local_managers(nsx)[0]
+    saved = nsx.data[bad].pop(STATS)  # one cycle of 404 at a location where the policy is realized
+    r = run()
+    clock["now"] += 300
+    assert "traffic|hit_count" not in r["global_policy"]["fed-demo"]["m"] and fed(r)["m"]["collection|data_gaps"] >= 1
+    nsx.data[bad][STATS] = saved
+    r = run()
+    pol = r["global_policy"]["fed-demo"]["m"]
+    assert pol["traffic|hit_count"] == 2000 and pol.get("traffic|hit_count_per_min", 0) == 0  # no burst when it is back
+
+
+def test_a_global_manager_that_stops_answering_reads_not_reachable(nsx):
+    names = {g["p"]["address"]: n for n, g in run()["global_manager"].items()}
+    del nsx.data[GM_HOSTS[1]]
+    r = run()
+    assert r["global_manager"][names[GM_HOSTS[1]]]["m"]["connectivity|reachable"] == 0
+    assert r["global_manager"][names[GM_HOSTS[0]]]["m"]["connectivity|reachable"] == 1

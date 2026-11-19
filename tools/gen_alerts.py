@@ -200,7 +200,7 @@ R = {
     "cluster": "Open System, Appliances on the manager and check the state of each node and service group. Restore or redeploy "
                "the failed node.",
     "backup": "Configure a backup target and a schedule under System, Backup and Restore on the manager, then run a backup and "
-              "confirm that it succeeds. A Global Manager can only be restored from its own backup.",
+              "confirm that it succeeds. A manager can only be restored from its own backup.",
     "cert": "Replace the certificate before it expires (System, Certificates). An expired manager certificate breaks the "
             "connection between the Global Manager and the Local Managers. See https://knowledge.broadcom.com/external/article/429189",
     "loc_gm": "Check the network path between the active Global Manager and the Local Manager of this location (TCP 443 and "
@@ -292,7 +292,7 @@ A = [
      "The full sync to a standby Global Manager is not complete or reports a failure. A switchover would start from stale configuration.",
      NET, AVAIL, [["gm_standby_sync"]], "gm_sync"),
     ("gm_backup", "global_manager", "Global Manager backup is missing, old or failed",
-     "Backup is not configured on the Global Manager, the last successful backup is older than 24 hours, or the last backup failed.",
+     "Backup is not configured on the Global Manager, no backup has run, the last successful backup is older than 24 hours, or the last backup failed.",
      NET, COMPL, [["gm_backup_off"], ["gm_backup_old"], ["gm_backup_fail"], ["gm_backup_never", "!gm_backup_off"]], "backup"),
     ("gm_cert", "global_manager", "Global Manager certificate is about to expire",
      "A certificate of the Global Manager expires in less than 30 days (warning) or 7 days (critical).", NET, CONF, [["gm_cert_30"], ["gm_cert_7"]], "cert"),

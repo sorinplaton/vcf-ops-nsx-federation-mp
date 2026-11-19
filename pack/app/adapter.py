@@ -706,6 +706,15 @@ class Collector:
                                       [Identifier("id", self.fed_id)])
         fed = self.fed
 
+        known = dict(self.cache.get_any_age("gm_sites") or {})  # address -> (name, site id) of earlier cycles
+        known.update({g["host"]: (g["site"].get("name"), g["site"].get("id")) for g in reachable if g["site"].get("id")})
+        self.cache.put("gm_sites", known)
+        for g in gms:
+            if not g["ok"] and g["host"] in known and self.fed:
+                name, site_id = known[g["host"]]
+                go = self.obj("global_manager", name or g["host"], f"gm:{site_id}")
+                go.add_parent(self.fed)
+                self.metrics(go, {"reachable": 0})
         for g in gms:
             if not g["ok"]:
                 crit = Criticality.CRITICAL if not reachable else Criticality.IMMEDIATE
@@ -1583,8 +1592,10 @@ class Collector:
                 continue  # not realized at this location: there are no statistics to read
             stats_path = f"{LGI}/domains/{pol.get('domain_id', 'default')}/security-policies/{pol['id']}/statistics"
             stats = client.try_get(stats_path, default={}) or {}
-            if client.absent(stats_path):
-                loc.setdefault("_policy_absent", set()).add(pol["path"])  # not on this manager: nothing to count
+            if pol["path"] not in self.span_of and client.absent(stats_path):
+                # span unknown and the manager does not know the policy: nothing to count there. Where the policy
+                # is known to be realized, a 404 stays a failed call, so a partial sum is never sent.
+                loc.setdefault("_policy_absent", set()).add(pol["path"])
                 continue
             if not client.ok(stats_path):
                 continue  # unknown, not zero: a zero would give a false rate in the next cycle
