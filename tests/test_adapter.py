@@ -807,3 +807,40 @@ def test_a_sync_channel_without_stubs_is_unknown(nsx):
     gm = next(n for n, g in run()["global_manager"].items() if g["p"]["mode"] == "ACTIVE")
     r = run()
     assert "connection_up" not in r["sync_channel"][f"{gm} -> {name}"]["m"]
+
+
+# ---- last review of 1.7.3
+
+POLICY_STATUS = "/global-manager/api/v1/global-infra/realized-state/status?intent_path=/global-infra/domains/default/security-policies/fed-demo"
+
+
+def test_a_policy_with_no_known_span_keeps_its_counters(nsx, clock):
+    nsx.data[GM_HOSTS[0]][POLICY_STATUS]["consolidated_status_per_enforcement_point"] = []
+    for h in local_managers(nsx):
+        nsx.data[h][STATS]["results"][0]["statistics"]["results"][0]["hit_count"] = 1000
+    r = run()
+    assert r["global_policy"]["fed-demo"]["m"]["traffic|hit_count"] == 2000
+
+
+def test_a_span_with_no_known_location_sends_no_false_zero(nsx):
+    eps = nsx.data[GM_HOSTS[0]][POLICY_STATUS]["consolidated_status_per_enforcement_point"]
+    for ep in eps:
+        ep["site_path"] = "/global-infra/sites/offboarded"
+    r = run()
+    assert "traffic|hit_count" not in r["global_policy"]["fed-demo"]["m"]
+
+
+def test_a_standby_gets_its_own_sync_values(nsx):
+    r = run()
+    standby = next(g for g in r["global_manager"].values() if g["p"]["mode"] == "STANDBY")
+    assert standby["m"]["sync|standby_out_of_sync_minutes"] == 0
+    assert standby["m"]["sync|standby_full_sync_age_hours"] >= 0
+
+
+def test_metric_labels_carry_no_unit():
+    import re
+    import adapter
+    for kind, (_l, metrics, _p) in adapter.MODEL.items():
+        for key, label in metrics:
+            if key in adapter.UNITS:  # VCF Operations adds the unit to the label
+                assert not re.search(r"\((s|ms|min|h|hours ago|min ago)\)", label), (kind, key, label)

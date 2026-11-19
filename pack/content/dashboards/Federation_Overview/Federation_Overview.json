@@ -401,7 +401,7 @@
         },
         {
          "metricKey": "collection|collection_duration_s",
-         "metricName": "Collection duration (s)",
+         "metricName": "Collection duration",
          "resourceKindId": "resourceKind:id:0_::_",
          "resourceKindName": "NSX Federation",
          "isStringMetric": false,
@@ -588,7 +588,7 @@
         },
         {
          "metricKey": "sync|standby_out_of_sync_minutes",
-         "metricName": "Standby out of sync for (min)",
+         "metricName": "Standby out of sync for",
          "resourceKindId": "resourceKind:id:1_::_",
          "resourceKindName": "Global Manager",
          "isStringMetric": false,
@@ -826,7 +826,7 @@
         },
         {
          "metricKey": "connectivity|gm_last_seen_minutes",
-         "metricName": "Last seen by the Global Manager (min ago)",
+         "metricName": "Time since the Global Manager last saw the location",
          "resourceKindId": "resourceKind:id:3_::_",
          "resourceKindName": "Location",
          "isStringMetric": false,
@@ -843,7 +843,7 @@
         },
         {
          "metricKey": "connectivity|minutes_since_collection",
-         "metricName": "Time since the last successful collection (min)",
+         "metricName": "Time since the last successful collection",
          "resourceKindId": "resourceKind:id:3_::_",
          "resourceKindName": "Location",
          "isStringMetric": false,
