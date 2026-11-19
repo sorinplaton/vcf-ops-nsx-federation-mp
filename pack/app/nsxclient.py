@@ -73,6 +73,7 @@ class NsxClient:
         self.calls = 0
         self.throttled = 0
         self.errors = 0
+        self.failed: Dict[str, str] = {}  # optional calls that failed in this cycle: path -> reason
         self.trusted = {f.lower().replace(":", "") for f in (trusted_fingerprints or [])}
         self.enforce_trust = enforce_trust
         self.fingerprint: Optional[str] = None
@@ -124,11 +125,25 @@ class NsxClient:
         raise NsxError(429, path, "throttled after retries")
 
     def try_get(self, path: str, params: Optional[Dict[str, Any]] = None, default: Any = None) -> Any:
-        """GET that returns `default` on an HTTP error (a missing API on this version)."""
+        """GET that returns `default` when the call fails. The failure is recorded in `failed`, so the
+        caller can tell "empty answer" from "no answer" (see `ok`)."""
         try:
             return self.get(path, params)
-        except NsxError:
-            return default
+        except NsxError as e:
+            self._failed(path, f"HTTP {e.status}")
+        except requests.RequestException as e:
+            self._failed(path, type(e).__name__, count=True)
+        return default
+
+    def _failed(self, path: str, reason: str, count: bool = False) -> None:
+        with self._lock:
+            self.failed[path] = reason
+            if count:
+                self.errors += 1
+
+    def ok(self, path: str) -> bool:
+        """False if an optional call to `path` failed in this cycle: its data is unknown, not empty."""
+        return path not in self.failed
 
     def list(self, path: str, params: Optional[Dict[str, Any]] = None, key: str = "results",
              page_size: int = 500, max_items: int = 50000) -> List[dict]:
@@ -147,8 +162,11 @@ class NsxClient:
     def try_list(self, path: str, params: Optional[Dict[str, Any]] = None, key: str = "results") -> List[dict]:
         try:
             return self.list(path, params, key)
-        except NsxError:
-            return []
+        except NsxError as e:
+            self._failed(path, f"HTTP {e.status}")
+        except requests.RequestException as e:
+            self._failed(path, type(e).__name__, count=True)
+        return []
 
     def close(self) -> None:
         self._session.close()
@@ -190,7 +208,8 @@ class Cache:
         value = self.get(key, max_age_s)
         if value is None:
             value = loader()
-            self.put(key, value)
+            if value is not None:  # a failed load is not cached: it is tried again in the next cycle
+                self.put(key, value)
         return value
 
     def save(self) -> None:

@@ -36,6 +36,30 @@
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-budget"/></Recommendations>
             </State>
         </AlertDefinition>
+        <AlertDefinition adapterKind="NSXFederation" description="NSX API calls of the collection got no answer in the last cycles. The data behind them is unknown." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-fed_gaps" name="NSX Federation collection has data gaps" resourceKind="federation" subType="18" type="15" waitCycle="1" cancelCycle="1">
+            <State severity="automatic">
+                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-fed_gaps"/>
+                <Impact key="risk" type="badge"/>
+                <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-gaps"/></Recommendations>
+            </State>
+        </AlertDefinition>
+        <AlertDefinition adapterKind="NSXFederation" description="The collection takes most of its interval, or NSX throttles its API calls." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-fed_load" name="NSX Federation collection is slow or throttled" resourceKind="federation" subType="19" type="15" waitCycle="1" cancelCycle="1">
+            <State severity="automatic">
+                <SymptomSets operator="or">
+                    <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-fed_throttled"/>
+                    <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-fed_slow"/>
+                </SymptomSets>
+                <Impact key="risk" type="badge"/>
+                <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-load"/></Recommendations>
+            </State>
+        </AlertDefinition>
+        <AlertDefinition adapterKind="NSXFederation" description="No Global Manager answered. The Local Managers are collected from a cached list of locations." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-fed_degraded" name="NSX Federation collection runs without a Global Manager" resourceKind="federation" subType="18" type="15" waitCycle="1" cancelCycle="1">
+            <State severity="automatic">
+                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-fed_degraded"/>
+                <Impact key="health" type="badge"/>
+                <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-degraded"/></Recommendations>
+            </State>
+        </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="The Global Manager cluster is not stable or a node is offline." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-gm_cluster" name="Global Manager cluster is degraded" resourceKind="global_manager" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
                 <SymptomSets operator="or">
@@ -115,7 +139,7 @@
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-intersite"/></Recommendations>
             </State>
         </AlertDefinition>
-        <AlertDefinition adapterKind="NSXFederation" description="The Local Manager version differs from the Global Manager version." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-loc_version" name="Location and Global Manager run different versions" resourceKind="location" subType="21" type="19" waitCycle="1" cancelCycle="1">
+        <AlertDefinition adapterKind="NSXFederation" description="The Local Manager and the Global Manager run different NSX releases. A different patch level is not reported." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-loc_version" name="Location and Global Manager run different NSX releases" resourceKind="location" subType="21" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
                 <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-loc_version"/>
                 <Impact key="risk" type="badge"/>
@@ -437,6 +461,26 @@
                 <Condition key="collection|managers_over_budget" operator="&gt;" thresholdType="static" type="metric" value="0" valueType="numeric"/>
             </State>
         </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-fed_gaps" name="NSX API calls of the collection got no answer" resourceKind="federation" waitCycle="2" cancelCycle="2">
+            <State severity="warning">
+                <Condition key="collection|data_gaps" operator="&gt;" thresholdType="static" type="metric" value="0" valueType="numeric"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-fed_throttled" name="NSX throttles the API calls of the collection" resourceKind="federation" waitCycle="3" cancelCycle="2">
+            <State severity="warning">
+                <Condition key="collection|api_calls_throttled" operator="&gt;" thresholdType="static" type="metric" value="0" valueType="numeric"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-fed_slow" name="The collection takes more than 4 minutes" resourceKind="federation" waitCycle="2" cancelCycle="2">
+            <State severity="warning">
+                <Condition key="collection|collection_duration_s" operator="&gt;" thresholdType="static" type="metric" value="240" valueType="numeric"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-fed_degraded" name="The collection runs in degraded mode" resourceKind="federation" waitCycle="1" cancelCycle="1">
+            <State severity="immediate">
+                <Condition key="collection_mode" operator="contains" thresholdType="static" type="property" value="degraded" valueType="string"/>
+            </State>
+        </SymptomDefinition>
         <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-gm_cluster" name="Global Manager cluster status is not STABLE" resourceKind="global_manager" waitCycle="1" cancelCycle="1">
             <State severity="critical">
                 <Condition key="cluster_status" operator="!=" thresholdType="static" type="property" value="STABLE" valueType="string"/>
@@ -753,6 +797,9 @@
         <Recommendation key="Recommendation-df-NSXFederation-split_brain"><Description>Two Global Managers claim the active role. Do not change global configuration. Decide which Global Manager holds the valid configuration and force the other one to standby, as described in the NSX Federation recovery documentation.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-gm_reach"><Description>Check that the Global Manager appliance is powered on and that the cloud proxy can reach it on TCP 443. If its certificate was replaced, update the trusted certificate of the adapter instance.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-standby"><Description>Deploy a standby Global Manager in another site and add it under System, Location Manager, Add Standby Global Manager. Without a standby the global configuration cannot be changed if the active Global Manager is lost.</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-gaps"><Description>Some NSX API calls of the collection failed, so part of the data is unknown and the alerts that depend on it are not evaluated. Read the property 'NSX API calls without an answer' on the federation object: it lists the manager, the call and the HTTP status. HTTP 403 points to missing rights of the collection account, HTTP 5xx or a timeout to a manager under load or a service that is down.</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-load"><Description>The collection is close to the limits of the managers or of the collection interval. Lengthen the collection interval of the account, reduce the policies whose rules are collected, or lower 'Managers collected in parallel'. Check the load of the manager named in the NSX alarms.</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-degraded"><Description>No Global Manager answered, so the collection uses the list of locations it cached earlier and collects the Local Managers only. Check the Global Manager addresses of the account and the alert on the Global Managers.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-budget"><Description>The collection of this cycle is partial. Raise 'API call budget per manager and cycle' in the advanced settings of the adapter instance, or lengthen the collection interval.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-cluster"><Description>Open System, Appliances on the manager and check the state of each node and service group. Restore or redeploy the failed node.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-backup"><Description>Configure a backup target and a schedule under System, Backup and Restore on the manager, then run a backup and confirm that it succeeds. A Global Manager can only be restored from its own backup.</Description></Recommendation>
@@ -762,7 +809,7 @@
         <Recommendation key="Recommendation-df-NSXFederation-cert_trust"><Description>The Local Manager presents a certificate that is not the one the Global Manager holds for it. Confirm the certificate change is expected, then update the location in the Global Manager so the thumbprint matches.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-full_sync"><Description>Open the location in System, Location Manager and read the sync status details. Start a full sync again from the Global Manager once the cause (connectivity, version, disk space) is fixed.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-intersite"><Description>Check the RTEP network between the edge clusters of the locations: RTEP VLAN, MTU (1700 recommended), routing between RTEP subnets and the state of the edge nodes. Stretched segments and gateways depend on these sessions.</Description></Recommendation>
-        <Recommendation key="Recommendation-df-NSXFederation-version"><Description>A version difference between the Global Manager and a location is expected only during an upgrade. Complete the upgrade so that all managers run a compatible version.</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-version"><Description>The location and the Global Manager run different NSX releases (the first three numbers of the version). That is expected only during an upgrade. Complete the upgrade so that all managers run the same release. A different patch level of the same release does not raise this alert.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-channel"><Description>Check the connectivity between the two managers named on the channel (TCP 443 and 1236) and the state of both manager clusters.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-bgp"><Description>Check the BGP neighbor on the Tier-0 gateway: interface state of the edge uplink, the peer router, AS numbers, passwords and timers.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-bgp_prefix"><Description>The session is established but the peer advertises nothing. Check the routing policy and redistribution on the peer router.</Description></Recommendation>

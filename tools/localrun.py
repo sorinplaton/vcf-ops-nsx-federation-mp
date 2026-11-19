@@ -3,7 +3,8 @@
 Run it inside the tooling image, from the repository root:
   docker run --rm --network host -v $PWD:/work -e GM_HOSTS=gm1.example.com,gm2.example.com \
       -e NSX_USER=admin -e NSX_PASSWORD=... fedmp-tooling python tools/localrun.py
-Optional: RULE_POLICIES, LINK=on, SHOW=<object kinds, comma separated>.
+Optional: LM_USER and LM_PASSWORD (Local Managers, if different), RULE_POLICIES, LINK=on,
+SHOW=<object kinds, comma separated>.
 """
 import collections, json, os, sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'pack', 'app'))
@@ -17,7 +18,9 @@ ai = AdapterInstance({"adapter_key": {"adapter_kind": "NSXFederation", "object_k
       "name": "local", "identifiers": [ident(k, v) for k, v in params.items()]},
       "credential_config": {"credential_key": "nsx_credential", "credential_fields": [
           {"key": "username", "value": os.environ.get("NSX_USER", "admin")},
-          {"key": "password", "value": os.environ["NSX_PASSWORD"]}]}})
+          {"key": "password", "value": os.environ["NSX_PASSWORD"]},
+          {"key": "lm_username", "value": os.environ.get("LM_USER", "")},
+          {"key": "lm_password", "value": os.environ.get("LM_PASSWORD", "")}]}})
 d = adapter.get_adapter_definition()
 print("definition ok:", len(d.to_json()["object_types"]), "object types")
 tr = adapter.test(ai); print("test:", tr.get_json())

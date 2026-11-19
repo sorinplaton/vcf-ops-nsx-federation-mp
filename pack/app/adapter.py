@@ -29,7 +29,7 @@ _PKT, _PER_MIN = Units.MISC.PACKETS, Units.RATE.PER_MINUTE
 UNITS = {
     "backup_age_hours": Units.TIME.HOURS, "cert_min_days_to_expiry": Units.TIME.DAYS,
     "collection_duration_s": Units.TIME.SECONDS, "seconds_established": Units.TIME.SECONDS,
-    "api_calls": Units.MISC.CALLS, "api_calls_throttled": Units.MISC.CALLS, "api_errors": Units.MISC.ERRORS,
+    "api_calls": Units.MISC.CALLS, "api_calls_throttled": Units.MISC.CALLS, "api_errors": Units.MISC.ERRORS, "data_gaps": Units.MISC.CALLS,
     "rx_bytes": Units.DATA_SIZE.BYTE, "tx_bytes": Units.DATA_SIZE.BYTE, "byte_count": Units.DATA_SIZE.BYTE,
     "rx_bytes_per_s": Units.DATA_RATE.BYTE_PER_SECOND, "tx_bytes_per_s": Units.DATA_RATE.BYTE_PER_SECOND,
     "rx_packets": _PKT, "tx_packets": _PKT, "rx_dropped": _PKT, "tx_dropped": _PKT, "rx_blocked": _PKT, "tx_blocked": _PKT,
@@ -65,6 +65,7 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("api_calls", "NSX API calls in this cycle"),
         ("api_calls_throttled", "NSX API calls throttled"),
         ("api_errors", "NSX API errors"),
+        ("data_gaps", "NSX API calls without an answer (data unknown)"),
         ("managers_over_budget", "Managers that used their call budget"),
         ("locations_healthy", "Locations healthy"),
         ("locations_healthy_pct", "Locations healthy (%)"),
@@ -78,6 +79,7 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("active_global_manager", "Active Global Manager"),
         ("standby_configured", "Standby Global Manager configured"),
         ("collection_mode", "Collection mode"),
+        ("failed_calls", "NSX API calls without an answer"),
     ]),
     "global_manager": ("Global Manager", [
         ("reachable", "Reachable by the collector"),
@@ -207,7 +209,7 @@ _GROUP_BY_KEY = {
     "intersite_bgp_total": "intersite", "intersite_bgp_established": "intersite", "intersite_bgp_down": "intersite",
     "rtep_tunnels_total": "intersite", "rtep_tunnels_bgp_down": "intersite", "rtep_dropped_per_min": "intersite",
     "collection_duration_s": "collection", "api_calls": "collection", "api_calls_throttled": "collection",
-    "api_errors": "collection", "managers_over_budget": "collection",
+    "api_errors": "collection", "data_gaps": "collection", "managers_over_budget": "collection",
     "global_managers_configured": "global_managers", "global_managers_reachable": "global_managers",
     "global_managers_unreachable": "global_managers", "global_managers_active": "global_managers",
     "locations_total": "locations", "locations_gm_connected": "locations", "locations_collected": "locations",
@@ -394,6 +396,13 @@ def cert_summary(certs: List[dict]) -> Tuple[Optional[float], str]:
     return best
 
 
+def same_release(a: str, b: str) -> bool:
+    """True when two NSX versions are the same release (first three numbers). 9.1.1.0 and 9.1.1.0100 are
+    the same release at different patch levels, which NSX Federation supports."""
+    part = lambda v: [x for x in str(v).split(".")][:3]
+    return part(a) == part(b)
+
+
 def backup_summary(overview: dict) -> Tuple[bool, Optional[float], str]:
     """(enabled, hours since last successful cluster backup, last result)."""
     enabled = bool((overview.get("backup_config") or {}).get("backup_enabled"))
@@ -564,13 +573,15 @@ class Collector:
         self.finish_policies(lm_sites)
 
         # -- step 3: federation object and pack self-health
+        failed = sorted(f"{c.host}{p} ({why})" for c in self.clients for p, why in c.failed.items())
         self.metrics(fed, {
             "global_managers_configured": len(cfg.gm_hosts),
             "global_managers_reachable": len(reachable),
             "global_managers_unreachable": len(cfg.gm_hosts) - len(reachable),
             "global_managers_active": len(active),
             "locations_total": len(lm_sites),
-            "locations_gm_connected": sum(1 for s in lm_sites if s.get("gm_connection_up")) if gm else None,
+            "locations_gm_connected": (sum(1 for s in lm_sites if s.get("gm_connection_up"))
+                                       if gm and all(s.get("gm_connection_up") is not None for s in lm_sites) else None),
             "locations_collected": collected,
             "stretched_objects_total": self.stretched_total if gm else None,
             "stretched_objects_fully_realized": self.stretched_full if gm else None,
@@ -578,10 +589,12 @@ class Collector:
             "api_calls": sum(c.calls for c in self.clients),
             "api_calls_throttled": sum(c.throttled for c in self.clients),
             "api_errors": sum(c.errors for c in self.clients),
+            "data_gaps": len(failed),
             "managers_over_budget": self.over_budget,
         })
         self.metrics(fed, self.rollups())
         self.props(fed, {
+            "failed_calls": "; ".join(failed[:8]) + (f"; and {len(failed) - 8} more" if len(failed) > 8 else "") or "none",
             "federation_id": self.fed_id,
             "active_global_manager": gm["site"].get("name") if gm else "none",
             "standby_configured": standby_known,
@@ -603,7 +616,7 @@ class Collector:
                             if o.adapter_type() == ADAPTER_KIND and o.object_type() == kind]
         val = lambda o, k: o.get_last_metric_value(fk(o.object_type(), k))
         locs = get("location")
-        healthy = [o for o in locs if val(o, "gm_connection_up") == 1 and val(o, "collector_reachable") == 1
+        healthy = [o for o in locs if val(o, "gm_connection_up") != 0 and val(o, "collector_reachable") == 1
                    and not val(o, "intersite_bgp_down") and not val(o, "nodes_offline") and not val(o, "full_sync_failed")]
         tunnels = get("rtep_tunnel")
         drops = [val(o, k) for o in tunnels for k in ("rx_dropped_per_min", "tx_dropped_per_min")]
@@ -626,6 +639,7 @@ class Collector:
         client: NsxClient = gm["client"]
         fed_sites = client.get("/api/v1/sites").get("sites", [])
         status = client.try_get("/api/v1/sites/status", default={}) or {}
+        status_ok = client.ok("/api/v1/sites/status")
         conn = {rc.get("site_name"): rc for rc in status.get("remote_connections", [])}
         policy_sites = client.list(f"{GI}/sites")
         rtep = {tail(sc.get("site_path")): sc.get("rtep_ips", [])
@@ -649,8 +663,8 @@ class Collector:
                 "version": versions.get(ps.get("unique_id")),
                 "gm_version": gm_version,
                 "rtep_ips": rtep.get(ps.get("id"), []),
-                "gm_connection_up": bool(stubs) and any(s.get("connection_up") for s in stubs),
-                "gm_connection_known": bool(rc),
+                # None = unknown: the status call failed, so nothing is said about the connection
+                "gm_connection_up": (bool(stubs) and any(s.get("connection_up") for s in stubs)) if status_ok else None,
             })
         doc = {"locations": locations,
                "global_managers": [{"id": g.get("id"), "mode": g.get("mode")} for g in gms]}
@@ -661,17 +675,17 @@ class Collector:
             self.locations[loc["path"]] = lo
             self.location_names[loc["path"]] = loc["name"]
             lo.add_parent(self.fed)
-            self.metrics(lo, {"gm_connection_up": 1 if loc["gm_connection_up"] else 0})
+            self.metrics(lo, {"gm_connection_up": None if loc["gm_connection_up"] is None else int(loc["gm_connection_up"])})
             self.props(lo, {
                 "site_id": loc["site_id"], "version": loc["version"], "local_manager_address": loc["address"],
                 "rtep_ips": ", ".join(loc["rtep_ips"]), "maximum_rtt_ms": loc["maximum_rtt"],
-                "version_matches_gm": (loc["version"] == gm_version) if loc["version"] else None,
+                "version_matches_gm": same_release(loc["version"], gm_version) if loc["version"] and gm_version else None,
             })
-            if not loc["gm_connection_up"]:
+            if loc["gm_connection_up"] is False:
                 self.down_locations.add(loc["path"])
                 self.event(lo, f"Location {loc['name']} is not connected to the active Global Manager",
                            Criticality.CRITICAL, "gm_connection_up")
-            if loc["version"] and gm_version and loc["version"] != gm_version:
+            if loc["version"] and gm_version and not same_release(loc["version"], gm_version):
                 self.event(lo, f"Version mismatch: location {loc['name']} runs {loc['version']}, the Global Manager "
                            f"runs {gm_version}. Expected only during an upgrade.", Criticality.INFO, "version_matches_gm")
 
@@ -797,21 +811,15 @@ class Collector:
         mcs = cs.get("mgmt_cluster_status") or {}
         groups = (cs.get("detailed_cluster_status") or {}).get("groups") or []
         gm_alarms = client.try_list("/api/v1/alarms", {"status": "OPEN"})
-        alarms = summarize_alarms(gm_alarms)
-        backup = self.cache.cached(f"backup:{g['host']}", SLOW_TTL,
-                                   lambda: client.try_get("/api/v1/cluster/backups/overview", default={}) or {})
-        certs = self.cache.cached(f"certs:{g['host']}", SLOW_TTL,
-                                  lambda: [{"display_name": c.get("display_name"), "id": c.get("id"),
-                                            "details": [{"not_after": d.get("not_after"), "subject_cn": d.get("subject_cn")}
-                                                        for d in (c.get("details") or [])[:1]]}
-                                           for c in client.try_list("/api/v1/trust-management/certificates", {"details": "true"})])
-        b_enabled, b_age, b_result = backup_summary(backup)
-        c_days, c_name = cert_summary(certs)
+        alarms = summarize_alarms(gm_alarms) if client.ok("/api/v1/alarms") else dict.fromkeys(("critical", "high", "other"))
+        cs_ok = client.ok("/api/v1/cluster/status")
+        b_enabled, b_age, b_result, c_days, c_name = self.backup_and_certs(client)
         mode = str(site.get("active_gm", "UNKNOWN")).upper()
         self.metrics(go, {
             "reachable": 1,
-            "nodes_online": len(mcs.get("online_nodes") or []), "nodes_offline": len(mcs.get("offline_nodes") or []),
-            "service_groups_degraded": sum(1 for x in groups if x.get("group_status") != "STABLE"),
+            "nodes_online": len(mcs.get("online_nodes") or []) if cs_ok else None,
+            "nodes_offline": len(mcs.get("offline_nodes") or []) if cs_ok else None,
+            "service_groups_degraded": sum(1 for x in groups if x.get("group_status") != "STABLE") if cs_ok else None,
             "alarms_open_critical": alarms["critical"], "alarms_open_high": alarms["high"], "alarms_open_other": alarms["other"],
             "backup_age_hours": b_age, "cert_min_days_to_expiry": c_days,
         })
@@ -828,9 +836,11 @@ class Collector:
             st = client.try_get("/api/v1/sites/status", default={}) or {}
             sync = st.get("active_standby_sync_statuses") or []
             self.props(go, {"switchover_status": so.get("overall_status"),
-                            "standby_sync_status": "; ".join(
-                                f"{s.get('standby_site', '?')}: {s.get('status', '?')}" for s in sync) or "no standby"})
-            self.metrics(go, {"standby_sync_entries": len(sync)})
+                            "standby_sync_status": ("; ".join(
+                                f"{s.get('standby_site', '?')}: {s.get('status', '?')}" for s in sync) or "no standby")
+                            if client.ok("/api/v1/sites/status") else None})
+            if client.ok("/api/v1/sites/status"):
+                self.metrics(go, {"standby_sync_entries": len(sync)})
             # NSX 9.1 steady state: status ONGOING, sync_type DELTA_SYNC, full sync COMPLETE. A standby is out of
             # sync when its full sync is not complete or a status reports a failure.
             def in_sync(s: Dict[str, Any]) -> bool:
@@ -849,7 +859,9 @@ class Collector:
         if mcs.get("status") and mcs.get("status") != "STABLE":
             self.event(go, f"Global Manager {name} cluster status is {mcs.get('status')}", Criticality.CRITICAL, "cluster_status")
         if is_active:
-            if not b_enabled:
+            if b_enabled is None:
+                pass  # backup state unknown in this cycle
+            elif not b_enabled:
                 self.event(go, f"Backup is not configured on Global Manager {name}", Criticality.IMMEDIATE, "backup_enabled")
             elif b_age is None or b_age > self.cfg.backup_max_age_h or b_result == "FAILED":
                 self.event(go, f"Global Manager {name}: last successful backup is "
@@ -866,6 +878,24 @@ class Collector:
             self.event(go, f"NSX alarm {a.get('event_type')}: {a.get('summary', '')}"[:400],
                        Criticality.CRITICAL if sev == "CRITICAL" else Criticality.IMMEDIATE if sev == "HIGH" else Criticality.WARNING)
         return name
+
+    def backup_and_certs(self, client: NsxClient) -> Tuple[Optional[bool], Optional[float], Optional[str], Optional[float], Optional[str]]:
+        """(backup enabled, backup age in hours, last backup result, days to the first certificate expiry, its name).
+        Slow-moving, so cached. A call that failed gives None ("unknown") for its values and is not cached."""
+        backup = self.cache.cached(f"backup:{client.host}", SLOW_TTL,
+                                   lambda: client.try_get("/api/v1/cluster/backups/overview"))
+
+        def load_certs() -> Optional[List[dict]]:
+            raw = client.try_list("/api/v1/trust-management/certificates", {"details": "true"})
+            if not client.ok("/api/v1/trust-management/certificates"):
+                return None
+            return [{"display_name": c.get("display_name"), "id": c.get("id"),
+                     "details": [{"not_after": d.get("not_after"), "subject_cn": d.get("subject_cn")}
+                                 for d in (c.get("details") or [])[:1]]} for c in raw]
+        certs = self.cache.cached(f"certs:{client.host}", SLOW_TTL, load_certs)
+        b_enabled, b_age, b_result = backup_summary(backup) if backup is not None else (None, None, None)
+        c_days, c_name = cert_summary(certs) if certs is not None else (None, None)
+        return b_enabled, b_age, b_result, c_days, c_name
 
     def node(self, parent: Object, node: dict, online: int) -> None:
         uuid = node.get("uuid") or node.get("mgmt_cluster_listen_ip_address")
@@ -936,22 +966,17 @@ class Collector:
         lm_cluster_id = cs.get("cluster_id")
         mcs = cs.get("mgmt_cluster_status") or {}
         all_alarms = client.try_list("/api/v1/alarms", {"status": "OPEN"})
-        alarms = summarize_alarms(all_alarms)
-        backup = self.cache.cached(f"backup:{client.host}", SLOW_TTL,
-                                   lambda: client.try_get("/api/v1/cluster/backups/overview", default={}) or {})
-        certs = self.cache.cached(f"certs:{client.host}", SLOW_TTL,
-                                  lambda: [{"display_name": c.get("display_name"), "id": c.get("id"),
-                                            "details": [{"not_after": d.get("not_after"), "subject_cn": d.get("subject_cn")}
-                                                        for d in (c.get("details") or [])[:1]]}
-                                           for c in client.try_list("/api/v1/trust-management/certificates", {"details": "true"})])
-        b_enabled, b_age, _ = backup_summary(backup)
-        c_days, c_name = cert_summary(certs)
+        alarms = summarize_alarms(all_alarms) if client.ok("/api/v1/alarms") else dict.fromkeys(("critical", "high", "other"))
+        cs_ok = client.ok("/api/v1/cluster/status")
+        b_enabled, b_age, _, c_days, c_name = self.backup_and_certs(client)
         sync_states = client.try_list("/policy/api/v1/infra/full-sync-states")
         not_done = [s for s in sync_states if str(s.get("last_completed_stage", "")).upper() not in ("COMPLETED", "")]
         self.metrics(lo, {
-            "nodes_online": len(mcs.get("online_nodes") or []), "nodes_offline": len(mcs.get("offline_nodes") or []),
+            "nodes_online": len(mcs.get("online_nodes") or []) if cs_ok else None,
+            "nodes_offline": len(mcs.get("offline_nodes") or []) if cs_ok else None,
             "alarms_open_critical": alarms["critical"], "alarms_open_high": alarms["high"], "alarms_open_other": alarms["other"],
-            "backup_age_hours": b_age, "cert_min_days_to_expiry": c_days, "full_sync_failed": len(not_done),
+            "backup_age_hours": b_age, "cert_min_days_to_expiry": c_days,
+            "full_sync_failed": len(not_done) if client.ok("/policy/api/v1/infra/full-sync-states") else None,
         })
         self.props(lo, {"cluster_status": mcs.get("status"), "backup_enabled": b_enabled, "cert_first_to_expire": c_name,
                         "full_sync_stage": "; ".join(f"{s.get('id')}: {s.get('last_completed_stage')}" for s in sync_states) or "none recorded"})
@@ -980,12 +1005,16 @@ class Collector:
         # edge clusters that carry RTEPs, their nodes, inter-site BGP and tunnel statistics
         inv = self.cache.cached(f"lm_inventory:{client.host}", INVENTORY_TTL, lambda: self.load_lm_inventory(client))
         bgp_total = bgp_up = 0
+        bgp_known = True
         for ec in inv["edge_clusters"]:
             eo = self.obj("edge_cluster", f"{ec['name']} ({name})", f"ec:{ec['id']}")
             eo.add_parent(lo)
             if self.cfg.link_nsx_objects and lm_cluster_id:
                 eo.add_child(self.nsx_object("EdgeCluster", ec["name"], ec["id"], lm_cluster_id))
             status = client.try_get(f"/api/v1/edge-clusters/{ec['id']}/inter-site/status", default={}) or {}
+            if not client.ok(f"/api/v1/edge-clusters/{ec['id']}/inter-site/status"):
+                bgp_known = False  # no answer: the sessions of this cluster are unknown, not zero
+                continue
             members = status.get("member_status") or []
             ec_total = sum(int(m.get("total_bgp_sessions") or 0) for m in members)
             ec_up = sum(int(m.get("established_bgp_sessions") or 0) for m in members)
@@ -1028,7 +1057,8 @@ class Collector:
                 if up < total and not site_down:
                     self.event(no, f"Edge node {tn_name} at {name}: {total - up} of {total} inter-site BGP sessions are not established",
                                Criticality.IMMEDIATE, "intersite_bgp_down")
-        self.metrics(lo, {"intersite_bgp_total": bgp_total, "intersite_bgp_established": bgp_up})
+        if bgp_known:
+            self.metrics(lo, {"intersite_bgp_total": bgp_total, "intersite_bgp_established": bgp_up})
 
         # Tier-0 uplink BGP neighbors of the stretched Tier-0 gateways, as realized at this location
         for t0 in inv["tier0_locales"]:

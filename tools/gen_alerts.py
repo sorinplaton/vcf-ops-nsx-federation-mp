@@ -30,6 +30,10 @@ S = {
     "fed_gm_unreach":  ("federation", "A configured Global Manager is not reachable by the collector", "immediate", "metric", "global_managers_unreachable", ">", 0),
     "fed_no_standby":  ("federation", "No standby Global Manager is configured", "warning", "property", "standby_configured", "=", "False"),
     "fed_budget":      ("federation", "A manager used its whole API call budget", "warning", "metric", "managers_over_budget", ">", 0),
+    "fed_gaps":        ("federation", "NSX API calls of the collection got no answer", "warning", "metric", "data_gaps", ">", 0),
+    "fed_throttled":   ("federation", "NSX throttles the API calls of the collection", "warning", "metric", "api_calls_throttled", ">", 0),
+    "fed_slow":        ("federation", "The collection takes more than 4 minutes", "warning", "metric", "collection_duration_s", ">", 240),
+    "fed_degraded":    ("federation", "The collection runs in degraded mode", "immediate", "property", "collection_mode", "contains", "degraded"),
     # global manager
     "gm_cluster":      ("global_manager", "Global Manager cluster status is not STABLE", "critical", "property", "cluster_status", "!=", "STABLE"),
     "gm_node_offline": ("global_manager", "A Global Manager node is offline", "immediate", "metric", "nodes_offline", ">", 0),
@@ -117,10 +121,11 @@ for ev, (sev, name, _d, _r) in GM_ALARMS.items():
 # ---- wait and cancel cycles: conditions that can flap need two cycles (10 minutes) to raise and to clear
 WAIT = {k: (2, 2) for k in ("chan_down", "loc_bgp_down", "loc_bgp_none", "edge_bgp_none", "tun_bgp_down",
                             "tun_rx_drops", "tun_tx_drops", "bgp_down", "bgp_no_prefix")}
-WAIT.update({"tun_rx_dt": (3, 3), "tun_tx_dt": (3, 3), "gm_standby_sync": (3, 2)})
+WAIT.update({"tun_rx_dt": (3, 3), "tun_tx_dt": (3, 3), "gm_standby_sync": (3, 2),
+             "fed_gaps": (2, 2), "fed_throttled": (3, 2), "fed_slow": (2, 2)})
 
 # ---- alerts that affect the Risk badge (a condition that will hurt later) instead of Health (broken now)
-RISK = {"fed_no_standby", "fed_budget", "gm_backup", "gm_cert", "loc_cert_trust", "loc_version", "loc_backup", "loc_cert"}
+RISK = {"fed_no_standby", "fed_budget", "fed_gaps", "fed_load", "gm_backup", "gm_cert", "loc_cert_trust", "loc_version", "loc_backup", "loc_cert"}
 
 # ---- recommendations
 R = {
@@ -132,6 +137,15 @@ R = {
                 "certificate was replaced, update the trusted certificate of the adapter instance.",
     "standby": "Deploy a standby Global Manager in another site and add it under System, Location Manager, Add Standby Global "
                "Manager. Without a standby the global configuration cannot be changed if the active Global Manager is lost.",
+    "gaps": "Some NSX API calls of the collection failed, so part of the data is unknown and the alerts that depend on it are "
+            "not evaluated. Read the property 'NSX API calls without an answer' on the federation object: it lists the manager, "
+            "the call and the HTTP status. HTTP 403 points to missing rights of the collection account, HTTP 5xx or a timeout to "
+            "a manager under load or a service that is down.",
+    "load": "The collection is close to the limits of the managers or of the collection interval. Lengthen the collection "
+            "interval of the account, reduce the policies whose rules are collected, or lower 'Managers collected in parallel'. "
+            "Check the load of the manager named in the NSX alarms.",
+    "degraded": "No Global Manager answered, so the collection uses the list of locations it cached earlier and collects the "
+                "Local Managers only. Check the Global Manager addresses of the account and the alert on the Global Managers.",
     "budget": "The collection of this cycle is partial. Raise 'API call budget per manager and cycle' in the advanced settings "
               "of the adapter instance, or lengthen the collection interval.",
     "cluster": "Open System, Appliances on the manager and check the state of each node and service group. Restore or redeploy "
@@ -150,8 +164,9 @@ R = {
                  "the Global Manager once the cause (connectivity, version, disk space) is fixed.",
     "intersite": "Check the RTEP network between the edge clusters of the locations: RTEP VLAN, MTU (1700 recommended), routing "
                  "between RTEP subnets and the state of the edge nodes. Stretched segments and gateways depend on these sessions.",
-    "version": "A version difference between the Global Manager and a location is expected only during an upgrade. Complete "
-               "the upgrade so that all managers run a compatible version.",
+    "version": "The location and the Global Manager run different NSX releases (the first three numbers of the version). "
+               "That is expected only during an upgrade. Complete the upgrade so that all managers run the same release. "
+               "A different patch level of the same release does not raise this alert.",
     "channel": "Check the connectivity between the two managers named on the channel (TCP 443 and 1236) and the state of both "
                "manager clusters.",
     "bgp": "Check the BGP neighbor on the Tier-0 gateway: interface state of the edge uplink, the peer router, AS numbers, "
@@ -195,6 +210,12 @@ A = [
      "The federation runs with a single Global Manager.", NET, COMPL, [["fed_no_standby"]], "standby"),
     ("fed_budget", "federation", "NSX Federation collection is partial",
      "At least one manager used its whole API call budget in the last collection cycle.", APP, PERF, [["fed_budget"]], "budget"),
+    ("fed_gaps", "federation", "NSX Federation collection has data gaps",
+     "NSX API calls of the collection got no answer in the last cycles. The data behind them is unknown.", APP, AVAIL, [["fed_gaps"]], "gaps"),
+    ("fed_load", "federation", "NSX Federation collection is slow or throttled",
+     "The collection takes most of its interval, or NSX throttles its API calls.", APP, PERF, [["fed_throttled"], ["fed_slow"]], "load"),
+    ("fed_degraded", "federation", "NSX Federation collection runs without a Global Manager",
+     "No Global Manager answered. The Local Managers are collected from a cached list of locations.", APP, AVAIL, [["fed_degraded"]], "degraded"),
     ("gm_cluster", "global_manager", "Global Manager cluster is degraded",
      "The Global Manager cluster is not stable or a node is offline.", NET, AVAIL, [["gm_cluster"], ["gm_node_offline"]], "cluster"),
     ("gm_standby_sync", "global_manager", "Standby Global Manager is not in sync",
@@ -216,8 +237,8 @@ A = [
     ("loc_intersite", "location", "Inter-site BGP sessions of the location are down",
      "Inter-site (RTEP) BGP sessions of this location are not established. Critical when none is established.",
      NET, AVAIL, [["loc_bgp_down"], ["loc_bgp_none", "loc_bgp_has"]], "intersite"),
-    ("loc_version", "location", "Location and Global Manager run different versions",
-     "The Local Manager version differs from the Global Manager version.", NET, COMPL, [["loc_version"]], "version"),
+    ("loc_version", "location", "Location and Global Manager run different NSX releases",
+     "The Local Manager and the Global Manager run different NSX releases. A different patch level is not reported.", NET, COMPL, [["loc_version"]], "version"),
     ("loc_backup", "location", "Local Manager backup is missing or old",
      "Backup is not configured on the Local Manager or the last successful backup is older than 24 hours.", NET, COMPL, [["loc_backup_off"], ["loc_backup_old"]], "backup"),
     ("loc_cert", "location", "Local Manager certificate is about to expire",
