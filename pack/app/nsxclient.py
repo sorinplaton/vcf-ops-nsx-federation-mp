@@ -84,10 +84,13 @@ class NsxClient:
         self.host = host.strip()
         self.timeout = timeout
         self.call_budget = call_budget
-        self.calls = 0
+        self.calls = 0  # HTTP requests sent, retries included: what the budget counts
+        self.requests = 0  # calls asked by the adapter, each counted once
+        self.budget_hit = False
         self.throttled = 0
         self.errors = 0
         self.retried = 0
+        self.transport_failures = 0  # consecutive timeouts or dropped connections
         self.failed: Dict[str, str] = {}  # optional calls that failed in this cycle: path -> reason
         self.trusted = {f.lower().replace(":", "") for f in (trusted_fingerprints or [])}
         self.enforce_trust = enforce_trust
@@ -123,17 +126,28 @@ class NsxClient:
     # ---- HTTP --------------------------------------------------------------------
     def get(self, path: str, params: Optional[Dict[str, Any]] = None) -> Any:
         self.check_trust()
+        with self._lock:
+            self.requests += 1
         delay = 1.0
         for attempt in range(4):
             with self._lock:
                 if self.calls >= self.call_budget:
+                    self.budget_hit = True
                     raise BudgetExceeded(f"{self.host}: call budget {self.call_budget} used")
                 self.calls += 1
+            if self.transport_failures >= 3:
+                # a manager that keeps timing out is skipped for the rest of the cycle, so that it cannot
+                # hold the collection for the timeout of every remaining call
+                raise requests.ConnectionError(f"{self.host}: skipped after repeated timeouts in this cycle")
             try:
                 resp = self._session.get(
                     f"https://{self.host}{path}", params=params, timeout=self.timeout
                 )
+                if resp.status_code not in (429, 503):
+                    self.transport_failures = 0
             except (requests.Timeout, requests.ConnectionError):
+                with self._lock:
+                    self.transport_failures += 1
                 if attempt >= 1:  # one retry on a timeout or a dropped connection
                     raise
                 with self._lock:
@@ -143,15 +157,22 @@ class NsxClient:
             if resp.status_code in (429, 503) and attempt < 3:
                 with self._lock:
                     self.throttled += 1
-                retry_after = resp.headers.get("Retry-After")
-                time.sleep(min(float(retry_after) if retry_after else delay, 15.0))
+                try:  # seconds; an HTTP date falls back to the back-off delay
+                    wait = float(resp.headers.get("Retry-After") or delay)
+                except ValueError:
+                    wait = delay
+                time.sleep(min(wait, 15.0))
                 delay *= 2
                 continue
             if resp.status_code >= 400:
                 with self._lock:
                     self.errors += 1
+                    if resp.status_code in (429, 503):  # still throttled after the retries: counts for the breaker
+                        self.transport_failures += 1
                 raise NsxError(resp.status_code, path, resp.text)
             return resp.json() if resp.content else {}
+        with self._lock:  # a manager that keeps answering 429 or 503 is skipped like one that times out
+            self.transport_failures += 1
         raise NsxError(429, path, "throttled after retries")
 
     def try_get(self, path: str, params: Optional[Dict[str, Any]] = None, default: Any = None) -> Any:

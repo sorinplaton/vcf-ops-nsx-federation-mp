@@ -54,15 +54,21 @@ test suite.
 ## Alerts during a location outage
 
 When the active Global Manager reports a location as not connected, the adapter writes the name of that location
-to the property "Locations in outage" of every location, sync channel, edge, tunnel, BGP neighbor and stretched
-object of the federation. The alerts of these objects require that the property reads "none", so they stay quiet
-and the alert of the location itself is the one to act on. They fire again in the cycle after the location is back.
+to the property "Locations in outage" of the objects that depend on it: the location itself, its edge clusters,
+edge nodes and BGP neighbors, the tunnels and sync channels with one end at that location, the stretched objects
+whose span includes it and their realization there, and the Global Managers. The alerts of these objects require
+that the property reads "none", so they stay quiet and the alert of the location itself is the one to act on.
+They fire again in the cycle after the location is back. Objects of the other locations are not affected: a fault
+there raises its alert.
 
 The alarm alerts of the Global Manager and of the locations are quiet in the same way, except the alarms between
-Global Managers. When a Global Manager does not answer or none is active, the sync channel alerts are quiet behind
-the alert on the federation.
+Global Managers. A stretched object is quiet while any location of its span is in outage; its realization at each
+of the other locations still raises its own alert. The outage symptom clears three cycles after the location is
+back, one cycle after the symptoms it keeps quiet, so the end of an outage raises no alert either. When a Global Manager does not answer, the alerts of its own sync channels are quiet behind the
+alert on the federation; when none is active, those of every channel with a Global Manager at one end. Channels
+between two locations are never quiet for that reason.
 
-A second, unrelated fault on these objects is not alerted on while the outage lasts. Its metrics and properties are
+A second, unrelated fault on the objects of the location in outage is not alerted on while the outage lasts. Its metrics and properties are
 still collected.
 
 For planned work, use a maintenance schedule of VCF Operations on the group "NSX Federation - All objects".
@@ -77,9 +83,13 @@ On the federation object:
 | NSX API calls without an answer (property) | Manager, call and HTTP status of each failed call |
 | NSX API calls retried after a timeout | A call is retried once after a timeout or a dropped connection |
 | Global Managers not collected | Address and reason: not reachable, certificate not trusted, or another federation |
-| Collection mode | `normal`, or `degraded` when no Global Manager answers and the location list comes from the cache |
+| Collection mode | `normal`, or `degraded` when no Global Manager answers and the location list comes from the cache or from VCF Operations |
 
-HTTP 403 on a call points to missing rights of the account. The cache of the location list lives in the adapter
+HTTP 403 on a call points to missing rights of the account. A Local Manager that refuses the account (HTTP 401 or
+403), or that fails most calls, is reported as not reached. A manager that times out three times in a row is
+skipped for the rest of the cycle.
+
+One account stays with one federation. If the federation is rebuilt with a new ID, create a new account. The cache of the location list lives in the adapter
 container and is lost when the container restarts.
 
 ## Upgrade
@@ -88,14 +98,20 @@ container and is lost when the container restarts.
 2. Stop and start the account. Check that it reaches "Collecting"; start it a second time if it stays stopped.
 3. Metrics appear after three cycles, rates after four.
 
+An upgrade replaces the alert content of the pack. A symptom definition that a new version no longer ships can
+stay in VCF Operations, unused by any alert; delete it under Operations, Configurations, Symptom Definitions, or
+with `DELETE /api/symptomdefinitions/{id}`.
+
 ## Objects that no longer exist
 
 An object deleted in NSX stops receiving data and stays in the inventory. Delete it in the UI, or through the
 suite API with `DELETE /api/resources/{id}`. Both also delete its history.
 
 The account can do it: with "Delete objects that left NSX after (days)" above 0, the adapter deletes the objects of
-its federation that NSX no longer returns and that have had no data for that many days. It checks once an hour,
-only in a complete cycle, and deletes at most 50 objects at a time. The federation object lists what was deleted.
+its federation that NSX no longer returns and that have had no data for that many days (one day at least). It
+checks once an hour and deletes at most 50 objects at a time. It deletes nothing in a cycle that is not complete:
+a Global Manager or a location not collected, a failed call, a call budget used up. The federation object lists
+what was deleted.
 
 ## What the adapter reads from VCF Operations
 

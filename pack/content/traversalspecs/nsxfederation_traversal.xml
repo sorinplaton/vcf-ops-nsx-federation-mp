@@ -7,6 +7,7 @@
             <ResourcePath path="NSXFederation::federation||NSXFederation::global_manager::child||NSXFederation::manager_node::child"/>
             <ResourcePath path="NSXFederation::federation||NSXFederation::global_manager::child||NSXFederation::sync_channel::child"/>
             <ResourcePath path="NSXFederation::federation||NSXFederation::location::child||NSXFederation::sync_channel::child"/>
+            <ResourcePath path="NSXFederation::federation||NSXFederation::location::child||NSXFederation::manager_node::child"/>
             <ResourcePath path="NSXFederation::federation||NSXFederation::location::child||NSXFederation::edge_cluster::child||NSXFederation::edge_node::child||NSXFederation::rtep_tunnel::child"/>
             <ResourcePath path="NSXFederation::federation||NSXFederation::tier0::child||NSXFederation::bgp_neighbor::child"/>
             <ResourcePath path="NSXFederation::federation||NSXFederation::tier0::child||NSXFederation::realization::child"/>

@@ -29,8 +29,10 @@ class FakeNsx:
 
     def get(self, client, path, params=None):
         client.check_trust()
-        with client._lock:
+        with client._lock:  # the same bookkeeping as NsxClient.get
+            client.requests += 1
             if client.calls >= client.call_budget:
+                client.budget_hit = True
                 raise nsxclient.BudgetExceeded(client.host)
             client.calls += 1
         self.calls += 1

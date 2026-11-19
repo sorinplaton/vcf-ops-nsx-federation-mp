@@ -2,7 +2,7 @@
 
 A management pack that monitors NSX Federation (NSX 9.1) in VCF Operations 9.1.1. It is built with the
 [VCF Operations Integration SDK](https://vmware.github.io/vmware-vcf-operations-integration-sdk/introduction)
-in Python. Current version: 1.7.0.
+in Python. Current version: 1.7.2.
 
 This is a lab project, not a Broadcom product. The pack is unsigned and comes with no support. It only reads
 from NSX.
@@ -14,12 +14,15 @@ The design, the install and the tests are described in two blog posts:
 
 ## What it monitors
 
+The full list of object types, metrics, properties and alerts, with the condition and the recommendation of each
+alert, is in [docs/FEATURES.md](docs/FEATURES.md). In short:
+
 - 14 object types: the federation, Global Managers and their nodes, locations, sync channels, edge clusters,
   edge nodes, RTEP tunnels, Tier-0 BGP neighbors, stretched Tier-0 and Tier-1 gateways, segments, global
   security policies, and the realization of each stretched object at each location. Global firewall rules
   are opt-in per policy.
 - Metrics in 17 groups, with rates computed from the NSX counters, federation rollups and 18 key indicators.
-- 63 alert definitions, 96 symptoms and 34 recommendations, including the 13 federation alarm types of
+- 63 alert definitions, 95 symptoms and 34 recommendations, including the 13 federation alarm types of
   NSX 9.1 as named alerts, the sync state of a standby Global Manager and four alerts on the collection itself.
 - A failed NSX call is reported as unknown data, not as an empty answer: no alert fires on data that was
   never received, and the federation object lists the calls without an answer.
@@ -50,6 +53,7 @@ account is enough: the built-in `audit` account was tested.
 | `tooling/Dockerfile` | An image with the SDK tools (`mp-init`, `mp-test`, `mp-build`) |
 | `install/` | Scripts for the scripted install of an unsigned pack |
 | `tests/` | Test suite with a mock NSX (an anonymised recording of a small federation) |
+| `docs/FEATURES.md` | Every object type, metric, property and alert of the pack (generated) |
 | `docs/OPERATIONS.md` | Account settings, certificate trust, sizing, alert behaviour, upgrade |
 
 ## Build
@@ -60,7 +64,7 @@ The build needs Docker and an image registry the cloud proxy can reach over HTTP
 docker build -t fedmp-tooling tooling
 
 # regenerate the content after a change to the object model
-for g in alerts dashboards groups views; do python3 tools/gen_$g.py; done
+for g in alerts dashboards groups views features; do python3 tools/gen_$g.py; done
 
 # test a collection without VCF Operations
 docker run --rm --network host -v $PWD:/work -e GM_HOSTS=<gm1>,<gm2> -e NSX_USER=admin -e NSX_PASSWORD=... \
@@ -89,7 +93,7 @@ Scripted, with `google-chrome`, `node` and Python `requests` on the host:
 ```bash
 export OPS_HOST=<vcf-operations-fqdn> OPS_PW=<admin password>
 install/upi.sh enableUPI
-install/install_unsigned.sh pack/build/NSXFederation_1.7.0.pak   # turns the switch off at the end
+install/install_unsigned.sh pack/build/NSXFederation_1.7.2.pak   # turns the switch off at the end
 ```
 
 The scripted route uses calls that are internal to the VCF Operations UI. They are unsupported and can

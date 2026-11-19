@@ -1,19 +1,34 @@
 #!/bin/bash
 # Install an unsigned pack through the UI route. Run AFTER "unsigned PAK installation" was enabled
-# (upi.sh enableUPI): the admin-console login made by upi.sh logs the product UI session out,
-# so this script logs in again first. It switches the setting back off at the end, also on failure.
+# (upi.sh enableUPI): the admin-console login made by upi.sh logs the product UI session out, so this script
+# logs in again first. However it ends (success, failure, Ctrl-C, a dropped terminal), it switches the setting
+# back off and stops the headless Chrome it used. Exit code: 0 only when the install completed AND the setting
+# is off.
 # Needs OPS_HOST and OPS_PW (admin password) in the environment, and python3 with "requests".
 # usage: install_unsigned.sh <pak>
-D="$(cd "$(dirname "$0")" && pwd)"; W="${WORK_DIR:-${TMPDIR:-/tmp}/fedmp-install}"; mkdir -p "$W"
+D="$(cd "$(dirname "$0")" && pwd)"
+W="${WORK_DIR:-$HOME/.fedmp-install}"; mkdir -p "$W" && chmod 700 "$W" || exit 1
 : "${OPS_HOST:?set OPS_HOST}" "${OPS_PW:?set OPS_PW}" "${1:?usage: install_unsigned.sh <pak>}"
+rc=1; off=1; done=0
+finish() {
+  [ $done = 1 ] && return; done=1
+  trap '' INT TERM HUP  # nothing interrupts the clean-up
+  rm -f "$W/uisess.json"
+  # the admin console refuses the change while the install is still running: retry until it reports "false"
+  for i in $(seq 1 20); do
+    out=$("$D/upi.sh" disableUPI 2>&1 | tail -2); echo "$out"
+    if echo "$out" | grep -q '^status -> .*"status":"false"'; then off=0; break; fi
+    sleep 30
+  done
+  [ $off = 0 ] || echo "WARNING: unsigned PAK installation is still enabled. Switch it off in the admin console." >&2
+  "$D/chrome.sh" stop
+  [ $rc = 0 ] && [ $off = 0 ]; exit $?
+}
+trap finish EXIT
+trap 'rc=130; exit 130' INT TERM HUP
 node "$D/uitoken.mjs" >/dev/null 2>&1; sleep 12
-( umask 077; node "$D/uisess.mjs" > "$W/uisess.json" 2>/dev/null ) || { echo "no UI session"; exit 1; }
-timeout 900 python3 "$D/install_pak.py" "$W/uisess.json" "$1"; rc=$?
-rm -f "$W/uisess.json"
-# the admin console refuses the change while the install is still running: retry until it is off
-for i in $(seq 1 20); do
-  out=$("$D/upi.sh" disableUPI 2>&1 | tail -2); echo "$out"
-  case "$out" in *'"status":"false"'*) break;; esac
-  sleep 30
-done
-exit $rc
+if ( umask 077; node "$D/uisess.mjs" > "$W/uisess.json" 2>/dev/null ); then
+  timeout 2100 python3 "$D/install_pak.py" "$W/uisess.json" "$1"; rc=$?
+else
+  echo "no UI session" >&2
+fi

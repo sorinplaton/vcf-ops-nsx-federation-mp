@@ -1,3 +1,4 @@
+import json
 import os
 import time
 
@@ -52,18 +53,33 @@ def test_a_failed_slow_call_is_not_cached(nsx):
     assert all("backup_enabled" in gm["p"] for gm in r["global_manager"].values())
 
 
-def test_location_outage_marks_dependent_objects(nsx):
+def test_location_outage_marks_only_the_objects_that_depend_on_it(nsx):
     status = nsx.data[GM_HOSTS[0]][SITES_STATUS]
-    down = next(rc for rc in status["remote_connections"] if any(rc["site_name"] == n for n in run()["location"]))
+    names = list(run()["location"])
+    down = next(rc for rc in status["remote_connections"] if rc["site_name"] in names)
     for stub in down["stubs"]:
         stub["connection_up"] = False
+    a = down["site_name"]
+    b = next(n for n in names if n != a)
     r = run()
     f = fed(r)
-    assert f["m"]["locations|locations_down"] == 1 and f["p"]["location_outage"] == down["site_name"]
-    assert r["location"][down["site_name"]]["m"]["connectivity|gm_connection_up"] == 0
-    for kind in ("global_manager", "location", "sync_channel", "edge_cluster", "edge_node", "rtep_tunnel", "bgp_neighbor", "tier0",
-                 "tier1", "segment", "global_policy", "realization"):
-        assert all(o["p"]["location_outage"] == down["site_name"] for o in r[kind].values()), kind
+    assert f["m"]["locations|locations_down"] == 1 and f["p"]["location_outage"] == a
+    assert r["location"][a]["m"]["connectivity|gm_connection_up"] == 0
+    assert r["location"][a]["p"]["location_outage"] == a and r["location"][b]["p"]["location_outage"] == "none"
+    assert all(g["p"]["location_outage"] == a for g in r["global_manager"].values())  # the hub knows
+    for kind in ("edge_cluster", "edge_node", "bgp_neighbor"):  # objects of the other location are not silenced
+        mine = [o for n, o in r[kind].items() if n.endswith(f"({a})")]
+        other = [o for n, o in r[kind].items() if n.endswith(f"({b})")]
+        assert mine and other, kind
+        assert all(o["p"]["location_outage"] == a for o in mine), kind
+        assert all(o["p"]["location_outage"] == "none" for o in other), kind
+    assert all(o["p"]["location_outage"] == a for o in r["rtep_tunnel"].values())  # every tunnel has an end at a
+    for n, o in r["sync_channel"].items():
+        assert o["p"]["location_outage"] == (a if a in n else "none"), n
+    for n, o in r["realization"].items():
+        assert o["p"]["location_outage"] == (a if n.endswith("@ " + a) else "none"), n
+    spans = {n: o["m"]["realization|span_locations"] for n, o in r["segment"].items()}
+    assert any(o["p"]["location_outage"] == "none" for o in r["segment"].values()) or min(spans.values()) == 2
     assert all(o["p"]["gm_outage"] == "none" for o in r["sync_channel"].values())
 
 
@@ -302,15 +318,22 @@ def test_standby_out_of_sync_duration(nsx):
     run()
     r = run()
     active = next(g for g in r["global_manager"].values() if g["p"]["mode"] == "ACTIVE")
-    assert active["m"]["sync|standby_in_sync"] == 0 and active["m"]["sync|standby_out_of_sync_minutes"] >= 0
+    assert active["m"]["sync|standby_in_sync"] == 0
+    since = json.load(open(os.path.join(nsxclient.CACHE_DIR, os.listdir(nsxclient.CACHE_DIR)[0])))["standby_out_of_sync_since"]["v"]
+    assert list(since) == [status["standby_site"]]  # the start of the outage is kept from the first cycle
 
 
-def test_global_manager_outage_marks_the_sync_channels(nsx):
-    run()
-    nsx.fail = [GM_HOSTS[1] and "/nothing"]  # keep the fixture intact; drop the standby below
-    del nsx.data[GM_HOSTS[1]]
+def test_global_manager_outage_marks_only_its_sync_channels(nsx):
     r = run()
-    assert all(c["p"]["gm_outage"].startswith("Global Manager not reachable") for c in r["sync_channel"].values())
+    locations = list(r["location"])
+    standby = next(n for n, g in r["global_manager"].items() if g["p"]["mode"] == "STANDBY")
+    del nsx.data[GM_HOSTS[1]]  # the standby does not answer
+    r = run()
+    for n, c in r["sync_channel"].items():
+        ends = [e.strip() for e in n.split("->")]
+        between_locations = all(e in locations for e in ends)
+        expected = "none" if between_locations or standby not in ends else "Global Manager not reachable"
+        assert c["p"]["gm_outage"] == expected, n
 
 
 def test_realization_is_tiered_above_200_objects(nsx):
@@ -357,3 +380,343 @@ def test_stale_objects_are_deleted_only_when_asked(nsx, ops):
         os.remove(os.path.join(nsxclient.CACHE_DIR, f_))
     r = run(delete_stale_after_days="7")
     assert ops.deleted == ["old"] and fed(r)["m"]["collection|stale_objects_deleted"] == 1 and live_name in r["sync_channel"]
+
+
+# ---- regressions found by review
+
+def test_a_local_manager_that_refuses_the_account_is_not_reached(nsx):
+    lm = next(h for h in nsx.data if h not in GM_HOSTS)
+    real = nsx.get
+
+    def get(client, path, params=None):
+        if client.host == lm:
+            client.check_trust()
+            client.calls += 1
+            client.requests += 1
+            client.errors += 1
+            raise nsxclient.NsxError(401, path, "expired")
+        return real(client, path, params)
+    nsx.get = get
+    r = run()
+    reached = sorted(l["m"]["connectivity|collector_reachable"] for l in r["location"].values())
+    assert reached == [0, 1] and fed(r)["m"]["locations|locations_collected"] == 1
+    assert fed(r)["m"]["locations|locations_healthy_pct"] == 50
+
+
+def test_a_failed_inventory_load_is_not_cached(nsx):
+    r = run()
+    for f_ in os.listdir(nsxclient.CACHE_DIR):
+        os.remove(os.path.join(nsxclient.CACHE_DIR, f_))
+    nsx.fail = ["/enforcement-points/default/edge-clusters"]
+    assert fed(run())["m"]["collection|data_gaps"] >= 2  # reported, on both Local Managers
+    nsx.fail = []
+    r = run()  # the next cycle reads the inventory again and finds everything
+    assert len(r["edge_cluster"]) == 2 and len(r["rtep_tunnel"]) == 8 and fed(r)["m"]["collection|data_gaps"] == 0
+
+
+def test_a_failed_inventory_load_falls_back_to_the_last_good_one(nsx, monkeypatch):
+    import adapter
+    run()
+    monkeypatch.setattr(adapter, "INVENTORY_TTL", 0)  # the cached inventory is due again
+    nsx.fail = ["/enforcement-points/default/edge-clusters"]
+    r = run()
+    assert len(r["edge_cluster"]) == 2 and len(r["rtep_tunnel"]) == 8
+
+
+def test_the_budget_keeps_calls_for_the_global_manager(nsx):
+    segs = nsx.data[GM_HOSTS[0]]["/global-manager/api/v1/global-infra/segments?page_size=500"]
+    template = segs["results"][0]
+    for i in range(300):
+        segs["results"].append(dict(template, id=f"s-{i}", display_name=f"s-{i}", path=f"/global-infra/segments/s-{i}",
+                                    unique_id=f"s-{i}"))
+    r = run(call_budget="80")
+    active = next(g for g in r["global_manager"].values() if g["p"]["mode"] == "ACTIVE")
+    assert "cluster|nodes_online" in active["m"] and "sync|standby_in_sync" in active["m"]
+    assert fed(r)["m"]["collection|managers_over_budget"] >= 1 and len(r["sync_channel"]) == 9
+
+
+def test_failed_statistics_send_no_counters(nsx):
+    run()
+    nsx.fail = ["/security-policies/", "/inter-site/statistics"]
+    r = run()
+    rates = [k for o in list(r["realization"].values()) + list(r["rtep_tunnel"].values()) for k in o["m"] if "per_" in k]
+    assert rates == [] and len(r["rtep_tunnel"]) == 8  # the tunnels are still known from the BGP state
+    assert all("remote_location" not in o["p"] and "totals|rx_bytes" not in o["m"] for o in r["rtep_tunnel"].values())
+    assert all("intersite|rtep_tunnels" not in n["m"] for n in r["edge_node"].values())
+    nsx.fail = []
+    r = run()
+    spikes = [v for o in r["realization"].values() for k, v in o["m"].items() if "per_min" in k and v > 0]
+    assert spikes == []  # the counters did not restart from zero
+
+
+@pytest.mark.parametrize("state", ["UNAVAILABLE", "DISCONNECTED", "STOPPED", "PAUSED"])
+def test_only_known_states_count_as_in_sync(nsx, state):
+    nsx.data[GM_HOSTS[0]][SITES_STATUS]["active_standby_sync_statuses"][0]["status"] = state
+    r = run()
+    assert next(g for g in r["global_manager"].values() if g["p"]["mode"] == "ACTIVE")["m"]["sync|standby_in_sync"] == 0
+
+
+def test_a_location_without_a_connection_entry_is_unknown_not_down(nsx):
+    status = nsx.data[GM_HOSTS[0]][SITES_STATUS]
+    names = list(run()["location"])
+    status["remote_connections"] = [rc for rc in status["remote_connections"] if rc["site_name"] not in names[:1]]
+    r = run()
+    assert "connectivity|gm_connection_up" not in r["location"][names[0]]["m"]
+    assert fed(r)["m"]["locations|locations_down"] == 0 and fed(r)["p"]["location_outage"] == "none"
+
+
+def test_an_account_never_moves_to_another_federation(nsx):
+    own = fed(run())["p"]["federation_id"]
+    del nsx.data[GM_HOSTS[0]]  # its active Global Manager is down
+    nsx.data[GM_HOSTS[1]]["/api/v1/sites/self"]["id"] = "00000000-0000-0000-0000-00000000beef"  # the other is foreign
+    r = run()
+    assert fed(r)["p"]["federation_id"] == own and fed(r)["m"]["global_managers|global_managers_foreign"] == 1
+    assert fed(r)["p"]["collection_mode"].startswith("degraded")
+
+
+def test_stale_objects_are_kept_when_the_cycle_is_not_clean(nsx, ops):
+    r = run()
+    fed_id = fed(r)["p"]["federation_id"]
+    ops.res = {"sync_channel": [("old", "gone -> x", f"{fed_id}:chan:gone>x", {}, 10)]}
+    for f_ in os.listdir(nsxclient.CACHE_DIR):
+        os.remove(os.path.join(nsxclient.CACHE_DIR, f_))
+    nsx.fail = ["/api/v1/alarms"]  # one failed call is enough to skip the deletion
+    run(delete_stale_after_days="7")
+    assert ops.deleted == []
+    nsx.fail = []
+    for f_ in os.listdir(nsxclient.CACHE_DIR):
+        os.remove(os.path.join(nsxclient.CACHE_DIR, f_))
+    run(delete_stale_after_days="0.001")  # less than a day is read as one day; the object is 10 days old
+    assert ops.deleted == ["old"]
+    ops.deleted.clear()
+    ops.res = {"sync_channel": [("young", "gone -> y", f"{fed_id}:chan:gone>y", {}, 0.5)]}
+    for f_ in os.listdir(nsxclient.CACHE_DIR):
+        os.remove(os.path.join(nsxclient.CACHE_DIR, f_))
+    run(delete_stale_after_days="0.001")
+    assert ops.deleted == []
+
+
+def test_a_manager_that_keeps_timing_out_is_skipped(monkeypatch):
+    import requests
+    monkeypatch.setattr(nsxclient, "server_cert_sha256", lambda host, port=443, timeout=10.0: "a" * 64)
+    monkeypatch.setattr(nsxclient.time, "sleep", lambda s: None)
+    client = nsxclient.NsxClient("gm.example.test", "u", "p", enforce_trust=False)
+    attempts = []
+
+    def get(url, **kw):
+        attempts.append(url)
+        raise requests.Timeout()
+    client.check_trust()
+    monkeypatch.setattr(client._session, "get", get)
+    for i in range(10):
+        assert client.try_get(f"/api/v1/x{i}", default="unknown") == "unknown"
+    assert len(attempts) == 3 and len(client.failed) == 10  # two calls with a retry, then nothing is sent
+
+
+def test_retry_after_as_a_date_does_not_break_the_call(monkeypatch):
+    monkeypatch.setattr(nsxclient, "server_cert_sha256", lambda host, port=443, timeout=10.0: "a" * 64)
+    monkeypatch.setattr(nsxclient.time, "sleep", lambda s: None)
+    client = nsxclient.NsxClient("gm.example.test", "u", "p", enforce_trust=False)
+    client.check_trust()
+
+    class Resp:
+        status_code, headers, content, text = 429, {"Retry-After": "Wed, 21 Oct 2026 07:28:00 GMT"}, b"", "busy"
+    monkeypatch.setattr(client._session, "get", lambda url, **kw: Resp())
+    assert client.try_get("/api/v1/x", default="unknown") == "unknown" and client.throttled == 3
+
+
+# ---- second review: faults reproduced by an independent reviewer
+
+STATS = "/policy/api/v1/global-infra/domains/default/security-policies/fed-demo/statistics"
+
+
+def local_managers(nsx):
+    return [h for h in nsx.data if h not in GM_HOSTS]
+
+
+def wipe_cache():
+    for f_ in os.listdir(nsxclient.CACHE_DIR):
+        os.remove(os.path.join(nsxclient.CACHE_DIR, f_))
+
+
+@pytest.fixture
+def clock(monkeypatch):
+    """Cycles five minutes apart: without it no rate is ever computed in a test."""
+    import adapter
+    now = {"now": time.time()}
+    monkeypatch.setattr(adapter.time, "time", lambda: now["now"])
+    return now
+
+
+def test_a_failed_stretched_object_list_does_not_cost_the_locations(nsx):
+    nsx.fail = ["/global-infra/segments"]
+    r = run()
+    assert len(r["location"]) == 2 and len(r["edge_cluster"]) == 2 and fed(r)["p"]["collection_mode"] == "normal"
+    assert fed(r)["m"]["collection|data_gaps"] >= 1 and len(r.get("segment", {})) == 0
+
+
+def test_many_policies_do_not_cost_the_global_manager_its_health(nsx):
+    gm = nsx.data[GM_HOSTS[0]]
+    pols = gm["/global-manager/api/v1/global-infra/domains/default/security-policies?page_size=500"]
+    template = next(p for p in pols["results"] if p["id"] == "fed-demo")
+    base = "/global-manager/api/v1/global-infra/domains/default/security-policies/"
+    for i in range(100):
+        pols["results"].append(dict(template, id=f"p{i}", display_name=f"p{i}",
+                                    path=f"/global-infra/domains/default/security-policies/p{i}"))
+        gm[base + f"p{i}"] = gm[base + "fed-demo"]
+    r = run(call_budget="80")
+    active = next(g for g in r["global_manager"].values() if g["p"]["mode"] == "ACTIVE")
+    assert "cluster|nodes_online" in active["m"] and len(r["location"]) == 2 and len(r["sync_channel"]) == 9
+    # the active Global Manager and the two Local Managers (one statistics call per policy), each counted once
+    assert fed(r)["m"]["collection|managers_over_budget"] == 3
+    assert fed(r)["p"]["collection_mode"] == "normal"
+
+
+def test_policy_hits_do_not_drop_and_burst_when_one_location_misses_a_cycle(nsx, clock):
+    for h in local_managers(nsx):
+        nsx.data[h][STATS]["results"][0]["statistics"]["results"][0]["hit_count"] = 1000
+    for _ in range(2):
+        r = run(rule_policies="*")
+        clock["now"] += 300
+    assert r["global_policy"]["fed-demo"]["m"]["traffic|hit_count_per_min"] == 0  # a rate is computed here
+    real, bad = nsx.get, local_managers(nsx)[0]
+
+    def get(client, path, params=None):
+        if client.host == bad and path == STATS:
+            client.check_trust()
+            client.calls += 1
+            client.requests += 1
+            raise nsxclient.NsxError(500, path, "x")
+        return real(client, path, params)
+    nsx.get = get
+    r = run(rule_policies="*")
+    clock["now"] += 300
+    assert "traffic|hit_count" not in r["global_policy"]["fed-demo"]["m"]  # unknown, not half the total
+    nsx.get = real
+    r = run(rule_policies="*")
+    assert r["global_policy"]["fed-demo"]["m"].get("traffic|hit_count_per_min", 0) == 0
+    assert all(o["m"].get("traffic|hit_count_per_min", 0) == 0 for o in r["rule"].values())
+
+
+def test_failed_statistics_give_no_rate_in_the_next_cycle(nsx, clock):
+    for h in local_managers(nsx):
+        nsx.data[h][STATS]["results"][0]["statistics"]["results"][0]["hit_count"] = 1000
+    for _ in range(2):
+        r = run()
+        clock["now"] += 300
+    steady = [o["m"]["traffic|hit_count_per_min"] for n, o in r["realization"].items() if n.startswith("fed-demo @")]
+    assert steady == [0, 0]  # the rate exists, so the next assertions can fail
+    nsx.fail = [STATS]
+    run()
+    clock["now"] += 300
+    nsx.fail = []
+    r = run()
+    assert all(o["m"].get("traffic|hit_count_per_min", 0) == 0 for n, o in r["realization"].items())
+
+
+def test_a_cold_cache_does_not_let_a_foreign_global_manager_take_the_account(nsx, ops):
+    r = run()
+    name, f = next(iter(r["federation"].items()))
+    own = f["p"]["federation_id"]
+    ops.res = {"federation": [("f1", name, own, {"global_manager_addresses": f["p"]["global_manager_addresses"]}, 0)],
+               "location": [(f"l{i}", n, f"{own}:site:{l['p']['site_id']}", l["p"], 0)
+                            for i, (n, l) in enumerate(r["location"].items())]}
+    wipe_cache()
+    del nsx.data[GM_HOSTS[0]]
+    nsx.data[GM_HOSTS[1]]["/api/v1/sites/self"]["id"] = "00000000-0000-0000-0000-00000000beef"
+    r = run()
+    assert fed(r)["p"]["federation_id"] == own and fed(r)["m"]["global_managers|global_managers_foreign"] == 1
+
+
+def test_channels_to_a_global_manager_that_answers_are_not_marked_on_a_cold_cache(nsx):
+    del nsx.data[GM_HOSTS[1]]  # first cycle ever, and the standby does not answer
+    r = run()
+    locations, active = list(r["location"]), next(iter(r["global_manager"]))
+    marked = {n for n, c in r["sync_channel"].items() if c["p"]["gm_outage"] != "none"}
+    assert marked and all(not set(e.strip() for e in n.split("->")) <= set(locations + [active]) for n in marked)
+    assert all(c["p"]["gm_outage"] == "none" for n, c in r["sync_channel"].items()
+               if set(e.strip() for e in n.split("->")) <= set(locations + [active]))
+
+
+def test_no_false_missing_standby_when_the_list_call_fails(nsx):
+    nsx.fail = ["/global-infra/global-managers"]
+    assert "standby_configured" not in fed(run(gm_hosts=[GM_HOSTS[0]]))["p"]
+
+
+def test_a_failed_realization_call_is_a_data_gap_and_blocks_deletion(nsx, ops):
+    fed_id = fed(run())["p"]["federation_id"]
+    ops.res = {"sync_channel": [("old", "gone -> x", f"{fed_id}:chan:gone>x", {}, 10)]}
+    wipe_cache()
+    nsx.fail = ["realized-state/status?intent_path=/global-infra/tier-0s"]
+    r = run(delete_stale_after_days="7")
+    assert fed(r)["m"]["collection|data_gaps"] >= 1 and ops.deleted == []
+
+
+def test_a_removed_standby_does_not_stay_out_of_sync(nsx):
+    status = nsx.data[GM_HOSTS[0]][SITES_STATUS]
+    status["active_standby_sync_statuses"][0]["status"] = "ERROR"
+    run()
+    status["active_standby_sync_statuses"] = []
+    active = next(g for g in run()["global_manager"].values() if g["p"]["mode"] == "ACTIVE")
+    assert active["m"]["sync|standby_in_sync"] == 1 and active["m"]["sync|standby_out_of_sync_minutes"] == 0
+
+
+def test_outage_symptoms_outlive_the_symptoms_they_keep_quiet():
+    etree = pytest.importorskip("lxml.etree")
+    doc = etree.parse(os.path.join(ROOT, "pack", "content", "alertdefs", "nsxfederation_alerts.xml"))
+    cancel = {s.get("id"): int(s.get("cancelCycle") or 1) for s in doc.iter("SymptomDefinition")}
+    checked = 0
+    for alert in doc.iter("AlertDefinition"):
+        for group in alert.iter("SymptomSet"):
+            negated = [s.get("ref") for s in group.iter("Symptom") if s.get("negateCondition") == "true" and "outage" in s.get("ref")]
+            others = [s.get("ref") for s in group.iter("Symptom") if s.get("negateCondition") != "true"]
+            for n in negated:
+                checked += 1
+                assert all(cancel[n] > cancel[o] for o in others), (alert.get("id"), n)
+    assert checked > 20
+
+
+# ---- the real client on a fake transport: retries, throttling and the breaker run for real
+
+class WireResponse:
+    def __init__(self, status, data):
+        self.status_code, self._data, self.headers, self.content, self.text = status, data, {}, b"x", "x"
+
+    def json(self):
+        return self._data
+
+
+@pytest.fixture
+def wire(monkeypatch, tmp_path):
+    import copy
+    import requests
+    from conftest import FakeNsx
+    fake = FakeNsx()
+    fake.status, fake.sent = {}, []
+    monkeypatch.setattr(nsxclient, "CACHE_DIR", str(tmp_path))
+    monkeypatch.setattr(nsxclient, "server_cert_sha256", lambda host, port=443, timeout=10.0: "f" * 64)
+    monkeypatch.setattr(nsxclient.time, "sleep", lambda s: None)
+
+    def get(self, url, params=None, timeout=None, **kw):
+        host, _, path = url[len("https://"):].partition("/")
+        fake.sent.append(host)
+        if host in fake.status:
+            return WireResponse(fake.status[host], {})
+        key = "/" + path + ("?" + "&".join(f"{k}={v}" for k, v in sorted((params or {}).items())) if params else "")
+        answers = fake.data.get(host, {})
+        return WireResponse(200, copy.deepcopy(answers[key])) if key in answers else WireResponse(404, {})
+    monkeypatch.setattr(requests.Session, "get", get)
+    return fake
+
+
+def test_a_local_manager_that_answers_503_is_not_reached(wire):
+    r = run()
+    assert sorted(l["m"]["connectivity|collector_reachable"] for l in r["location"].values()) == [1, 1]
+    assert len(r["rtep_tunnel"]) == 8 and fed(r)["m"]["collection|data_gaps"] == 0
+    bad = local_managers(wire)[0]
+    wire.status[bad] = 503
+    wire.sent.clear()
+    r = run()
+    assert sorted(l["m"]["connectivity|collector_reachable"] for l in r["location"].values()) == [0, 1]
+    assert fed(r)["m"]["collection|api_calls_throttled"] >= 3
+    assert wire.sent.count(bad) <= 12  # three calls with their retries, then the manager is skipped

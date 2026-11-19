@@ -16,11 +16,26 @@ res = r.json()
 if res.get('errorMsg') or res.get('success') is False: raise SystemExit('upload failed')
 print('eula:', opsui.action(s, 'solution', 'getLicenseAgreement').text[:120])
 r = opsui.action(s, 'solution', 'install'); print('install:', r.status_code, r.text[:300])
-seen = 0
+try:
+    answer = r.json()
+except ValueError:
+    answer = {}
+if r.status_code >= 300 or answer.get('errorMsg') or answer.get('success') is False:
+    raise SystemExit('install refused: ' + (answer.get('errorMsg') or r.text[:200]))
+seen, errors = 0, 0
 for _ in range(120):
     time.sleep(10)
-    st = opsui.action(s, 'solution', 'getInstallStatus').json()
+    try:  # the UI may restart during an install: a poll without an answer is tried again
+        st = opsui.action(s, 'solution', 'getInstallStatus').json()
+        errors = 0
+    except Exception as e:
+        errors += 1
+        if errors >= 12:
+            raise SystemExit('no install status for two minutes: ' + repr(e)[:120])
+        continue
     for x in st.get('statuses', [])[seen:]: print('  ', json.dumps(x)[:200])
     seen = len(st.get('statuses', []))
     if st.get('errorMsg'): raise SystemExit('install error: ' + st['errorMsg'])
     if st.get('completed'): print('completed'); break
+else:
+    raise SystemExit('install did not complete in 20 minutes')

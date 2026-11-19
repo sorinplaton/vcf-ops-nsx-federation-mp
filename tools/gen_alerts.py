@@ -64,7 +64,7 @@ S = {
     "loc_full_sync":   ("location", "A full sync did not complete", "immediate", "metric", "full_sync_failed", ">", 0),
     "loc_bgp_down":    ("location", "Inter-site BGP sessions are not established", "immediate", "metric", "intersite_bgp_down", ">", 0),
     "loc_bgp_none":    ("location", "No inter-site BGP session is established", "critical", "metric", "intersite_bgp_established", "<", 1),
-    "loc_bgp_has":     ("location", "Location has inter-site BGP sessions", "info", "metric", "intersite_bgp_total", ">", 0),
+    "loc_bgp_zero":    ("location", "Location has no inter-site BGP session configured", "info", "metric", "intersite_bgp_total", "<", 1),
     "loc_version":     ("location", "Location version differs from the Global Manager", "info", "property", "version_matches_gm", "=", "False"),
     "loc_backup_off":  ("location", "Backup is not configured on the Local Manager", "warning", "property", "backup_enabled", "=", "False"),
     "loc_backup_old":  ("location", "Last successful Local Manager backup is older than 24 hours", "warning", "metric", "backup_age_hours", ">", 24),
@@ -75,9 +75,9 @@ S = {
     # sync channel, edge node, BGP neighbor, realization
     "chan_down":       ("sync_channel", "Sync channel is down", "immediate", "metric", "connection_up", "<", 1),
     "edge_bgp_none":   ("edge_node", "No inter-site BGP session of the edge node is established", "immediate", "metric", "intersite_bgp_established", "<", 1),
-    "edge_bgp_has":    ("edge_node", "Edge node has inter-site BGP sessions", "info", "metric", "intersite_bgp_total", ">", 0),
+    "edge_bgp_zero":   ("edge_node", "Edge node has no inter-site BGP session configured", "info", "metric", "intersite_bgp_total", "<", 1),
     "ec_status":       ("edge_cluster", "Inter-site status of the edge cluster is not UP", "immediate", "property", "intersite_status", "!=", "UP"),
-    "tun_bgp_down":    ("rtep_tunnel", "Inter-site BGP session of the RTEP tunnel is not established", "warning", "metric", "bgp_established", "<", 1),
+    "tun_bgp_down":    ("rtep_tunnel", "Inter-site BGP session of the RTEP tunnel is not established", "immediate", "metric", "bgp_established", "<", 1),
     "tun_rx_drops":    ("rtep_tunnel", "RTEP tunnel drops more than 60 received packets per minute", "warning", "metric", "rx_dropped_per_min", ">", 60),
     "tun_tx_drops":    ("rtep_tunnel", "RTEP tunnel drops more than 60 sent packets per minute", "warning", "metric", "tx_dropped_per_min", ">", 60),
     "t0_error":        ("tier0", "Stretched Tier-0 gateway is in error at a location", "immediate", "metric", "error_locations", ">", 0),
@@ -85,8 +85,7 @@ S = {
     "seg_error":       ("segment", "Stretched segment is in error at a location", "immediate", "metric", "error_locations", ">", 0),
     "pol_error":       ("global_policy", "Global security policy is in error at a location", "immediate", "metric", "error_locations", ">", 0),
     "bgp_down":        ("bgp_neighbor", "BGP neighbor is not established", "immediate", "metric", "established", "<", 1),
-    "bgp_up":          ("bgp_neighbor", "BGP neighbor is established", "info", "metric", "established", ">=", 1),
-    "bgp_uplink":      ("bgp_neighbor", "BGP neighbor is an uplink session", "info", "property", "session_type", "=", "uplink"),
+    "bgp_internal":    ("bgp_neighbor", "BGP neighbor is a session between edge nodes", "info", "property", "session_type", "!=", "uplink"),
     "bgp_no_prefix":   ("bgp_neighbor", "No prefixes are received from the BGP neighbor", "warning", "metric", "prefixes_in", "<", 1),
     "real_missing":    ("realization", "Stretched object is not realized at this location", "warning", "metric", "realized", "<", 1),
     # dynamic threshold: VCF Operations learns the usual range of the metric
@@ -151,6 +150,11 @@ WAIT = {k: (2, 2) for k in ("chan_down", "loc_bgp_down", "loc_bgp_none", "edge_b
                             "tun_rx_drops", "tun_tx_drops", "bgp_down", "bgp_no_prefix")}
 WAIT.update({"tun_rx_dt": (3, 3), "tun_tx_dt": (3, 3), "gm_standby_sync": (3, 2), "loc_repl": (2, 2),
              "fed_gaps": (2, 2), "fed_throttled": (3, 2), "fed_slow": (2, 2)})
+# an outage symptom outlives the symptoms it keeps quiet, so that their alerts do not fire in the cycles in which
+# the outage is over and they are not cancelled yet
+WAIT.update({"outage_" + k: (1, 3) for k in OUTAGE_KINDS})
+WAIT["chan_gm_outage"] = (1, 3)
+assert all(WAIT[o][1] > max((c for _w, c in WAIT.values() if _w > 1 or c > 1), default=1) - 1 for o in WAIT if "outage" in o)
 
 # ---- alerts that affect the Risk badge (a condition that will hurt later) instead of Health (broken now)
 RISK = {"gm_version", "gm_upgrade", "loc_newer", "loc_upgrade", "fed_no_standby", "fed_budget", "fed_gaps", "fed_load", "gm_backup", "gm_cert", "loc_cert_trust", "loc_version", "loc_backup", "loc_cert"}
@@ -295,7 +299,7 @@ A = [
      "At least one full sync between the Global Manager and this location stopped before completion.", NET, AVAIL, [["loc_full_sync"]], "full_sync"),
     ("loc_intersite", "location", "Inter-site BGP sessions of the location are down",
      "Inter-site (RTEP) BGP sessions of this location are not established. Critical when none is established.",
-     NET, AVAIL, [["loc_bgp_down"], ["loc_bgp_none", "loc_bgp_has"]], "intersite"),
+     NET, AVAIL, [["loc_bgp_down"], ["loc_bgp_none", "!loc_bgp_zero"]], "intersite"),
     ("loc_version", "location", "Location and Global Manager run different NSX releases",
      "The Local Manager and the Global Manager run different NSX releases. A different patch level is not reported.", NET, COMPL, [["loc_version"]], "version"),
     ("loc_backup", "location", "Local Manager backup is missing or old",
@@ -308,7 +312,7 @@ A = [
      "The connection between two managers of the federation is down.", NET, AVAIL, [["chan_down"]], "channel"),
     ("edge_bgp_down", "edge_node", "Edge node has lost all inter-site BGP sessions",
      "No inter-site (RTEP) BGP session of this edge node is established. Single sessions raise an alert on their RTEP tunnel.",
-     NET, AVAIL, [["edge_bgp_none", "edge_bgp_has"]], "intersite"),
+     NET, AVAIL, [["edge_bgp_none", "!edge_bgp_zero"]], "intersite"),
     ("ec_status", "edge_cluster", "Inter-site status of the edge cluster is not UP",
      "NSX reports an inter-site status other than UP for this edge cluster.", NET, AVAIL, [["ec_status"]], "intersite"),
     ("tun_bgp_down", "rtep_tunnel", "RTEP tunnel inter-site BGP session is down",
@@ -326,7 +330,7 @@ A = [
     ("bgp_down", "bgp_neighbor", "Tier-0 BGP neighbor of a stretched gateway is down",
      "A BGP session of a stretched Tier-0 gateway is not established.", NET, AVAIL, [["bgp_down"]], "bgp"),
     ("bgp_no_prefix", "bgp_neighbor", "Tier-0 uplink BGP neighbor sends no prefixes",
-     "The uplink BGP session is established but no prefix is received.", NET, AVAIL, [["bgp_no_prefix", "bgp_up", "bgp_uplink"]], "bgp_prefix"),
+     "The uplink BGP session is established but no prefix is received.", NET, AVAIL, [["bgp_no_prefix", "!bgp_down", "!bgp_internal"]], "bgp_prefix"),
     ("real_missing", "realization", "Stretched object is not realized at a location",
      "A stretched gateway, segment or security policy is not realized at one location of its span.", NET, AVAIL, [["real_missing"]], "realization"),
     ("tun_traffic", "rtep_tunnel", "RTEP tunnel traffic is above its usual range",

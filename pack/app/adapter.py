@@ -14,17 +14,17 @@ from aria.ops.object import Identifier, Object
 from aria.ops.result import CollectResult, EndpointResult, TestResult
 from aria.ops.timer import Timer
 from constants import ADAPTER_KIND, ADAPTER_NAME
-from nsxclient import BudgetExceeded, Cache, CertificateNotTrusted, NsxClient, pem_sha256
+from nsxclient import BudgetExceeded, Cache, CertificateNotTrusted, NsxClient, pem_sha256, NsxError
 
 logger = logging.getLogger(__name__)
 
 GI = "/global-manager/api/v1/global-infra"  # policy tree on a Global Manager
 LGI = "/policy/api/v1/global-infra"  # the same tree as received by a Local Manager
 INVENTORY_TTL = 30 * 60  # seconds: inventory tier
+GM_RESERVED_CALLS = 20  # calls of the budget kept for the health of the Global Manager itself
 REALIZATION_EVERY_CYCLE = 200  # up to this many stretched objects, the realization of each is read in every cycle
 REALIZATION_SWEEP_CYCLES = 6  # above it, every object is read again at least once in this many cycles
 SLOW_TTL = 60 * 60  # seconds: certificates and backups
-FEDERATION_ALARM_FEATURES = {"federation", "communication", "clustering", "certificates"}
 
 # ---- units, by metric key (the same key has the same unit on every object type) ----------
 _PKT, _PER_MIN = Units.MISC.PACKETS, Units.RATE.PER_MINUTE
@@ -222,7 +222,7 @@ for _kind in STRETCHED:
     ])
     MODEL[_kind][2].extend([
         ("status", "Consolidated status"), ("path", "Policy path"), ("revision", "Revision"),
-        ("last_modified_user", "Last modified by"), ("last_modified_time", "Last modified (epoch ms)"),
+        ("last_modified_user", "Last modified by"), ("last_modified_time", "Last modified"),
     ])
 
 
@@ -400,12 +400,18 @@ class Config:
         self.link_mode = str(val("link_nsx_objects", "auto"))
         self.lm_alarm_mode = str(val("lm_alarm_alerts", "auto"))
         try:
-            self.delete_stale_days = max(0.0, float(str(val("delete_stale_after_days", "0")).replace(",", ".")))
+            days = float(str(val("delete_stale_after_days", "0")).replace(",", "."))
+            self.delete_stale_days = 0.0 if days <= 0 else max(1.0, days)  # never less than one day
         except ValueError:
             self.delete_stale_days = 0.0
-        self.max_parallel = int(val("max_parallel", 8))
-        self.timeout = int(val("request_timeout", 30))
-        self.call_budget = int(val("call_budget", 2000))
+        def number(key: str, default: int, low: int) -> int:
+            try:  # a setting that is not a number falls back to its default
+                return max(low, int(float(str(val(key, default)))))
+            except ValueError:
+                return default
+        self.max_parallel = number("max_parallel", 8, 1)
+        self.timeout = number("request_timeout", 30, 1)
+        self.call_budget = number("call_budget", 2000, 1)
         # thresholds of the alert definitions; change them in a VCF Operations policy, not here
         self.backup_max_age_h = 24
         self.cert_warning_days = 30
@@ -578,8 +584,8 @@ class Collector:
         self.down_locations: set = set()  # site paths that are disconnected: leaf events are suppressed
         self.stretched_total = 0
         self.stretched_full = 0
-        self.over_budget = 0
         self.gm_objects: Dict[str, Object] = {}  # Global Manager name -> object
+        self.sites_of: Dict[int, set] = {}  # id(object) -> site paths it depends on
         self.split_brain_reported = 0
         self.config_version: Optional[Any] = None
         self.realization_checked = 0
@@ -631,7 +637,9 @@ class Collector:
     def props(o: Object, values: Dict[str, Any]) -> None:
         for k, v in values.items():
             if v is not None:
-                o.with_property(k, v if isinstance(v, (int, float)) and not isinstance(v, bool) else str(v))
+                if isinstance(v, float) and v.is_integer():
+                    v = int(v)  # 10, not 10.0
+                o.with_property(k, str(v))  # every property of the pack is defined as a string
 
     @staticmethod
     def event(o: Object, message: str, criticality: Criticality, alert_key: Optional[str] = None) -> None:
@@ -670,12 +678,12 @@ class Collector:
         # One account monitors one federation: the federation of the first Global Manager that answers, or the
         # one seen in earlier cycles. A listed manager of another federation is reported and left out.
         inventory: Dict[str, Any] = {}
-        if not answered and not self.cache.get_any_age("federation_id"):
-            inventory = self.from_inventory()  # container restarted while no Global Manager answers
-        self.fed_id = (self.cache.get_any_age("federation_id") or (answered[0]["federation_id"] if answered else "")
-                       or inventory.get("federation_id") or "")
-        if answered and not any(g["federation_id"] == self.fed_id for g in answered):
-            self.fed_id = answered[0]["federation_id"]  # the federation was rebuilt: follow the listed managers
+        if not self.cache.get_any_age("federation_id"):
+            # Empty cache (first cycle, or the container restarted): what VCF Operations already holds for
+            # these addresses decides which federation this account monitors, before any manager that answers.
+            inventory = self.from_inventory()
+        self.fed_id = (self.cache.get_any_age("federation_id") or inventory.get("federation_id")
+                       or (answered[0]["federation_id"] if answered else "") or "")
         foreign = [g for g in answered if g["federation_id"] != self.fed_id]
         reachable = [g for g in answered if g["federation_id"] == self.fed_id]
         active = [g for g in reachable if str(g["site"].get("active_gm", "")).upper() == "ACTIVE"]
@@ -710,7 +718,7 @@ class Collector:
                 self.cache.put("sites_doc", {"locations": [dict(l) for l in sites_doc["locations"]],
                                              "global_managers": sites_doc["global_managers"]})
             except BudgetExceeded:
-                self.over_budget += 1
+                pass  # counted on the client
             except Exception as e:
                 logger.exception(e)
                 self.event(fed, f"Collection from the active Global Manager failed: {repr(e)[:200]}", Criticality.IMMEDIATE)
@@ -731,15 +739,17 @@ class Collector:
             try:
                 gm_names.append(self.collect_gm_object(g, is_active=(g is gm)))
             except BudgetExceeded:
-                self.over_budget += 1
+                pass  # counted on the client
             except Exception as e:
                 logger.exception(e)
         # a standby exists when the federation lists one, not when the account lists two addresses
         modes = [str(g.get("mode", "")).upper() for g in sites_doc.get("global_managers", [])]
         modes += [str(g["site"].get("active_gm", "")).upper() for g in reachable]
-        standby_known = "STANDBY" in modes
+        standby_known: Optional[bool] = "STANDBY" in modes
+        if not standby_known and (gm is None or not gm["client"].ok(f"{GI}/global-managers")):
+            standby_known = None  # the list of Global Managers was not read: unknown, not "no standby"
         self.finish_standby_sync()
-        if not standby_known:
+        if standby_known is False:
             self.event(fed, "No standby Global Manager is configured for this federation", Criticality.WARNING, "standby_configured")
 
         # -- step 2: Local Managers, in parallel, each with its own budget
@@ -751,23 +761,38 @@ class Collector:
 
         # -- root cause for alert storms: while a location is cut off from the Global Manager, the objects that
         # depend on it carry its name, and their alerts stay quiet behind the alert of the location
+        # Each object carries the locations it depends on that are cut off: a tunnel its two ends, a sync channel
+        # its two ends, a stretched object its span, an edge or a BGP neighbor its own location. A fault at
+        # another location is not hidden. The Global Manager, as the hub, carries every location in outage.
         outage = ", ".join(sorted(self.location_names.get(p, p) for p in self.down_locations)) or "none"
-        # same idea for the sync channels when a Global Manager does not answer or none is active
-        gm_outage = "none" if gm and len(answered) == len(cfg.gm_hosts) else (
-            "no active Global Manager" if not gm else "Global Manager not reachable: "
-            + ", ".join(g["host"] for g in gms if not g["ok"]))
+        # Same idea for the sync channels of a Global Manager that does not answer, or of all Global Managers
+        # when none is active. Names of earlier cycles tell which channel belongs to which manager.
+        heard = {g["site"].get("name") for g in reachable}  # Global Managers that answered in this cycle
+        some_silent = len(answered) < len(cfg.gm_hosts)
+        location_names = set(self.location_names.values())
         for o in self.result.objects.values():
-            if o.adapter_type() == ADAPTER_KIND and o.object_type() in OUTAGE_KINDS:
+            if o.adapter_type() != ADAPTER_KIND:
+                continue
+            if o.object_type() == "global_manager":
                 o.with_property("location_outage", outage)
-            if o.adapter_type() == ADAPTER_KIND and o.object_type() == "sync_channel":
-                o.with_property("gm_outage", gm_outage)
+            elif o.object_type() in OUTAGE_KINDS:
+                mine = sorted(self.location_names.get(p, p) for p in self.sites_of.get(id(o), ()) if p in self.down_locations)
+                o.with_property("location_outage", ", ".join(mine) or "none")
+            if o.object_type() == "sync_channel":
+                ends = [e.strip() for e in o.get_key().name.split("->")]
+                gm_ends = [e for e in ends if e not in location_names]
+                hit = bool(gm_ends) and (not gm or (some_silent and any(e not in heard for e in gm_ends)))
+                o.with_property("gm_outage", "none" if not hit else
+                                "no active Global Manager" if not gm else "Global Manager not reachable")
         # a switchover is refused while the Global Managers run different versions
         active_version = gm["site"].get("site_version") if gm else None
         for g in reachable:
             go = self.gm_objects.get(g["site"].get("name") or g["host"])
             if go is not None and active_version and g["site"].get("site_version"):
                 self.props(go, {"version_matches_active_gm": g["site"].get("site_version") == active_version})
-        if mode == "normal" and not self.over_budget:
+        clean = (mode == "normal" and not self.over_budget and len(answered) == len(cfg.gm_hosts) and not foreign
+                 and collected == len(lm_sites) and not any(c.failed for c in self.clients))
+        if clean:
             self.delete_stale()
 
         # -- step 3: federation object and pack self-health
@@ -819,6 +844,31 @@ class Collector:
         self.cache.save()
         for c in self.clients:
             c.close()
+
+    @property
+    def over_budget(self) -> int:
+        """Managers that ran out of calls in this cycle, each counted once."""
+        return sum(1 for c in self.clients if c.budget_hit)
+
+    def at(self, o: Object, *site_paths: Any) -> None:
+        """Record the locations (site paths) an object depends on, for the outage property."""
+        self.sites_of.setdefault(id(o), set()).update(p for p in site_paths if p)
+
+    def path_of(self, location_name: Any) -> Optional[str]:
+        return next((p for p, n in self.location_names.items() if n == location_name), None)
+
+    def cached_clean(self, client: NsxClient, key: str, max_age_s: float, loader: Any) -> Any:
+        """Like Cache.cached, for a loader made of several calls: a result with a failed call in it is not
+        cached, and the last complete result is used for this cycle when there is one."""
+        value = self.cache.get(key, max_age_s)
+        if value is None:
+            before = len(client.failed)
+            value = loader()
+            if len(client.failed) == before:
+                self.cache.put(key, value)
+            else:
+                value = self.cache.get_any_age(key) or value
+        return value
 
     def from_inventory(self) -> Dict[str, Any]:
         """Federation ID and location list of this account as VCF Operations stored them in earlier cycles. Used
@@ -927,7 +977,7 @@ class Collector:
                 "gm_version": gm_version,
                 "rtep_ips": rtep.get(ps.get("id"), []),
                 # None = unknown: the status call failed, so nothing is said about the connection
-                "gm_connection_up": (bool(stubs) and any(s.get("connection_up") for s in stubs)) if status_ok else None,
+                "gm_connection_up": any(s.get("connection_up") for s in stubs) if status_ok and stubs else None,
             })
         doc = {"locations": locations,
                "global_managers": [{"id": g.get("id"), "mode": g.get("mode")} for g in gms]}
@@ -935,6 +985,7 @@ class Collector:
         # Location objects exist as soon as the Global Manager lists them.
         for loc in locations:
             lo = self.obj("location", loc["name"], f"site:{loc['site_id']}")
+            self.at(lo, loc["path"])
             self.locations[loc["path"]] = lo
             self.location_names[loc["path"]] = loc["name"]
             lo.add_parent(self.fed)
@@ -956,11 +1007,17 @@ class Collector:
                 self.event(lo, f"Version mismatch: location {loc['name']} runs {loc['version']}, the Global Manager "
                            f"runs {gm_version}. Expected only during an upgrade.", Criticality.INFO, "version_matches_gm")
 
-        self.collect_stretched(client)
+        try:  # a fault here must not cost the location list: the Local Managers are collected from it
+            self.collect_stretched(client)
+        except BudgetExceeded:
+            pass  # counted on the client
+        except Exception as e:
+            logger.exception(e)
+            self.event(self.fed, f"Collection of the stretched objects failed: {repr(e)[:200]}", Criticality.IMMEDIATE)
         return doc
 
     def collect_stretched(self, client: NsxClient) -> None:
-        inventory = self.cache.cached("gm_inventory", INVENTORY_TTL, lambda: self.load_gm_inventory(client))
+        inventory = self.cached_clean(client, "gm_inventory", INVENTORY_TTL, lambda: self.load_gm_inventory(client))
         items: List[Tuple[str, dict]] = []
         for kind in STRETCHED:
             items.extend((kind, o) for o in inventory.get(kind, []))
@@ -982,11 +1039,16 @@ class Collector:
             index, (kind, o) = item
             if not due(index, o):
                 return kind, o, known[o["path"]]["st"]
+            if client.calls >= client.call_budget - GM_RESERVED_CALLS:
+                client.budget_hit = True
+                return kind, o, {"_budget": True}
             try:
                 raw = client.get(f"{GI}/realized-state/status", {"intent_path": o["path"]})
             except BudgetExceeded:
                 return kind, o, {"_budget": True}
-            except Exception:
+            except Exception as e:
+                client._failed(f"{GI}/realized-state/status?intent_path={o['path']}",
+                               f"HTTP {e.status}" if isinstance(e, NsxError) else type(e).__name__)
                 return kind, o, None
             st = {"consolidated_status": consolidated(raw.get("consolidated_status")),
                   "consolidated_status_per_enforcement_point": [
@@ -1009,11 +1071,14 @@ class Collector:
         budget_hit = False
         for kind, o, st in realized:
             so = self.obj(kind, o.get("display_name") or o["id"], f"{kind}:{o['path']}")
+            self.at(so, *[ep.get("site_path") for ep in (st or {}).get("consolidated_status_per_enforcement_point") or []])
             by_path[o["path"]] = so
             so.add_parent(self.fed)
             self.props(so, {
                 "path": o["path"], "revision": o.get("_revision"),
-                "last_modified_user": o.get("_last_modified_user"), "last_modified_time": o.get("_last_modified_time"),
+                "last_modified_user": o.get("_last_modified_user"),
+                "last_modified_time": time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime(float(o["_last_modified_time"]) / 1000.0))
+                if o.get("_last_modified_time") else None,
             })
             if kind == "tier0":
                 self.props(so, {"ha_mode": o.get("ha_mode"),
@@ -1044,6 +1109,7 @@ class Collector:
                 site_name = self.location_names.get(site_path, tail(site_path))
                 ro = self.obj("realization", f"{o.get('display_name') or o['id']} @ {site_name}",
                               f"real:{o['path']}@{site_path}")
+                self.at(ro, site_path)
                 ro.add_parent(so)
                 if site_path in self.locations:
                     ro.add_parent(self.locations[site_path])
@@ -1062,8 +1128,6 @@ class Collector:
             self.stretched_total += 1
             if per_ep and ok == len(per_ep):
                 self.stretched_full += 1
-        if budget_hit:
-            self.over_budget += 1
         # parent links between stretched objects
         for kind, o, _ in realized:
             parent_path = o.get("tier0_path") if kind == "tier1" else o.get("connectivity_path") if kind == "segment" else None
@@ -1077,9 +1141,9 @@ class Collector:
                 "ha_mode", "intersite_config", "tier0_path", "connectivity_path", "subnets", "type", "category", "scope")
         slim = lambda o: {k: o[k] for k in keep if k in o}
         inv: Dict[str, List[dict]] = {
-            "tier0": [slim(o) for o in client.list(f"{GI}/tier-0s")],
-            "tier1": [slim(o) for o in client.list(f"{GI}/tier-1s")],
-            "segment": [slim(o) for o in client.list(f"{GI}/segments")],
+            "tier0": [slim(o) for o in client.try_list(f"{GI}/tier-0s")],
+            "tier1": [slim(o) for o in client.try_list(f"{GI}/tier-1s")],
+            "segment": [slim(o) for o in client.try_list(f"{GI}/segments")],
             "global_policy": [],
         }
         for domain in client.try_list(f"{GI}/domains"):
@@ -1087,7 +1151,13 @@ class Collector:
                 if pol.get("_system_owned") or str(pol.get("id", "")).startswith("default-"):
                     continue  # system defaults are not user intent
                 entry = slim(pol)
-                full = client.try_get(f"{GI}/domains/{domain['id']}/security-policies/{pol['id']}", default={}) or {}
+                detail = f"{GI}/domains/{domain['id']}/security-policies/{pol['id']}"
+                if client.calls >= client.call_budget - GM_RESERVED_CALLS:  # keep calls for the manager itself
+                    client.budget_hit = True
+                    client._failed(detail, "call budget")
+                    full: Dict[str, Any] = {}
+                else:
+                    full = client.try_get(detail, default={}) or {}
                 entry["rules"] = [{k: r.get(k) for k in ("id", "display_name", "path", "action", "disabled",
                                                            "source_groups", "destination_groups", "rule_id")}
                                   for r in full.get("rules") or []]
@@ -1147,7 +1217,11 @@ class Collector:
                 if "FAIL" in state or "ERROR" in state or "FAIL" in full or "ERROR" in full:
                     return False
                 return state in ("SUCCESS", "SYNCED", "IN_SYNC") or (
-                    str(s.get("sync_type", "")).upper() == "DELTA_SYNC" and full == "COMPLETE")
+                    state in ("ONGOING", "SYNCHRONIZING", "IN_PROGRESS")
+                    and str(s.get("sync_type", "")).upper() == "DELTA_SYNC" and full == "COMPLETE")
+            if not sync and client.ok("/api/v1/sites/status"):
+                self.metrics(go, {"standby_in_sync": 1, "standby_sync_remaining": 0, "standby_out_of_sync_minutes": 0})
+                self.cache.put("standby_out_of_sync_since", {})
             if sync:
                 self.metrics(go, {"standby_in_sync": int(all(in_sync(s) for s in sync)),
                                   "standby_sync_remaining": sum(int(s.get("remaining_entries_to_send") or 0) for s in sync)})
@@ -1246,7 +1320,8 @@ class Collector:
 
     def node(self, parent: Object, node: dict, online: int) -> None:
         uuid = node.get("uuid") or node.get("mgmt_cluster_listen_ip_address")
-        no = self.obj("manager_node", node.get("mgmt_cluster_listen_ip_address") or uuid, f"node:{uuid}")
+        address = node.get("mgmt_cluster_listen_ip_address") or uuid
+        no = self.obj("manager_node", f"{address} ({parent.get_key().name})", f"node:{uuid}")
         no.add_parent(parent)
         self.metrics(no, {"online": online})
         self.props(no, {"address": node.get("mgmt_cluster_listen_ip_address"), "uuid": uuid})
@@ -1256,6 +1331,7 @@ class Collector:
         stubs = rc.get("stubs") or []
         up = bool(stubs) and any(s.get("connection_up") for s in stubs)
         co = self.obj("sync_channel", f"{source_name} -> {target}", f"chan:{source_name}>{target}")
+        self.at(co, self.path_of(source_name), self.path_of(target))
         co.add_parent(source_obj)
         self.metrics(co, {"connection_up": 1 if up else 0})
         self.props(co, {"source": source_name, "target": target,
@@ -1265,6 +1341,7 @@ class Collector:
     # -- one location (runs in a worker thread)
     def collect_location(self, loc: Dict[str, Any]) -> bool:
         lo = self.obj("location", loc["name"], f"site:{loc['site_id']}")
+        self.at(lo, loc["path"])
         if loc["path"] not in self.locations:  # degraded mode: list came from the cache
             self.locations[loc["path"]] = lo
             self.location_names[loc["path"]] = loc["name"]
@@ -1278,10 +1355,16 @@ class Collector:
         self.clients.append(client)
         try:
             self.collect_lm(client, lo, loc)
+            denied = sorted({why for why in client.failed.values() if why in ("HTTP 401", "HTTP 403")})
+            if "/api/v1/cluster/status" in client.failed and (denied or len(client.failed) * 2 >= client.requests):
+                raise RuntimeError(("the account is refused (" + ", ".join(denied) + ")") if denied else
+                                   f"{len(client.failed)} of {client.requests} calls failed")
+            loc["_reached"] = True
             self.cache.put(f"collected:{loc['path']}", time.time())
             self.metrics(lo, {"collector_reachable": 1, "api_calls": client.calls, "minutes_since_collection": 0})
-            self.props(lo, {"collector_error": "", "certificate_trust": "trusted"
-                            if (not client.trusted or client.fingerprint in client.trusted) else "NOT TRUSTED (reported only)"})
+            self.props(lo, {"collector_error": "", "certificate_trust": "not checked (no trusted certificate on record)"
+                            if not client.trusted else "trusted" if client.fingerprint in client.trusted
+                            else "NOT TRUSTED (reported only)"})
             if client.trusted and client.fingerprint not in client.trusted:
                 self.event(lo, f"The certificate of Local Manager {address} is not the one that is trusted "
                            "(changed or replaced?)", Criticality.WARNING, "certificate_trust")
@@ -1294,7 +1377,6 @@ class Collector:
                        "The location is not collected until the certificate is accepted.", Criticality.IMMEDIATE,
                        "certificate_trust")
         except BudgetExceeded:
-            self.over_budget += 1
             self.metrics(lo, {"collector_reachable": 1, "api_calls": client.calls})
             return True
         except Exception as e:
@@ -1371,17 +1453,14 @@ class Collector:
         st = client.try_get("/api/v1/sites/status", default={}) or {}
         for rc in st.get("remote_connections", []):
             self.channel(lo, name, rc)
-            stubs = rc.get("stubs") or []
-            if not (bool(stubs) and any(s.get("connection_up") for s in stubs)) and not site_down:
-                co = self.obj("sync_channel", f"{name} -> {rc.get('site_name')}", f"chan:{name}>{rc.get('site_name')}")
-                self.event(co, f"Sync channel from {name} to {rc.get('site_name')} is down", Criticality.IMMEDIATE, "connection_up")
 
         # edge clusters that carry RTEPs, their nodes, inter-site BGP and tunnel statistics
-        inv = self.cache.cached(f"lm_inventory:{client.host}", INVENTORY_TTL, lambda: self.load_lm_inventory(client))
+        inv = self.cached_clean(client, f"lm_inventory:{client.host}", INVENTORY_TTL, lambda: self.load_lm_inventory(client))
         bgp_total = bgp_up = 0
         bgp_known = True
         for ec in inv["edge_clusters"]:
             eo = self.obj("edge_cluster", f"{ec['name']} ({name})", f"ec:{ec['id']}")
+            self.at(eo, loc["path"])
             eo.add_parent(lo)
             if link and lm_cluster_id:
                 eo.add_child(self.nsx_object("EdgeCluster", ec["name"], ec["id"], lm_cluster_id))
@@ -1406,6 +1485,7 @@ class Collector:
                 # redeployed under the same name stays the same object and keeps its history.
                 edge_key = f"{loc['site_id']}:{tn_name}"
                 no = self.obj("edge_node", f"{tn_name} ({name})", f"edge:{edge_key}")
+                self.at(no, loc["path"])
                 no.add_parent(eo)
                 if link and lm_cluster_id:
                     no.add_child(self.nsx_object("TransportNode", tn_name, tn_id, lm_cluster_id, zone=True))
@@ -1413,6 +1493,7 @@ class Collector:
                 bgp_state = {(n.get("source_address"), n.get("neighbor_address")): str(n.get("connection_state", "")).upper()
                              for n in m.get("neighbor_status") or []}
                 stats = client.try_get(f"/api/v1/transport-nodes/{tn_id}/inter-site/statistics", default={}) or {}
+                stats_ok = client.ok(f"/api/v1/transport-nodes/{tn_id}/inter-site/statistics")
                 tunnels = 0
                 seen = set()
                 for per_site in stats.get("stats_per_site") or []:
@@ -1425,8 +1506,9 @@ class Collector:
                 for (src, dst), state in bgp_state.items():  # sessions with no tunnel statistics yet
                     if (src, dst) not in seen:
                         tunnels += 1
-                        self.tunnel(no, edge_key, tn_name, src, dst, "?", {}, state)
-                self.metrics(no, {"intersite_bgp_total": total, "intersite_bgp_established": up, "rtep_tunnels": tunnels})
+                        self.tunnel(no, edge_key, tn_name, src, dst, "?" if stats_ok else None, {}, state)
+                self.metrics(no, {"intersite_bgp_total": total, "intersite_bgp_established": up,
+                                  "rtep_tunnels": tunnels if stats_ok else None})
                 self.props(no, {"location": name})
                 if up < total and not site_down:
                     self.event(no, f"Edge node {tn_name} at {name}: {total - up} of {total} inter-site BGP sessions are not established",
@@ -1444,6 +1526,7 @@ class Collector:
                     kind_label = "inter-SR" if internal else "uplink"
                     key = f"bgp:{t0['path']}@{loc['site_id']}:{n.get('source_address')}>{n.get('neighbor_address')}"
                     bo = self.obj("bgp_neighbor", f"{t0['name']} {kind_label} {n.get('source_address')} -> {n.get('neighbor_address')} ({name})", key)
+                    self.at(bo, loc["path"])
                     bo.add_parent(t0_obj or lo)
                     state = str(n.get("connection_state", "")).upper()
                     self.metrics(bo, {
@@ -1464,8 +1547,10 @@ class Collector:
 
         # rule statistics of the global policies, per location (and per rule when asked for)
         for pol in getattr(self, "inventory", {}).get("global_policy", []):
-            stats = client.try_get(f"{LGI}/domains/{pol.get('domain_id', 'default')}/security-policies/{pol['id']}/statistics",
-                                   default={}) or {}
+            stats_path = f"{LGI}/domains/{pol.get('domain_id', 'default')}/security-policies/{pol['id']}/statistics"
+            stats = client.try_get(stats_path, default={}) or {}
+            if not client.ok(stats_path):
+                continue  # unknown, not zero: a zero would give a false rate in the next cycle
             totals = {"hit_count": 0, "packet_count": 0, "byte_count": 0, "session_count": 0}
             per_rule: Dict[str, Dict[str, int]] = {}
             for ep in stats.get("results") or []:
@@ -1476,11 +1561,13 @@ class Collector:
                         totals[k] += int(r.get(k) or 0)
                         pr[k] += int(r.get(k) or 0)
             ro = self.obj("realization", f"{pol.get('display_name') or pol['id']} @ {name}", f"real:{pol['path']}@{loc['path']}")
+            self.at(ro, loc["path"])
             self.counters(ro, f"real:{pol['path']}@{loc['path']}", totals)
             loc.setdefault("_policy_hits", {})[pol["path"]] = (totals, per_rule)
 
     def tunnel(self, node: Object, tn_id: str, tn_name: str, src: Any, dst: Any, remote: str, t: dict, bgp_state: Optional[str]) -> None:
         to = self.obj("rtep_tunnel", f"{tn_name}: {src} -> {dst}", f"rtep:{tn_id}:{src}>{dst}")
+        self.at(to, *self.sites_of.get(id(node), ()), self.path_of(remote))
         to.add_parent(node)
         rx, tx = t.get("rx") or {}, t.get("tx") or {}
         self.counters(to, f"rtep:{tn_id}:{src}>{dst}", {
@@ -1515,6 +1602,7 @@ class Collector:
                 continue
             total_hits = 0
             rule_totals: Dict[str, Dict[str, int]] = {}
+            complete = all(loc.get("_reached") and pol["path"] in (loc.get("_policy_hits") or {}) for loc in lm_sites)
             for loc in lm_sites:
                 totals, per_rule = (loc.get("_policy_hits") or {}).get(pol["path"], ({}, {}))
                 total_hits += int(totals.get("hit_count", 0))
@@ -1522,15 +1610,17 @@ class Collector:
                     agg = rule_totals.setdefault(rk, {})
                     for k, v in vals.items():
                         agg[k] = agg.get(k, 0) + v
-            self.counters(po, f"policy:{pol['path']}", {"hit_count": total_hits})
+            if complete:  # a sum without one location would read as a drop, then as a burst
+                self.counters(po, f"policy:{pol['path']}", {"hit_count": total_hits})
             wanted = self.cfg.rule_policies
             if wanted and ("*" in wanted or pol["id"] in wanted):
                 for r in pol.get("rules") or []:
                     ro = self.obj("rule", f"{pol.get('display_name')} / {r.get('display_name') or r.get('id')}", f"rule:{r.get('path')}")
                     ro.add_parent(po)
                     vals = rule_totals.get(str(r.get("id"))) or rule_totals.get(str(r.get("rule_id"))) or {}
-                    self.counters(ro, f"rule:{r.get('path')}",
-                                  {k: vals.get(k, 0) for k in ("hit_count", "packet_count", "byte_count", "session_count")})
+                    if complete:
+                        self.counters(ro, f"rule:{r.get('path')}",
+                                      {k: vals.get(k, 0) for k in ("hit_count", "packet_count", "byte_count", "session_count")})
                     self.props(ro, {"action": r.get("action"), "disabled": bool(r.get("disabled")),
                                     "sources": ", ".join(tail(g) for g in r.get("source_groups") or []),
                                     "destinations": ", ".join(tail(g) for g in r.get("destination_groups") or [])})
