@@ -5,6 +5,7 @@ Writes pack/content/reports/NSX_Federation/{content.xml,resources/content.proper
 --zip <file> --marker <file>, a content-import zip to test the views without a pack install.
 """
 import io
+import typing
 import json
 import os
 import sys
@@ -20,7 +21,7 @@ NS = uuid.UUID("6f1d2c0e-0000-4000-8000-4e5358464544")
 uid = lambda *p: str(uuid.uuid5(NS, "view/" + "/".join(p)))
 
 _src = open(os.path.join(ROOT, "pack/app/adapter.py")).read()
-_ns = {"Dict": dict, "Tuple": tuple, "List": list, "Optional": None, "Any": None}
+_ns = {k: getattr(typing, k) for k in ("Dict", "Tuple", "List", "Optional", "Any")}
 exec(_src[_src.index("RATES = {"):_src.index("def get_adapter_definition")], _ns)  # rates, model, metric groups
 fk = _ns["fk"]
 MODEL = _ns["MODEL"]

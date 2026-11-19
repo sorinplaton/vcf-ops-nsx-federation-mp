@@ -5,6 +5,7 @@ Writes pack/content/dashboards/<folder>/{dashboard.json,resources/resources.prop
 dashboard) and, with --zip <file>, a content-import zip to test the dashboards without a pack install.
 """
 import io
+import typing
 import json
 import os
 import shutil
@@ -24,7 +25,7 @@ uid = lambda *p: str(uuid.uuid5(NS, SALT + "/".join(p)))
 # Labels of kinds, metrics and properties come from the adapter itself: run only its model block
 # (the adapter module cannot be imported outside the adapter container).
 _src = open(os.path.join(ROOT, "pack/app/adapter.py")).read()
-_ns = {"Dict": dict, "Tuple": tuple, "List": list, "Optional": None, "Any": None}  # the units block before the model is not executed
+_ns = {k: getattr(typing, k) for k in ("Dict", "Tuple", "List", "Optional", "Any")}  # the units block before the model is not executed
 exec(_src[_src.index("RATES = {"):_src.index("def get_adapter_definition")], _ns)  # rates, model, metric groups
 fk = _ns["fk"]
 MODEL = _ns["MODEL"]

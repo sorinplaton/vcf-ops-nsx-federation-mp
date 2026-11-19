@@ -5,6 +5,7 @@ Writes pack/content/alertdefs/nsxfederation_alerts.xml (symptoms, alerts, recomm
 with --zip <file>, a content-import zip for testing the same definitions without a pack install.
 """
 import os
+import typing
 import json
 import sys
 import zipfile
@@ -14,7 +15,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # metric keys are stored as "<group>|<metric>" since 1.4.0: take the grouping from the adapter
 _src = open(os.path.join(ROOT, "pack/app/adapter.py")).read()
-_ns = {"Dict": dict, "Tuple": tuple, "List": list, "Optional": None, "Any": None}
+_ns = {k: getattr(typing, k) for k in ("Dict", "Tuple", "List", "Optional", "Any")}
 exec(_src[_src.index("RATES = {"):_src.index("def get_adapter_definition")], _ns)
 fk = _ns["fk"]
 
