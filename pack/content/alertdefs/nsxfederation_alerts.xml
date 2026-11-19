@@ -8,9 +8,12 @@
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-active_gm"/></Recommendations>
             </State>
         </AlertDefinition>
-        <AlertDefinition adapterKind="NSXFederation" description="More than one Global Manager claims the active role." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-fed_split_brain" name="NSX Federation split-brain: two active Global Managers" resourceKind="federation" subType="18" type="19" waitCycle="1" cancelCycle="1">
+        <AlertDefinition adapterKind="NSXFederation" description="More than one Global Manager claims the active role, or NSX reports a split-brain." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-fed_split_brain" name="NSX Federation split-brain: two active Global Managers" resourceKind="federation" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-fed_split_brain"/>
+                <SymptomSets operator="or">
+                    <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-fed_split_brain"/>
+                    <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-fed_split_nsx"/>
+                </SymptomSets>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-split_brain"/></Recommendations>
             </State>
@@ -65,6 +68,59 @@
                 <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-fed_foreign"/>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-foreign"/></Recommendations>
+            </State>
+        </AlertDefinition>
+        <AlertDefinition adapterKind="NSXFederation" description="The Global Manager reports the mode NONE: it is neither active nor standby." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-gm_mode_none" name="Global Manager has no role in the federation" resourceKind="global_manager" subType="18" type="19" waitCycle="1" cancelCycle="1">
+            <State severity="automatic">
+                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-gm_mode_none"/>
+                <Impact key="health" type="badge"/>
+                <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-gm_none"/></Recommendations>
+            </State>
+        </AlertDefinition>
+        <AlertDefinition adapterKind="NSXFederation" description="This Global Manager does not run the version of the active Global Manager. A switchover is refused in this state." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-gm_version" name="Global Managers run different versions" resourceKind="global_manager" subType="21" type="19" waitCycle="1" cancelCycle="1">
+            <State severity="automatic">
+                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-gm_version"/>
+                <Impact key="risk" type="badge"/>
+                <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-gm_version"/></Recommendations>
+            </State>
+        </AlertDefinition>
+        <AlertDefinition adapterKind="NSXFederation" description="The upgrade coordinator of the Global Manager reports an upgrade that is not finished." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-gm_upgrade" name="NSX upgrade in progress, paused or failed on the Global Manager" resourceKind="global_manager" subType="22" type="19" waitCycle="1" cancelCycle="1">
+            <State severity="automatic">
+                <SymptomSets operator="or">
+                    <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-gm_upg_running"/>
+                    <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-gm_upg_paused"/>
+                    <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-gm_upg_failed"/>
+                </SymptomSets>
+                <Impact key="risk" type="badge"/>
+                <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-upgrade"/></Recommendations>
+            </State>
+        </AlertDefinition>
+        <AlertDefinition adapterKind="NSXFederation" description="NSX reports a replication flow between the Global Manager and this location in an error state." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-loc_repl" name="Replication between the location and the Global Manager is in error" resourceKind="location" subType="18" type="19" waitCycle="1" cancelCycle="1">
+            <State severity="automatic">
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-loc_repl"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_location" negateCondition="true"/>
+                </SymptomSet>
+                <Impact key="health" type="badge"/>
+                <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-lm_sync"/></Recommendations>
+            </State>
+        </AlertDefinition>
+        <AlertDefinition adapterKind="NSXFederation" description="The Local Manager is ahead of the Global Manager. NSX Federation supports the opposite order only." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-loc_newer" name="Location runs a newer NSX release than the Global Manager" resourceKind="location" subType="21" type="19" waitCycle="1" cancelCycle="1">
+            <State severity="automatic">
+                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-loc_newer"/>
+                <Impact key="risk" type="badge"/>
+                <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-upgrade"/></Recommendations>
+            </State>
+        </AlertDefinition>
+        <AlertDefinition adapterKind="NSXFederation" description="The upgrade coordinator of the Local Manager reports an upgrade that is not finished." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-loc_upgrade" name="NSX upgrade in progress, paused or failed on the Local Manager" resourceKind="location" subType="22" type="19" waitCycle="1" cancelCycle="1">
+            <State severity="automatic">
+                <SymptomSets operator="or">
+                    <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-loc_upg_running"/>
+                    <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-loc_upg_paused"/>
+                    <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-loc_upg_failed"/>
+                </SymptomSets>
+                <Impact key="risk" type="badge"/>
+                <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-upgrade"/></Recommendations>
             </State>
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="The Global Manager cluster is not stable or a node is offline." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-gm_cluster" name="Global Manager cluster is degraded" resourceKind="global_manager" subType="18" type="19" waitCycle="1" cancelCycle="1">
@@ -192,6 +248,7 @@
                 <SymptomSet applyOn="self" operator="and">
                     <Symptom ref="SymptomDefinition-NSXFederation-chan_down"/>
                     <Symptom ref="SymptomDefinition-NSXFederation-outage_sync_channel" negateCondition="true"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-chan_gm_outage" negateCondition="true"/>
                 </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-channel"/></Recommendations>
@@ -355,126 +412,180 @@
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="Data synchronization between the Global Manager and a Local Manager failed for an extended period." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-alarm_gm_to_lm_synchronization_error" name="NSX alarm: Global Manager to Local Manager sync error" resourceKind="global_manager" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-alarm_gm_to_lm_synchronization_error"/>
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-alarm_gm_to_lm_synchronization_error"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_global_manager" negateCondition="true"/>
+                </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-lm_sync"/></Recommendations>
             </State>
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="Data synchronization between the Global Manager and a Local Manager failed for an extended period." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-loc_alarm_gm_to_lm_synchronization_error" name="NSX alarm: Global Manager to Local Manager sync error" resourceKind="location" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-loc_alarm_gm_to_lm_synchronization_error"/>
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-loc_alarm_gm_to_lm_synchronization_error"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_location" negateCondition="true"/>
+                </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-lm_sync"/></Recommendations>
             </State>
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="Data synchronization between the Global Manager and a Local Manager failed." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-alarm_gm_to_lm_synchronization_warning" name="NSX alarm: Global Manager to Local Manager sync warning" resourceKind="global_manager" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-alarm_gm_to_lm_synchronization_warning"/>
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-alarm_gm_to_lm_synchronization_warning"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_global_manager" negateCondition="true"/>
+                </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-lm_sync"/></Recommendations>
             </State>
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="Data synchronization between the Global Manager and a Local Manager failed." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-loc_alarm_gm_to_lm_synchronization_warning" name="NSX alarm: Global Manager to Local Manager sync warning" resourceKind="location" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-loc_alarm_gm_to_lm_synchronization_warning"/>
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-loc_alarm_gm_to_lm_synchronization_warning"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_location" negateCondition="true"/>
+                </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-lm_sync"/></Recommendations>
             </State>
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="Latency between the Global Manager and a location has been above the NSX threshold for more than 2 minutes." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-alarm_gm_to_lm_latency_warning" name="NSX alarm: latency between Global Manager and Local Manager is high" resourceKind="global_manager" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-alarm_gm_to_lm_latency_warning"/>
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-alarm_gm_to_lm_latency_warning"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_global_manager" negateCondition="true"/>
+                </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-latency"/></Recommendations>
             </State>
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="Latency between the Global Manager and a location has been above the NSX threshold for more than 2 minutes." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-loc_alarm_gm_to_lm_latency_warning" name="NSX alarm: latency between Global Manager and Local Manager is high" resourceKind="location" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-loc_alarm_gm_to_lm_latency_warning"/>
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-loc_alarm_gm_to_lm_latency_warning"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_location" negateCondition="true"/>
+                </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-latency"/></Recommendations>
             </State>
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="Synchronization between two locations failed for more than 15 minutes." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-alarm_lm_to_lm_synchronization_error" name="NSX alarm: sync between locations failed for 15 minutes" resourceKind="global_manager" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-alarm_lm_to_lm_synchronization_error"/>
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-alarm_lm_to_lm_synchronization_error"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_global_manager" negateCondition="true"/>
+                </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-lm_lm_sync"/></Recommendations>
             </State>
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="Synchronization between two locations failed for more than 15 minutes." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-loc_alarm_lm_to_lm_synchronization_error" name="NSX alarm: sync between locations failed for 15 minutes" resourceKind="location" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-loc_alarm_lm_to_lm_synchronization_error"/>
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-loc_alarm_lm_to_lm_synchronization_error"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_location" negateCondition="true"/>
+                </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-lm_lm_sync"/></Recommendations>
             </State>
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="Synchronization between two locations failed for more than 3 minutes." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-alarm_lm_to_lm_synchronization_warning" name="NSX alarm: sync between locations failed for 3 minutes" resourceKind="global_manager" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-alarm_lm_to_lm_synchronization_warning"/>
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-alarm_lm_to_lm_synchronization_warning"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_global_manager" negateCondition="true"/>
+                </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-lm_lm_sync"/></Recommendations>
             </State>
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="Synchronization between two locations failed for more than 3 minutes." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-loc_alarm_lm_to_lm_synchronization_warning" name="NSX alarm: sync between locations failed for 3 minutes" resourceKind="location" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-loc_alarm_lm_to_lm_synchronization_warning"/>
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-loc_alarm_lm_to_lm_synchronization_warning"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_location" negateCondition="true"/>
+                </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-lm_lm_sync"/></Recommendations>
             </State>
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="A queue used to synchronize data between locations reached its size threshold." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-alarm_queue_occupancy_threshold_exceeded" name="NSX alarm: federation sync queue above threshold" resourceKind="global_manager" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-alarm_queue_occupancy_threshold_exceeded"/>
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-alarm_queue_occupancy_threshold_exceeded"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_global_manager" negateCondition="true"/>
+                </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-queue"/></Recommendations>
             </State>
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="A queue used to synchronize data between locations reached its size threshold." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-loc_alarm_queue_occupancy_threshold_exceeded" name="NSX alarm: federation sync queue above threshold" resourceKind="location" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-loc_alarm_queue_occupancy_threshold_exceeded"/>
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-loc_alarm_queue_occupancy_threshold_exceeded"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_location" negateCondition="true"/>
+                </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-queue"/></Recommendations>
             </State>
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="A location was restored from backup while its configuration import to the Global Manager was in progress." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-alarm_lm_restore_while_config_import_in_progress" name="NSX alarm: Local Manager restored during config import" resourceKind="global_manager" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-alarm_lm_restore_while_config_import_in_progress"/>
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-alarm_lm_restore_while_config_import_in_progress"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_global_manager" negateCondition="true"/>
+                </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-onboarding"/></Recommendations>
             </State>
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="A location was restored from backup while its configuration import to the Global Manager was in progress." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-loc_alarm_lm_restore_while_config_import_in_progress" name="NSX alarm: Local Manager restored during config import" resourceKind="location" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-loc_alarm_lm_restore_while_config_import_in_progress"/>
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-loc_alarm_lm_restore_while_config_import_in_progress"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_location" negateCondition="true"/>
+                </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-onboarding"/></Recommendations>
             </State>
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="NSX reports an inter-site (RTEP) BGP session as down." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-alarm_rtep_bgp_down" name="NSX alarm: RTEP BGP neighbor down" resourceKind="global_manager" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-alarm_rtep_bgp_down"/>
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-alarm_rtep_bgp_down"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_global_manager" negateCondition="true"/>
+                </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-intersite"/></Recommendations>
             </State>
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="NSX reports an inter-site (RTEP) BGP session as down." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-loc_alarm_rtep_bgp_down" name="NSX alarm: RTEP BGP neighbor down" resourceKind="location" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-loc_alarm_rtep_bgp_down"/>
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-loc_alarm_rtep_bgp_down"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_location" negateCondition="true"/>
+                </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-intersite"/></Recommendations>
             </State>
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="An edge node lost RTEP connectivity with a remote location." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-alarm_rtep_connectivity_lost" name="NSX alarm: RTEP connectivity lost" resourceKind="global_manager" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-alarm_rtep_connectivity_lost"/>
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-alarm_rtep_connectivity_lost"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_global_manager" negateCondition="true"/>
+                </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-intersite"/></Recommendations>
             </State>
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="An edge node lost RTEP connectivity with a remote location." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-loc_alarm_rtep_connectivity_lost" name="NSX alarm: RTEP connectivity lost" resourceKind="location" subType="18" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
-                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-loc_alarm_rtep_connectivity_lost"/>
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-loc_alarm_rtep_connectivity_lost"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_location" negateCondition="true"/>
+                </SymptomSet>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-intersite"/></Recommendations>
             </State>
@@ -529,6 +640,66 @@
         <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-fed_foreign" name="A listed Global Manager belongs to another federation" resourceKind="federation" waitCycle="1" cancelCycle="1">
             <State severity="warning">
                 <Condition key="global_managers|global_managers_foreign" operator="&gt;" thresholdType="static" type="metric" value="0" valueType="numeric"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-fed_split_nsx" name="NSX reports a split-brain between the Global Managers" resourceKind="federation" waitCycle="1" cancelCycle="1">
+            <State severity="critical">
+                <Condition key="global_managers|split_brain_reported" operator="&gt;" thresholdType="static" type="metric" value="0" valueType="numeric"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-gm_mode_none" name="Global Manager has no role (mode NONE)" resourceKind="global_manager" waitCycle="1" cancelCycle="1">
+            <State severity="immediate">
+                <Condition key="mode" operator="=" thresholdType="static" type="property" value="NONE" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-gm_version" name="Global Manager version differs from the active Global Manager" resourceKind="global_manager" waitCycle="1" cancelCycle="1">
+            <State severity="warning">
+                <Condition key="version_matches_active_gm" operator="=" thresholdType="static" type="property" value="False" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-gm_upg_running" name="An NSX upgrade is in progress on the Global Manager" resourceKind="global_manager" waitCycle="1" cancelCycle="1">
+            <State severity="info">
+                <Condition key="upgrade_status" operator="=" thresholdType="static" type="property" value="IN_PROGRESS" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-gm_upg_paused" name="An NSX upgrade is paused on the Global Manager" resourceKind="global_manager" waitCycle="1" cancelCycle="1">
+            <State severity="info">
+                <Condition key="upgrade_status" operator="=" thresholdType="static" type="property" value="PAUSED" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-gm_upg_failed" name="An NSX upgrade failed on the Global Manager" resourceKind="global_manager" waitCycle="1" cancelCycle="1">
+            <State severity="immediate">
+                <Condition key="upgrade_status" operator="=" thresholdType="static" type="property" value="FAILED" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-loc_repl" name="A replication flow with the Global Manager is in an error state" resourceKind="location" waitCycle="2" cancelCycle="2">
+            <State severity="immediate">
+                <Condition key="sync|replication_flows_unhealthy" operator="&gt;" thresholdType="static" type="metric" value="0" valueType="numeric"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-loc_newer" name="Location runs a newer NSX release than the Global Manager" resourceKind="location" waitCycle="1" cancelCycle="1">
+            <State severity="immediate">
+                <Condition key="release_newer_than_gm" operator="=" thresholdType="static" type="property" value="True" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-loc_upg_running" name="An NSX upgrade is in progress on the Local Manager" resourceKind="location" waitCycle="1" cancelCycle="1">
+            <State severity="info">
+                <Condition key="upgrade_status" operator="=" thresholdType="static" type="property" value="IN_PROGRESS" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-loc_upg_paused" name="An NSX upgrade is paused on the Local Manager" resourceKind="location" waitCycle="1" cancelCycle="1">
+            <State severity="info">
+                <Condition key="upgrade_status" operator="=" thresholdType="static" type="property" value="PAUSED" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-loc_upg_failed" name="An NSX upgrade failed on the Local Manager" resourceKind="location" waitCycle="1" cancelCycle="1">
+            <State severity="immediate">
+                <Condition key="upgrade_status" operator="=" thresholdType="static" type="property" value="FAILED" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-chan_gm_outage" name="A Global Manager is not reachable or none is active" resourceKind="sync_channel" waitCycle="1" cancelCycle="1">
+            <State severity="info">
+                <Condition key="gm_outage" operator="!=" thresholdType="static" type="property" value="none" valueType="string"/>
             </State>
         </SymptomDefinition>
         <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-gm_cluster" name="Global Manager cluster status is not STABLE" resourceKind="global_manager" waitCycle="1" cancelCycle="1">
@@ -841,6 +1012,11 @@
                 <Condition eventMsg="NSX alarm rtep_connectivity_lost:(?s).*" eventSubType="5" eventType="11" operator="regex" type="msg_event"/>
             </State>
         </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-outage_global_manager" name="A location of the federation is cut off from the Global Manager" resourceKind="global_manager" waitCycle="1" cancelCycle="1">
+            <State severity="info">
+                <Condition key="location_outage" operator="!=" thresholdType="static" type="property" value="none" valueType="string"/>
+            </State>
+        </SymptomDefinition>
         <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-outage_location" name="A location of the federation is cut off from the Global Manager" resourceKind="location" waitCycle="1" cancelCycle="1">
             <State severity="info">
                 <Condition key="location_outage" operator="!=" thresholdType="static" type="property" value="none" valueType="string"/>
@@ -898,18 +1074,21 @@
         </SymptomDefinition>
     </SymptomDefinitions>
     <Recommendations>
-        <Recommendation key="Recommendation-df-NSXFederation-active_gm"><Description>Open the Global Manager UI (System, Location Manager) and check which Global Manager is active. If the active Global Manager is lost, follow the NSX Federation disaster recovery procedure and make the standby active.</Description></Recommendation>
-        <Recommendation key="Recommendation-df-NSXFederation-split_brain"><Description>Two Global Managers claim the active role. Do not change global configuration. Decide which Global Manager holds the valid configuration and force the other one to standby, as described in the NSX Federation recovery documentation.</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-active_gm"><Description>Open the Global Manager UI (System, Location Manager) and check which Global Manager is active. If the active Global Manager is lost, follow the NSX Federation disaster recovery procedure and make the standby active. See https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vcf-9-0-and-later/9-0/advanced-network-management/administration-guide/managing-nsx-t-in-multiple-locations/nsx-t-federation/disaster-recovery-using-federation.html</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-split_brain"><Description>Two Global Managers claim the active role. Do not change global configuration. Decide which Global Manager holds the valid configuration and force the other one to standby, as described in the NSX Federation recovery documentation. See https://knowledge.broadcom.com/external/article/324244</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-gm_reach"><Description>Check that the Global Manager appliance is powered on and that the cloud proxy can reach it on TCP 443. If its certificate was replaced, update the trusted certificate of the adapter instance.</Description></Recommendation>
-        <Recommendation key="Recommendation-df-NSXFederation-standby"><Description>Deploy a standby Global Manager in another site and add it under System, Location Manager, Add Standby Global Manager. Without a standby the global configuration cannot be changed if the active Global Manager is lost.</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-standby"><Description>Deploy a standby Global Manager in another site and add it under System, Location Manager, Add Standby Global Manager. Without a standby the global configuration cannot be changed if the active Global Manager is lost. See https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vcf-9-0-and-later/9-0/advanced-network-management/administration-guide/managing-nsx-t-in-multiple-locations/nsx-t-federation/disaster-recovery-using-federation.html</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-gaps"><Description>Some NSX API calls of the collection failed, so part of the data is unknown and the alerts that depend on it are not evaluated. Read the property 'NSX API calls without an answer' on the federation object: it lists the manager, the call and the HTTP status. HTTP 403 points to missing rights of the collection account, HTTP 5xx or a timeout to a manager under load or a service that is down.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-load"><Description>The collection is close to the limits of the managers or of the collection interval. Lengthen the collection interval of the account, reduce the policies whose rules are collected, or lower 'Managers collected in parallel'. Check the load of the manager named in the NSX alarms.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-degraded"><Description>No Global Manager answered, so the collection uses the list of locations it cached earlier and collects the Local Managers only. Check the Global Manager addresses of the account and the alert on the Global Managers.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-foreign"><Description>One account monitors one federation. Remove the address named in the property 'Global Managers not collected' from this account and create a second account for the other federation.</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-gm_none"><Description>A Global Manager that comes back after a failover has no role until it is added again as the standby. In the UI of the active Global Manager, open System, Location Manager and make it the standby. See https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vcf-9-0-and-later/9-0/advanced-network-management/administration-guide/managing-nsx-t-in-multiple-locations/nsx-t-federation/disaster-recovery-using-federation.html</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-gm_version"><Description>Upgrade the Global Manager that is behind. NSX refuses a switchover while the active and the standby Global Manager run different versions. See https://knowledge.broadcom.com/external/article/449461</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-upgrade"><Description>Finish the upgrade in the order NSX Federation requires: the standby Global Manager, then the active Global Manager, then the Local Managers. A Local Manager must not run a newer release than the Global Manager. Take a backup of every manager cluster first. A paused upgrade is resumed or cancelled in System, Upgrade. See https://knowledge.broadcom.com/external/article/435153</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-budget"><Description>The collection of this cycle is partial. Raise 'API call budget per manager and cycle' in the advanced settings of the adapter instance, or lengthen the collection interval.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-cluster"><Description>Open System, Appliances on the manager and check the state of each node and service group. Restore or redeploy the failed node.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-backup"><Description>Configure a backup target and a schedule under System, Backup and Restore on the manager, then run a backup and confirm that it succeeds. A Global Manager can only be restored from its own backup.</Description></Recommendation>
-        <Recommendation key="Recommendation-df-NSXFederation-cert"><Description>Replace the certificate before it expires (System, Certificates). An expired manager certificate breaks the connection between the Global Manager and the Local Managers.</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-cert"><Description>Replace the certificate before it expires (System, Certificates). An expired manager certificate breaks the connection between the Global Manager and the Local Managers. See https://knowledge.broadcom.com/external/article/429189</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-loc_gm"><Description>Check the network path between the active Global Manager and the Local Manager of this location (TCP 443 and 1236 in both directions) and the state of the Local Manager cluster. The location keeps forwarding traffic with its last configuration.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-collector"><Description>Check that the cloud proxy can reach the Local Manager on TCP 443 and that the account of the adapter instance is valid on this Local Manager. This is the monitoring path only.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-cert_trust"><Description>The Local Manager presents a certificate that is not the one the Global Manager holds for it. Confirm the certificate change is expected, then update the location in the Global Manager so the thumbprint matches.</Description></Recommendation>
@@ -921,11 +1100,11 @@
         <Recommendation key="Recommendation-df-NSXFederation-bgp_prefix"><Description>The session is established but the peer advertises nothing. Check the routing policy and redistribution on the peer router.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-tunnel_drops"><Description>Check the RTEP network between the two edge nodes of this tunnel: MTU on the whole path (1700 recommended), packet loss on the physical links and the load of the edge nodes.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-object_error"><Description>Open the object in the Global Manager and read the error for each location of its span. Fix the cause (a missing edge cluster, an address conflict, a location that is not reachable), then save the object again.</Description></Recommendation>
-        <Recommendation key="Recommendation-df-NSXFederation-gm_sync"><Description>Check the connectivity between the active and the standby Global Manager (ping, then TCP 443 and 1236) and the state of both Global Manager clusters.</Description></Recommendation>
-        <Recommendation key="Recommendation-df-NSXFederation-lm_sync"><Description>Check the connectivity between the Global Manager and the location (ping, TCP 1236 in both directions) and that the async-replicator service runs on both sides (get service async_replicator). Its log is /var/log/async-replicator/ar.log.</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-gm_sync"><Description>Check the connectivity between the active and the standby Global Manager (ping, then TCP 443 and 1236) and the state of both Global Manager clusters. See https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vcf-9-0-and-later/9-0/advanced-network-management/administration-guide/managing-nsx-t-in-multiple-locations/nsx-t-federation/using-the-gm-and-lm-ui/monitoring-nsx-federation-locations.html</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-lm_sync"><Description>Check the connectivity between the Global Manager and the location (ping, TCP 1236 in both directions) and that the async-replicator service runs on both sides (get service async_replicator). Its log is /var/log/async-replicator/ar.log. See https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vcf-9-0-and-later/9-0/advanced-network-management/administration-guide/managing-nsx-t-in-multiple-locations/nsx-t-federation/using-the-gm-and-lm-ui/monitoring-nsx-federation-locations.html</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-lm_lm_sync"><Description>Run get site-replicator remote-sites on the Local Managers to see the connection state between the locations, then check TCP 1236 between them. A location that is connected but not synchronized may still be electing its leader; check again after a few seconds.</Description></Recommendation>
-        <Recommendation key="Recommendation-df-NSXFederation-latency"><Description>Measure the round-trip time between the two managers named in the alarm. Federation supports up to 150 ms between locations; look for WAN congestion or a path change.</Description></Recommendation>
-        <Recommendation key="Recommendation-df-NSXFederation-queue"><Description>The sync queue grows when the remote location cannot keep up or cannot be reached. Check the connectivity to the remote location and /var/log/async-replicator/ar.log.</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-latency"><Description>Measure the round-trip time between the two managers named in the alarm. Federation supports up to 150 ms between locations; look for WAN congestion or a path change. See https://knowledge.broadcom.com/external/article/345822</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-queue"><Description>The sync queue grows when the remote location cannot keep up or cannot be reached. Check the connectivity to the remote location and /var/log/async-replicator/ar.log. See https://knowledge.broadcom.com/external/article/414606</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-onboarding"><Description>The location is in an inconsistent state. Delete the onboarding status of the location on the Global Manager, as the NSX alarm describes, then start the configuration import again.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-traffic"><Description>Inter-site traffic on this tunnel is above the range VCF Operations learned for it. Check whether a migration, a backup or a replication job explains it before looking for a loop or a misrouted flow.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-realization"><Description>Open the object in the Global Manager and read the realization status for this location. Check the location alarms and the connection between the Global Manager and the location, then save the object again if needed.</Description></Recommendation>

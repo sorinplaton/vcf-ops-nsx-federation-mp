@@ -2,7 +2,7 @@
 
 A management pack that monitors NSX Federation (NSX 9.1) in VCF Operations 9.1.1. It is built with the
 [VCF Operations Integration SDK](https://vmware.github.io/vmware-vcf-operations-integration-sdk/introduction)
-in Python. Current version: 1.6.0.
+in Python. Current version: 1.7.0.
 
 This is a lab project, not a Broadcom product. The pack is unsigned and comes with no support. It only reads
 from NSX.
@@ -19,12 +19,17 @@ The design, the install and the tests are described in two blog posts:
   security policies, and the realization of each stretched object at each location. Global firewall rules
   are opt-in per policy.
 - Metrics in 17 groups, with rates computed from the NSX counters, federation rollups and 18 key indicators.
-- 57 alert definitions, 83 symptoms and 31 recommendations, including the 13 federation alarm types of
+- 63 alert definitions, 96 symptoms and 34 recommendations, including the 13 federation alarm types of
   NSX 9.1 as named alerts, the sync state of a standby Global Manager and four alerts on the collection itself.
 - A failed NSX call is reported as unknown data, not as an empty answer: no alert fires on data that was
   never received, and the federation object lists the calls without an answer.
 - During a location outage, the alerts of the objects that depend on the location stay quiet behind the alert of
   the location.
+- Versions and upgrades: Global Managers on different versions, a location ahead of the Global Manager, an
+  upgrade in progress, paused or failed.
+- Replication flows, last-seen time and onboarding status of each location, as on the Location Manager page of NSX.
+- No double alerts: the federation alarms of a Local Manager that the built-in NSX integration monitors are left
+  to that integration.
 - Four custom groups, three dashboards, five list views, one report and an inventory tree.
 - Optional links from edge nodes and edge clusters to the objects of the built-in NSX integration.
 
@@ -37,7 +42,7 @@ account is enough: the built-in `audit` account was tested.
 | Path | Content |
 | --- | --- |
 | `pack/` | The SDK project: `app/adapter.py` (object model, collection, events), `app/nsxclient.py` (read-only NSX client), `content/` (alerts, dashboards, views, report, custom groups, traversal spec) |
-| `tools/gen_*.py` | Generators for the content. They read the object model from `adapter.py` and write into `pack/content` |
+| `tools/gen_*.py` | Generators for the content and the icons. They read the object model from `adapter.py` and write into `pack/content` |
 | `tools/localrun.py` | Runs a collection against live NSX managers without VCF Operations |
 | `tools/test_gaps.py` | Same run with chosen NSX calls made to fail, to check that their data is reported as unknown |
 | `tools/repack.py` | Rewrites the registry address inside a built `.pak` |
@@ -84,7 +89,7 @@ Scripted, with `google-chrome`, `node` and Python `requests` on the host:
 ```bash
 export OPS_HOST=<vcf-operations-fqdn> OPS_PW=<admin password>
 install/upi.sh enableUPI
-install/install_unsigned.sh pack/build/NSXFederation_1.6.0.pak   # turns the switch off at the end
+install/install_unsigned.sh pack/build/NSXFederation_1.7.0.pak   # turns the switch off at the end
 ```
 
 The scripted route uses calls that are internal to the VCF Operations UI. They are unsupported and can

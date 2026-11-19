@@ -1,7 +1,7 @@
 {
 "192.0.2.2": {
 "/api/v1/alarms?page_size=500&status=OPEN": {
-"result_count": 27,
+"result_count": 26,
 "results": [
 {
 "event_type": "remote_logging_not_configured",
@@ -210,14 +210,6 @@
 "severity": "HIGH",
 "status": "OPEN",
 "summary": "Failed to stream metrics to the specified VODAP (VCF Ops Data Platform) metrics collector."
-},
-{
-"event_type": "edge_memory_usage_high",
-"feature_name": "edge_health",
-"id": "12913c26-a0d8-2f23-ee56-99aa698aac12",
-"severity": "MEDIUM",
-"status": "OPEN",
-"summary": "Edge node memory usage is high."
 }
 ],
 "sort_ascending": true,
@@ -248,25 +240,25 @@
 "backup_operation_history": {
 "cluster_backup_statuses": [
 {
-"backup_id": "be46d29b-acca-00a4-8b85-b91b90647c11-1795087187",
-"end_time": 1795087271882,
-"start_time": 1795087187238,
+"backup_id": "be46d29b-acca-00a4-8b85-b91b90647c11-1795101587",
+"end_time": 1795101668530,
+"start_time": 1795101587119,
 "success": true
 }
 ],
 "inventory_backup_statuses": [
 {
-"backup_id": "inventory-1795098856",
-"end_time": 1795098856490,
-"start_time": 1795098856181,
+"backup_id": "inventory-1795103416",
+"end_time": 1795103416527,
+"start_time": 1795103416225,
 "success": true
 }
 ],
 "node_backup_statuses": [
 {
-"backup_id": "be46d29b-acca-00a4-8b85-b91b90647c11-1795087187",
-"end_time": 1795087289445,
-"start_time": 1795087187238,
+"backup_id": "be46d29b-acca-00a4-8b85-b91b90647c11-1795101587",
+"end_time": 1795101697198,
+"start_time": 1795101587119,
 "success": true
 }
 ],
@@ -283,8 +275,14 @@
 "value": "INITIAL"
 }
 },
-"result_count": 25,
+"result_count": 26,
 "results": [
+{
+"ip_address": "192.0.2.3",
+"node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
+"restore_type": [],
+"timestamp": 1795101587000
+},
 {
 "ip_address": "192.0.2.3",
 "node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
@@ -468,7 +466,7 @@
 "leaders": [
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 14137,
+"lease_version": 14533,
 "service_name": "cluster-manager"
 }
 ],
@@ -488,7 +486,7 @@
 "leaders": [
 {
 "leader_uuid": "6ed6441c-2535-be83-4d55-5dfb08181008",
-"lease_version": 14160,
+"lease_version": 14556,
 "service_name": "ShardingService"
 }
 ],
@@ -508,957 +506,957 @@
 "leaders": [
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13409,
+"lease_version": 13804,
 "service_name": "POLICY_SVC_POLICY_SERVICE_INSERTION_EW"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13407,
+"lease_version": 13800,
 "service_name": "L2LogicalSwitchStateWorker-L2KeyValue"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13410,
+"lease_version": 13805,
 "service_name": "MtuCheckQuartzSetupServiceImpl"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13412,
+"lease_version": 13807,
 "service_name": "POLICY_SVC_PROJECT"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13409,
+"lease_version": 13804,
 "service_name": "POLICY_SVC_CONTEXT_PROFILE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13402,
+"lease_version": 13796,
 "service_name": "POLICY_SVC_FLOOD_PROTECTION_PROFILES_PROVIDER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13406,
+"lease_version": 13800,
 "service_name": "POLICY_SVC_POLICY_TRANSPORT_ZONE_PROFILE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13410,
+"lease_version": 13804,
 "service_name": "POLICY_SVC_IPFIX_L2_PROFILE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13408,
+"lease_version": 13802,
 "service_name": "FirewallOperationPersistedQueueProcessor"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13410,
+"lease_version": 13804,
 "service_name": "UPGRADE-CONSISTENCY-CHECK-POLICY-RESOURCE-CONSUMER-SERVICE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13411,
+"lease_version": 13804,
 "service_name": "OpsClusterService"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13408,
+"lease_version": 13803,
 "service_name": "ODS_DYNAMIC_RUNBOOK_TN_LISTENER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13409,
+"lease_version": 13803,
 "service_name": "POLICY_SVC_ODS_DYNAMIC_RUNBOOK_INSTANCE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13405,
+"lease_version": 13799,
 "service_name": "POLICY_SVC_ALB_LCM"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13411,
+"lease_version": 13805,
 "service_name": "POLICY_SVC_IPFIX_DFW_PROFILE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13405,
+"lease_version": 13799,
 "service_name": "POLICY_SVC_TIER0"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13413,
+"lease_version": 13808,
 "service_name": "RealizationOperationalStatusTrackerWorker-AggSvc-Routing_BgpNeighborStatusPerNode"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13410,
+"lease_version": 13804,
 "service_name": "MpHeartbeatMessageListener"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13418,
+"lease_version": 13813,
 "service_name": "POLICY_SVC_IDFW_IDS_TOGGLE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13411,
+"lease_version": 13804,
 "service_name": "POLICY_SVC_IPFIX_DFW_GROUP_PROFILE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13409,
+"lease_version": 13804,
 "service_name": "POLICY_IPAM_ALARM_LEADERSHIP_LISTENER_SERVICE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13397,
+"lease_version": 13791,
 "service_name": "POLICY_SVC_POLICY_EDGE_CLUSTER_PROVIDER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13404,
+"lease_version": 13799,
 "service_name": "POLICY_SVC_EDGE_TRANSPORT_NODE_TROUBLESHOOT_PROVIDER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13412,
+"lease_version": 13806,
 "service_name": "POLICY_SVC_TLS_PROFILE_PROVIDER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13413,
+"lease_version": 13808,
 "service_name": "POLICY_SVC_TLS_FQDN_STATE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13414,
+"lease_version": 13809,
 "service_name": "LM_NOTIFICATION_MANAGER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13409,
+"lease_version": 13804,
 "service_name": "HealthCheckRequestMonitor"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13413,
+"lease_version": 13808,
 "service_name": "POLICY_SVC_SCX_TOGGLE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13408,
+"lease_version": 13803,
 "service_name": "POLICY_SVC_SESSION_TIMER_PROFILES_PROVIDER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13404,
+"lease_version": 13798,
 "service_name": "POLICY_SVC_FIREWALL"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13408,
+"lease_version": 13802,
 "service_name": "POLICY_SVC_POLICY_UC_DEPLOYMENT_CONFIG"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13402,
+"lease_version": 13797,
 "service_name": "RealizationOperationalStatusTrackerWorker-AggSvc-Routing_LogicalRoutersPerNode"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13406,
+"lease_version": 13800,
 "service_name": "ActivityPurger"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13404,
+"lease_version": 13799,
 "service_name": "POLICY_SVC_EDGE_FIREWALL"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13404,
+"lease_version": 13799,
 "service_name": "LbAlarmShardingServiceImpl"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13414,
+"lease_version": 13809,
 "service_name": "POLICY_SVC_INITIALIZER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13414,
+"lease_version": 13809,
 "service_name": "POLICY_SVC_L7_ACCESS_PROFILE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13410,
+"lease_version": 13803,
 "service_name": "ActiveStateStreamListenerService"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13410,
+"lease_version": 13805,
 "service_name": "POLICY-INTENT-CLEANUP-SERVICE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13408,
+"lease_version": 13802,
 "service_name": "POLICY_SVC_SECURITY_PROFILE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13411,
+"lease_version": 13805,
 "service_name": "POLICY_SVC_POLICY_FIREWALL_IDENTITY_STORE_ELS_MAPPING_PROVIDER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13409,
+"lease_version": 13804,
 "service_name": "GROUP_ALARM_LEADERSHIP_LISTENER_SERVICE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13412,
+"lease_version": 13807,
 "service_name": "SECURITY_LICENSE_USAGE_METER_TASK"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13410,
+"lease_version": 13804,
 "service_name": "POLICY_SVC_LATENCY_STAT_PROFILE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13405,
+"lease_version": 13800,
 "service_name": "POLICY_SVC_PORTMIRRORINGINSTANCE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13413,
+"lease_version": 13808,
 "service_name": "POLICY_SVC_TAG_BULK_OPERATION"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13418,
+"lease_version": 13812,
 "service_name": "POLICY_SVC_IDS_GLOBAL_CONFIG"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13406,
+"lease_version": 13800,
 "service_name": "IntelligenceClusterConfigWorker-IntelligenceClusterConfig"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13413,
+"lease_version": 13808,
 "service_name": "POLICY_SVC_CERTIFICATE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13411,
+"lease_version": 13806,
 "service_name": "FirewallPersistenceQueueProcessor"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13412,
+"lease_version": 13806,
 "service_name": "POLICY_SVC_MALWARE_PREVENTION_PROFILE_PROVIDER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13416,
+"lease_version": 13810,
 "service_name": "FirewallStatsPersistedQueueProcessor"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13408,
+"lease_version": 13801,
 "service_name": "POLICY_SVC_IDS_SIGNATURES_COMP_FILE_PROVIDER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13410,
+"lease_version": 13804,
 "service_name": "POLICY_SVC_FIREWALL_CPU_MEMORY_THRESHOLDS_PROFILE_PROVIDER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13414,
+"lease_version": 13809,
 "service_name": "POLICY_SVC_GENERAL_SECURITY_PROFILES_PROVIDER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13412,
+"lease_version": 13807,
 "service_name": "SECURITY_BUNDLE_AUTO_DOWNLOAD_TASK"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13406,
+"lease_version": 13800,
 "service_name": "POLICY_SVC_METADATA_PROXY"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13407,
+"lease_version": 13803,
 "service_name": "POLICY_SVC_VM_TAG_REPLICATION_POLICY_PROVIDER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13415,
+"lease_version": 13810,
 "service_name": "LM_CONSUMER_SERVICE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13407,
+"lease_version": 13801,
 "service_name": "DirServiceDbDaemon"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13411,
+"lease_version": 13807,
 "service_name": "TnContainerStatusTsdbListener"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13407,
+"lease_version": 13800,
 "service_name": "RealizationOperationalStatusTrackerWorker-AggSvc-Vpn_IPSecVpnServiceSummary"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13410,
+"lease_version": 13804,
 "service_name": "POLICY_SVC_SSP_SECURITY_FEED_MAPPING_PROVIDER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13415,
+"lease_version": 13811,
 "service_name": "POLICY_SVC_IPAM"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13411,
+"lease_version": 13806,
 "service_name": "POLICY_SVC_BYOD_POLICY_SERVICE_INSERTION"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13405,
+"lease_version": 13799,
 "service_name": "POLICY_SVC_REDIRECTION_FIREWALL"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13411,
+"lease_version": 13805,
 "service_name": "GEO_IP_BUNDLE_AUTO_DOWNLOAD_TASK"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13410,
+"lease_version": 13804,
 "service_name": "POLICY_SVC_VPC_SUBNET"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13407,
+"lease_version": 13802,
 "service_name": "LiveTraceMessageManager"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13407,
+"lease_version": 13802,
 "service_name": "POLICY_SVC_MAC_DISCOVERY"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13411,
+"lease_version": 13806,
 "service_name": "ManualHealthCheckMonitor"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13412,
+"lease_version": 13807,
 "service_name": "ClusterNodeConfigProcessor"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13407,
+"lease_version": 13802,
 "service_name": "POLICY_SVC_POLICY_FQDN_ANALYSIS_CONFIG_PROVIDER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13403,
+"lease_version": 13797,
 "service_name": "POLICY_SVC_IPFIXSWITCHCOLLECTION"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13411,
+"lease_version": 13806,
 "service_name": "POLICY_PURGE_TASK_INITIALIZER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13411,
+"lease_version": 13804,
 "service_name": "VCSyncShardingServiceImpl"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13413,
+"lease_version": 13808,
 "service_name": "POLICY_SVC_IPFIX_L2_GLOBAL_PROFILE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13410,
+"lease_version": 13804,
 "service_name": "POLICY_SVC_CLUSTER_CONTROL_PLANE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13406,
+"lease_version": 13800,
 "service_name": "POLICY_SVC_POLICY_URL_CATEGORIZATION_CONFIG_PROVIDER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13403,
+"lease_version": 13798,
 "service_name": "RealizationServiceMaintenanceManager"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13413,
+"lease_version": 13807,
 "service_name": "IP_REPUTATION_FEED_DOWNLOAD_TASK"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13408,
+"lease_version": 13802,
 "service_name": "POLICY_SVC_FORWARDING"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13409,
+"lease_version": 13804,
 "service_name": "VidbMaintainer"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13407,
+"lease_version": 13801,
 "service_name": "RemoteLoggingServerCheckService"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13413,
+"lease_version": 13808,
 "service_name": "TNStateWorker-TransportNodeState"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13409,
+"lease_version": 13803,
 "service_name": "POLICY_SVC_IDS_SECTION_PROVIDER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13415,
+"lease_version": 13809,
 "service_name": "TraceflowCacheManager"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13414,
+"lease_version": 13808,
 "service_name": "POLICY_SVC_REAL_TIME_ETHERNET_PROFILE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13413,
+"lease_version": 13808,
 "service_name": "POLICY_SVC_POLICY_FIREWALL_IDENTITY_STORE_AND_LDAP_SERVER_PROVIDER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13413,
+"lease_version": 13807,
 "service_name": "IpfixAppliedToStreamListener"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13405,
+"lease_version": 13799,
 "service_name": "TransportNodeStatusMessageListener"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13410,
+"lease_version": 13804,
 "service_name": "POLICY_SVC_ROUTE_CONTROLLER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13416,
+"lease_version": 13811,
 "service_name": "ServiceConfigChangeWorker-GiServiceProfile"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13410,
+"lease_version": 13805,
 "service_name": "POLICY_SVC_IDS_THRESHOLD_CONFIG_FILE_PROVIDER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13412,
+"lease_version": 13807,
 "service_name": "POLICY_SVC_POLICY_GUEST_INTROSPECTION"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13405,
+"lease_version": 13800,
 "service_name": "POLICY_SVC_PORTMIRRORINGPROFILE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13411,
+"lease_version": 13805,
 "service_name": "POLICY_SVC_QOS_PROFILE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13407,
+"lease_version": 13803,
 "service_name": "QuartzSetupServiceImpl"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13414,
+"lease_version": 13808,
 "service_name": "LicensingShardingServiceImpl"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13410,
+"lease_version": 13805,
 "service_name": "BgpBfdTroubleshootReverseUpgradeWorker-ManagerClusterVersion"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13405,
+"lease_version": 13800,
 "service_name": "POLICY_SVC_BASE_HOST_SWITCH_PROFILE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13404,
+"lease_version": 13798,
 "service_name": "IDS_AUTO_DOWNLOAD_TASK"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13417,
+"lease_version": 13811,
 "service_name": "POLICY_SVC_LOADBALANCER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13405,
+"lease_version": 13800,
 "service_name": "POLICY_SVC_VPN"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13411,
+"lease_version": 13805,
 "service_name": "POLICY_SVC_SEGMENTPORT"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13406,
+"lease_version": 13800,
 "service_name": "SECURITY_ALARM_SERVICE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13420,
+"lease_version": 13814,
 "service_name": "UnderlayRouteWorker-UnderlayRouteRefreshTrigger"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13408,
+"lease_version": 13803,
 "service_name": "POLICY_SVC_FIREWALL_SCHEDULER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13417,
+"lease_version": 13812,
 "service_name": "VDLS_NSX_ENDPOINT_LISTENER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13413,
+"lease_version": 13807,
 "service_name": "AutoHealthCheckMonitor"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13419,
+"lease_version": 13813,
 "service_name": "POLICY_SVC_IDS_CONTAINER_CLUSTER_PROFILE_PROVIDER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13407,
+"lease_version": 13802,
 "service_name": "GEO_IP_ALARM_SERVICE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13406,
+"lease_version": 13801,
 "service_name": "POLICY_SVC_DNS"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13408,
+"lease_version": 13802,
 "service_name": "POLICY_SVC_VPC"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13403,
+"lease_version": 13797,
 "service_name": "POLICY_SVC_IDS_STANDALONE_HOST_CONFIG"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13405,
+"lease_version": 13800,
 "service_name": "POLICY_SVC_NSXI_NDR_UA_AGENT"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13412,
+"lease_version": 13805,
 "service_name": "POLICY_SVC_SHA_DYNAMIC_PLUGIN"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13413,
+"lease_version": 13808,
 "service_name": "POLICY_SVC_NETWORK_SPAN"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13407,
+"lease_version": 13801,
 "service_name": "POLICY_SVC_SEGMENT"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13411,
+"lease_version": 13804,
 "service_name": "ShaClusterServiceImpl"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13404,
+"lease_version": 13798,
 "service_name": "AUTO_DRAFT_PURGE_TASK"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13414,
+"lease_version": 13808,
 "service_name": "COMMON_AGENT_SERVICE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13411,
+"lease_version": 13805,
 "service_name": "CentralNodeConfigService"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13408,
+"lease_version": 13803,
 "service_name": "POLICY_SVC_SHA_PLUGIN_PROFILE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13407,
+"lease_version": 13801,
 "service_name": "POLICY_SVC_HEALTHCHECK_MANUAL_CONFIG"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13401,
+"lease_version": 13795,
 "service_name": "MirrorStackMonitorImpl"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13411,
+"lease_version": 13805,
 "service_name": "POLICY_SVC_NATRULE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13413,
+"lease_version": 13807,
 "service_name": "LM_SITE_OFFBOARDING"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13405,
+"lease_version": 13799,
 "service_name": "POLICY_SVC_POLICY_PLATFORM_DEPLOYMENT_CONFIG"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13408,
+"lease_version": 13802,
 "service_name": "POLICY_SVC_FIREWALL_DTLS_SECURITY_PROFILE_PROVIDER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13420,
+"lease_version": 13814,
 "service_name": "POLICY_SVC_FIREWALL_IDENTITY"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13413,
+"lease_version": 13807,
 "service_name": "POLICY_SVC_SECURITY_FEATURE_EXCLUDE_LIST_PROVIDER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13407,
+"lease_version": 13801,
 "service_name": "POLICY_SVC_ODS_RUNBOOK_PROFILE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13406,
+"lease_version": 13800,
 "service_name": "ServiceInsertionPersistenceQueueProcessor"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13409,
+"lease_version": 13803,
 "service_name": "POLICY_SVC_CVX_SECURITY"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13412,
+"lease_version": 13807,
 "service_name": "ShardingMaster"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13408,
+"lease_version": 13802,
 "service_name": "ALARMS_REFRESH_TASK"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13414,
+"lease_version": 13809,
 "service_name": "POLICY_SVC_INTELLIGENCE_FLOW_COLLECTION_ENTITY_INFO"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13412,
+"lease_version": 13807,
 "service_name": "CentralConfigProcessor"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13411,
+"lease_version": 13805,
 "service_name": "IDS_PCAP_TASK"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13409,
+"lease_version": 13803,
 "service_name": "POLICY_SVC_IPFIX_L2_COLLECTOR_PROFILE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13406,
+"lease_version": 13800,
 "service_name": "RealizationOperationalStatusTrackerWorker-AggSvc-Vpn_L2VpnServiceSummary"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13421,
+"lease_version": 13816,
 "service_name": "POLICY_SVC_METRIC_GLOBAL_CONFIG"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13401,
+"lease_version": 13795,
 "service_name": "POLICY_SVC_NSSERVICEGROUP"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13415,
+"lease_version": 13809,
 "service_name": "OdsDynamicRunbookClusterStreamListener"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13407,
+"lease_version": 13801,
 "service_name": "INTELLIGENCE_AGENT_SERVICE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13406,
+"lease_version": 13800,
 "service_name": "POLICY_SVC_LM_SITE_SPAN"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13407,
+"lease_version": 13801,
 "service_name": "TransportNodeMessageListener"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13413,
+"lease_version": 13807,
 "service_name": "POLICY_SVC_DFW_SESSION_TIMER_PROFILE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13405,
+"lease_version": 13800,
 "service_name": "POLICY_SVC_SECURITY_FEATURE_TOGGLE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13414,
+"lease_version": 13809,
 "service_name": "POLICY_SVC_IDS_GATEWAY_POLICY_PROVIDER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13408,
+"lease_version": 13803,
 "service_name": "OdsPredefinedRunbookService"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13406,
+"lease_version": 13800,
 "service_name": "DATA-CONSISTENCY-CHECKER-SERVICE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13415,
+"lease_version": 13809,
 "service_name": "POLICY_SVC_SHA_MONITOR_PROFILE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13410,
+"lease_version": 13804,
 "service_name": "POLICY_SVC_OPS_GLOBAL_CONFIG"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13407,
+"lease_version": 13802,
 "service_name": "NodeStatusPropertiesStreamListenerService"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13405,
+"lease_version": 13798,
 "service_name": "POLICY_SVC_ROUTING"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13416,
+"lease_version": 13810,
 "service_name": "POLICY_SVC_METRICS_UA_AGENT"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13407,
+"lease_version": 13801,
 "service_name": "POLICY_SVC_IDS_PROFILE_PROVIDER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13408,
+"lease_version": 13803,
 "service_name": "CertificateShardingServiceImpl"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13417,
+"lease_version": 13811,
 "service_name": "POLICY_SVC_IPFIXDFWCOLLECTORPROFILE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13414,
+"lease_version": 13809,
 "service_name": "POLICY_SVC_GROUPING"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13408,
+"lease_version": 13803,
 "service_name": "PLATFORM_AGENT_SERVICE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13405,
+"lease_version": 13799,
 "service_name": "ServiceConfigChangeWorker-ServiceConfig"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13406,
+"lease_version": 13800,
 "service_name": "capacity_dashboard"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13415,
+"lease_version": 13809,
 "service_name": "POLICY_SVC_FIREWALL_DTLS_CONFIG_PROFILE_PROVIDER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13408,
+"lease_version": 13803,
 "service_name": "POLICY_SVC_GLOBAL"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13414,
+"lease_version": 13808,
 "service_name": "IntelligenceHostConfigWorker-IntelligenceHostConfig"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13409,
+"lease_version": 13804,
 "service_name": "RealizationOperationalStatusTrackerWorker-AggSvc-Routing_GreTunnelPerNode"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13408,
+"lease_version": 13802,
 "service_name": "POLICY_SVC_NSSERVICE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13415,
+"lease_version": 13808,
 "service_name": "POLICY_SVC_TRANSPORT_NODE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13420,
+"lease_version": 13815,
 "service_name": "POLICY_SVC_IP_DISCOVERY"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13413,
+"lease_version": 13808,
 "service_name": "POLICY_SVC_DISCOVERY"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13406,
+"lease_version": 13801,
 "service_name": "POLICY_SVC_POLICY_SERVICE_INSERTION"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13399,
+"lease_version": 13795,
 "service_name": "COMMON_AGENT_ALARM_SERVICE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13406,
+"lease_version": 13800,
 "service_name": "POLICY_SVC_DFW_EXCLUDE_LIST"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13412,
+"lease_version": 13806,
 "service_name": "DataReaper"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13410,
+"lease_version": 13803,
 "service_name": "POLICY_SVC_POLICY_FIREWALL_IDENTITY_STORE_SITE_MAPPING_PROVIDER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13401,
+"lease_version": 13796,
 "service_name": "POLICY_SVC_IDS_GATEWAY_SECTION_PROVIDER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13416,
+"lease_version": 13811,
 "service_name": "POLICY_SVC_IDS_SITE_VERSION_MAPPING_PROVIDER"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13405,
+"lease_version": 13799,
 "service_name": "TransportNodeStatusTsdbListener"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13410,
+"lease_version": 13805,
 "service_name": "POLICY_SVC_CONNECTIVITY_POLICY"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13410,
+"lease_version": 13804,
 "service_name": "IdfwDbDaemon"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13405,
+"lease_version": 13799,
 "service_name": "NodeStatusPropertiesMsgListener"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13406,
+"lease_version": 13801,
 "service_name": "POLICY_SVC_EDGE_TRANSPORT_NODE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13410,
+"lease_version": 13805,
 "service_name": "POLICY_SVC_POLICY_TRANSPORT_ZONE"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13421,
+"lease_version": 13815,
 "service_name": "CmStatusEventCallBack"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13413,
+"lease_version": 13808,
 "service_name": "POLICY_SVC_TIER1"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13407,
+"lease_version": 13801,
 "service_name": "POLICY_SVC_CONNECTIVITY"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13414,
+"lease_version": 13807,
 "service_name": "POLICY_SVC_TRACE_GLOBAL_CONFIG"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 13409,
+"lease_version": 13804,
 "service_name": "POLICY_SVC_GATEWAY_QOS_PROFILE"
 }
 ],
@@ -1478,7 +1476,7 @@
 "leaders": [
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 14135,
+"lease_version": 14531,
 "service_name": "api"
 }
 ],
@@ -1498,7 +1496,7 @@
 "leaders": [
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 14171,
+"lease_version": 14567,
 "service_name": "site-manager"
 }
 ],
@@ -1518,17 +1516,17 @@
 "leaders": [
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 14155,
+"lease_version": 14551,
 "service_name": "ShardingMaster"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 14154,
+"lease_version": 14550,
 "service_name": "monitoring"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 14154,
+"lease_version": 14550,
 "service_name": "CoordinatedDataCollectionLeader"
 }
 ],
@@ -1548,27 +1546,27 @@
 "leaders": [
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 14131,
+"lease_version": 14527,
 "service_name": "GEO_IP_STATS"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 14132,
+"lease_version": 14528,
 "service_name": "IP_REPUTATION"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 14127,
+"lease_version": 14523,
 "service_name": "IDS_PCAP_PURGE_TASK"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 14127,
+"lease_version": 14523,
 "service_name": "URL_CATEGORIZATION"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 14128,
+"lease_version": 14524,
 "service_name": "IDS_EVENT_DATA_PURGE_TASK"
 }
 ],
@@ -1588,7 +1586,7 @@
 "leaders": [
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 14154,
+"lease_version": 14550,
 "service_name": "ShardingMaster"
 }
 ],
@@ -1608,7 +1606,7 @@
 "leaders": [
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 14165,
+"lease_version": 14561,
 "service_name": "messaging-manager"
 }
 ],
@@ -1628,12 +1626,12 @@
 "leaders": [
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 14168,
+"lease_version": 14564,
 "service_name": "ArAlarmService"
 },
 {
 "leader_uuid": "be46d29b-acca-00a4-8b85-b91b90647c11",
-"lease_version": 14170,
+"lease_version": 14566,
 "service_name": "ShardingMaster"
 }
 ],
@@ -1715,7 +1713,7 @@
 "/api/v1/edge-clusters/a2225e06-d12a-4b5b-868d-f4805dd57139/inter-site/status": {
 "edge_cluster_id": "a2225e06-d12a-4b5b-868d-f4805dd57139",
 "edge_cluster_name": "fed-ec-a",
-"last_update_timestamp": 1795099025184,
+"last_update_timestamp": 1795103420642,
 "member_status": [
 {
 "established_bgp_sessions": 2,
@@ -1817,7 +1815,7 @@
 ]
 },
 "/api/v1/transport-nodes/0c93aefb-3c4d-45cd-4e06-3a368184f76a/inter-site/statistics": {
-"last_update_timestamp": 1795099025325,
+"last_update_timestamp": 1795103420802,
 "stats_per_site": [
 {
 "remote_site": {
@@ -1828,55 +1826,55 @@
 "rx": {
 "blocked_packets": 0,
 "dropped_packets": 41,
-"total_bytes": 26529191,
-"total_packets": 351075
+"total_bytes": 27857391,
+"total_packets": 368676
 },
 "stats_per_tunnel": [
 {
 "rx": {
 "blocked_packets": 0,
 "dropped_packets": 41,
-"total_bytes": 13447210,
-"total_packets": 178133
+"total_bytes": 14111345,
+"total_packets": 186934
 },
 "tunnel_destination_address": "192.0.2.16",
 "tunnel_source_address": "192.0.2.14",
 "tx": {
 "blocked_packets": 0,
 "dropped_packets": 0,
-"total_bytes": 21225209,
-"total_packets": 177594
+"total_bytes": 22276588,
+"total_packets": 186395
 }
 },
 {
 "rx": {
 "blocked_packets": 0,
 "dropped_packets": 0,
-"total_bytes": 13081981,
-"total_packets": 172942
+"total_bytes": 13746046,
+"total_packets": 181742
 },
 "tunnel_destination_address": "192.0.2.17",
 "tunnel_source_address": "192.0.2.14",
 "tx": {
 "blocked_packets": 0,
 "dropped_packets": 0,
-"total_bytes": 20601804,
-"total_packets": 172125
+"total_bytes": 21653069,
+"total_packets": 180925
 }
 }
 ],
 "tx": {
 "blocked_packets": 0,
 "dropped_packets": 0,
-"total_bytes": 41827013,
-"total_packets": 349719
+"total_bytes": 43929657,
+"total_packets": 367320
 }
 }
 ],
 "transport_node_id": "0c93aefb-3c4d-45cd-4e06-3a368184f76a"
 },
 "/api/v1/transport-nodes/47ee7a1e-e214-13e8-3cbc-73ab9ed92e23/inter-site/statistics": {
-"last_update_timestamp": 1795099025254,
+"last_update_timestamp": 1795103420688,
 "stats_per_site": [
 {
 "remote_site": {
@@ -1887,48 +1885,48 @@
 "rx": {
 "blocked_packets": 0,
 "dropped_packets": 0,
-"total_bytes": 25408936,
-"total_packets": 334451
+"total_bytes": 26737337,
+"total_packets": 352055
 },
 "stats_per_tunnel": [
 {
 "rx": {
 "blocked_packets": 0,
 "dropped_packets": 0,
-"total_bytes": 12879143,
-"total_packets": 169873
+"total_bytes": 13543328,
+"total_packets": 178675
 },
 "tunnel_destination_address": "192.0.2.17",
 "tunnel_source_address": "192.0.2.15",
 "tx": {
 "blocked_packets": 0,
 "dropped_packets": 0,
-"total_bytes": 20400312,
-"total_packets": 170298
+"total_bytes": 21451921,
+"total_packets": 179101
 }
 },
 {
 "rx": {
 "blocked_packets": 0,
 "dropped_packets": 0,
-"total_bytes": 12529793,
-"total_packets": 164578
+"total_bytes": 13194009,
+"total_packets": 173380
 },
 "tunnel_destination_address": "192.0.2.16",
 "tunnel_source_address": "192.0.2.15",
 "tx": {
 "blocked_packets": 0,
 "dropped_packets": 0,
-"total_bytes": 19534149,
-"total_packets": 162422
+"total_bytes": 20585653,
+"total_packets": 171224
 }
 }
 ],
 "tx": {
 "blocked_packets": 0,
 "dropped_packets": 0,
-"total_bytes": 39934461,
-"total_packets": 332720
+"total_bytes": 42037574,
+"total_packets": 350325
 }
 }
 ],
@@ -1938,6 +1936,8 @@
 "result_count": 2,
 "results": [
 {
+"_last_modified_time": 1795009523140,
+"_revision": 2,
 "display_name": "edge-wld01-01a",
 "failure_domain_id": "61ecd848-0a52-05eb-c3b9-d5d1e0edf7a7",
 "id": "0c93aefb-3c4d-45cd-4e06-3a368184f76a",
@@ -1947,6 +1947,8 @@
 "resource_type": "TransportNode"
 },
 {
+"_last_modified_time": 1795010895618,
+"_revision": 2,
 "display_name": "edge-wld01-02a",
 "failure_domain_id": "61ecd848-0a52-05eb-c3b9-d5d1e0edf7a7",
 "id": "47ee7a1e-e214-13e8-3cbc-73ab9ed92e23",
@@ -2154,6 +2156,32 @@
 }
 ]
 },
+"/api/v1/upgrade/summary": {
+"component_target_versions": [
+{
+"component_type": "MP",
+"target_version": "9.1.1.0100.25762948"
+},
+{
+"component_type": "HOST",
+"target_version": "9.1.1.0100.25762942"
+},
+{
+"component_type": "EDGE",
+"target_version": "9.1.1.0100.25762944"
+},
+{
+"component_type": "FINALIZE_UPGRADE",
+"target_version": "9.1.1.0100.25762940"
+}
+],
+"pre_upgrade_bundle_version": "9.1.1.0100.25762940",
+"system_version": "9.1.1.0.25691509",
+"target_version": "9.1.1.0100.25762940",
+"upgrade_coordinator_updated": true,
+"upgrade_coordinator_version": "9.1.1.0100.25762948",
+"upgrade_status": "PAUSED"
+},
 "/policy/api/v1/global-infra/domains/default/security-policies/fed-demo/statistics": {
 "result_count": 1,
 "results": [
@@ -2207,10 +2235,10 @@
 "graceful_restart_mode": "HELPER_ONLY",
 "hold_time": 180,
 "keep_alive_interval": 60,
-"last_update_timestamp": 1795099027708,
+"last_update_timestamp": 1795103422579,
 "local_port": 55198,
-"messages_received": 1504,
-"messages_sent": 1471,
+"messages_received": 1577,
+"messages_sent": 1544,
 "negotiated_capability": [
 "addPath IPv4 Unicast Rx",
 "4byteAs",
@@ -2224,7 +2252,7 @@
 "remote_port": 179,
 "source_address": "192.0.2.12",
 "tier0_path": "/global-infra/tier-0s/fed-t0",
-"time_since_established": 87973,
+"time_since_established": 92369,
 "total_in_prefix_count": 33,
 "total_out_prefix_count": 2,
 "type": "USER"
@@ -2258,10 +2286,10 @@
 "graceful_restart_mode": "DISABLE",
 "hold_time": 3,
 "keep_alive_interval": 1,
-"last_update_timestamp": 1795099027708,
+"last_update_timestamp": 1795103422579,
 "local_port": 64988,
-"messages_received": 87977,
-"messages_sent": 87980,
+"messages_received": 92372,
+"messages_sent": 92375,
 "negotiated_capability": [
 "addPath IPv4 Unicast Rx",
 "4byteAs",
@@ -2278,7 +2306,7 @@
 "remote_port": 179,
 "source_address": "169.254.32.3",
 "tier0_path": "/global-infra/tier-0s/fed-t0",
-"time_since_established": 87974,
+"time_since_established": 92369,
 "total_in_prefix_count": 37,
 "total_out_prefix_count": 37,
 "type": "INTER_SR"
@@ -2312,10 +2340,10 @@
 "graceful_restart_mode": "DISABLE",
 "hold_time": 3,
 "keep_alive_interval": 1,
-"last_update_timestamp": 1795099027708,
+"last_update_timestamp": 1795103422579,
 "local_port": 179,
-"messages_received": 87981,
-"messages_sent": 87985,
+"messages_received": 92376,
+"messages_sent": 92380,
 "negotiated_capability": [
 "addPath IPv4 Unicast Rx",
 "4byteAs",
@@ -2335,7 +2363,7 @@
 },
 "source_address": "169.254.32.3",
 "tier0_path": "/global-infra/tier-0s/fed-t0",
-"time_since_established": 87974,
+"time_since_established": 92369,
 "total_in_prefix_count": 37,
 "total_out_prefix_count": 37,
 "type": "INTER_SR"
@@ -2369,10 +2397,10 @@
 "graceful_restart_mode": "DISABLE",
 "hold_time": 3,
 "keep_alive_interval": 1,
-"last_update_timestamp": 1795099027708,
+"last_update_timestamp": 1795103422579,
 "local_port": 179,
-"messages_received": 87982,
-"messages_sent": 87985,
+"messages_received": 92377,
+"messages_sent": 92380,
 "negotiated_capability": [
 "addPath IPv4 Unicast Rx",
 "4byteAs",
@@ -2392,7 +2420,7 @@
 },
 "source_address": "169.254.32.3",
 "tier0_path": "/global-infra/tier-0s/fed-t0",
-"time_since_established": 87974,
+"time_since_established": 92369,
 "total_in_prefix_count": 37,
 "total_out_prefix_count": 37,
 "type": "INTER_SR"
@@ -2419,10 +2447,10 @@
 "graceful_restart_mode": "HELPER_ONLY",
 "hold_time": 180,
 "keep_alive_interval": 60,
-"last_update_timestamp": 1795099027708,
+"last_update_timestamp": 1795103422579,
 "local_port": 53758,
-"messages_received": 1543,
-"messages_sent": 1500,
+"messages_received": 1617,
+"messages_sent": 1574,
 "negotiated_capability": [
 "addPath IPv4 Unicast Rx",
 "4byteAs",
@@ -2436,7 +2464,7 @@
 "remote_port": 179,
 "source_address": "192.0.2.13",
 "tier0_path": "/global-infra/tier-0s/fed-t0",
-"time_since_established": 89331,
+"time_since_established": 93726,
 "total_in_prefix_count": 33,
 "total_out_prefix_count": 2,
 "type": "USER"
@@ -2470,10 +2498,10 @@
 "graceful_restart_mode": "DISABLE",
 "hold_time": 3,
 "keep_alive_interval": 1,
-"last_update_timestamp": 1795099027708,
+"last_update_timestamp": 1795103422579,
 "local_port": 179,
-"messages_received": 88942,
-"messages_sent": 88941,
+"messages_received": 93337,
+"messages_sent": 93336,
 "negotiated_capability": [
 "addPath IPv4 Unicast Rx",
 "4byteAs",
@@ -2493,7 +2521,7 @@
 },
 "source_address": "169.254.32.4",
 "tier0_path": "/global-infra/tier-0s/fed-t0",
-"time_since_established": 88012,
+"time_since_established": 92407,
 "total_in_prefix_count": 37,
 "total_out_prefix_count": 37,
 "type": "INTER_SR"
@@ -2527,10 +2555,10 @@
 "graceful_restart_mode": "DISABLE",
 "hold_time": 3,
 "keep_alive_interval": 1,
-"last_update_timestamp": 1795099027708,
+"last_update_timestamp": 1795103422579,
 "local_port": 179,
-"messages_received": 89215,
-"messages_sent": 89214,
+"messages_received": 93610,
+"messages_sent": 93609,
 "negotiated_capability": [
 "addPath IPv4 Unicast Rx",
 "4byteAs",
@@ -2550,7 +2578,7 @@
 },
 "source_address": "169.254.32.4",
 "tier0_path": "/global-infra/tier-0s/fed-t0",
-"time_since_established": 89209,
+"time_since_established": 93604,
 "total_in_prefix_count": 37,
 "total_out_prefix_count": 37,
 "type": "INTER_SR"
@@ -2584,10 +2612,10 @@
 "graceful_restart_mode": "DISABLE",
 "hold_time": 3,
 "keep_alive_interval": 1,
-"last_update_timestamp": 1795099027708,
+"last_update_timestamp": 1795103422579,
 "local_port": 179,
-"messages_received": 89306,
-"messages_sent": 89301,
+"messages_received": 93701,
+"messages_sent": 93696,
 "negotiated_capability": [
 "addPath IPv4 Unicast Rx",
 "4byteAs",
@@ -2604,7 +2632,7 @@
 "remote_port": 64988,
 "source_address": "169.254.32.4",
 "tier0_path": "/global-infra/tier-0s/fed-t0",
-"time_since_established": 87973,
+"time_since_established": 92368,
 "total_in_prefix_count": 37,
 "total_out_prefix_count": 37,
 "type": "INTER_SR"
@@ -2615,6 +2643,8 @@
 "result_count": 1,
 "results": [
 {
+"_last_modified_time": 1794963618843,
+"_revision": 0,
 "bfd_profile_path": "/global-infra/bfd-profiles/default",
 "display_name": "site-a-wld01",
 "edge_cluster_path": "/global-infra/sites/site-a-wld01/enforcement-points/default/edge-clusters/a2225e06-d12a-4b5b-868d-f4805dd57139",
@@ -2654,6 +2684,8 @@
 "result_count": 1,
 "results": [
 {
+"_last_modified_time": 1794963617822,
+"_revision": 1,
 "advanced_config": {
 "connectivity": "ON",
 "forwarding_up_timer": 5
@@ -2711,6 +2743,8 @@
 "result_count": 1,
 "results": [
 {
+"_last_modified_time": 1795092332876,
+"_revision": 20,
 "display_name": "GM-2-LM-FULL-SYNC",
 "full_sync_id": "GM-2-LM-FULL-SYNC",
 "id": "GM-2-LM-FULL-SYNC",
@@ -2737,6 +2771,8 @@
 "result_count": 1,
 "results": [
 {
+"_last_modified_time": 1795010937225,
+"_revision": 3,
 "deployment_type": "VIRTUAL_MACHINE",
 "display_name": "fed-ec-a",
 "edge_cluster_profile": "/infra/sites/default/enforcement-points/default/edge-cluster-high-availability-profiles/c238e591-084a-8e98-6699-de7f12b56d93",
@@ -2859,7 +2895,7 @@
 "leaders": [
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14189,
+"lease_version": 14585,
 "service_name": "cluster-manager"
 }
 ],
@@ -2879,47 +2915,47 @@
 "leaders": [
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14176,
+"lease_version": 14573,
 "service_name": "LicensingShardingServiceImpl"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14176,
+"lease_version": 14573,
 "service_name": "ShardingMaster"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14181,
+"lease_version": 14578,
 "service_name": "CertificateShardingServiceImpl"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14178,
+"lease_version": 14575,
 "service_name": "NodeStatusPropertiesStreamListenerService"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14176,
+"lease_version": 14573,
 "service_name": "CmStatusEventCallBack"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14180,
+"lease_version": 14577,
 "service_name": "ActivityPurger"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14180,
+"lease_version": 14577,
 "service_name": "ActiveStateStreamListenerService"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14183,
+"lease_version": 14580,
 "service_name": "VidbMaintainer"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14176,
+"lease_version": 14573,
 "service_name": "RemoteLoggingServerCheckService"
 }
 ],
@@ -2939,7 +2975,7 @@
 "leaders": [
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14190,
+"lease_version": 14587,
 "service_name": "api"
 }
 ],
@@ -2959,7 +2995,7 @@
 "leaders": [
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14235,
+"lease_version": 14631,
 "service_name": "site-manager"
 }
 ],
@@ -2979,17 +3015,17 @@
 "leaders": [
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14204,
+"lease_version": 14600,
 "service_name": "monitoring"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14204,
+"lease_version": 14601,
 "service_name": "CoordinatedDataCollectionLeader"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14204,
+"lease_version": 14601,
 "service_name": "ShardingMaster"
 }
 ],
@@ -3009,137 +3045,137 @@
 "leaders": [
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14146,
+"lease_version": 14542,
 "service_name": "GLOBAL_DFW_CONFIG_CREATION_TASK"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14150,
+"lease_version": 14546,
 "service_name": "UPGRADE-CONSISTENCY-CHECK-POLICY-RESOURCE-CONSUMER-SERVICE"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14150,
+"lease_version": 14546,
 "service_name": "POLICY_IPAM_ALARM_LEADERSHIP_LISTENER_SERVICE"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14156,
+"lease_version": 14552,
 "service_name": "ActivityPurger"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14146,
+"lease_version": 14542,
 "service_name": "LbAlarmShardingServiceImpl"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14153,
+"lease_version": 14549,
 "service_name": "POLICY_SVC_INITIALIZER"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14146,
+"lease_version": 14542,
 "service_name": "POLICY-INTENT-CLEANUP-SERVICE"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14153,
+"lease_version": 14549,
 "service_name": "GM_OPERATIONAL_STATE"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14149,
+"lease_version": 14545,
 "service_name": "GM_DELETE_PROCESSOR_SERVICE-5"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14154,
+"lease_version": 14550,
 "service_name": "GM_CONFIG_ONBOARDING_SERVICE"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14149,
+"lease_version": 14545,
 "service_name": "REF_OBJECT_CLEANUP_TASK"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14149,
+"lease_version": 14545,
 "service_name": "GM_DELETE_PROCESSOR_SERVICE-4"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14154,
+"lease_version": 14550,
 "service_name": "VidbMaintainer"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14148,
+"lease_version": 14544,
 "service_name": "POLICY_PURGE_TASK_INITIALIZER"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14154,
+"lease_version": 14550,
 "service_name": "LicensingShardingServiceImpl"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14151,
+"lease_version": 14546,
 "service_name": "IDS_AUTO_DOWNLOAD_TASK"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14148,
+"lease_version": 14544,
 "service_name": "QuartzSetupServiceImpl"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14153,
+"lease_version": 14548,
 "service_name": "GM_DELETE_PROCESSOR_SERVICE-3"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14151,
+"lease_version": 14547,
 "service_name": "GM_BROKER_SERVICE"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14159,
+"lease_version": 14554,
 "service_name": "ENFORCEMENT_POINT_RELOAD_TASK"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14149,
+"lease_version": 14544,
 "service_name": "GM-NOTIFICATION-MANAGER"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14152,
+"lease_version": 14548,
 "service_name": "GM_DELETE_PROCESSOR_SERVICE-2"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14154,
+"lease_version": 14550,
 "service_name": "AUTO_DRAFT_PURGE_TASK"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14152,
+"lease_version": 14548,
 "service_name": "GM_DELETE_PROCESSOR_SERVICE-1"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14150,
+"lease_version": 14545,
 "service_name": "ShardingMaster"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14146,
+"lease_version": 14542,
 "service_name": "IDS_PCAP_TASK"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14154,
+"lease_version": 14550,
 "service_name": "CertificateShardingServiceImpl"
 }
 ],
@@ -3159,7 +3195,7 @@
 "leaders": [
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14197,
+"lease_version": 14594,
 "service_name": "ShardingMaster"
 }
 ],
@@ -3179,7 +3215,7 @@
 "leaders": [
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14238,
+"lease_version": 14635,
 "service_name": "messaging-manager"
 }
 ],
@@ -3199,12 +3235,12 @@
 "leaders": [
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14229,
+"lease_version": 14626,
 "service_name": "ShardingMaster"
 },
 {
 "leader_uuid": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
-"lease_version": 14226,
+"lease_version": 14623,
 "service_name": "ArAlarmService"
 }
 ],
@@ -3231,6 +3267,62 @@
 "status": "STABLE"
 }
 },
+"/api/v1/federation/replication/gm/sites/50adcaea-7448-8f66-da51-251459b09927/status": {
+"details": "",
+"flow_statuses": [
+{
+"details": null,
+"flow_id": "Policy.LM_2_GM_ONBOARD_CONFIG",
+"replication_state": "SYNCHRONIZING",
+"rtt_statistic": null
+},
+{
+"details": null,
+"flow_id": "Policy.GM_2_LM",
+"replication_state": "SYNCHRONIZING",
+"rtt_statistic": null
+},
+{
+"details": null,
+"flow_id": "Policy.LM_2_GM_NOTIFICATION",
+"replication_state": "SYNCHRONIZING",
+"rtt_statistic": null
+}
+],
+"last_seen_online": 1795103409409,
+"leader_node_id": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"onboarded_timestamp": 1794960019222,
+"remote_site_id": "50adcaea-7448-8f66-da51-251459b09927",
+"remote_site_name": "site-a-wld03"
+},
+"/api/v1/federation/replication/gm/sites/6241f0a1-eb90-457d-85b1-3ebc53fb030d/status": {
+"details": "",
+"flow_statuses": [
+{
+"details": null,
+"flow_id": "Policy.LM_2_GM_ONBOARD_CONFIG",
+"replication_state": "SYNCHRONIZING",
+"rtt_statistic": null
+},
+{
+"details": null,
+"flow_id": "Policy.GM_2_LM",
+"replication_state": "SYNCHRONIZING",
+"rtt_statistic": null
+},
+{
+"details": null,
+"flow_id": "Policy.LM_2_GM_NOTIFICATION",
+"replication_state": "SYNCHRONIZING",
+"rtt_statistic": null
+}
+],
+"last_seen_online": 1795103406925,
+"leader_node_id": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
+"onboarded_timestamp": 1794886038393,
+"remote_site_id": "6241f0a1-eb90-457d-85b1-3ebc53fb030d",
+"remote_site_name": "site-a-wld01"
+},
 "/api/v1/sites": {
 "epoch": 4,
 "id": "5de412d9-e962-06d7-c23c-a08d35c8c938",
@@ -3242,7 +3334,6 @@
 "aph_list": [
 {
 "address": "192.0.2.4",
-"certificate": "",
 "fqdn": "nsx-gm-01a.example.test",
 "ipv6_address": "",
 "node_id": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
@@ -3265,7 +3356,6 @@
 "site_version": "9.1.1.0100.25762940",
 "split_brain": false,
 "system_id": 0,
-"trust_manager_cert": "omitted",
 "vip_ip": "0.0.0.0"
 },
 {
@@ -3273,7 +3363,6 @@
 "aph_list": [
 {
 "address": "192.0.2.7",
-"certificate": "",
 "fqdn": "nsx-shared-01a.example.test",
 "ipv6_address": "",
 "node_id": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
@@ -3296,7 +3385,6 @@
 "site_version": "9.1.1.0.25691509",
 "split_brain": false,
 "system_id": 0,
-"trust_manager_cert": "omitted",
 "vip_ip": "192.0.2.6"
 },
 {
@@ -3304,7 +3392,6 @@
 "aph_list": [
 {
 "address": "192.0.2.3",
-"certificate": "",
 "fqdn": "nsx-wld01-01a.example.test",
 "ipv6_address": "",
 "node_id": "be46d29b-acca-00a4-8b85-b91b90647c11",
@@ -3327,7 +3414,6 @@
 "site_version": "9.1.1.0.25691509",
 "split_brain": false,
 "system_id": 0,
-"trust_manager_cert": "omitted",
 "vip_ip": "192.0.2.2"
 },
 {
@@ -3335,7 +3421,6 @@
 "aph_list": [
 {
 "address": "192.0.2.5",
-"certificate": "",
 "fqdn": "nsx-gm-01b.example.test",
 "ipv6_address": "",
 "node_id": "72b34481-fb66-68cb-d83f-effab90784dc",
@@ -3358,7 +3443,6 @@
 "site_version": "9.1.1.0100.25762940",
 "split_brain": false,
 "system_id": 0,
-"trust_manager_cert": "omitted",
 "vip_ip": "0.0.0.0"
 }
 ],
@@ -3374,7 +3458,6 @@
 "aph_list": [
 {
 "address": "192.0.2.4",
-"certificate": "",
 "fqdn": "nsx-gm-01a.example.test",
 "ipv6_address": "",
 "node_id": "6c01f853-a6cf-d332-bd6a-afdd7a1ade7b",
@@ -3397,7 +3480,6 @@
 "site_version": "9.1.1.0100.25762940",
 "split_brain": false,
 "system_id": 0,
-"trust_manager_cert": "omitted",
 "vip_ip": "0.0.0.0"
 }
 },
@@ -3601,7 +3683,15 @@
 }
 ]
 },
+"/api/v1/upgrade/summary": {
+"system_version": "9.1.1.0100.25762940",
+"upgrade_coordinator_updated": false,
+"upgrade_coordinator_version": "9.1.1.0100.25762948",
+"upgrade_status": "NOT_STARTED"
+},
 "/global-manager/api/v1/global-infra/domains/default/security-policies/fed-demo": {
+"_last_modified_time": 1794963804621,
+"_revision": 1,
 "category": "Application",
 "display_name": "fed-demo",
 "id": "fed-demo",
@@ -3621,6 +3711,8 @@
 "rule_count": 1,
 "rules": [
 {
+"_last_modified_time": 1794964974549,
+"_revision": 4,
 "action": "DROP",
 "destination_groups": [
 "/global-infra/domains/default/groups/fed-vm-str-b"
@@ -3672,6 +3764,8 @@
 "result_count": 2,
 "results": [
 {
+"_last_modified_time": 1794885575017,
+"_revision": 0,
 "category": "Infrastructure",
 "display_name": "Global Default Malicious IP Block Rules",
 "id": "default-malicious-ip-block-rules",
@@ -3697,6 +3791,8 @@
 "unique_id": "5c33bfbe-e9c6-fe4c-a360-48c0c43d98b4"
 },
 {
+"_last_modified_time": 1794963804621,
+"_revision": 1,
 "category": "Application",
 "display_name": "fed-demo",
 "id": "fed-demo",
@@ -3742,6 +3838,8 @@
 "result_count": 3,
 "results": [
 {
+"_last_modified_time": 1794885573735,
+"_revision": 0,
 "display_name": "Global",
 "id": "default",
 "marked_for_delete": false,
@@ -3755,6 +3853,8 @@
 "unique_id": "318f2b0f-5baf-59e8-6bd0-d20f4321c37a"
 },
 {
+"_last_modified_time": 1794886039798,
+"_revision": 0,
 "display_name": "site-a-wld01",
 "id": "site-a-wld01",
 "marked_for_delete": false,
@@ -3768,6 +3868,8 @@
 "unique_id": "56e4894b-be9d-aa79-8f62-1df4e218d7cb"
 },
 {
+"_last_modified_time": 1794960019448,
+"_revision": 0,
 "display_name": "site-a-wld03",
 "id": "site-a-wld03",
 "marked_for_delete": false,
@@ -3810,6 +3912,8 @@
 "result_count": 2,
 "results": [
 {
+"_last_modified_time": 1795092152905,
+"_revision": 3,
 "connection_info": [],
 "display_name": "gm-site-a",
 "fail_if_rtt_exceeded": true,
@@ -3829,6 +3933,8 @@
 "unique_id": "aa5cd85e-7725-37f8-1438-cd00660c627e"
 },
 {
+"_last_modified_time": 1795092208700,
+"_revision": 3,
 "connection_info": [],
 "display_name": "gm-site-b",
 "fail_if_rtt_exceeded": true,
@@ -4077,6 +4183,8 @@
 "result_count": 5,
 "results": [
 {
+"_last_modified_time": 1794963699851,
+"_revision": 0,
 "admin_state": "UP",
 "advanced_config": {
 "connectivity": "ON",
@@ -4111,6 +4219,8 @@
 "unique_id": "4449c755-237b-531c-c6f1-eedd871cb1e7"
 },
 {
+"_last_modified_time": 1794963702189,
+"_revision": 0,
 "admin_state": "UP",
 "advanced_config": {
 "connectivity": "ON",
@@ -4145,6 +4255,8 @@
 "unique_id": "3abd9ce4-f136-c929-1f70-dc70c0ba4260"
 },
 {
+"_last_modified_time": 1794963696259,
+"_revision": 0,
 "admin_state": "UP",
 "advanced_config": {
 "connectivity": "ON",
@@ -4179,6 +4291,8 @@
 "unique_id": "e0406182-1e58-9775-c6ad-60d455fa9089"
 },
 {
+"_last_modified_time": 1794963547041,
+"_revision": 0,
 "admin_state": "UP",
 "advanced_config": {
 "connectivity": "ON",
@@ -4210,6 +4324,8 @@
 ]
 },
 {
+"_last_modified_time": 1794963548075,
+"_revision": 0,
 "admin_state": "UP",
 "advanced_config": {
 "connectivity": "ON",
@@ -4244,10 +4360,83 @@
 "sort_ascending": true,
 "sort_by": "display_name"
 },
+"/global-manager/api/v1/global-infra/sites/site-a-wld01/onboarding/status": {
+"details": {
+"error_messages": [
+{
+"error_code": 606104,
+"error_message": "Entity PROJECT at site site-a-wld01 is not supported for configuration import on GM. Please delete entity PROJECT from the site site-a-wld01 and try again."
+},
+{
+"error_code": 606104,
+"error_message": "Entity VPC at site site-a-wld01 is not supported for configuration import on GM. Please delete entity VPC from the site site-a-wld01 and try again."
+},
+{
+"error_code": 606104,
+"error_message": "Entity LB_POOL_GROUP_USE_COUNT at site site-a-wld01 is not supported for configuration import on GM. Please delete entity LB_POOL_GROUP_USE_COUNT from the site site-a-wld01 and try again."
+}
+],
+"site_backup_reference": ""
+},
+"site_id": "site-a-wld01",
+"status": "BLOCKED_FEATURE_CHECK",
+"supported_features": [
+{
+"name": "NETWORK"
+},
+{
+"name": "LOCATION"
+},
+{
+"name": "SECURITY_POLICY"
+},
+{
+"name": "GROUP"
+}
+],
+"timestamp": 1795103409363,
+"unsupported_features": [
+{
+"name": "MULTI_TENANCY"
+},
+{
+"name": "LB"
+}
+]
+},
+"/global-manager/api/v1/global-infra/sites/site-a-wld03/onboarding/status": {
+"details": {
+"error_messages": [
+{
+"error_code": 606104,
+"error_message": "Entity VPC_CONNECTIVITY_PROFILE at site site-a-wld03 is not supported for configuration import on GM. Please delete entity VPC_CONNECTIVITY_PROFILE from the site site-a-wld03 and try again."
+}
+],
+"site_backup_reference": ""
+},
+"site_id": "site-a-wld03",
+"status": "BLOCKED_FEATURE_CHECK",
+"supported_features": [
+{
+"name": "SECURITY_POLICY"
+},
+{
+"name": "GROUP"
+}
+],
+"timestamp": 1795103412390,
+"unsupported_features": [
+{
+"name": "MULTI_TENANCY"
+}
+]
+},
 "/global-manager/api/v1/global-infra/sites?page_size=500": {
 "result_count": 2,
 "results": [
 {
+"_last_modified_time": 1794886039267,
+"_revision": 0,
 "display_name": "site-a-wld01",
 "fail_if_rtep_misconfigured": true,
 "fail_if_rtt_exceeded": true,
@@ -4272,6 +4461,8 @@
 "unique_id": "6241f0a1-eb90-457d-85b1-3ebc53fb030d"
 },
 {
+"_last_modified_time": 1794960019067,
+"_revision": 0,
 "display_name": "site-a-wld03",
 "fail_if_rtep_misconfigured": true,
 "fail_if_rtt_exceeded": true,
@@ -4303,6 +4494,8 @@
 "result_count": 1,
 "results": [
 {
+"_last_modified_time": 1794963617822,
+"_revision": 1,
 "advanced_config": {
 "connectivity": "ON",
 "forwarding_up_timer": 5
@@ -4359,6 +4552,8 @@
 "result_count": 3,
 "results": [
 {
+"_last_modified_time": 1794963687591,
+"_revision": 0,
 "advanced_config": {
 "centralized_mode_enabled": false,
 "traffic_back_to_source": false
@@ -4398,6 +4593,8 @@
 "unique_id": "4432eab2-3c39-fed2-f83a-0893a2d1f6da"
 },
 {
+"_last_modified_time": 1794963688941,
+"_revision": 0,
 "advanced_config": {
 "centralized_mode_enabled": false,
 "traffic_back_to_source": false
@@ -4438,6 +4635,8 @@
 "unique_id": "489975fc-0fc9-cd05-9ccf-76d4e36e2f36"
 },
 {
+"_last_modified_time": 1794963692980,
+"_revision": 0,
 "advanced_config": {
 "centralized_mode_enabled": false,
 "traffic_back_to_source": false
@@ -4562,7 +4761,7 @@
 "leaders": [
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3757,
+"lease_version": 4156,
 "service_name": "cluster-manager"
 }
 ],
@@ -4582,47 +4781,47 @@
 "leaders": [
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3722,
+"lease_version": 4121,
 "service_name": "ActivityPurger"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3722,
+"lease_version": 4121,
 "service_name": "ActiveStateStreamListenerService"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3722,
+"lease_version": 4121,
 "service_name": "VidbMaintainer"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3722,
+"lease_version": 4121,
 "service_name": "RemoteLoggingServerCheckService"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3722,
+"lease_version": 4121,
 "service_name": "LicensingShardingServiceImpl"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3722,
+"lease_version": 4121,
 "service_name": "ShardingMaster"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3722,
+"lease_version": 4121,
 "service_name": "NodeStatusPropertiesStreamListenerService"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3722,
+"lease_version": 4121,
 "service_name": "CertificateShardingServiceImpl"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3722,
+"lease_version": 4121,
 "service_name": "CmStatusEventCallBack"
 }
 ],
@@ -4642,7 +4841,7 @@
 "leaders": [
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3710,
+"lease_version": 4110,
 "service_name": "api"
 }
 ],
@@ -4662,17 +4861,17 @@
 "leaders": [
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3727,
+"lease_version": 4127,
 "service_name": "ShardingMaster"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3727,
+"lease_version": 4127,
 "service_name": "monitoring"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3727,
+"lease_version": 4127,
 "service_name": "CoordinatedDataCollectionLeader"
 }
 ],
@@ -4692,137 +4891,137 @@
 "leaders": [
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3705,
+"lease_version": 4104,
 "service_name": "GM_BROKER_SERVICE"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3711,
+"lease_version": 4110,
 "service_name": "ENFORCEMENT_POINT_RELOAD_TASK"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3705,
+"lease_version": 4104,
 "service_name": "GM-NOTIFICATION-MANAGER"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3705,
+"lease_version": 4104,
 "service_name": "GM_DELETE_PROCESSOR_SERVICE-2"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3705,
+"lease_version": 4104,
 "service_name": "AUTO_DRAFT_PURGE_TASK"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3711,
+"lease_version": 4110,
 "service_name": "GM_DELETE_PROCESSOR_SERVICE-1"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3710,
+"lease_version": 4110,
 "service_name": "ShardingMaster"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3711,
+"lease_version": 4110,
 "service_name": "IDS_PCAP_TASK"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3711,
+"lease_version": 4110,
 "service_name": "CertificateShardingServiceImpl"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3705,
+"lease_version": 4104,
 "service_name": "GLOBAL_DFW_CONFIG_CREATION_TASK"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3705,
+"lease_version": 4104,
 "service_name": "UPGRADE-CONSISTENCY-CHECK-POLICY-RESOURCE-CONSUMER-SERVICE"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3705,
+"lease_version": 4104,
 "service_name": "POLICY_IPAM_ALARM_LEADERSHIP_LISTENER_SERVICE"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3705,
+"lease_version": 4104,
 "service_name": "POLICY_SVC_INITIALIZER"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3705,
+"lease_version": 4104,
 "service_name": "LbAlarmShardingServiceImpl"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3704,
+"lease_version": 4104,
 "service_name": "POLICY-INTENT-CLEANUP-SERVICE"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3711,
+"lease_version": 4110,
 "service_name": "ActivityPurger"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3711,
+"lease_version": 4110,
 "service_name": "GM_OPERATIONAL_STATE"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3705,
+"lease_version": 4104,
 "service_name": "GM_CONFIG_ONBOARDING_SERVICE"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3711,
+"lease_version": 4110,
 "service_name": "GM_DELETE_PROCESSOR_SERVICE-5"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3711,
+"lease_version": 4110,
 "service_name": "GM_DELETE_PROCESSOR_SERVICE-4"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3705,
+"lease_version": 4104,
 "service_name": "REF_OBJECT_CLEANUP_TASK"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3705,
+"lease_version": 4104,
 "service_name": "POLICY_PURGE_TASK_INITIALIZER"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3711,
+"lease_version": 4110,
 "service_name": "VidbMaintainer"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3705,
+"lease_version": 4104,
 "service_name": "QuartzSetupServiceImpl"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3705,
+"lease_version": 4104,
 "service_name": "GM_DELETE_PROCESSOR_SERVICE-3"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3711,
+"lease_version": 4110,
 "service_name": "LicensingShardingServiceImpl"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3705,
+"lease_version": 4104,
 "service_name": "IDS_AUTO_DOWNLOAD_TASK"
 }
 ],
@@ -4842,7 +5041,7 @@
 "leaders": [
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3725,
+"lease_version": 4124,
 "service_name": "ShardingMaster"
 }
 ],
@@ -4862,7 +5061,7 @@
 "leaders": [
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3748,
+"lease_version": 4148,
 "service_name": "messaging-manager"
 }
 ],
@@ -4882,12 +5081,12 @@
 "leaders": [
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3717,
+"lease_version": 4116,
 "service_name": "ShardingMaster"
 },
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3716,
+"lease_version": 4116,
 "service_name": "ArAlarmService"
 }
 ],
@@ -4907,7 +5106,7 @@
 "leaders": [
 {
 "leader_uuid": "72b34481-fb66-68cb-d83f-effab90784dc",
-"lease_version": 3753,
+"lease_version": 4153,
 "service_name": "site-manager"
 }
 ],
@@ -4944,7 +5143,6 @@
 "aph_list": [
 {
 "address": "192.0.2.5",
-"certificate": "",
 "fqdn": "nsx-gm-01b.example.test",
 "ipv6_address": "",
 "node_id": "72b34481-fb66-68cb-d83f-effab90784dc",
@@ -4967,7 +5165,6 @@
 "site_version": "9.1.1.0100.25762940",
 "split_brain": false,
 "system_id": 0,
-"trust_manager_cert": "omitted",
 "vip_ip": "0.0.0.0"
 }
 },
@@ -5105,6 +5302,12 @@
 "id": "0929f11f-a390-a030-ef3f-297578f62ef7"
 }
 ]
+},
+"/api/v1/upgrade/summary": {
+"system_version": "9.1.1.0100.25762940",
+"upgrade_coordinator_updated": false,
+"upgrade_coordinator_version": "9.1.1.0100.25762948",
+"upgrade_status": "NOT_STARTED"
 }
 },
 "192.0.2.6": {
@@ -5188,25 +5391,25 @@
 "backup_operation_history": {
 "cluster_backup_statuses": [
 {
-"backup_id": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac-1795088601",
-"end_time": 1795088696180,
-"start_time": 1795088601835,
+"backup_id": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac-1795103001",
+"end_time": 1795103103041,
+"start_time": 1795103001969,
 "success": true
 }
 ],
 "inventory_backup_statuses": [
 {
-"backup_id": "inventory-1795098941",
-"end_time": 1795098942072,
-"start_time": 1795098941735,
+"backup_id": "inventory-1795103261",
+"end_time": 1795103273410,
+"start_time": 1795103261742,
 "success": true
 }
 ],
 "node_backup_statuses": [
 {
-"backup_id": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac-1795088601",
-"end_time": 1795088729802,
-"start_time": 1795088601835,
+"backup_id": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac-1795103001",
+"end_time": 1795103131079,
+"start_time": 1795103001969,
 "success": true
 }
 ],
@@ -5223,8 +5426,14 @@
 "value": "INITIAL"
 }
 },
-"result_count": 10,
+"result_count": 11,
 "results": [
+{
+"ip_address": "192.0.2.7",
+"node_id": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
+"restore_type": [],
+"timestamp": 1795103001000
+},
 {
 "ip_address": "192.0.2.7",
 "node_id": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
@@ -5318,7 +5527,7 @@
 "leaders": [
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 14828,
+"lease_version": 15227,
 "service_name": "cluster-manager"
 }
 ],
@@ -5338,7 +5547,7 @@
 "leaders": [
 {
 "leader_uuid": "353d1a71-3abf-4528-9b27-9ef755cc590f",
-"lease_version": 12584,
+"lease_version": 12982,
 "service_name": "ShardingService"
 }
 ],
@@ -5358,957 +5567,957 @@
 "leaders": [
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13879,
+"lease_version": 14277,
 "service_name": "COMMON_AGENT_ALARM_SERVICE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13874,
+"lease_version": 14272,
 "service_name": "POLICY_SVC_DFW_EXCLUDE_LIST"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13874,
+"lease_version": 14272,
 "service_name": "DataReaper"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13880,
+"lease_version": 14278,
 "service_name": "POLICY_SVC_POLICY_FIREWALL_IDENTITY_STORE_SITE_MAPPING_PROVIDER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13875,
+"lease_version": 14273,
 "service_name": "POLICY_SVC_IDS_GATEWAY_SECTION_PROVIDER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13873,
+"lease_version": 14271,
 "service_name": "POLICY_SVC_IDS_SITE_VERSION_MAPPING_PROVIDER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13874,
+"lease_version": 14272,
 "service_name": "POLICY_SVC_CONNECTIVITY_POLICY"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13871,
+"lease_version": 14269,
 "service_name": "TransportNodeStatusTsdbListener"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13873,
+"lease_version": 14271,
 "service_name": "IdfwDbDaemon"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13875,
+"lease_version": 14273,
 "service_name": "NodeStatusPropertiesMsgListener"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13874,
+"lease_version": 14272,
 "service_name": "POLICY_SVC_EDGE_TRANSPORT_NODE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13877,
+"lease_version": 14275,
 "service_name": "POLICY_SVC_POLICY_TRANSPORT_ZONE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13881,
+"lease_version": 14279,
 "service_name": "CmStatusEventCallBack"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13876,
+"lease_version": 14274,
 "service_name": "POLICY_SVC_TIER1"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13869,
+"lease_version": 14267,
 "service_name": "POLICY_SVC_CONNECTIVITY"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13872,
+"lease_version": 14269,
 "service_name": "POLICY_SVC_TRACE_GLOBAL_CONFIG"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13866,
+"lease_version": 14264,
 "service_name": "POLICY_SVC_GATEWAY_QOS_PROFILE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13877,
+"lease_version": 14275,
 "service_name": "L2LogicalSwitchStateWorker-L2KeyValue"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13876,
+"lease_version": 14275,
 "service_name": "MtuCheckQuartzSetupServiceImpl"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13872,
+"lease_version": 14270,
 "service_name": "POLICY_SVC_PROJECT"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13875,
+"lease_version": 14273,
 "service_name": "POLICY_SVC_CONTEXT_PROFILE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13879,
+"lease_version": 14277,
 "service_name": "POLICY_SVC_FLOOD_PROTECTION_PROFILES_PROVIDER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13881,
+"lease_version": 14279,
 "service_name": "POLICY_SVC_POLICY_TRANSPORT_ZONE_PROFILE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13875,
+"lease_version": 14273,
 "service_name": "POLICY_SVC_IPFIX_L2_PROFILE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13874,
+"lease_version": 14271,
 "service_name": "FirewallOperationPersistedQueueProcessor"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13879,
+"lease_version": 14277,
 "service_name": "UPGRADE-CONSISTENCY-CHECK-POLICY-RESOURCE-CONSUMER-SERVICE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13874,
+"lease_version": 14272,
 "service_name": "OpsClusterService"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13885,
+"lease_version": 14282,
 "service_name": "ODS_DYNAMIC_RUNBOOK_TN_LISTENER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13883,
+"lease_version": 14280,
 "service_name": "POLICY_SVC_ODS_DYNAMIC_RUNBOOK_INSTANCE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13871,
+"lease_version": 14269,
 "service_name": "POLICY_SVC_POLICY_SERVICE_INSERTION_EW"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13880,
+"lease_version": 14277,
 "service_name": "POLICY_SVC_IPFIX_DFW_PROFILE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13871,
+"lease_version": 14269,
 "service_name": "RealizationOperationalStatusTrackerWorker-AggSvc-Routing_BgpNeighborStatusPerNode"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13870,
+"lease_version": 14268,
 "service_name": "POLICY_SVC_TIER0"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13876,
+"lease_version": 14274,
 "service_name": "MpHeartbeatMessageListener"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13872,
+"lease_version": 14269,
 "service_name": "POLICY_SVC_IDFW_IDS_TOGGLE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13873,
+"lease_version": 14271,
 "service_name": "POLICY_SVC_IPFIX_DFW_GROUP_PROFILE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13876,
+"lease_version": 14273,
 "service_name": "POLICY_SVC_ALB_LCM"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13871,
+"lease_version": 14269,
 "service_name": "POLICY_IPAM_ALARM_LEADERSHIP_LISTENER_SERVICE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13879,
+"lease_version": 14277,
 "service_name": "POLICY_SVC_POLICY_EDGE_CLUSTER_PROVIDER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13872,
+"lease_version": 14271,
 "service_name": "POLICY_SVC_EDGE_TRANSPORT_NODE_TROUBLESHOOT_PROVIDER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13876,
+"lease_version": 14274,
 "service_name": "POLICY_SVC_TLS_PROFILE_PROVIDER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13868,
+"lease_version": 14266,
 "service_name": "POLICY_SVC_TLS_FQDN_STATE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 12264,
+"lease_version": 12661,
 "service_name": "LM_NOTIFICATION_MANAGER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13884,
+"lease_version": 14282,
 "service_name": "HealthCheckRequestMonitor"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13877,
+"lease_version": 14275,
 "service_name": "POLICY_SVC_SCX_TOGGLE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13879,
+"lease_version": 14276,
 "service_name": "POLICY_SVC_SESSION_TIMER_PROFILES_PROVIDER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13874,
+"lease_version": 14272,
 "service_name": "POLICY_SVC_FIREWALL"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13877,
+"lease_version": 14275,
 "service_name": "POLICY_SVC_POLICY_UC_DEPLOYMENT_CONFIG"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13877,
+"lease_version": 14275,
 "service_name": "RealizationOperationalStatusTrackerWorker-AggSvc-Routing_LogicalRoutersPerNode"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13880,
+"lease_version": 14277,
 "service_name": "POLICY_SVC_EDGE_FIREWALL"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13871,
+"lease_version": 14269,
 "service_name": "LbAlarmShardingServiceImpl"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13873,
+"lease_version": 14272,
 "service_name": "POLICY_SVC_INITIALIZER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13870,
+"lease_version": 14268,
 "service_name": "ActiveStateStreamListenerService"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13878,
+"lease_version": 14276,
 "service_name": "POLICY_SVC_L7_ACCESS_PROFILE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13872,
+"lease_version": 14270,
 "service_name": "POLICY-INTENT-CLEANUP-SERVICE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13871,
+"lease_version": 14269,
 "service_name": "POLICY_SVC_SECURITY_PROFILE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13870,
+"lease_version": 14268,
 "service_name": "POLICY_SVC_POLICY_FIREWALL_IDENTITY_STORE_ELS_MAPPING_PROVIDER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13874,
+"lease_version": 14272,
 "service_name": "GROUP_ALARM_LEADERSHIP_LISTENER_SERVICE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13881,
+"lease_version": 14279,
 "service_name": "SECURITY_LICENSE_USAGE_METER_TASK"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13882,
+"lease_version": 14280,
 "service_name": "ActivityPurger"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13883,
+"lease_version": 14281,
 "service_name": "POLICY_SVC_PORTMIRRORINGINSTANCE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13869,
+"lease_version": 14267,
 "service_name": "POLICY_SVC_TAG_BULK_OPERATION"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13877,
+"lease_version": 14275,
 "service_name": "POLICY_SVC_IDS_GLOBAL_CONFIG"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13881,
+"lease_version": 14279,
 "service_name": "IntelligenceClusterConfigWorker-IntelligenceClusterConfig"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13878,
+"lease_version": 14275,
 "service_name": "POLICY_SVC_CERTIFICATE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13883,
+"lease_version": 14280,
 "service_name": "POLICY_SVC_LATENCY_STAT_PROFILE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13879,
+"lease_version": 14276,
 "service_name": "FirewallPersistenceQueueProcessor"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13878,
+"lease_version": 14276,
 "service_name": "POLICY_SVC_MALWARE_PREVENTION_PROFILE_PROVIDER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13875,
+"lease_version": 14273,
 "service_name": "FirewallStatsPersistedQueueProcessor"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13874,
+"lease_version": 14272,
 "service_name": "POLICY_SVC_IDS_SIGNATURES_COMP_FILE_PROVIDER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13869,
+"lease_version": 14267,
 "service_name": "POLICY_SVC_FIREWALL_CPU_MEMORY_THRESHOLDS_PROFILE_PROVIDER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13872,
+"lease_version": 14270,
 "service_name": "POLICY_SVC_GENERAL_SECURITY_PROFILES_PROVIDER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13874,
+"lease_version": 14272,
 "service_name": "SECURITY_BUNDLE_AUTO_DOWNLOAD_TASK"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13873,
+"lease_version": 14271,
 "service_name": "POLICY_SVC_METADATA_PROXY"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13877,
+"lease_version": 14276,
 "service_name": "POLICY_SVC_VM_TAG_REPLICATION_POLICY_PROVIDER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 12263,
+"lease_version": 12661,
 "service_name": "LM_CONSUMER_SERVICE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13874,
+"lease_version": 14272,
 "service_name": "DirServiceDbDaemon"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13874,
+"lease_version": 14271,
 "service_name": "TnContainerStatusTsdbListener"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13874,
+"lease_version": 14272,
 "service_name": "RealizationOperationalStatusTrackerWorker-AggSvc-Vpn_IPSecVpnServiceSummary"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13872,
+"lease_version": 14270,
 "service_name": "POLICY_SVC_SSP_SECURITY_FEED_MAPPING_PROVIDER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13875,
+"lease_version": 14273,
 "service_name": "POLICY_SVC_IPAM"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13878,
+"lease_version": 14276,
 "service_name": "POLICY_SVC_BYOD_POLICY_SERVICE_INSERTION"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13875,
+"lease_version": 14273,
 "service_name": "POLICY_SVC_REDIRECTION_FIREWALL"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13883,
+"lease_version": 14281,
 "service_name": "GEO_IP_BUNDLE_AUTO_DOWNLOAD_TASK"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13870,
+"lease_version": 14268,
 "service_name": "LiveTraceMessageManager"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13877,
+"lease_version": 14275,
 "service_name": "POLICY_SVC_VPC_SUBNET"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13870,
+"lease_version": 14268,
 "service_name": "POLICY_SVC_MAC_DISCOVERY"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13873,
+"lease_version": 14270,
 "service_name": "ManualHealthCheckMonitor"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13879,
+"lease_version": 14276,
 "service_name": "ClusterNodeConfigProcessor"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13873,
+"lease_version": 14271,
 "service_name": "POLICY_SVC_POLICY_FQDN_ANALYSIS_CONFIG_PROVIDER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13869,
+"lease_version": 14267,
 "service_name": "POLICY_SVC_IPFIXSWITCHCOLLECTION"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13880,
+"lease_version": 14278,
 "service_name": "POLICY_PURGE_TASK_INITIALIZER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13873,
+"lease_version": 14271,
 "service_name": "VCSyncShardingServiceImpl"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13879,
+"lease_version": 14276,
 "service_name": "POLICY_SVC_IPFIX_L2_GLOBAL_PROFILE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13878,
+"lease_version": 14276,
 "service_name": "POLICY_SVC_CLUSTER_CONTROL_PLANE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13872,
+"lease_version": 14270,
 "service_name": "POLICY_SVC_POLICY_URL_CATEGORIZATION_CONFIG_PROVIDER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13879,
+"lease_version": 14277,
 "service_name": "IP_REPUTATION_FEED_DOWNLOAD_TASK"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13873,
+"lease_version": 14271,
 "service_name": "RealizationServiceMaintenanceManager"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13864,
+"lease_version": 14262,
 "service_name": "POLICY_SVC_FORWARDING"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13880,
+"lease_version": 14278,
 "service_name": "VidbMaintainer"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13873,
+"lease_version": 14271,
 "service_name": "RemoteLoggingServerCheckService"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13878,
+"lease_version": 14276,
 "service_name": "POLICY_SVC_IDS_SECTION_PROVIDER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13877,
+"lease_version": 14274,
 "service_name": "TraceflowCacheManager"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13874,
+"lease_version": 14272,
 "service_name": "POLICY_SVC_REAL_TIME_ETHERNET_PROFILE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13882,
+"lease_version": 14279,
 "service_name": "POLICY_SVC_POLICY_FIREWALL_IDENTITY_STORE_AND_LDAP_SERVER_PROVIDER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13877,
+"lease_version": 14275,
 "service_name": "IpfixAppliedToStreamListener"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13877,
+"lease_version": 14275,
 "service_name": "TransportNodeStatusMessageListener"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13879,
+"lease_version": 14277,
 "service_name": "ServiceConfigChangeWorker-GiServiceProfile"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13877,
+"lease_version": 14275,
 "service_name": "POLICY_SVC_ROUTE_CONTROLLER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13875,
+"lease_version": 14272,
 "service_name": "POLICY_SVC_IDS_THRESHOLD_CONFIG_FILE_PROVIDER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13881,
+"lease_version": 14279,
 "service_name": "TNStateWorker-TransportNodeState"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13869,
+"lease_version": 14267,
 "service_name": "POLICY_SVC_POLICY_GUEST_INTROSPECTION"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13874,
+"lease_version": 14271,
 "service_name": "POLICY_SVC_PORTMIRRORINGPROFILE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13879,
+"lease_version": 14277,
 "service_name": "POLICY_SVC_QOS_PROFILE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13873,
+"lease_version": 14271,
 "service_name": "QuartzSetupServiceImpl"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13872,
+"lease_version": 14270,
 "service_name": "LicensingShardingServiceImpl"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13879,
+"lease_version": 14277,
 "service_name": "BgpBfdTroubleshootReverseUpgradeWorker-ManagerClusterVersion"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13877,
+"lease_version": 14275,
 "service_name": "POLICY_SVC_BASE_HOST_SWITCH_PROFILE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13879,
+"lease_version": 14276,
 "service_name": "IDS_AUTO_DOWNLOAD_TASK"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13878,
+"lease_version": 14276,
 "service_name": "POLICY_SVC_LOADBALANCER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13870,
+"lease_version": 14268,
 "service_name": "POLICY_SVC_VPN"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13869,
+"lease_version": 14266,
 "service_name": "POLICY_SVC_SEGMENTPORT"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13876,
+"lease_version": 14273,
 "service_name": "SECURITY_ALARM_SERVICE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13866,
+"lease_version": 14263,
 "service_name": "UnderlayRouteWorker-UnderlayRouteRefreshTrigger"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13872,
+"lease_version": 14270,
 "service_name": "POLICY_SVC_FIREWALL_SCHEDULER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13871,
+"lease_version": 14269,
 "service_name": "VDLS_NSX_ENDPOINT_LISTENER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13875,
+"lease_version": 14273,
 "service_name": "AutoHealthCheckMonitor"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13883,
+"lease_version": 14280,
 "service_name": "POLICY_SVC_IDS_CONTAINER_CLUSTER_PROFILE_PROVIDER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13872,
+"lease_version": 14270,
 "service_name": "GEO_IP_ALARM_SERVICE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13871,
+"lease_version": 14269,
 "service_name": "POLICY_SVC_DNS"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13875,
+"lease_version": 14273,
 "service_name": "POLICY_SVC_VPC"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13869,
+"lease_version": 14267,
 "service_name": "POLICY_SVC_IDS_STANDALONE_HOST_CONFIG"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13876,
+"lease_version": 14275,
 "service_name": "POLICY_SVC_NSXI_NDR_UA_AGENT"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13876,
+"lease_version": 14273,
 "service_name": "POLICY_SVC_SHA_DYNAMIC_PLUGIN"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13879,
+"lease_version": 14276,
 "service_name": "POLICY_SVC_SEGMENT"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13877,
+"lease_version": 14274,
 "service_name": "ShaClusterServiceImpl"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13876,
+"lease_version": 14274,
 "service_name": "AUTO_DRAFT_PURGE_TASK"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13876,
+"lease_version": 14274,
 "service_name": "COMMON_AGENT_SERVICE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13873,
+"lease_version": 14271,
 "service_name": "POLICY_SVC_NETWORK_SPAN"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13882,
+"lease_version": 14280,
 "service_name": "CentralNodeConfigService"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13872,
+"lease_version": 14270,
 "service_name": "POLICY_SVC_SHA_PLUGIN_PROFILE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13880,
+"lease_version": 14278,
 "service_name": "POLICY_SVC_HEALTHCHECK_MANUAL_CONFIG"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13876,
+"lease_version": 14274,
 "service_name": "POLICY_SVC_NATRULE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13873,
+"lease_version": 14271,
 "service_name": "MirrorStackMonitorImpl"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13875,
+"lease_version": 14273,
 "service_name": "LM_SITE_OFFBOARDING"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13879,
+"lease_version": 14277,
 "service_name": "POLICY_SVC_POLICY_PLATFORM_DEPLOYMENT_CONFIG"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13873,
+"lease_version": 14270,
 "service_name": "POLICY_SVC_FIREWALL_DTLS_SECURITY_PROFILE_PROVIDER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13874,
+"lease_version": 14273,
 "service_name": "POLICY_SVC_FIREWALL_IDENTITY"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13883,
+"lease_version": 14281,
 "service_name": "POLICY_SVC_SECURITY_FEATURE_EXCLUDE_LIST_PROVIDER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13869,
+"lease_version": 14267,
 "service_name": "POLICY_SVC_ODS_RUNBOOK_PROFILE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13879,
+"lease_version": 14277,
 "service_name": "POLICY_SVC_CVX_SECURITY"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13877,
+"lease_version": 14275,
 "service_name": "ShardingMaster"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13873,
+"lease_version": 14271,
 "service_name": "ALARMS_REFRESH_TASK"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13877,
+"lease_version": 14274,
 "service_name": "POLICY_SVC_INTELLIGENCE_FLOW_COLLECTION_ENTITY_INFO"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13875,
+"lease_version": 14273,
 "service_name": "ServiceInsertionPersistenceQueueProcessor"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13878,
+"lease_version": 14275,
 "service_name": "IDS_PCAP_TASK"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13879,
+"lease_version": 14276,
 "service_name": "POLICY_SVC_IPFIX_L2_COLLECTOR_PROFILE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13876,
+"lease_version": 14274,
 "service_name": "CentralConfigProcessor"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13876,
+"lease_version": 14274,
 "service_name": "RealizationOperationalStatusTrackerWorker-AggSvc-Vpn_L2VpnServiceSummary"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13878,
+"lease_version": 14275,
 "service_name": "POLICY_SVC_METRIC_GLOBAL_CONFIG"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13872,
+"lease_version": 14270,
 "service_name": "POLICY_SVC_NSSERVICEGROUP"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13875,
+"lease_version": 14273,
 "service_name": "OdsDynamicRunbookClusterStreamListener"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13873,
+"lease_version": 14271,
 "service_name": "INTELLIGENCE_AGENT_SERVICE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13874,
+"lease_version": 14272,
 "service_name": "POLICY_SVC_LM_SITE_SPAN"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13876,
+"lease_version": 14274,
 "service_name": "TransportNodeMessageListener"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13872,
+"lease_version": 14269,
 "service_name": "POLICY_SVC_DFW_SESSION_TIMER_PROFILE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13876,
+"lease_version": 14274,
 "service_name": "POLICY_SVC_SECURITY_FEATURE_TOGGLE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13876,
+"lease_version": 14273,
 "service_name": "POLICY_SVC_IDS_GATEWAY_POLICY_PROVIDER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13880,
+"lease_version": 14278,
 "service_name": "OdsPredefinedRunbookService"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13871,
+"lease_version": 14269,
 "service_name": "DATA-CONSISTENCY-CHECKER-SERVICE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13874,
+"lease_version": 14271,
 "service_name": "POLICY_SVC_SHA_MONITOR_PROFILE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13871,
+"lease_version": 14269,
 "service_name": "POLICY_SVC_OPS_GLOBAL_CONFIG"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13873,
+"lease_version": 14271,
 "service_name": "NodeStatusPropertiesStreamListenerService"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13874,
+"lease_version": 14272,
 "service_name": "POLICY_SVC_ROUTING"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13877,
+"lease_version": 14275,
 "service_name": "POLICY_SVC_METRICS_UA_AGENT"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13864,
+"lease_version": 14262,
 "service_name": "POLICY_SVC_IDS_PROFILE_PROVIDER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13874,
+"lease_version": 14272,
 "service_name": "CertificateShardingServiceImpl"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13878,
+"lease_version": 14276,
 "service_name": "POLICY_SVC_IPFIXDFWCOLLECTORPROFILE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13875,
+"lease_version": 14273,
 "service_name": "POLICY_SVC_GROUPING"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13875,
+"lease_version": 14273,
 "service_name": "PLATFORM_AGENT_SERVICE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13876,
+"lease_version": 14273,
 "service_name": "ServiceConfigChangeWorker-ServiceConfig"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13873,
+"lease_version": 14270,
 "service_name": "capacity_dashboard"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13870,
+"lease_version": 14268,
 "service_name": "POLICY_SVC_FIREWALL_DTLS_CONFIG_PROFILE_PROVIDER"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13884,
+"lease_version": 14281,
 "service_name": "IntelligenceHostConfigWorker-IntelligenceHostConfig"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13876,
+"lease_version": 14274,
 "service_name": "POLICY_SVC_GLOBAL"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13876,
+"lease_version": 14273,
 "service_name": "RealizationOperationalStatusTrackerWorker-AggSvc-Routing_GreTunnelPerNode"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13878,
+"lease_version": 14276,
 "service_name": "POLICY_SVC_NSSERVICE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13874,
+"lease_version": 14272,
 "service_name": "POLICY_SVC_TRANSPORT_NODE"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13874,
+"lease_version": 14271,
 "service_name": "POLICY_SVC_IP_DISCOVERY"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13873,
+"lease_version": 14271,
 "service_name": "POLICY_SVC_DISCOVERY"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 13878,
+"lease_version": 14275,
 "service_name": "POLICY_SVC_POLICY_SERVICE_INSERTION"
 }
 ],
@@ -6328,7 +6537,7 @@
 "leaders": [
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 14850,
+"lease_version": 15249,
 "service_name": "api"
 }
 ],
@@ -6348,27 +6557,27 @@
 "leaders": [
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 14854,
+"lease_version": 15253,
 "service_name": "GEO_IP_STATS"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 14849,
+"lease_version": 15248,
 "service_name": "IP_REPUTATION"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 14851,
+"lease_version": 15249,
 "service_name": "IDS_PCAP_PURGE_TASK"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 14854,
+"lease_version": 15252,
 "service_name": "URL_CATEGORIZATION"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 14852,
+"lease_version": 15251,
 "service_name": "IDS_EVENT_DATA_PURGE_TASK"
 }
 ],
@@ -6388,7 +6597,7 @@
 "leaders": [
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 14846,
+"lease_version": 15245,
 "service_name": "ShardingMaster"
 }
 ],
@@ -6408,7 +6617,7 @@
 "leaders": [
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 14852,
+"lease_version": 15251,
 "service_name": "messaging-manager"
 }
 ],
@@ -6428,12 +6637,12 @@
 "leaders": [
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 14894,
+"lease_version": 15294,
 "service_name": "ArAlarmService"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 14894,
+"lease_version": 15293,
 "service_name": "ShardingMaster"
 }
 ],
@@ -6453,7 +6662,7 @@
 "leaders": [
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 14850,
+"lease_version": 15249,
 "service_name": "site-manager"
 }
 ],
@@ -6473,17 +6682,17 @@
 "leaders": [
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 14871,
+"lease_version": 15270,
 "service_name": "monitoring"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 14872,
+"lease_version": 15270,
 "service_name": "CoordinatedDataCollectionLeader"
 },
 {
 "leader_uuid": "d2e75774-aeac-ee5f-e535-1afb8f28e7ac",
-"lease_version": 14874,
+"lease_version": 15273,
 "service_name": "ShardingMaster"
 }
 ],
@@ -6565,7 +6774,7 @@
 "/api/v1/edge-clusters/b8b3e2c2-68e2-31ba-2c5c-fa0756d703f2/inter-site/status": {
 "edge_cluster_id": "b8b3e2c2-68e2-31ba-2c5c-fa0756d703f2",
 "edge_cluster_name": "fed-ec-b",
-"last_update_timestamp": 1795099029264,
+"last_update_timestamp": 1795103423057,
 "member_status": [
 {
 "established_bgp_sessions": 2,
@@ -6667,7 +6876,7 @@
 ]
 },
 "/api/v1/transport-nodes/9ef468d8-416e-e3d0-6421-7caf10983154/inter-site/statistics": {
-"last_update_timestamp": 1795099029358,
+"last_update_timestamp": 1795103423270,
 "stats_per_site": [
 {
 "remote_site": {
@@ -6678,55 +6887,55 @@
 "rx": {
 "blocked_packets": 0,
 "dropped_packets": 34,
-"total_bytes": 25799588,
-"total_packets": 340029
+"total_bytes": 27127354,
+"total_packets": 357624
 },
 "stats_per_tunnel": [
 {
 "rx": {
 "blocked_packets": 0,
 "dropped_packets": 33,
-"total_bytes": 13411422,
-"total_packets": 177599
+"total_bytes": 14075340,
+"total_packets": 186397
 },
 "tunnel_destination_address": "192.0.2.14",
 "tunnel_source_address": "192.0.2.16",
 "tx": {
 "blocked_packets": 0,
 "dropped_packets": 0,
-"total_bytes": 21286276,
-"total_packets": 178143
+"total_bytes": 22337287,
+"total_packets": 186941
 }
 },
 {
 "rx": {
 "blocked_packets": 0,
 "dropped_packets": 1,
-"total_bytes": 12388166,
-"total_packets": 162430
+"total_bytes": 13052014,
+"total_packets": 171227
 },
 "tunnel_destination_address": "192.0.2.15",
 "tunnel_source_address": "192.0.2.16",
 "tx": {
 "blocked_packets": 0,
 "dropped_packets": 0,
-"total_bytes": 19772439,
-"total_packets": 164588
+"total_bytes": 20823336,
+"total_packets": 173385
 }
 }
 ],
 "tx": {
 "blocked_packets": 0,
 "dropped_packets": 0,
-"total_bytes": 41058715,
-"total_packets": 342731
+"total_bytes": 43160623,
+"total_packets": 360326
 }
 }
 ],
 "transport_node_id": "9ef468d8-416e-e3d0-6421-7caf10983154"
 },
 "/api/v1/transport-nodes/acecccf4-0920-e63d-7543-33bad9937189/inter-site/statistics": {
-"last_update_timestamp": 1795099029565,
+"last_update_timestamp": 1795103423499,
 "stats_per_site": [
 {
 "remote_site": {
@@ -6737,48 +6946,48 @@
 "rx": {
 "blocked_packets": 0,
 "dropped_packets": 7,
-"total_bytes": 25936457,
-"total_packets": 342436
+"total_bytes": 27264412,
+"total_packets": 360034
 },
 "stats_per_tunnel": [
 {
 "rx": {
 "blocked_packets": 0,
 "dropped_packets": 6,
-"total_bytes": 13028738,
-"total_packets": 172131
+"total_bytes": 13692652,
+"total_packets": 180929
 },
 "tunnel_destination_address": "192.0.2.14",
 "tunnel_source_address": "192.0.2.17",
 "tx": {
 "blocked_packets": 0,
 "dropped_packets": 0,
-"total_bytes": 20692624,
-"total_packets": 172952
+"total_bytes": 21743650,
+"total_packets": 181750
 }
 },
 {
 "rx": {
 "blocked_packets": 0,
 "dropped_packets": 1,
-"total_bytes": 12907719,
-"total_packets": 170305
+"total_bytes": 13571760,
+"total_packets": 179105
 },
 "tunnel_destination_address": "192.0.2.15",
 "tunnel_source_address": "192.0.2.17",
 "tx": {
 "blocked_packets": 0,
 "dropped_packets": 0,
-"total_bytes": 20354731,
-"total_packets": 169883
+"total_bytes": 21405965,
+"total_packets": 178683
 }
 }
 ],
 "tx": {
 "blocked_packets": 0,
 "dropped_packets": 0,
-"total_bytes": 41047355,
-"total_packets": 342835
+"total_bytes": 43149615,
+"total_packets": 360433
 }
 }
 ],
@@ -6788,6 +6997,8 @@
 "result_count": 2,
 "results": [
 {
+"_last_modified_time": 1795009496601,
+"_revision": 2,
 "display_name": "edge-shared-01a",
 "failure_domain_id": "61ecd848-0a52-05eb-c3b9-d5d1e0edf7a7",
 "id": "9ef468d8-416e-e3d0-6421-7caf10983154",
@@ -6797,6 +7008,8 @@
 "resource_type": "TransportNode"
 },
 {
+"_last_modified_time": 1795010689625,
+"_revision": 2,
 "display_name": "edge-shared-02a",
 "failure_domain_id": "61ecd848-0a52-05eb-c3b9-d5d1e0edf7a7",
 "id": "acecccf4-0920-e63d-7543-33bad9937189",
@@ -6994,6 +7207,12 @@
 }
 ]
 },
+"/api/v1/upgrade/summary": {
+"system_version": "9.1.1.0.25691509",
+"upgrade_coordinator_updated": false,
+"upgrade_coordinator_version": "9.1.1.0.25691516",
+"upgrade_status": "NOT_STARTED"
+},
 "/policy/api/v1/global-infra/domains/default/security-policies/fed-demo/statistics": {
 "result_count": 1,
 "results": [
@@ -7047,10 +7266,10 @@
 "graceful_restart_mode": "HELPER_ONLY",
 "hold_time": 180,
 "keep_alive_interval": 60,
-"last_update_timestamp": 1795099032823,
+"last_update_timestamp": 1795103426005,
 "local_port": 61322,
-"messages_received": 1507,
-"messages_sent": 1473,
+"messages_received": 1581,
+"messages_sent": 1547,
 "negotiated_capability": [
 "addPath IPv4 Unicast Rx",
 "4byteAs",
@@ -7064,7 +7283,7 @@
 "remote_port": 179,
 "source_address": "192.0.2.10",
 "tier0_path": "/global-infra/tier-0s/fed-t0",
-"time_since_established": 88132,
+"time_since_established": 92526,
 "total_in_prefix_count": 33,
 "total_out_prefix_count": 2,
 "type": "USER"
@@ -7098,10 +7317,10 @@
 "graceful_restart_mode": "DISABLE",
 "hold_time": 3,
 "keep_alive_interval": 1,
-"last_update_timestamp": 1795099032823,
+"last_update_timestamp": 1795103426005,
 "local_port": 56081,
-"messages_received": 88021,
-"messages_sent": 88020,
+"messages_received": 92414,
+"messages_sent": 92413,
 "negotiated_capability": [
 "addPath IPv4 Unicast Rx",
 "4byteAs",
@@ -7121,7 +7340,7 @@
 },
 "source_address": "169.254.32.6",
 "tier0_path": "/global-infra/tier-0s/fed-t0",
-"time_since_established": 88016,
+"time_since_established": 92410,
 "total_in_prefix_count": 37,
 "total_out_prefix_count": 37,
 "type": "INTER_SR"
@@ -7155,10 +7374,10 @@
 "graceful_restart_mode": "DISABLE",
 "hold_time": 3,
 "keep_alive_interval": 1,
-"last_update_timestamp": 1795099032823,
+"last_update_timestamp": 1795103426005,
 "local_port": 62519,
-"messages_received": 88137,
-"messages_sent": 88139,
+"messages_received": 92530,
+"messages_sent": 92532,
 "negotiated_capability": [
 "addPath IPv4 Unicast Rx",
 "4byteAs",
@@ -7175,7 +7394,7 @@
 "remote_port": 179,
 "source_address": "169.254.32.6",
 "tier0_path": "/global-infra/tier-0s/fed-t0",
-"time_since_established": 88132,
+"time_since_established": 92526,
 "total_in_prefix_count": 37,
 "total_out_prefix_count": 37,
 "type": "INTER_SR"
@@ -7209,10 +7428,10 @@
 "graceful_restart_mode": "DISABLE",
 "hold_time": 3,
 "keep_alive_interval": 1,
-"last_update_timestamp": 1795099032823,
+"last_update_timestamp": 1795103426005,
 "local_port": 49987,
-"messages_received": 87989,
-"messages_sent": 87985,
+"messages_received": 92382,
+"messages_sent": 92378,
 "negotiated_capability": [
 "addPath IPv4 Unicast Rx",
 "4byteAs",
@@ -7232,7 +7451,7 @@
 },
 "source_address": "169.254.32.6",
 "tier0_path": "/global-infra/tier-0s/fed-t0",
-"time_since_established": 87977,
+"time_since_established": 92371,
 "total_in_prefix_count": 37,
 "total_out_prefix_count": 37,
 "type": "INTER_SR"
@@ -7259,10 +7478,10 @@
 "graceful_restart_mode": "HELPER_ONLY",
 "hold_time": 180,
 "keep_alive_interval": 60,
-"last_update_timestamp": 1795099032823,
+"last_update_timestamp": 1795103426005,
 "local_port": 58383,
-"messages_received": 1531,
-"messages_sent": 1495,
+"messages_received": 1604,
+"messages_sent": 1568,
 "negotiated_capability": [
 "addPath IPv4 Unicast Rx",
 "4byteAs",
@@ -7276,7 +7495,7 @@
 "remote_port": 179,
 "source_address": "192.0.2.11",
 "tier0_path": "/global-infra/tier-0s/fed-t0",
-"time_since_established": 89430,
+"time_since_established": 93823,
 "total_in_prefix_count": 33,
 "total_out_prefix_count": 2,
 "type": "USER"
@@ -7310,10 +7529,10 @@
 "graceful_restart_mode": "DISABLE",
 "hold_time": 3,
 "keep_alive_interval": 1,
-"last_update_timestamp": 1795099032823,
+"last_update_timestamp": 1795103426005,
 "local_port": 51657,
-"messages_received": 89219,
-"messages_sent": 89220,
+"messages_received": 93612,
+"messages_sent": 93613,
 "negotiated_capability": [
 "addPath IPv4 Unicast Rx",
 "4byteAs",
@@ -7333,7 +7552,7 @@
 },
 "source_address": "169.254.32.7",
 "tier0_path": "/global-infra/tier-0s/fed-t0",
-"time_since_established": 89215,
+"time_since_established": 93608,
 "total_in_prefix_count": 37,
 "total_out_prefix_count": 37,
 "type": "INTER_SR"
@@ -7367,10 +7586,10 @@
 "graceful_restart_mode": "DISABLE",
 "hold_time": 3,
 "keep_alive_interval": 1,
-"last_update_timestamp": 1795099032823,
+"last_update_timestamp": 1795103426005,
 "local_port": 179,
-"messages_received": 89284,
-"messages_sent": 89281,
+"messages_received": 93677,
+"messages_sent": 93674,
 "negotiated_capability": [
 "addPath IPv4 Unicast Rx",
 "4byteAs",
@@ -7387,7 +7606,7 @@
 "remote_port": 62519,
 "source_address": "169.254.32.7",
 "tier0_path": "/global-infra/tier-0s/fed-t0",
-"time_since_established": 88135,
+"time_since_established": 92528,
 "total_in_prefix_count": 37,
 "total_out_prefix_count": 37,
 "type": "INTER_SR"
@@ -7421,10 +7640,10 @@
 "graceful_restart_mode": "DISABLE",
 "hold_time": 3,
 "keep_alive_interval": 1,
-"last_update_timestamp": 1795099032823,
+"last_update_timestamp": 1795103426005,
 "local_port": 59212,
-"messages_received": 89137,
-"messages_sent": 89131,
+"messages_received": 93530,
+"messages_sent": 93524,
 "negotiated_capability": [
 "addPath IPv4 Unicast Rx",
 "4byteAs",
@@ -7444,7 +7663,7 @@
 },
 "source_address": "169.254.32.7",
 "tier0_path": "/global-infra/tier-0s/fed-t0",
-"time_since_established": 87980,
+"time_since_established": 92373,
 "total_in_prefix_count": 37,
 "total_out_prefix_count": 37,
 "type": "INTER_SR"
@@ -7455,6 +7674,8 @@
 "result_count": 1,
 "results": [
 {
+"_last_modified_time": 1794963627979,
+"_revision": 0,
 "bfd_profile_path": "/global-infra/bfd-profiles/default",
 "display_name": "site-a-wld03",
 "edge_cluster_path": "/global-infra/sites/site-a-wld03/enforcement-points/default/edge-clusters/b8b3e2c2-68e2-31ba-2c5c-fa0756d703f2",
@@ -7494,6 +7715,8 @@
 "result_count": 1,
 "results": [
 {
+"_last_modified_time": 1794963617822,
+"_revision": 1,
 "advanced_config": {
 "connectivity": "ON",
 "forwarding_up_timer": 5
@@ -7551,6 +7774,8 @@
 "result_count": 1,
 "results": [
 {
+"_last_modified_time": 1795092329915,
+"_revision": 20,
 "display_name": "GM-2-LM-FULL-SYNC",
 "full_sync_id": "GM-2-LM-FULL-SYNC",
 "id": "GM-2-LM-FULL-SYNC",
@@ -7577,6 +7802,8 @@
 "result_count": 1,
 "results": [
 {
+"_last_modified_time": 1795010714072,
+"_revision": 3,
 "deployment_type": "VIRTUAL_MACHINE",
 "display_name": "fed-ec-b",
 "edge_cluster_profile": "/infra/sites/default/enforcement-points/default/edge-cluster-high-availability-profiles/c238e591-084a-8e98-6699-de7f12b56d93",

@@ -35,7 +35,8 @@ VIEWS = [
         ("intersite_bgp_established", "Inter-site BGP up"), ("intersite_bgp_down", "Inter-site BGP down"),
         ("full_sync_failed", "Full sync failed"), ("nodes_offline", "Nodes offline"), ("backup_age_hours", "Backup age (h)"),
         ("cert_min_days_to_expiry", "Cert expiry (days)"), ("alarms_open_critical", "Critical alarms"),
-        ("alarms_open_high", "High alarms")]),
+        ("alarms_open_high", "High alarms"), ("upgrade_status", "Upgrade"),
+        ("replication_flows_unhealthy", "Replication flows in error"), ("minutes_since_collection", "Last collected (min ago)")]),
     ("NSX Federation - Sync channels", "sync_channel", "Connections between the managers of the federation.", [
         ("source", "Source"), ("target", "Target"), ("target_address", "Target address"), ("connection_up", "Up")]),
     ("NSX Federation - RTEP tunnels", "rtep_tunnel", "Inter-site tunnels between edge nodes, with rates.", [

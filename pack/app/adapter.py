@@ -21,6 +21,8 @@ logger = logging.getLogger(__name__)
 GI = "/global-manager/api/v1/global-infra"  # policy tree on a Global Manager
 LGI = "/policy/api/v1/global-infra"  # the same tree as received by a Local Manager
 INVENTORY_TTL = 30 * 60  # seconds: inventory tier
+REALIZATION_EVERY_CYCLE = 200  # up to this many stretched objects, the realization of each is read in every cycle
+REALIZATION_SWEEP_CYCLES = 6  # above it, every object is read again at least once in this many cycles
 SLOW_TTL = 60 * 60  # seconds: certificates and backups
 FEDERATION_ALARM_FEATURES = {"federation", "communication", "clustering", "certificates"}
 
@@ -29,7 +31,10 @@ _PKT, _PER_MIN = Units.MISC.PACKETS, Units.RATE.PER_MINUTE
 UNITS = {
     "backup_age_hours": Units.TIME.HOURS, "cert_min_days_to_expiry": Units.TIME.DAYS,
     "collection_duration_s": Units.TIME.SECONDS, "seconds_established": Units.TIME.SECONDS,
-    "api_calls": Units.MISC.CALLS, "api_calls_throttled": Units.MISC.CALLS, "api_errors": Units.MISC.ERRORS, "data_gaps": Units.MISC.CALLS, "api_calls_retried": Units.MISC.CALLS,
+    "api_calls": Units.MISC.CALLS, "api_calls_throttled": Units.MISC.CALLS, "api_errors": Units.MISC.ERRORS, "data_gaps": Units.MISC.CALLS,
+    "standby_out_of_sync_minutes": Units.TIME.MINUTES, "standby_full_sync_age_hours": Units.TIME.HOURS,
+    "full_sync_duration_s": Units.TIME.SECONDS, "full_sync_age_hours": Units.TIME.HOURS, "minutes_since_collection": Units.TIME.MINUTES, "gm_last_seen_minutes": Units.TIME.MINUTES,
+    "gm_rtt_ms": Units.TIME.MILLISECONDS, "api_calls_retried": Units.MISC.CALLS,
     "rx_bytes": Units.DATA_SIZE.BYTE, "tx_bytes": Units.DATA_SIZE.BYTE, "byte_count": Units.DATA_SIZE.BYTE,
     "rx_bytes_per_s": Units.DATA_RATE.BYTE_PER_SECOND, "tx_bytes_per_s": Units.DATA_RATE.BYTE_PER_SECOND,
     "rx_packets": _PKT, "tx_packets": _PKT, "rx_dropped": _PKT, "tx_dropped": _PKT, "rx_blocked": _PKT, "tx_blocked": _PKT,
@@ -69,6 +74,9 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("api_calls_retried", "NSX API calls retried after a timeout"),
         ("global_managers_foreign", "Listed Global Managers of another federation"),
         ("locations_down", "Locations not connected to the Global Manager"),
+        ("split_brain_reported", "Split-brain reported by NSX (1 = yes)"),
+        ("realization_checked", "Stretched objects whose realization was read in this cycle"),
+        ("stale_objects_deleted", "Objects deleted because they no longer exist in NSX"),
         ("managers_over_budget", "Managers that used their call budget"),
         ("locations_healthy", "Locations healthy"),
         ("locations_healthy_pct", "Locations healthy (%)"),
@@ -85,6 +93,10 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("failed_calls", "NSX API calls without an answer"),
         ("global_manager_errors", "Global Managers not collected"),
         ("location_outage", "Locations in outage"),
+        ("config_version", "Federation configuration version"),
+        ("global_manager_addresses", "Global Manager addresses of the account"),
+        ("vcf_operations_api", "VCF Operations API from the adapter"),
+        ("stale_objects", "Objects deleted because they no longer exist in NSX"),
     ]),
     "global_manager": ("Global Manager", [
         ("reachable", "Reachable by the collector"),
@@ -99,6 +111,8 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("standby_sync_entries", "Standby sync entries reported"),
         ("standby_in_sync", "Standby sync healthy (1 = in sync)"),
         ("standby_sync_remaining", "Entries left to send to the standby"),
+        ("standby_out_of_sync_minutes", "Standby out of sync for (min)"),
+        ("standby_full_sync_age_hours", "Last full sync to the standby (hours ago)"),
     ], [
         ("mode", "Mode"), ("cluster_status", "Cluster status"), ("version", "Version"),
         ("address", "Address used by the collector"),
@@ -106,6 +120,9 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("cert_first_to_expire", "First certificate to expire"),
         ("switchover_status", "Switchover status"),
         ("standby_sync_status", "Standby sync status"),
+        ("standby_data_consistent", "Standby data consistent (as NSX reports it)"),
+        ("version_matches_active_gm", "Same version as the active Global Manager"),
+        ("upgrade_status", "Upgrade status"), ("upgrade_target_version", "Upgrade target version"),
     ]),
     "manager_node": ("Manager Node", [("online", "Online")],
                      [("address", "Address"), ("uuid", "Node UUID")]),
@@ -124,6 +141,13 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("intersite_bgp_established", "Inter-site BGP sessions established"),
         ("intersite_bgp_down", "Inter-site BGP sessions not established"),
         ("api_calls", "NSX API calls in this cycle"),
+        ("full_sync_duration_s", "Duration of the last full sync (s)"),
+        ("full_sync_age_hours", "Last full sync (hours ago)"),
+        ("minutes_since_collection", "Time since the last successful collection (min)"),
+        ("replication_flows", "Replication flows with the Global Manager"),
+        ("replication_flows_unhealthy", "Replication flows in an error state"),
+        ("gm_rtt_ms", "Round-trip time to the Global Manager (ms)"),
+        ("gm_last_seen_minutes", "Last seen by the Global Manager (min ago)"),
     ], [
         ("site_id", "Site ID"), ("version", "Version"), ("version_matches_gm", "Same version as the Global Manager"),
         ("local_manager_address", "Local Manager address"), ("rtep_ips", "RTEP addresses"),
@@ -131,6 +155,11 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("full_sync_stage", "Last full sync stage"), ("backup_enabled", "Backup enabled"),
         ("cert_first_to_expire", "First certificate to expire"), ("certificate_trust", "Certificate trust"),
         ("collector_error", "Collector error"),
+        ("release_newer_than_gm", "NSX release newer than the Global Manager"),
+        ("upgrade_status", "Upgrade status"), ("upgrade_target_version", "Upgrade target version"),
+        ("alarm_alerts_by", "Federation alarm alerts raised by"),
+        ("replication_state", "Replication flows"), ("onboarding_status", "Onboarding status"),
+        ("site_path", "Site path"), ("lm_thumbprint", "Local Manager certificate thumbprint (from the Global Manager)"),
     ]),
     "sync_channel": ("Sync Channel", [("connection_up", "Connection up")],
                      [("source", "Source"), ("target", "Target"), ("target_address", "Target address")]),
@@ -211,6 +240,11 @@ _GROUP_BY_KEY = {
     "nodes_online": "cluster", "nodes_offline": "cluster", "service_groups_degraded": "cluster",
     "reachable": "connectivity", "gm_connection_up": "connectivity", "collector_reachable": "connectivity",
     "standby_sync_entries": "sync", "full_sync_failed": "sync", "standby_in_sync": "sync", "standby_sync_remaining": "sync",
+    "standby_out_of_sync_minutes": "sync", "standby_full_sync_age_hours": "sync", "full_sync_duration_s": "sync",
+    "full_sync_age_hours": "sync", "minutes_since_collection": "connectivity",
+    "replication_flows": "sync", "replication_flows_unhealthy": "sync", "gm_rtt_ms": "connectivity",
+    "gm_last_seen_minutes": "connectivity", "split_brain_reported": "global_managers",
+    "realization_checked": "collection", "stale_objects_deleted": "collection",
     "intersite_bgp_total": "intersite", "intersite_bgp_established": "intersite", "intersite_bgp_down": "intersite",
     "rtep_tunnels_total": "intersite", "rtep_tunnels_bgp_down": "intersite", "rtep_dropped_per_min": "intersite",
     "collection_duration_s": "collection", "api_calls": "collection", "api_calls_throttled": "collection",
@@ -233,7 +267,7 @@ for _k in ("rx_bytes", "tx_bytes", "rx_packets", "tx_packets", "rx_dropped", "tx
 # a type with only one or two metrics keeps them at the top
 _FLAT_KINDS = {"manager_node", "sync_channel"}
 # kinds whose alerts stay quiet while a location is cut off from the Global Manager (see "location_outage")
-OUTAGE_KINDS = {"location", "sync_channel", "edge_cluster", "edge_node", "rtep_tunnel", "bgp_neighbor",
+OUTAGE_KINDS = {"global_manager", "location", "sync_channel", "edge_cluster", "edge_node", "rtep_tunnel", "bgp_neighbor",
                 "tier0", "tier1", "segment", "global_policy", "realization"}
 
 
@@ -295,11 +329,22 @@ def get_adapter_definition() -> AdapterDefinition:
                         "report: it is collected and the mismatch is reported.",
             default="enforce", advanced=True)
         d.define_enum_parameter(
-            "link_nsx_objects", values=["off", "on"], label="Link to the objects of the NSX integration",
-            description="on: each federation edge node and edge cluster gets a relationship to the transport node and "
-                        "edge cluster object of the built-in NSX integration, when that integration monitors the same "
-                        "Local Manager. Experimental.",
-            default="off", advanced=True)
+            "link_nsx_objects", values=["auto", "on", "off"], label="Link to the objects of the NSX integration",
+            description="Each federation edge node and edge cluster gets a relationship to the transport node and "
+                        "edge cluster object of the built-in NSX integration. auto: only for a Local Manager that "
+                        "the built-in integration monitors. on: always. off: never.",
+            default="auto", advanced=True)
+        d.define_enum_parameter(
+            "lm_alarm_alerts", values=["auto", "always", "never"], label="Alerts for the federation alarms of a Local Manager",
+            description="auto: this pack raises them only for a Local Manager that the built-in NSX integration does "
+                        "not monitor, because that integration raises the same alarms. always: this pack raises them "
+                        "for every Local Manager. never: it leaves them to the built-in integration.",
+            default="auto", advanced=True)
+        d.define_string_parameter(
+            "delete_stale_after_days", label="Delete objects that left NSX after (days)",
+            description="0: never (default). Above 0: an object of this account that NSX no longer returns and that "
+                        "has had no data for that many days is deleted from VCF Operations, with its history.",
+            required=False, default="0", advanced=True)
         d.define_int_parameter("max_parallel", label="Managers collected in parallel", default=8, advanced=True)
         d.define_int_parameter("request_timeout", label="API request timeout (s)", default=30, advanced=True)
         d.define_int_parameter("call_budget", label="API call budget per manager and cycle", default=2000, advanced=True)
@@ -330,6 +375,8 @@ def get_adapter_definition() -> AdapterDefinition:
                 ot.define_string_property(pkey, plabel)
             if key in OUTAGE_KINDS:
                 ot.define_string_property("location_outage", "Locations in outage")
+            if key == "sync_channel":
+                ot.define_string_property("gm_outage", "Global Manager outage")
         return d
 
 
@@ -350,7 +397,12 @@ class Config:
         self.rule_policies = {p.strip() for p in rp.split(",") if p.strip()}
         self.enforce_trust = str(val("certificate_trust", "enforce")) == "enforce"
         self.federation_name = str(val("federation_name", "")).strip()
-        self.link_nsx_objects = str(val("link_nsx_objects", "off")) == "on"
+        self.link_mode = str(val("link_nsx_objects", "auto"))
+        self.lm_alarm_mode = str(val("lm_alarm_alerts", "auto"))
+        try:
+            self.delete_stale_days = max(0.0, float(str(val("delete_stale_after_days", "0")).replace(",", ".")))
+        except ValueError:
+            self.delete_stale_days = 0.0
         self.max_parallel = int(val("max_parallel", 8))
         self.timeout = int(val("request_timeout", 30))
         self.call_budget = int(val("call_budget", 2000))
@@ -433,9 +485,89 @@ def backup_summary(overview: dict) -> Tuple[bool, Optional[float], str]:
     return enabled, age, result
 
 
+def release_tuple(v: Any) -> Tuple[int, ...]:
+    """First three numbers of an NSX version, for ordering releases."""
+    out = []
+    for x in str(v).split(".")[:3]:
+        out.append(int(x) if x.isdigit() else 0)
+    return tuple(out)
+
+
+def rtt_values(stat: Any) -> List[float]:
+    """Round-trip times in ms from the 'rtt_statistic' of a replication flow, whatever its exact shape."""
+    if isinstance(stat, (int, float)) and not isinstance(stat, bool):
+        return [float(stat)]
+    if isinstance(stat, dict):
+        return [float(v) for k, v in stat.items() if isinstance(v, (int, float)) and not isinstance(v, bool)
+                and any(w in k.lower() for w in ("avg", "average", "mean", "last", "latest", "current", "rtt"))]
+    return []
+
+
+def epoch_seconds(text: Any) -> Optional[float]:
+    """NSX prints some timestamps as 'seconds: 1795092255\nnanos: 2094...'."""
+    for part in str(text or "").split():
+        if part.isdigit() and len(part) >= 9:
+            return float(part)
+    return None
+
+
+class OpsApi:
+    """Read access to VCF Operations itself, with the connection the collector gives the adapter. Used for what
+    NSX cannot tell: which Local Managers the built-in NSX integration monitors, the location list of earlier
+    cycles when the container cache is empty, and the objects of this account. Every call may fail: the
+    adapter then works without it and says so in a property of the federation object."""
+
+    def __init__(self, ai: Any) -> None:
+        self.client = getattr(ai, "suite_api_client", None)
+        self.error = "" if self.client else "no connection information from the collector"
+        self.used = False
+
+    def _call(self, method: str, url: str) -> Optional[dict]:
+        if self.client is None:
+            return None
+        try:
+            with self.client as c:
+                with getattr(c, method)(url) as resp:
+                    self.used = True
+                    if not resp.ok:
+                        self.error = f"HTTP {resp.status_code} on {url.split('?')[0]}"
+                        return None
+                    return resp.json() if resp.content else {}
+        except Exception as e:  # never let VCF Operations break an NSX collection
+            self.error = repr(e)[:160]
+            return None
+
+    def get(self, url: str) -> Optional[dict]:
+        return self._call("get", url)
+
+    def delete(self, url: str) -> bool:
+        return self._call("delete", url) is not None
+
+    def state(self) -> str:
+        return "ok" if not self.error else "not available: " + self.error
+
+    def nsx_cluster_ids(self) -> Optional[List[str]]:
+        """NSX cluster IDs of the accounts of the built-in NSX integration. None: unknown."""
+        d = self.get("/api/adapters?adapterKindKey=NSXTAdapter")
+        if d is None:
+            return None
+        return sorted({i.get("value") for a in d.get("adapterInstancesInfoDto", [])
+                       for i in (a.get("resourceKey") or {}).get("resourceIdentifiers", [])
+                       if (i.get("identifierType") or {}).get("name") == "NSX_CLUSTER_ID" and i.get("value")})
+
+    def resources(self, kind: str) -> List[dict]:
+        d = self.get(f"/api/resources?adapterKind={ADAPTER_KIND}&resourceKind={kind}&pageSize=5000")
+        return (d or {}).get("resourceList", [])
+
+    def properties(self, resource_id: str) -> Dict[str, str]:
+        d = self.get(f"/api/resources/{resource_id}/properties")
+        return {p.get("name"): p.get("value") for p in (d or {}).get("property", [])}
+
+
 class Collector:
     def __init__(self, ai: AdapterInstance, result: CollectResult) -> None:
         self.cfg = Config(ai)
+        self.ops = OpsApi(ai)
         self.result = result
         self.cache = Cache("fed_" + "_".join(sorted(self.cfg.gm_hosts)))
         self.clients: List[NsxClient] = []
@@ -448,6 +580,12 @@ class Collector:
         self.stretched_full = 0
         self.over_budget = 0
         self.gm_objects: Dict[str, Object] = {}  # Global Manager name -> object
+        self.split_brain_reported = 0
+        self.config_version: Optional[Any] = None
+        self.realization_checked = 0
+        self.stale_deleted: List[str] = []
+        # NSX cluster IDs the built-in NSX integration monitors (None = unknown), asked once an hour
+        self.builtin_clusters: Optional[List[str]] = self.cache.cached("builtin_nsx_clusters", SLOW_TTL, self.ops.nsx_cluster_ids)
         self.standby_sync: List[Tuple[Optional[str], int, int]] = []  # (standby name, in sync, entries left)
         # counter values of the previous cycle, for rates: object id -> {"t": epoch, counter: value}
         self.prev_counters: Dict[str, Dict[str, float]] = self.cache.get_any_age("counters") or {}
@@ -531,7 +669,11 @@ class Collector:
         answered = [g for g in gms if g["ok"]]
         # One account monitors one federation: the federation of the first Global Manager that answers, or the
         # one seen in earlier cycles. A listed manager of another federation is reported and left out.
-        self.fed_id = self.cache.get_any_age("federation_id") or (answered[0]["federation_id"] if answered else "") or ""
+        inventory: Dict[str, Any] = {}
+        if not answered and not self.cache.get_any_age("federation_id"):
+            inventory = self.from_inventory()  # container restarted while no Global Manager answers
+        self.fed_id = (self.cache.get_any_age("federation_id") or (answered[0]["federation_id"] if answered else "")
+                       or inventory.get("federation_id") or "")
         if answered and not any(g["federation_id"] == self.fed_id for g in answered):
             self.fed_id = answered[0]["federation_id"]  # the federation was rebuilt: follow the listed managers
         foreign = [g for g in answered if g["federation_id"] != self.fed_id]
@@ -577,6 +719,11 @@ class Collector:
             # No active Global Manager: keep monitoring the locations from the last known list.
             sites_doc = self.cache.get_any_age("sites_doc") or {}
             mode = "degraded: location list from cache" if sites_doc else "degraded: no location list"
+            if not sites_doc:
+                inventory = inventory or self.from_inventory()
+                if inventory.get("locations"):
+                    sites_doc = {"locations": inventory["locations"], "global_managers": []}
+                    mode = "degraded: location list from VCF Operations"
 
         # Global Manager objects (active and standby); the standby is an object of its own.
         gm_names = []
@@ -605,9 +752,23 @@ class Collector:
         # -- root cause for alert storms: while a location is cut off from the Global Manager, the objects that
         # depend on it carry its name, and their alerts stay quiet behind the alert of the location
         outage = ", ".join(sorted(self.location_names.get(p, p) for p in self.down_locations)) or "none"
+        # same idea for the sync channels when a Global Manager does not answer or none is active
+        gm_outage = "none" if gm and len(answered) == len(cfg.gm_hosts) else (
+            "no active Global Manager" if not gm else "Global Manager not reachable: "
+            + ", ".join(g["host"] for g in gms if not g["ok"]))
         for o in self.result.objects.values():
             if o.adapter_type() == ADAPTER_KIND and o.object_type() in OUTAGE_KINDS:
                 o.with_property("location_outage", outage)
+            if o.adapter_type() == ADAPTER_KIND and o.object_type() == "sync_channel":
+                o.with_property("gm_outage", gm_outage)
+        # a switchover is refused while the Global Managers run different versions
+        active_version = gm["site"].get("site_version") if gm else None
+        for g in reachable:
+            go = self.gm_objects.get(g["site"].get("name") or g["host"])
+            if go is not None and active_version and g["site"].get("site_version"):
+                self.props(go, {"version_matches_active_gm": g["site"].get("site_version") == active_version})
+        if mode == "normal" and not self.over_budget:
+            self.delete_stale()
 
         # -- step 3: federation object and pack self-health
         failed = sorted(f"{c.host}{p} ({why})" for c in self.clients for p, why in c.failed.items())
@@ -630,6 +791,9 @@ class Collector:
             "api_calls_throttled": sum(c.throttled for c in self.clients),
             "api_errors": sum(c.errors for c in self.clients),
             "data_gaps": len(failed),
+            "split_brain_reported": self.split_brain_reported if gm else None,
+            "realization_checked": self.realization_checked if gm else None,
+            "stale_objects_deleted": len(self.stale_deleted),
             "managers_over_budget": self.over_budget,
         })
         self.metrics(fed, self.rollups())
@@ -640,6 +804,10 @@ class Collector:
                 [f"{g['host']}: {g['error']}" for g in gms if not g["ok"]]
                 + [f"{g['host']}: belongs to federation {g['federation_id']}, not to this one" for g in foreign]) or "none",
             "location_outage": outage,
+            "config_version": self.config_version,
+            "global_manager_addresses": ",".join(sorted(cfg.gm_hosts)),
+            "vcf_operations_api": self.ops.state(),
+            "stale_objects": ", ".join(self.stale_deleted[:20]) or "none",
             "active_global_manager": gm["site"].get("name") if gm else "none",
             "standby_configured": standby_known,
             "collection_mode": mode,
@@ -651,6 +819,55 @@ class Collector:
         self.cache.save()
         for c in self.clients:
             c.close()
+
+    def from_inventory(self) -> Dict[str, Any]:
+        """Federation ID and location list of this account as VCF Operations stored them in earlier cycles. Used
+        when no Global Manager answers and the container cache is empty (the container was restarted)."""
+        mine = ",".join(sorted(self.cfg.gm_hosts))
+        for fed in self.ops.resources("federation"):
+            if self.ops.properties(fed["identifier"]).get("global_manager_addresses") != mine:
+                continue
+            fed_id = next((i.get("value") for i in fed["resourceKey"].get("resourceIdentifiers", [])
+                           if (i.get("identifierType") or {}).get("name") == "id"), "")
+            locations = []
+            for lo in self.ops.resources("location"):
+                ident = next((i.get("value") for i in lo["resourceKey"].get("resourceIdentifiers", [])
+                              if (i.get("identifierType") or {}).get("name") == "id"), "")
+                if not fed_id or not ident.startswith(fed_id + ":site:"):
+                    continue
+                props = self.ops.properties(lo["identifier"])
+                if props.get("site_path") and props.get("local_manager_address"):
+                    locations.append({"name": lo["resourceKey"].get("name"), "site_id": ident.split(":site:", 1)[1],
+                                      "path": props["site_path"], "address": props["local_manager_address"],
+                                      "thumbprint": props.get("lm_thumbprint"), "version": props.get("version")})
+            return {"federation_id": fed_id, "locations": locations}
+        return {}
+
+    def delete_stale(self) -> None:
+        """Opt-in: delete the objects of this federation that NSX no longer returns and that have had no data for
+        the configured number of days. Runs once an hour, in a complete cycle only, at most 50 objects at a time."""
+        days = self.cfg.delete_stale_days
+        if days <= 0 or self.cache.get("stale_checked", SLOW_TTL):
+            return
+        self.cache.put("stale_checked", True)
+        current = {i.value for o in self.result.objects.values() if o.adapter_type() == ADAPTER_KIND
+                   for i in o.get_key().identifiers.values() if i.key == "id"}
+        limit = (time.time() - days * 86400) * 1000
+        for kind in MODEL:
+            for res in self.ops.resources(kind):
+                ident = next((i.get("value") for i in res["resourceKey"].get("resourceIdentifiers", [])
+                              if (i.get("identifierType") or {}).get("name") == "id"), "")
+                if not ident.startswith(self.fed_id + ":") or ident in current or len(self.stale_deleted) >= 50:
+                    continue
+                latest = self.ops.get(f"/api/resources/{res['identifier']}/stats/latest")
+                if latest is None:
+                    continue
+                stamps = [ts for v in latest.get("values", []) for s in (v.get("stat-list") or {}).get("stat", [])
+                          if not str((s.get("statKey") or {}).get("key", "")).startswith(("badge|", "System Attributes|"))
+                          for ts in s.get("timestamps", [])]
+                newest = max(stamps, default=res.get("creationTime", 0))
+                if newest < limit and self.ops.delete(f"/api/resources/{res['identifier']}"):
+                    self.stale_deleted.append(f"{kind}: {res['resourceKey'].get('name')}")
 
     def rollups(self) -> Dict[str, Any]:
         """Federation-wide figures computed from the objects of this cycle, so a dashboard or an alert needs
@@ -682,6 +899,8 @@ class Collector:
     def collect_active_gm(self, gm: Dict[str, Any]) -> Dict[str, Any]:
         client: NsxClient = gm["client"]
         fed_sites = client.get("/api/v1/sites").get("sites", [])
+        self.split_brain_reported = int(any(s.get("split_brain") for s in fed_sites))
+        self.config_version = next((s.get("config_version") for s in fed_sites if s.get("is_local")), None)
         status = client.try_get("/api/v1/sites/status", default={}) or {}
         status_ok = client.ok("/api/v1/sites/status")
         conn = {rc.get("site_name"): rc for rc in status.get("remote_connections", [])}
@@ -724,7 +943,11 @@ class Collector:
                 "site_id": loc["site_id"], "version": loc["version"], "local_manager_address": loc["address"],
                 "rtep_ips": ", ".join(loc["rtep_ips"]), "maximum_rtt_ms": loc["maximum_rtt"],
                 "version_matches_gm": same_release(loc["version"], gm_version) if loc["version"] and gm_version else None,
+                "release_newer_than_gm": (release_tuple(loc["version"]) > release_tuple(gm_version))
+                if loc["version"] and gm_version else None,
+                "site_path": loc["path"], "lm_thumbprint": loc["thumbprint"],
             })
+            self.replication(client, lo, loc)
             if loc["gm_connection_up"] is False:
                 self.down_locations.add(loc["path"])
                 self.event(lo, f"Location {loc['name']} is not connected to the active Global Manager",
@@ -742,17 +965,45 @@ class Collector:
         for kind in STRETCHED:
             items.extend((kind, o) for o in inventory.get(kind, []))
 
-        def realization(item: Tuple[str, dict]) -> Tuple[str, dict, Optional[dict]]:
-            kind, o = item
+        # Above REALIZATION_EVERY_CYCLE objects, one call per object and cycle does not scale. The state of an
+        # object is then read again when it is new, changed in NSX, was not fully realized, or on its turn in a
+        # sweep that covers every object in REALIZATION_SWEEP_CYCLES cycles. Otherwise the last state is used.
+        known: Dict[str, Any] = self.cache.get_any_age("realization") or {}
+        cycle = int(self.cache.get_any_age("realization_cycle") or 0) + 1
+        self.cache.put("realization_cycle", cycle)
+        tiered = len(items) > REALIZATION_EVERY_CYCLE
+
+        def due(index: int, o: dict) -> bool:
+            prev = known.get(o["path"])
+            return (not tiered or prev is None or prev.get("m") != o.get("_last_modified_time") or not prev.get("ok")
+                    or index % REALIZATION_SWEEP_CYCLES == cycle % REALIZATION_SWEEP_CYCLES)
+
+        def realization(item: Tuple[int, Tuple[str, dict]]) -> Tuple[str, dict, Optional[dict]]:
+            index, (kind, o) = item
+            if not due(index, o):
+                return kind, o, known[o["path"]]["st"]
             try:
-                return kind, o, client.get(f"{GI}/realized-state/status", {"intent_path": o["path"]})
+                raw = client.get(f"{GI}/realized-state/status", {"intent_path": o["path"]})
             except BudgetExceeded:
                 return kind, o, {"_budget": True}
             except Exception:
                 return kind, o, None
+            st = {"consolidated_status": consolidated(raw.get("consolidated_status")),
+                  "consolidated_status_per_enforcement_point": [
+                      {"site_path": ep.get("site_path"), "consolidated_status": consolidated(ep.get("consolidated_status"))}
+                      for ep in raw.get("consolidated_status_per_enforcement_point") or []], "_fresh": True}
+            return kind, o, st
 
         with ThreadPoolExecutor(max_workers=8) as pool:
-            realized = list(pool.map(realization, items))
+            realized = list(pool.map(realization, enumerate(items)))
+        fresh: Dict[str, Any] = {}
+        for _kind, o, st in realized:
+            if st and not st.get("_budget"):
+                eps = st.get("consolidated_status_per_enforcement_point") or []
+                fresh[o["path"]] = {"m": o.get("_last_modified_time"), "st": {k: v for k, v in st.items() if k != "_fresh"},
+                                    "ok": bool(eps) and all(e.get("consolidated_status") == "SUCCESS" for e in eps)}
+                self.realization_checked += 1 if st.get("_fresh") else 0
+        self.cache.put("realization", fresh)
 
         by_path: Dict[str, Object] = {}
         budget_hit = False
@@ -872,6 +1123,8 @@ class Collector:
             "mode": mode, "cluster_status": mcs.get("status"), "version": site.get("site_version"), "address": g["host"],
             "backup_enabled": b_enabled, "backup_last_result": b_result, "cert_first_to_expire": c_name,
         })
+        up = self.upgrade_state(client)
+        self.props(go, {"upgrade_status": up.get("upgrade_status"), "upgrade_target_version": up.get("target_version") or "none"})
         for node in mcs.get("online_nodes") or []:
             self.node(go, node, 1)
         for node in mcs.get("offline_nodes") or []:
@@ -901,6 +1154,17 @@ class Collector:
                 # the same values on each standby object, set once all Global Manager objects exist
                 self.standby_sync = [(s.get("standby_site"), int(in_sync(s)), int(s.get("remaining_entries_to_send") or 0))
                                      for s in sync]
+                # how long a standby has been out of sync, and when its last full sync completed
+                since = self.cache.get_any_age("standby_out_of_sync_since") or {}
+                now = time.time()
+                since = {n: since.get(n, now) for n, ok, _ in self.standby_sync if not ok}
+                self.cache.put("standby_out_of_sync_since", since)
+                ages = [now - e for e in (epoch_seconds((s.get("full_sync_status") or {}).get("completed_at")) for s in sync) if e]
+                self.metrics(go, {
+                    "standby_out_of_sync_minutes": round(max((now - v for v in since.values()), default=0.0) / 60.0, 1),
+                    "standby_full_sync_age_hours": round(max(ages) / 3600.0, 1) if ages else None})
+                self.props(go, {"standby_data_consistent": "; ".join(
+                    f"{s.get('standby_site', '?')}: {s.get('is_data_consistent')}" for s in sync)})
             # sync channels as seen by the active Global Manager
             for rc in st.get("remote_connections", []):
                 self.channel(go, name, rc)
@@ -926,6 +1190,33 @@ class Collector:
             self.event(go, f"NSX alarm {a.get('event_type')}: {a.get('summary', '')}"[:400],
                        Criticality.CRITICAL if sev == "CRITICAL" else Criticality.IMMEDIATE if sev == "HIGH" else Criticality.WARNING)
         return name
+
+    def replication(self, client: NsxClient, lo: Object, loc: Dict[str, Any]) -> None:
+        """What the Location Manager page of NSX shows for a location: the state of each replication flow, the
+        round-trip time when NSX reports one, when the location was last seen, and the onboarding status."""
+        path = f"/api/v1/federation/replication/gm/sites/{loc['site_id']}/status"
+        rep = client.try_get(path, default={}) or {}
+        if client.ok(path):
+            flows = rep.get("flow_statuses") or []
+            bad = [f for f in flows if any(w in str(f.get("replication_state", "")).upper()
+                                           for w in ("ERROR", "FAIL", "DISCONNECT", "DOWN", "STOP", "UNAVAILABLE"))]
+            rtts = [v for f in flows for v in rtt_values(f.get("rtt_statistic"))]
+            seen = rep.get("last_seen_online")
+            self.metrics(lo, {
+                "replication_flows": len(flows), "replication_flows_unhealthy": len(bad),
+                "gm_rtt_ms": round(max(rtts), 1) if rtts else None,
+                "gm_last_seen_minutes": round(max(0.0, time.time() * 1000 - float(seen)) / 60000.0, 1) if seen else None})
+            self.props(lo, {"replication_state": "; ".join(
+                f"{str(f.get('flow_id', '?')).split('.')[-1]}: {f.get('replication_state')}" for f in flows) or "no flow reported"})
+        onboarding = self.cache.cached(f"onboarding:{loc['policy_id']}", INVENTORY_TTL, lambda: client.try_get(
+            f"{GI}/sites/{loc['policy_id']}/onboarding/status"))
+        if onboarding:
+            self.props(lo, {"onboarding_status": onboarding.get("status")})
+
+    def upgrade_state(self, client: NsxClient) -> Dict[str, Any]:
+        """Upgrade summary of a manager, read every 30 minutes. Empty when the call fails."""
+        return self.cache.cached(f"upgrade:{client.host}", INVENTORY_TTL,
+                                 lambda: client.try_get("/api/v1/upgrade/summary")) or {}
 
     def finish_standby_sync(self) -> None:
         """A standby Global Manager gets its own sync state, as the active one reports it. After a switchover the
@@ -987,7 +1278,8 @@ class Collector:
         self.clients.append(client)
         try:
             self.collect_lm(client, lo, loc)
-            self.metrics(lo, {"collector_reachable": 1, "api_calls": client.calls})
+            self.cache.put(f"collected:{loc['path']}", time.time())
+            self.metrics(lo, {"collector_reachable": 1, "api_calls": client.calls, "minutes_since_collection": 0})
             self.props(lo, {"collector_error": "", "certificate_trust": "trusted"
                             if (not client.trusted or client.fingerprint in client.trusted) else "NOT TRUSTED (reported only)"})
             if client.trusted and client.fingerprint not in client.trusted:
@@ -995,6 +1287,7 @@ class Collector:
                            "(changed or replaced?)", Criticality.WARNING, "certificate_trust")
             return True
         except CertificateNotTrusted as e:
+            self.since_collection(lo, loc)
             self.metrics(lo, {"collector_reachable": 0})
             self.props(lo, {"collector_error": str(e), "certificate_trust": "NOT TRUSTED"})
             self.event(lo, f"Local Manager {address} presents a certificate that is not trusted (changed or replaced?). "
@@ -1006,6 +1299,7 @@ class Collector:
             return True
         except Exception as e:
             logger.exception(e)
+            self.since_collection(lo, loc)
             self.metrics(lo, {"collector_reachable": 0})
             self.props(lo, {"collector_error": repr(e)[:300]})
             # A monitoring-path fault, not a federation fault: lower criticality, separate wording.
@@ -1013,6 +1307,11 @@ class Collector:
                        "This is the monitoring path; the Global Manager connection is reported separately.",
                        Criticality.WARNING, "collector_reachable")
         return False
+
+    def since_collection(self, lo: Object, loc: Dict[str, Any]) -> None:
+        last = self.cache.get_any_age(f"collected:{loc['path']}")
+        if last:
+            self.metrics(lo, {"minutes_since_collection": round((time.time() - float(last)) / 60.0, 1)})
 
     def collect_lm(self, client: NsxClient, lo: Object, loc: Dict[str, Any]) -> None:
         name = loc["name"]
@@ -1031,6 +1330,20 @@ class Collector:
             self.node(lo, node, 0)
         sync_states = client.try_list("/policy/api/v1/infra/full-sync-states")
         not_done = [s for s in sync_states if str(s.get("last_completed_stage", "")).upper() not in ("COMPLETED", "")]
+        # does the built-in NSX integration monitor this Local Manager? (None = unknown)
+        builtin = None if self.builtin_clusters is None or not lm_cluster_id else lm_cluster_id in self.builtin_clusters
+        link = self.cfg.link_mode == "on" or (self.cfg.link_mode == "auto" and builtin is True)
+        own_alarms = self.cfg.lm_alarm_mode == "always" or (self.cfg.lm_alarm_mode == "auto" and builtin is not True)
+        done = [s for s in sync_states if str(s.get("last_completed_stage", "")).upper() == "COMPLETED"
+                and s.get("start_time") and (s.get("last_update_time") or s.get("last_upate_time"))]
+        last = max(done, key=lambda s: s.get("last_update_time") or s.get("last_upate_time"), default=None)
+        if last:
+            end = float(last.get("last_update_time") or last.get("last_upate_time"))
+            self.metrics(lo, {"full_sync_duration_s": round(max(0.0, end - float(last["start_time"])) / 1000.0, 1),
+                              "full_sync_age_hours": round(max(0.0, time.time() * 1000 - end) / 3600000.0, 1)})
+        up = self.upgrade_state(client)
+        self.props(lo, {"upgrade_status": up.get("upgrade_status"), "upgrade_target_version": up.get("target_version") or "none",
+                        "alarm_alerts_by": "this pack" if own_alarms else "the built-in NSX integration"})
         self.metrics(lo, {
             "nodes_online": len(mcs.get("online_nodes") or []) if cs_ok else None,
             "nodes_offline": len(mcs.get("offline_nodes") or []) if cs_ok else None,
@@ -1048,7 +1361,8 @@ class Collector:
             self.event(lo, f"Certificate '{c_name}' on the Local Manager of {name} expires in {c_days} days",
                        Criticality.CRITICAL if c_days < 7 else Criticality.WARNING, "cert_min_days_to_expiry")
         # federation alarms raised on this Local Manager, forwarded once each (capped)
-        for a in [a for a in all_alarms if str(a.get("feature_name", "")).lower() == "federation"][:20]:
+        # (not when the built-in NSX integration monitors this Local Manager: it raises the same alarms)
+        for a in [a for a in all_alarms if own_alarms and str(a.get("feature_name", "")).lower() == "federation"][:20]:
             sev = str(a.get("severity", "")).upper()
             self.event(lo, f"NSX alarm {a.get('event_type')}: {a.get('summary', '')}"[:400],
                        Criticality.CRITICAL if sev == "CRITICAL" else Criticality.IMMEDIATE if sev == "HIGH" else Criticality.WARNING)
@@ -1069,7 +1383,7 @@ class Collector:
         for ec in inv["edge_clusters"]:
             eo = self.obj("edge_cluster", f"{ec['name']} ({name})", f"ec:{ec['id']}")
             eo.add_parent(lo)
-            if self.cfg.link_nsx_objects and lm_cluster_id:
+            if link and lm_cluster_id:
                 eo.add_child(self.nsx_object("EdgeCluster", ec["name"], ec["id"], lm_cluster_id))
             status = client.try_get(f"/api/v1/edge-clusters/{ec['id']}/inter-site/status", default={}) or {}
             if not client.ok(f"/api/v1/edge-clusters/{ec['id']}/inter-site/status"):
@@ -1093,7 +1407,7 @@ class Collector:
                 edge_key = f"{loc['site_id']}:{tn_name}"
                 no = self.obj("edge_node", f"{tn_name} ({name})", f"edge:{edge_key}")
                 no.add_parent(eo)
-                if self.cfg.link_nsx_objects and lm_cluster_id:
+                if link and lm_cluster_id:
                     no.add_child(self.nsx_object("TransportNode", tn_name, tn_id, lm_cluster_id, zone=True))
                 total, up = int(m.get("total_bgp_sessions") or 0), int(m.get("established_bgp_sessions") or 0)
                 bgp_state = {(n.get("source_address"), n.get("neighbor_address")): str(n.get("connection_state", "")).upper()

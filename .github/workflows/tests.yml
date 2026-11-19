@@ -10,7 +10,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install -r pack/adapter_requirements.txt requests lxml pytest
+      - run: pip install -r pack/adapter_requirements.txt requests lxml pytest pillow
       - name: Generated content is up to date
         run: |
           for g in alerts dashboards groups views; do python tools/gen_$g.py; done

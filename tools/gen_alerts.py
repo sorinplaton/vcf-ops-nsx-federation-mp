@@ -5,8 +5,8 @@ Writes pack/content/alertdefs/nsxfederation_alerts.xml (symptoms, alerts, recomm
 with --zip <file>, a content-import zip for testing the same definitions without a pack install.
 """
 import os
-import typing
 import json
+import typing
 import sys
 import zipfile
 from xml.sax.saxutils import escape, quoteattr
@@ -36,7 +36,19 @@ S = {
     "fed_slow":        ("federation", "The collection takes more than 4 minutes", "warning", "metric", "collection_duration_s", ">", 240),
     "fed_degraded":    ("federation", "The collection runs in degraded mode", "immediate", "property", "collection_mode", "contains", "degraded"),
     "fed_foreign":     ("federation", "A listed Global Manager belongs to another federation", "warning", "metric", "global_managers_foreign", ">", 0),
+    "fed_split_nsx":   ("federation", "NSX reports a split-brain between the Global Managers", "critical", "metric", "split_brain_reported", ">", 0),
     # global manager
+    "gm_mode_none":    ("global_manager", "Global Manager has no role (mode NONE)", "immediate", "property", "mode", "=", "NONE"),
+    "gm_version":      ("global_manager", "Global Manager version differs from the active Global Manager", "warning", "property", "version_matches_active_gm", "=", "False"),
+    "gm_upg_running":  ("global_manager", "An NSX upgrade is in progress on the Global Manager", "info", "property", "upgrade_status", "=", "IN_PROGRESS"),
+    "gm_upg_paused":   ("global_manager", "An NSX upgrade is paused on the Global Manager", "info", "property", "upgrade_status", "=", "PAUSED"),
+    "gm_upg_failed":   ("global_manager", "An NSX upgrade failed on the Global Manager", "immediate", "property", "upgrade_status", "=", "FAILED"),
+    "loc_repl":        ("location", "A replication flow with the Global Manager is in an error state", "immediate", "metric", "replication_flows_unhealthy", ">", 0),
+    "loc_newer":       ("location", "Location runs a newer NSX release than the Global Manager", "immediate", "property", "release_newer_than_gm", "=", "True"),
+    "loc_upg_running": ("location", "An NSX upgrade is in progress on the Local Manager", "info", "property", "upgrade_status", "=", "IN_PROGRESS"),
+    "loc_upg_paused":  ("location", "An NSX upgrade is paused on the Local Manager", "info", "property", "upgrade_status", "=", "PAUSED"),
+    "loc_upg_failed":  ("location", "An NSX upgrade failed on the Local Manager", "immediate", "property", "upgrade_status", "=", "FAILED"),
+    "chan_gm_outage":  ("sync_channel", "A Global Manager is not reachable or none is active", "info", "property", "gm_outage", "!=", "none"),
     "gm_cluster":      ("global_manager", "Global Manager cluster status is not STABLE", "critical", "property", "cluster_status", "!=", "STABLE"),
     "gm_node_offline": ("global_manager", "A Global Manager node is offline", "immediate", "metric", "nodes_offline", ">", 0),
     "gm_backup_off":   ("global_manager", "Backup is not configured on the Global Manager", "immediate", "property", "backup_enabled", "=", "False"),
@@ -124,7 +136,7 @@ for ev, (sev, name, _d, _r) in GM_ALARMS.items():
 # on it stay quiet behind the alert of the location. The adapter writes the names of such locations to the
 # property "location_outage" of these objects ("none" otherwise); each alert below also requires that the
 # outage symptom is NOT triggered.
-OUTAGE_KINDS = {"location": "Location", "sync_channel": "Sync channel", "edge_cluster": "Edge cluster",
+OUTAGE_KINDS = {"global_manager": "Global Manager", "location": "Location", "sync_channel": "Sync channel", "edge_cluster": "Edge cluster",
                 "edge_node": "Edge node", "rtep_tunnel": "RTEP tunnel", "bgp_neighbor": "Tier-0 BGP neighbor",
                 "tier0": "Tier-0 gateway", "tier1": "Tier-1 gateway", "segment": "Segment",
                 "global_policy": "Global security policy", "realization": "Stretched object at a location"}
@@ -137,22 +149,22 @@ QUIET = {"loc_intersite", "chan_down", "edge_bgp_down", "ec_status", "tun_bgp_do
 # ---- wait and cancel cycles: conditions that can flap need two cycles (10 minutes) to raise and to clear
 WAIT = {k: (2, 2) for k in ("chan_down", "loc_bgp_down", "loc_bgp_none", "edge_bgp_none", "tun_bgp_down",
                             "tun_rx_drops", "tun_tx_drops", "bgp_down", "bgp_no_prefix")}
-WAIT.update({"tun_rx_dt": (3, 3), "tun_tx_dt": (3, 3), "gm_standby_sync": (3, 2),
+WAIT.update({"tun_rx_dt": (3, 3), "tun_tx_dt": (3, 3), "gm_standby_sync": (3, 2), "loc_repl": (2, 2),
              "fed_gaps": (2, 2), "fed_throttled": (3, 2), "fed_slow": (2, 2)})
 
 # ---- alerts that affect the Risk badge (a condition that will hurt later) instead of Health (broken now)
-RISK = {"fed_no_standby", "fed_budget", "fed_gaps", "fed_load", "gm_backup", "gm_cert", "loc_cert_trust", "loc_version", "loc_backup", "loc_cert"}
+RISK = {"gm_version", "gm_upgrade", "loc_newer", "loc_upgrade", "fed_no_standby", "fed_budget", "fed_gaps", "fed_load", "gm_backup", "gm_cert", "loc_cert_trust", "loc_version", "loc_backup", "loc_cert"}
 
 # ---- recommendations
 R = {
     "active_gm": "Open the Global Manager UI (System, Location Manager) and check which Global Manager is active. If the active "
-                 "Global Manager is lost, follow the NSX Federation disaster recovery procedure and make the standby active.",
+                 "Global Manager is lost, follow the NSX Federation disaster recovery procedure and make the standby active. See https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vcf-9-0-and-later/9-0/advanced-network-management/administration-guide/managing-nsx-t-in-multiple-locations/nsx-t-federation/disaster-recovery-using-federation.html",
     "split_brain": "Two Global Managers claim the active role. Do not change global configuration. Decide which Global Manager "
-                   "holds the valid configuration and force the other one to standby, as described in the NSX Federation recovery documentation.",
+                   "holds the valid configuration and force the other one to standby, as described in the NSX Federation recovery documentation. See https://knowledge.broadcom.com/external/article/324244",
     "gm_reach": "Check that the Global Manager appliance is powered on and that the cloud proxy can reach it on TCP 443. If its "
                 "certificate was replaced, update the trusted certificate of the adapter instance.",
     "standby": "Deploy a standby Global Manager in another site and add it under System, Location Manager, Add Standby Global "
-               "Manager. Without a standby the global configuration cannot be changed if the active Global Manager is lost.",
+               "Manager. Without a standby the global configuration cannot be changed if the active Global Manager is lost. See https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vcf-9-0-and-later/9-0/advanced-network-management/administration-guide/managing-nsx-t-in-multiple-locations/nsx-t-federation/disaster-recovery-using-federation.html",
     "gaps": "Some NSX API calls of the collection failed, so part of the data is unknown and the alerts that depend on it are "
             "not evaluated. Read the property 'NSX API calls without an answer' on the federation object: it lists the manager, "
             "the call and the HTTP status. HTTP 403 points to missing rights of the collection account, HTTP 5xx or a timeout to "
@@ -164,6 +176,15 @@ R = {
                 "Local Managers only. Check the Global Manager addresses of the account and the alert on the Global Managers.",
     "foreign": "One account monitors one federation. Remove the address named in the property 'Global Managers not collected' "
                "from this account and create a second account for the other federation.",
+    "gm_none": "A Global Manager that comes back after a failover has no role until it is added again as the standby. "
+               "In the UI of the active Global Manager, open System, Location Manager and make it the standby. "
+               "See https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vcf-9-0-and-later/9-0/advanced-network-management/administration-guide/managing-nsx-t-in-multiple-locations/nsx-t-federation/disaster-recovery-using-federation.html",
+    "gm_version": "Upgrade the Global Manager that is behind. NSX refuses a switchover while the active and the standby "
+                  "Global Manager run different versions. See https://knowledge.broadcom.com/external/article/449461",
+    "upgrade": "Finish the upgrade in the order NSX Federation requires: the standby Global Manager, then the active "
+               "Global Manager, then the Local Managers. A Local Manager must not run a newer release than the Global "
+               "Manager. Take a backup of every manager cluster first. A paused upgrade is resumed or cancelled in "
+               "System, Upgrade. See https://knowledge.broadcom.com/external/article/435153",
     "budget": "The collection of this cycle is partial. Raise 'API call budget per manager and cycle' in the advanced settings "
               "of the adapter instance, or lengthen the collection interval.",
     "cluster": "Open System, Appliances on the manager and check the state of each node and service group. Restore or redeploy "
@@ -171,7 +192,7 @@ R = {
     "backup": "Configure a backup target and a schedule under System, Backup and Restore on the manager, then run a backup and "
               "confirm that it succeeds. A Global Manager can only be restored from its own backup.",
     "cert": "Replace the certificate before it expires (System, Certificates). An expired manager certificate breaks the "
-            "connection between the Global Manager and the Local Managers.",
+            "connection between the Global Manager and the Local Managers. See https://knowledge.broadcom.com/external/article/429189",
     "loc_gm": "Check the network path between the active Global Manager and the Local Manager of this location (TCP 443 and "
               "1236 in both directions) and the state of the Local Manager cluster. The location keeps forwarding traffic with its last configuration.",
     "collector": "Check that the cloud proxy can reach the Local Manager on TCP 443 and that the account of the adapter instance "
@@ -196,17 +217,17 @@ R = {
     "object_error": "Open the object in the Global Manager and read the error for each location of its span. Fix the cause "
                     "(a missing edge cluster, an address conflict, a location that is not reachable), then save the object again.",
     "gm_sync": "Check the connectivity between the active and the standby Global Manager (ping, then TCP 443 and 1236) and "
-               "the state of both Global Manager clusters.",
+               "the state of both Global Manager clusters. See https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vcf-9-0-and-later/9-0/advanced-network-management/administration-guide/managing-nsx-t-in-multiple-locations/nsx-t-federation/using-the-gm-and-lm-ui/monitoring-nsx-federation-locations.html",
     "lm_sync": "Check the connectivity between the Global Manager and the location (ping, TCP 1236 in both directions) and "
                "that the async-replicator service runs on both sides (get service async_replicator). Its log is "
-               "/var/log/async-replicator/ar.log.",
+               "/var/log/async-replicator/ar.log. See https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vcf-9-0-and-later/9-0/advanced-network-management/administration-guide/managing-nsx-t-in-multiple-locations/nsx-t-federation/using-the-gm-and-lm-ui/monitoring-nsx-federation-locations.html",
     "lm_lm_sync": "Run get site-replicator remote-sites on the Local Managers to see the connection state between the "
                   "locations, then check TCP 1236 between them. A location that is connected but not synchronized may still "
                   "be electing its leader; check again after a few seconds.",
     "latency": "Measure the round-trip time between the two managers named in the alarm. Federation supports up to 150 ms "
-               "between locations; look for WAN congestion or a path change.",
+               "between locations; look for WAN congestion or a path change. See https://knowledge.broadcom.com/external/article/345822",
     "queue": "The sync queue grows when the remote location cannot keep up or cannot be reached. Check the connectivity to "
-             "the remote location and /var/log/async-replicator/ar.log.",
+             "the remote location and /var/log/async-replicator/ar.log. See https://knowledge.broadcom.com/external/article/414606",
     "onboarding": "The location is in an inconsistent state. Delete the onboarding status of the location on the Global "
                   "Manager, as the NSX alarm describes, then start the configuration import again.",
     "traffic": "Inter-site traffic on this tunnel is above the range VCF Operations learned for it. Check whether a migration, "
@@ -221,7 +242,8 @@ A = [
     ("fed_no_active", "federation", "NSX Federation has no active Global Manager",
      "No reachable Global Manager reports the active role. Global configuration cannot be changed.", NET, AVAIL, [["fed_no_active"]], "active_gm"),
     ("fed_split_brain", "federation", "NSX Federation split-brain: two active Global Managers",
-     "More than one Global Manager claims the active role.", NET, AVAIL, [["fed_split_brain"]], "split_brain"),
+     "More than one Global Manager claims the active role, or NSX reports a split-brain.", NET, AVAIL,
+     [["fed_split_brain"], ["fed_split_nsx"]], "split_brain"),
     ("fed_gm_unreach", "federation", "Global Manager is not reachable by the collector",
      "At least one Global Manager address of the adapter instance does not answer or presents an untrusted certificate.", NET, AVAIL, [["fed_gm_unreach"]], "gm_reach"),
     ("fed_no_standby", "federation", "NSX Federation has no standby Global Manager",
@@ -236,6 +258,23 @@ A = [
      "No Global Manager answered. The Local Managers are collected from a cached list of locations.", APP, AVAIL, [["fed_degraded"]], "degraded"),
     ("fed_foreign", "federation", "NSX Federation account lists a Global Manager of another federation",
      "A Global Manager address of the account answers for another federation. It is not collected.", APP, CONF, [["fed_foreign"]], "foreign"),
+    ("gm_mode_none", "global_manager", "Global Manager has no role in the federation",
+     "The Global Manager reports the mode NONE: it is neither active nor standby.", NET, AVAIL, [["gm_mode_none"]], "gm_none"),
+    ("gm_version", "global_manager", "Global Managers run different versions",
+     "This Global Manager does not run the version of the active Global Manager. A switchover is refused in this state.",
+     NET, COMPL, [["gm_version"]], "gm_version"),
+    ("gm_upgrade", "global_manager", "NSX upgrade in progress, paused or failed on the Global Manager",
+     "The upgrade coordinator of the Global Manager reports an upgrade that is not finished.", NET, CONF,
+     [["gm_upg_running"], ["gm_upg_paused"], ["gm_upg_failed"]], "upgrade"),
+    ("loc_repl", "location", "Replication between the location and the Global Manager is in error",
+     "NSX reports a replication flow between the Global Manager and this location in an error state.", NET, AVAIL,
+     [["loc_repl", "!outage_location"]], "lm_sync"),
+    ("loc_newer", "location", "Location runs a newer NSX release than the Global Manager",
+     "The Local Manager is ahead of the Global Manager. NSX Federation supports the opposite order only.", NET, COMPL,
+     [["loc_newer"]], "upgrade"),
+    ("loc_upgrade", "location", "NSX upgrade in progress, paused or failed on the Local Manager",
+     "The upgrade coordinator of the Local Manager reports an upgrade that is not finished.", NET, CONF,
+     [["loc_upg_running"], ["loc_upg_paused"], ["loc_upg_failed"]], "upgrade"),
     ("gm_cluster", "global_manager", "Global Manager cluster is degraded",
      "The Global Manager cluster is not stable or a node is offline.", NET, AVAIL, [["gm_cluster"], ["gm_node_offline"]], "cluster"),
     ("gm_standby_sync", "global_manager", "Standby Global Manager is not in sync",
@@ -324,8 +363,16 @@ def symptoms_xml():
     return out
 
 
-A = [(k, kind, name, desc, typ, sub, [s + ["!outage_" + kind] for s in sets] if k in QUIET else sets, rec)
-     for k, kind, name, desc, typ, sub, sets, rec in A]
+def _quiet(k, kind, sets):
+    alarm = k.startswith(("alarm_", "loc_alarm_")) and "gm_to_gm" not in k
+    if k in QUIET or alarm:
+        sets = [s + ["!outage_" + kind] for s in sets]
+    if k == "chan_down":  # a Global Manager that is down takes its channels with it
+        sets = [s + ["!chan_gm_outage"] for s in sets]
+    return sets
+
+
+A = [(k, kind, name, desc, typ, sub, _quiet(k, kind, sets), rec) for k, kind, name, desc, typ, sub, sets, rec in A]
 
 
 def alerts_xml(with_recs=True):
