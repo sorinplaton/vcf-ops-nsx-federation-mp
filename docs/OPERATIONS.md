@@ -85,11 +85,13 @@ On the federation object:
 | Global Managers not collected | Address and reason: not reachable, certificate not trusted, or another federation |
 | Collection mode | `normal`, or `degraded` when no Global Manager answers and the location list comes from the cache or from VCF Operations |
 
-HTTP 403 on a call points to missing rights of the account. A Local Manager that refuses the account (HTTP 401 or
-403), or that fails most calls, is reported as not reached. A manager that times out three times in a row is
-skipped for the rest of the cycle.
+HTTP 403 on a call points to missing rights of the account. A Local Manager whose cluster status call fails, together with
+most of its other calls (HTTP 401, 403, 5xx or timeouts), is reported as not reached. A manager whose requests
+time out or stay throttled (HTTP 429 or 503 after the retries) three times in a row is skipped for the rest of
+the cycle.
 
-One account stays with one federation. If the federation is rebuilt with a new ID, create a new account. The cache of the location list lives in the adapter
+One account stays with one federation. If the federation is rebuilt with a new ID, create a new account: when
+every listed Global Manager answers for the new federation, the new account follows it. The cache of the location list lives in the adapter
 container and is lost when the container restarts.
 
 ## Upgrade

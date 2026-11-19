@@ -40,7 +40,9 @@ def test_failed_calls_are_unknown_not_empty(nsx):
         assert "backup_enabled" not in loc["p"] and "alarms|alarms_open_critical" not in loc["m"]
         assert "cluster|nodes_offline" not in loc["m"]
     for gm in r["global_manager"].values():
-        assert "backup_enabled" not in gm["p"] and "sync|standby_sync_entries" not in gm["m"]
+        assert "backup_enabled" not in gm["p"]
+        if gm["p"]["mode"] == "ACTIVE":  # a standby always reads 0 entries: it sends nothing itself
+            assert "sync|standby_sync_entries" not in gm["m"]
     assert "locations|locations_gm_connected" not in f["m"]
     assert f["m"]["locations|locations_healthy_pct"] == 100  # unknown does not make a location unhealthy
 
@@ -720,3 +722,88 @@ def test_a_local_manager_that_answers_503_is_not_reached(wire):
     assert sorted(l["m"]["connectivity|collector_reachable"] for l in r["location"].values()) == [0, 1]
     assert fed(r)["m"]["collection|api_calls_throttled"] >= 3
     assert wire.sent.count(bad) <= 12  # three calls with their retries, then the manager is skipped
+
+
+# ---- final validation: faults found in 1.7.2
+
+def test_a_policy_realized_at_one_location_gets_its_counters(nsx, clock):
+    status = "/global-manager/api/v1/global-infra/realized-state/status?intent_path=/global-infra/domains/default/security-policies/fed-demo"
+    gm = nsx.data[GM_HOSTS[0]]
+    eps = gm[status]["consolidated_status_per_enforcement_point"]
+    gm[status]["consolidated_status_per_enforcement_point"] = eps[:1]  # realized at one location only
+    locations = run()["location"]
+    inside = next(n for n, l in locations.items() if l["p"]["site_path"] == eps[0]["site_path"])
+    host_of = {l["p"]["local_manager_address"]: n for n, l in locations.items()}
+    for h in local_managers(nsx):
+        if host_of.get(h) != inside:
+            del nsx.data[h][STATS]  # the Local Manager outside the span answers 404 for the statistics
+        else:
+            nsx.data[h][STATS]["results"][0]["statistics"]["results"][0]["hit_count"] = 1000
+    wipe_cache()
+    for _ in range(2):
+        r = run()
+        clock["now"] += 300
+    pol = r["global_policy"]["fed-demo"]
+    assert pol["m"]["traffic|hit_count"] == 1000 and pol["m"]["traffic|hit_count_per_min"] == 0
+    assert fed(r)["m"]["collection|data_gaps"] == 0  # the location outside the span is not asked
+
+
+def test_a_rebuilt_federation_is_followed_by_a_new_account(nsx, ops):
+    r = run()
+    name, f = next(iter(r["federation"].items()))
+    old = f["p"]["federation_id"]
+    ops.res = {"federation": [("f1", name, old, {"global_manager_addresses": f["p"]["global_manager_addresses"]}, 0)]}
+    wipe_cache()
+    new = "00000000-0000-0000-0000-00000000cafe"
+    for h in GM_HOSTS:  # both listed Global Managers answer for the rebuilt federation
+        nsx.data[h]["/api/v1/sites/self"]["id"] = new
+    r = run()
+    assert fed(r)["p"]["federation_id"] == new and fed(r)["m"]["global_managers|global_managers_foreign"] == 0
+    assert len(r["location"]) == 2
+
+
+def test_one_refused_call_does_not_make_a_location_unreachable(nsx):
+    lm = local_managers(nsx)[0]
+    real = nsx.get
+
+    def get(client, path, params=None):
+        if client.host == lm and path == "/api/v1/cluster/status":
+            client.check_trust()
+            client.calls += 1
+            client.requests += 1
+            raise nsxclient.NsxError(403, path, "role")
+        return real(client, path, params)
+    nsx.get = get
+    r = run()
+    assert sorted(l["m"]["connectivity|collector_reachable"] for l in r["location"].values()) == [1, 1]
+
+
+def test_no_false_missing_standby_when_the_sites_call_fails(nsx):
+    nsx.fail = ["/api/v1/sites?"] if False else []
+    real = nsx.get
+
+    def get(client, path, params=None):
+        if path == "/api/v1/sites" and client.host == GM_HOSTS[0]:
+            client.check_trust()
+            client.calls += 1
+            client.requests += 1
+            raise nsxclient.NsxError(500, path, "x")
+        return real(client, path, params)
+    nsx.get = get
+    assert "standby_configured" not in fed(run(gm_hosts=[GM_HOSTS[0]]))["p"]
+
+
+def test_a_standby_does_not_keep_the_values_of_the_active(nsx):
+    r = run()
+    standby = next(g for g in r["global_manager"].values() if g["p"]["mode"] == "STANDBY")
+    assert standby["p"]["switchover_status"] == "not applicable (standby)"
+    assert standby["m"]["sync|standby_sync_entries"] == 0
+
+
+def test_a_sync_channel_without_stubs_is_unknown(nsx):
+    status = nsx.data[GM_HOSTS[0]][SITES_STATUS]
+    status["remote_connections"][0]["stubs"] = []
+    name = status["remote_connections"][0]["site_name"]
+    gm = next(n for n, g in run()["global_manager"].items() if g["p"]["mode"] == "ACTIVE")
+    r = run()
+    assert "connection_up" not in r["sync_channel"][f"{gm} -> {name}"]["m"]

@@ -2,7 +2,7 @@
 
 A management pack that monitors NSX Federation (NSX 9.1) in VCF Operations 9.1.1. It is built with the
 [VCF Operations Integration SDK](https://vmware.github.io/vmware-vcf-operations-integration-sdk/introduction)
-in Python. Current version: 1.7.2.
+in Python. Current version: 1.7.3.
 
 This is a lab project, not a Broadcom product. The pack is unsigned and comes with no support. It only reads
 from NSX.
@@ -17,7 +17,7 @@ The design, the install and the tests are described in two blog posts:
 The full list of object types, metrics, properties and alerts, with the condition and the recommendation of each
 alert, is in [docs/FEATURES.md](docs/FEATURES.md). In short:
 
-- 14 object types: the federation, Global Managers and their nodes, locations, sync channels, edge clusters,
+- 15 object types (the global firewall rule is opt-in): the federation, Global Managers and their nodes, locations, sync channels, edge clusters,
   edge nodes, RTEP tunnels, Tier-0 BGP neighbors, stretched Tier-0 and Tier-1 gateways, segments, global
   security policies, and the realization of each stretched object at each location. Global firewall rules
   are opt-in per policy.
@@ -93,7 +93,7 @@ Scripted, with `google-chrome`, `node` and Python `requests` on the host:
 ```bash
 export OPS_HOST=<vcf-operations-fqdn> OPS_PW=<admin password>
 install/upi.sh enableUPI
-install/install_unsigned.sh pack/build/NSXFederation_1.7.2.pak   # turns the switch off at the end
+install/install_unsigned.sh pack/build/NSXFederation_1.7.3.pak   # turns the switch off at the end
 ```
 
 The scripted route uses calls that are internal to the VCF Operations UI. They are unsupported and can

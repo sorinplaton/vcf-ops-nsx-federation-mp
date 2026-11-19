@@ -586,6 +586,8 @@ class Collector:
         self.stretched_full = 0
         self.gm_objects: Dict[str, Object] = {}  # Global Manager name -> object
         self.sites_of: Dict[int, set] = {}  # id(object) -> site paths it depends on
+        self.span_of: Dict[str, set] = {}  # stretched object path -> site paths of its realization
+        self.gm_list_read = False  # the list of Global Managers was read from the active one in this cycle
         self.split_brain_reported = 0
         self.config_version: Optional[Any] = None
         self.realization_checked = 0
@@ -682,7 +684,10 @@ class Collector:
             # Empty cache (first cycle, or the container restarted): what VCF Operations already holds for
             # these addresses decides which federation this account monitors, before any manager that answers.
             inventory = self.from_inventory()
-        self.fed_id = (self.cache.get_any_age("federation_id") or inventory.get("federation_id")
+        known = inventory.get("federation_id")
+        if known and answered and len(answered) == len(cfg.gm_hosts) and not any(g["federation_id"] == known for g in answered):
+            known = None  # every listed Global Manager answers for another federation: it was rebuilt
+        self.fed_id = (self.cache.get_any_age("federation_id") or known
                        or (answered[0]["federation_id"] if answered else "") or "")
         foreign = [g for g in answered if g["federation_id"] != self.fed_id]
         reachable = [g for g in answered if g["federation_id"] == self.fed_id]
@@ -746,7 +751,7 @@ class Collector:
         modes = [str(g.get("mode", "")).upper() for g in sites_doc.get("global_managers", [])]
         modes += [str(g["site"].get("active_gm", "")).upper() for g in reachable]
         standby_known: Optional[bool] = "STANDBY" in modes
-        if not standby_known and (gm is None or not gm["client"].ok(f"{GI}/global-managers")):
+        if not standby_known and not self.gm_list_read:
             standby_known = None  # the list of Global Managers was not read: unknown, not "no standby"
         self.finish_standby_sync()
         if standby_known is False:
@@ -958,6 +963,7 @@ class Collector:
         rtep = {tail(sc.get("site_path")): sc.get("rtep_ips", [])
                 for sc in (client.try_get(f"{GI}/federation-config", default={}) or {}).get("site_config", [])}
         gms = client.try_list(f"{GI}/global-managers")
+        self.gm_list_read = client.ok(f"{GI}/global-managers")
         versions = {s.get("id"): s.get("site_version") for s in fed_sites}
         gm_version = gm["site"].get("site_version")
 
@@ -1102,6 +1108,7 @@ class Collector:
                 self.props(so, {"status": "UNKNOWN"})
                 continue
             per_ep = st.get("consolidated_status_per_enforcement_point") or []
+            self.span_of[o["path"]] = {ep.get("site_path") for ep in per_ep if ep.get("site_path")}
             ok = err = 0
             for ep in per_ep:
                 site_path = ep.get("site_path") or ""
@@ -1199,6 +1206,10 @@ class Collector:
             self.node(go, node, 1)
         for node in mcs.get("offline_nodes") or []:
             self.node(go, node, 0)
+        if not is_active:  # values the active Global Manager reports; a former active must not keep its own
+            self.props(go, {"switchover_status": "not applicable (standby)", "standby_sync_status": "not applicable (standby)",
+                            "standby_data_consistent": "not applicable (standby)"})
+            self.metrics(go, {"standby_sync_entries": 0})
         if is_active:
             so = client.try_get("/api/v1/sites/switchover-status", default={}) or {}
             st = client.try_get("/api/v1/sites/status", default={}) or {}
@@ -1329,11 +1340,11 @@ class Collector:
     def channel(self, source_obj: Object, source_name: str, rc: dict) -> None:
         target = rc.get("site_name") or "?"
         stubs = rc.get("stubs") or []
-        up = bool(stubs) and any(s.get("connection_up") for s in stubs)
+        up = any(s.get("connection_up") for s in stubs) if stubs else None  # no stub listed: unknown
         co = self.obj("sync_channel", f"{source_name} -> {target}", f"chan:{source_name}>{target}")
         self.at(co, self.path_of(source_name), self.path_of(target))
         co.add_parent(source_obj)
-        self.metrics(co, {"connection_up": 1 if up else 0})
+        self.metrics(co, {"connection_up": None if up is None else int(up)})
         self.props(co, {"source": source_name, "target": target,
                         "target_address": ", ".join(str(s.get("address")) for s in stubs)})
         return None
@@ -1356,7 +1367,7 @@ class Collector:
         try:
             self.collect_lm(client, lo, loc)
             denied = sorted({why for why in client.failed.values() if why in ("HTTP 401", "HTTP 403")})
-            if "/api/v1/cluster/status" in client.failed and (denied or len(client.failed) * 2 >= client.requests):
+            if "/api/v1/cluster/status" in client.failed and len(client.failed) * 2 >= client.requests:
                 raise RuntimeError(("the account is refused (" + ", ".join(denied) + ")") if denied else
                                    f"{len(client.failed)} of {client.requests} calls failed")
             loc["_reached"] = True
@@ -1547,6 +1558,8 @@ class Collector:
 
         # rule statistics of the global policies, per location (and per rule when asked for)
         for pol in getattr(self, "inventory", {}).get("global_policy", []):
+            if pol["path"] in self.span_of and loc["path"] not in self.span_of[pol["path"]]:
+                continue  # not realized at this location: there are no statistics to read
             stats_path = f"{LGI}/domains/{pol.get('domain_id', 'default')}/security-policies/{pol['id']}/statistics"
             stats = client.try_get(stats_path, default={}) or {}
             if not client.ok(stats_path):
@@ -1602,7 +1615,9 @@ class Collector:
                 continue
             total_hits = 0
             rule_totals: Dict[str, Dict[str, int]] = {}
-            complete = all(loc.get("_reached") and pol["path"] in (loc.get("_policy_hits") or {}) for loc in lm_sites)
+            span = self.span_of.get(pol["path"]) or {loc["path"] for loc in lm_sites}
+            complete = all(loc.get("_reached") and pol["path"] in (loc.get("_policy_hits") or {})
+                           for loc in lm_sites if loc["path"] in span)
             for loc in lm_sites:
                 totals, per_rule = (loc.get("_policy_hits") or {}).get(pol["path"], ({}, {}))
                 total_hits += int(totals.get("hit_count", 0))
