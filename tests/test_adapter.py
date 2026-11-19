@@ -923,3 +923,40 @@ def test_a_global_manager_that_stops_answering_reads_not_reachable(nsx):
     r = run()
     assert r["global_manager"][names[GM_HOSTS[1]]]["m"]["connectivity|reachable"] == 0
     assert r["global_manager"][names[GM_HOSTS[0]]]["m"]["connectivity|reachable"] == 1
+
+
+# ---- last review of 1.7.6
+
+def test_an_unreachable_standby_still_gets_its_sync_state(nsx):
+    run()
+    status = nsx.data[GM_HOSTS[0]][SITES_STATUS]["active_standby_sync_statuses"][0]
+    status["status"], status["full_sync_status"]["status"] = "ERROR", "FAILED"
+    del nsx.data[GM_HOSTS[1]]  # the collector cannot reach the standby
+    r = run()
+    standby = r["global_manager"][status["standby_site"]]
+    assert standby["m"]["connectivity|reachable"] == 0 and standby["m"]["sync|standby_in_sync"] == 0
+
+
+def test_after_a_restart_a_global_manager_that_is_down_reads_not_reachable(nsx, ops):
+    r = run()
+    fed_id = fed(r)["p"]["federation_id"]
+    names = {g["p"]["address"]: n for n, g in r["global_manager"].items()}
+    ops.res = {"global_manager": [(f"g{i}", n, f"{fed_id}:gm:{x}", {"address": a}, 0) for i, (a, n, x) in enumerate(
+        (a, n, nsx.data[a]["/api/v1/sites/self"]["site"]["id"]) for a, n in names.items())]}
+    wipe_cache()
+    del nsx.data[GM_HOSTS[1]]
+    r = run()
+    assert r["global_manager"][names[GM_HOSTS[1]]]["m"]["connectivity|reachable"] == 0
+
+
+def test_an_address_that_now_answers_for_another_federation_reads_not_reachable(nsx):
+    names = {g["p"]["address"]: n for n, g in run()["global_manager"].items()}
+    nsx.data[GM_HOSTS[1]]["/api/v1/sites/self"]["id"] = "00000000-0000-0000-0000-00000000beef"
+    r = run()
+    assert r["global_manager"][names[GM_HOSTS[1]]]["m"]["connectivity|reachable"] == 0
+
+
+def test_a_second_address_of_a_manager_that_answers_is_not_marked_down(nsx):
+    run(gm_hosts=GM_HOSTS + ["alias.example.test"])  # alias of nothing: never seen, nothing sent
+    r = run(gm_hosts=GM_HOSTS + ["alias.example.test"])
+    assert all(g["m"]["connectivity|reachable"] == 1 for g in r["global_manager"].values())

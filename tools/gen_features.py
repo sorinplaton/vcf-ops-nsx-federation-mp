@@ -26,8 +26,14 @@ OPS = {"<": "below", ">": "above", "=": "is", "!=": "is not", ">=": "at least", 
 cell = lambda s: str(s).replace("|", "\\|").replace("\n", " ")
 
 
-def condition(key):
+NEG = {"=": "is not", "!=": "is", "<": "at least", ">": "at most", ">=": "below", "contains": "does not contain"}
+
+
+def condition(key, negated=False):
     kind, name, sev, ctype, mkey, op, value = ga.S[key]
+    if negated and ctype in ("metric", "property") and op in NEG:
+        label = dict(MODEL[kind][1] + MODEL[kind][2]).get(mkey, mkey)
+        return f"\"{label}\" {NEG[op]} {value}"
     if ctype == "event":
         return name
     if ctype == "dt":
@@ -49,7 +55,7 @@ def alert_rows(kind):
         # conditions that must NOT hold are shown too, except the outage ones (see the notes)
         def part(group):
             shown = [condition(s) for s in group if not s.startswith("!")]
-            shown += ["not: " + condition(s[1:]) for s in group if s.startswith("!") and "outage" not in s]
+            shown += [condition(s[1:], negated=True) for s in group if s.startswith("!") and "outage" not in s]
             return " and ".join(shown)
         trigger = "; or ".join(part(group) for group in sets)
         notes = []

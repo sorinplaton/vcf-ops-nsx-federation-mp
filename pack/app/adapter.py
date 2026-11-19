@@ -706,15 +706,23 @@ class Collector:
                                       [Identifier("id", self.fed_id)])
         fed = self.fed
 
-        known = dict(self.cache.get_any_age("gm_sites") or {})  # address -> (name, site id) of earlier cycles
+        # Global Managers of earlier cycles that do not answer for this federation now read "not reachable". The
+        # address list comes from the cache, or from VCF Operations after a restart of the container.
+        known = dict(self.cache.get_any_age("gm_sites") or {})  # address -> (name, site id)
+        if not known:
+            known = self.gm_sites_from_inventory()
         known.update({g["host"]: (g["site"].get("name"), g["site"].get("id")) for g in reachable if g["site"].get("id")})
         self.cache.put("gm_sites", known)
+        live_sites = {g["site"].get("id") for g in reachable}
         for g in gms:
-            if not g["ok"] and g["host"] in known and self.fed:
-                name, site_id = known[g["host"]]
-                go = self.obj("global_manager", name or g["host"], f"gm:{site_id}")
-                go.add_parent(self.fed)
-                self.metrics(go, {"reachable": 0})
+            if g in reachable or g["host"] not in known or known[g["host"]][1] in live_sites:
+                continue  # answers for this federation, never seen, or another address of a manager that answers
+            name, site_id = known[g["host"]]
+            go = self.obj("global_manager", name or g["host"], f"gm:{site_id}")
+            go.add_parent(self.fed)
+            self.metrics(go, {"reachable": 0})
+            if name:
+                self.gm_objects[name] = go  # the active one can still report its sync state
         for g in gms:
             if not g["ok"]:
                 crit = Criticality.CRITICAL if not reachable else Criticality.IMMEDIATE
@@ -889,6 +897,19 @@ class Collector:
             else:
                 value = self.cache.get_any_age(key) or value
         return value
+
+    def gm_sites_from_inventory(self) -> Dict[str, Tuple[Optional[str], Optional[str]]]:
+        """Address -> (name, site id) of the Global Managers of this federation that VCF Operations holds."""
+        out: Dict[str, Tuple[Optional[str], Optional[str]]] = {}
+        for res in self.ops.resources("global_manager"):
+            ident = next((i.get("value") for i in res["resourceKey"].get("resourceIdentifiers", [])
+                          if (i.get("identifierType") or {}).get("name") == "id"), "")
+            if not ident.startswith(self.fed_id + ":gm:"):
+                continue
+            address = self.ops.properties(res["identifier"]).get("address")
+            if address:
+                out[address] = (res["resourceKey"].get("name"), ident.split(":gm:", 1)[1])
+        return out
 
     def from_inventory(self) -> Dict[str, Any]:
         """Federation ID and location list of this account as VCF Operations stored them in earlier cycles. Used
