@@ -55,6 +55,8 @@ SHORT = {"global_managers_active": "Active GMs", "global_managers_unreachable": 
          "rx_bytes_per_s": "Rx bytes/s", "tx_bytes_per_s": "Tx bytes/s", "rx_packets_per_min": "Rx packets/min",
          "tx_packets_per_min": "Tx packets/min", "rx_dropped_per_min": "Rx drops/min", "tx_dropped_per_min": "Tx drops/min",
          "rx_blocked_per_min": "Rx blocked/min", "tx_blocked_per_min": "Tx blocked/min", "hit_count_per_min": "Rule hits/min",
+         "rx_drop_pct": "Rx dropped (%)", "tx_drop_pct": "Tx dropped (%)", "connection_drops_per_hour": "Drops/hour",
+         "gm_rtt_ms": "RTT to GM (ms)", "gm_rtt_pct_of_max": "RTT (% of max)", "sync_queue_used_pct": "Sync queue used (%)",
          "rules_total": "Rules", "rules_disabled": "Rules disabled", "hit_count": "Rule hits", "realized": "Realized"}
 IS_PROP = {k: {p for p, _ in MODEL[k][2]} for k in KINDS}
 
@@ -175,6 +177,8 @@ def overview():
         ("location", "gm_connection_up", (0.9, 0.6, 0.5)), ("location", "collector_reachable", (0.9, 0.6, 0.5)),
         ("location", "intersite_bgp_established"), ("location", "intersite_bgp_down", (0.1, 0.5, 0.9)),
         ("location", "full_sync_failed", (0.1, 0.5, 0.9)), ("location", "replication_flows_unhealthy", (0.1, 0.5, 0.9)),
+        ("location", "gm_rtt_ms", (50, 100, 150)), ("location", "gm_rtt_pct_of_max", (50, 80, 100)),
+        ("location", "sync_queue_used_pct", (10, 50, 80)),
         ("location", "gm_last_seen_minutes", (5, 15, 60)), ("location", "minutes_since_collection", (6, 15, 60)), ("location", "nodes_offline", (0.1, 0.5, 0.9)),
         ("location", "backup_age_hours", (24, 48, 72)), ("location", "cert_min_days_to_expiry", (60, 30, 7)),
         ("location", "alarms_open_critical", (0.1, 0.5, 0.9)), ("location", "alarms_open_high", (0.9, 4, 9)),
@@ -206,20 +210,24 @@ def connectivity():
         ("edge_node", "intersite_bgp_down", "BGP down"), ("edge_cluster", "intersite_bgp_down", "BGP down (cluster)")])
     b = d.object_list("RTEP tunnels", (7, 1, 6, 7), ["rtep_tunnel"], [
         ("rtep_tunnel", "bgp_established", "BGP established"), ("rtep_tunnel", "rx_dropped_per_min", "Rx drops/min"),
-        ("rtep_tunnel", "tx_dropped_per_min", "Tx drops/min")], select_first=False)
+        ("rtep_tunnel", "tx_dropped_per_min", "Tx drops/min"), ("rtep_tunnel", "rx_drop_pct", "Rx dropped (%)"),
+        ("rtep_tunnel", "tx_drop_pct", "Tx dropped (%)")], select_first=False)
     c = d.object_list("Tier-0 BGP neighbors", (1, 8, 6, 8), ["bgp_neighbor"], [
         ("bgp_neighbor", "established", "Established"), ("bgp_neighbor", "prefixes_in", "Prefixes in"),
-        ("bgp_neighbor", "prefixes_out", "Prefixes out"), ("bgp_neighbor", "connection_drops", "Drops")], select_first=False)
+        ("bgp_neighbor", "prefixes_out", "Prefixes out"), ("bgp_neighbor", "connection_drops", "Drops"),
+        ("bgp_neighbor", "connection_drops_per_hour", "Drops/hour")], select_first=False)
     sb = d.scoreboard("Selected object: key values", (7, 8, 6, 8), [
         ("sync_channel", "connection_up", (0.9, 0.6, 0.5)),
         ("edge_cluster", "members"), ("edge_cluster", "intersite_bgp_established"), ("edge_cluster", "intersite_bgp_down", (0.1, 0.5, 0.9)),
         ("edge_node", "rtep_tunnels"), ("edge_node", "intersite_bgp_established"), ("edge_node", "intersite_bgp_down", (0.1, 0.5, 0.9)),
         ("rtep_tunnel", "bgp_established", (0.9, 0.6, 0.5)), ("rtep_tunnel", "rx_bytes_per_s"), ("rtep_tunnel", "tx_bytes_per_s"),
         ("rtep_tunnel", "rx_packets_per_min"), ("rtep_tunnel", "tx_packets_per_min"),
-        ("rtep_tunnel", "rx_dropped_per_min", (1, 30, 60)), ("rtep_tunnel", "tx_dropped_per_min", (1, 30, 60)),
-        ("rtep_tunnel", "rx_blocked_per_min"), ("rtep_tunnel", "tx_blocked_per_min"),
+        ("rtep_tunnel", "rx_dropped_per_min", (1, 10, 60)), ("rtep_tunnel", "tx_dropped_per_min", (1, 10, 60)),
+        ("rtep_tunnel", "rx_drop_pct", (0.5, 1, 5)), ("rtep_tunnel", "tx_drop_pct", (0.5, 1, 5)),
+        ("rtep_tunnel", "rx_blocked_per_min", (1, 10, 60)), ("rtep_tunnel", "tx_blocked_per_min", (1, 10, 60)),
         ("bgp_neighbor", "established", (0.9, 0.6, 0.5)), ("bgp_neighbor", "prefixes_in"), ("bgp_neighbor", "prefixes_out"),
         ("bgp_neighbor", "seconds_established"), ("bgp_neighbor", "connection_drops"),
+        ("bgp_neighbor", "connection_drops_per_hour", (1, 12, 36)),
     ], columns=3)
     ch = d.chart("Trend of the value clicked above", (1, 16, 12, 7))
     d.link(a, sb)

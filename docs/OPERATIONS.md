@@ -74,6 +74,44 @@ still collected.
 
 For planned work, use a maintenance schedule of VCF Operations on the group "NSX Federation - All objects".
 
+## Latency, packet loss and BGP flaps
+
+- Latency: the adapter reads the latency NSX measures on each flow between the Global Manager and a location, from
+  `GET /global-manager/api/v1/observability/flow-details` on the active Global Manager, the call behind the "Latest
+  Latency" column of the Location Manager page. The metric "Round-trip time to the Global Manager" is the highest of the
+  two flows of the location, and "% of the maximum RTT setting" compares it with the maximum RTT set for the location
+  in NSX. An NSX without that call answers 404; the adapter then uses the round-trip time of the replication status,
+  which NSX 9.1 leaves empty. NSX measures no latency between the two Global Managers. The alert fires above 150 ms, the limit NSX Federation supports, or
+  above 80% of the setting (warning), and above 100% (immediate). With the default setting of 250 ms, 80% is 200 ms,
+  so the 150 ms condition is the one that fires first. The
+  latency alarms of NSX itself (between Global Managers, and between a Global Manager and a location) raise their own
+  alerts.
+- Packet loss: for each RTEP tunnel and direction, the dropped packets of the interval are divided by the packets of the
+  interval. NSX counts a dropped packet in the packet total too: in the lab the received total of a tunnel matched the
+  sent total of its peer exactly while one packet was counted as dropped (only receive drops were seen; the send
+  counters are taken to work the same way). The percentage is sent once at least 50 packets crossed the tunnel since
+  the previous cycle, so an idle tunnel does not show 50% for one lost packet. The alert needs both more than 1% (5% for immediate) and
+  more than 10 drops per minute, for two cycles.
+- Sync queues: the same call gives the size and the maximum size of the sync queues of each flow. "Sync queue used"
+  is the fullest queue of the location, in percent. It has no alert of its own: NSX raises the alarm
+  queue_occupancy_threshold_exceeded, which the pack turns into an alert.
+- Blocked packets: NSX counts them apart from drops. More than 10 per minute in one direction for two cycles raises an
+  alert, since a firewall on the inter-site path usually explains it.
+- BGP flaps: the connection drop counter of each Tier-0 BGP neighbor gets a rate. A drop since the previous cycle while
+  the session is established in the current cycle raises a warning that stays for two cycles. A session that is down
+  in the current cycle raises no flap alert, and the "not established" alert follows if it stays down. A restart of
+  the edge resets the counter, which gives no rate for that cycle, so a restart is not reported as a flap.
+
+## Changing a threshold
+
+The thresholds of the pack are listed in [FEATURES.md](FEATURES.md#thresholds). They are part of the symptom
+definitions and the same for every site. To use another value without rebuilding the pack, override the symptom in
+the policy of the objects: Operate, Administration, Configurations, Policy Definition, select the policy and Edit, open
+Alerts and Symptoms, then the Symptom Definitions tab, pick NSX Federation in the object types (or type the name of the
+symptom in the filter), select the symptom and change the value under Override Symptoms, then Save. To change the value for everyone, edit the table `S` in `tools/gen_alerts.py`, run the
+generators and build a new version. The names of some symptoms and alerts carry the value (for example "more than 1%
+of the received packets"): change the name in the same table.
+
 ## Collection health
 
 On the federation object:

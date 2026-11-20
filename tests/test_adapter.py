@@ -960,3 +960,124 @@ def test_a_second_address_of_a_manager_that_answers_is_not_marked_down(nsx):
     run(gm_hosts=GM_HOSTS + ["alias.example.test"])  # alias of nothing: never seen, nothing sent
     r = run(gm_hosts=GM_HOSTS + ["alias.example.test"])
     assert all(g["m"]["connectivity|reachable"] == 1 for g in r["global_manager"].values())
+
+
+def tunnel_stats(nsx):
+    """Every per-tunnel statistic of the fixture, to change the counters between cycles."""
+    return [t for h in nsx.data for k, v in nsx.data[h].items() if k.endswith("/inter-site/statistics")
+            for site in v.get("stats_per_site") or [] for t in site.get("stats_per_tunnel") or []]
+
+
+def bump(nsx, rx_packets=0, rx_dropped=0, tx_packets=0, tx_dropped=0, rx_blocked=0):
+    for t in tunnel_stats(nsx):
+        rx, tx = t.setdefault("rx", {}), t.setdefault("tx", {})
+        rx["total_packets"] = int(rx.get("total_packets") or 0) + rx_packets
+        rx["dropped_packets"] = int(rx.get("dropped_packets") or 0) + rx_dropped
+        rx["blocked_packets"] = int(rx.get("blocked_packets") or 0) + rx_blocked
+        tx["total_packets"] = int(tx.get("total_packets") or 0) + tx_packets
+        tx["dropped_packets"] = int(tx.get("dropped_packets") or 0) + tx_dropped
+
+
+def test_tunnel_drops_are_also_a_percentage(nsx, clock):
+    assert tunnel_stats(nsx)
+    run()
+    clock["now"] += 300
+    bump(nsx, rx_packets=1000, rx_dropped=50, tx_packets=1000)  # NSX counts the 50 dropped in the 1000
+    r = run()
+    for t in r["rtep_tunnel"].values():
+        assert t["m"]["rates|rx_drop_pct"] == 5.0 and t["m"]["rates|tx_drop_pct"] == 0
+        assert t["m"]["rates|rx_dropped_per_min"] == 10.0
+
+
+def test_an_idle_tunnel_gets_no_drop_percentage(nsx, clock):
+    run()
+    clock["now"] += 300
+    bump(nsx, rx_packets=20, rx_dropped=1)  # one lost packet out of 21 is not 5% of anything
+    r = run()
+    assert all("rates|rx_drop_pct" not in t["m"] for t in r["rtep_tunnel"].values())
+
+
+def test_a_counter_reset_gives_no_drop_percentage(nsx, clock):
+    run()
+    clock["now"] += 300
+    for t in tunnel_stats(nsx):  # NSX restarted the counters: smaller than in the previous cycle
+        t["rx"]["total_packets"], t["rx"]["dropped_packets"] = 10, 5
+    r = run()
+    assert all("rates|rx_drop_pct" not in t["m"] for t in r["rtep_tunnel"].values())
+
+
+def test_drop_pct_and_rtt_pct():
+    import adapter
+    prev, cur = {"d": 10, "p": 1000}, {"d": 20, "p": 2000}
+    assert adapter.drop_pct(prev, cur, "d", "p") == 1.0
+    assert adapter.drop_pct(prev, {"d": 11, "p": 1010}, "d", "p") is None  # 10 packets: too few
+    assert adapter.drop_pct(prev, {"d": 200, "p": 1100}, "d", "p") is None  # more drops than packets: read apart
+    assert adapter.drop_pct({}, cur, "d", "p") is None
+    assert adapter.rtt_pct(200, 250) == 80.0 and adapter.rtt_pct(None, 250) is None
+    assert adapter.rtt_pct(10, None) is None and adapter.rtt_pct(10, 0) is None and adapter.rtt_pct(10, "x") is None
+
+
+def bgp_status(nsx):
+    return [n for h in nsx.data for k, v in nsx.data[h].items() if "/bgp/neighbors/status" in k for n in v.get("results") or []]
+
+
+def test_a_bgp_session_drop_gets_a_rate(nsx, clock):
+    assert bgp_status(nsx)
+    for n in bgp_status(nsx):
+        n["connection_drop_count"] = 3
+    run()
+    clock["now"] += 300
+    r = run()
+    assert all(o["m"]["connection_drops_per_hour"] == 0 for o in r["bgp_neighbor"].values())
+    for n in bgp_status(nsx):
+        n["connection_drop_count"] = 4
+    clock["now"] += 300
+    r = run()
+    assert all(o["m"]["connection_drops_per_hour"] == 12.0 for o in r["bgp_neighbor"].values())
+
+
+def flow(src, dst, ms, cur=0, mx=1000):
+    return {"flow_type": "GM_TO_LM", "queue_infos": [{"namespace": "GM_2_LM", "type": "TRANSMITTER", "current_size": cur, "max_size": mx}],
+            "cross_site_flow_info": {"status": "GOOD", "from_site_path": src, "to_site_path": dst, "latency_millis": ms}}
+
+
+def test_rtt_and_sync_queue_come_from_the_flow_details(nsx):
+    gm, a, b = "/global-infra/global-managers/gm-site-a", "/global-infra/sites/site-a-wld01", "/global-infra/sites/site-a-wld03"
+    nsx.data[GM_HOSTS[0]]["/global-manager/api/v1/observability/flow-details"] = {"errors": [], "flow_info": [
+        flow(gm, a, 3), flow(a, gm, 5, cur=250), flow(gm, b, 200), flow(b, gm, 190),
+        {"flow_type": "GM_TO_GM", "queue_infos": [{"current_size": 0}],  # between Global Managers: left out
+         "cross_site_flow_info": {"from_site_path": gm, "to_site_path": "/global-infra/global-managers/gm-site-b"}}]}
+    r = run()
+    wld01, wld03 = r["location"]["site-a-wld01"]["m"], r["location"]["site-a-wld03"]["m"]
+    assert wld01["connectivity|gm_rtt_ms"] == 5 and wld01["sync|sync_queue_used_pct"] == 25.0
+    assert wld03["connectivity|gm_rtt_ms"] == 200 and wld03["connectivity|gm_rtt_pct_of_max"] == 80.0  # maximum_rtt 250 ms
+    assert fed(r)["m"]["collection|data_gaps"] == 0
+
+
+def test_without_flow_details_the_rtt_comes_from_the_replication_status(nsx):
+    for h in GM_HOSTS:  # no flow-details in the fixture: an NSX without that API answers 404, which is no data gap
+        for k, v in nsx.data[h].items():
+            if k.startswith("/api/v1/federation/replication/gm/sites/"):
+                for f in v.get("flow_statuses") or []:
+                    f["rtt_statistic"] = {"average_rtt": 50.0}
+    r = run()
+    for loc in r["location"].values():
+        assert loc["m"]["connectivity|gm_rtt_ms"] == 50.0
+        assert loc["m"]["connectivity|gm_rtt_pct_of_max"] == 20.0
+        assert "sync|sync_queue_used_pct" not in loc["m"]
+    assert fed(r)["m"]["collection|data_gaps"] == 0
+
+
+def test_new_network_alerts_follow_the_rules():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("gen_alerts", os.path.join(ROOT, "tools", "gen_alerts.py"))
+    ga = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(ga)
+    alerts = {a[0]: a for a in ga.A}
+    assert ga.S["tun_rx_loss1"][6] == 1 and ga.S["tun_rx_loss5"][6] == 5
+    # a percentage never fires alone: each drop condition also needs more than 10 drops per minute
+    assert all(any(s.startswith("tun_") and s.endswith("_drops") for s in group) for group in alerts["tun_drops"][6])
+    # the flap needs the session up in this cycle: the 2-cycle "down" symptom would let the first cycle of an outage through
+    assert all("bgp_up_now" in group for group in alerts["bgp_flap"][6]) and ga.WAIT.get("bgp_up_now", (1, 1)) == (1, 1)
+    for k in ("tun_blocked", "bgp_flap", "loc_rtt"):  # quiet during a location outage like the other network alerts
+        assert all(any(s.startswith("!outage_") for s in group) for group in alerts[k][6])

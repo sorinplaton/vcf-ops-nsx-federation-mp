@@ -20,10 +20,16 @@ logger = logging.getLogger(__name__)
 
 GI = "/global-manager/api/v1/global-infra"  # policy tree on a Global Manager
 LGI = "/policy/api/v1/global-infra"  # the same tree as received by a Local Manager
+# what the Location Manager page of the Global Manager reads: per flow, the latency NSX measured and the sync queues
+FLOWS = "/global-manager/api/v1/observability/flow-details"
 INVENTORY_TTL = 30 * 60  # seconds: inventory tier
 GM_RESERVED_CALLS = 20  # calls of the budget kept for the health of the Global Manager itself
 REALIZATION_EVERY_CYCLE = 200  # up to this many stretched objects, the realization of each is read in every cycle
 REALIZATION_SWEEP_CYCLES = 6  # above it, every object is read again at least once in this many cycles
+# fewest packets between two cycles for a drop percentage (dropped ones included): below it one lost packet would
+# read as several percent.
+# The drop alert also needs more than 10 drops a minute, which always clears this floor on a 5-minute interval.
+LOSS_MIN_PACKETS = 50
 SLOW_TTL = 60 * 60  # seconds: certificates and backups
 
 # ---- units, by metric key (the same key has the same unit on every object type) ----------
@@ -43,6 +49,8 @@ UNITS = {
     "tx_dropped_per_min": _PER_MIN, "rx_blocked_per_min": _PER_MIN, "tx_blocked_per_min": _PER_MIN,
     "hit_count_per_min": _PER_MIN, "rtep_dropped_per_min": _PER_MIN,
     "locations_healthy_pct": Units.RATIO.PERCENT,
+    "rx_drop_pct": Units.RATIO.PERCENT, "tx_drop_pct": Units.RATIO.PERCENT, "gm_rtt_pct_of_max": Units.RATIO.PERCENT,
+    "connection_drops_per_hour": Units.RATE.PER_HOUR, "sync_queue_used_pct": Units.RATIO.PERCENT,
 }
 # counters that also get a rate: key -> (rate key, seconds the rate is expressed in)
 RATES = {
@@ -51,7 +59,10 @@ RATES = {
     "rx_blocked": ("rx_blocked_per_min", 60), "tx_blocked": ("tx_blocked_per_min", 60),
     "rx_bytes": ("rx_bytes_per_s", 1), "tx_bytes": ("tx_bytes_per_s", 1),
     "hit_count": ("hit_count_per_min", 60),
+    "connection_drops": ("connection_drops_per_hour", 3600),
 }
+# share of the packets dropped between two cycles: metric key -> (dropped counter, packet counter)
+LOSS = {"rx_drop_pct": ("rx_dropped", "rx_packets"), "tx_drop_pct": ("tx_dropped", "tx_packets")}
 
 # ---- object model ---------------------------------------------------------------------
 # type key -> (label, [(metric key, label)], [(property key, label)])
@@ -147,6 +158,8 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("replication_flows", "Replication flows with the Global Manager"),
         ("replication_flows_unhealthy", "Replication flows in an error state"),
         ("gm_rtt_ms", "Round-trip time to the Global Manager"),
+        ("gm_rtt_pct_of_max", "Round-trip time to the Global Manager, % of the maximum RTT setting"),
+        ("sync_queue_used_pct", "Sync queue used, fullest queue with the Global Manager"),
         ("gm_last_seen_minutes", "Time since the Global Manager last saw the location"),
     ], [
         ("site_id", "Site ID"), ("version", "Version"), ("version_matches_gm", "Same version as the Global Manager"),
@@ -186,6 +199,7 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("rx_packets_per_min", "Received packets per minute"), ("tx_packets_per_min", "Sent packets per minute"),
         ("rx_dropped_per_min", "Received packets dropped per minute"), ("tx_dropped_per_min", "Sent packets dropped per minute"),
         ("rx_blocked_per_min", "Received packets blocked per minute"), ("tx_blocked_per_min", "Sent packets blocked per minute"),
+        ("rx_drop_pct", "Share of received packets dropped"), ("tx_drop_pct", "Share of sent packets dropped"),
         ("bgp_established", "Inter-site BGP established"),
     ], [("local_rtep", "Local RTEP"), ("remote_rtep", "Remote RTEP"), ("remote_location", "Remote location"),
         ("bgp_state", "Inter-site BGP state")]),
@@ -205,6 +219,7 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("established", "Established"), ("prefixes_in", "Prefixes received"), ("prefixes_out", "Prefixes advertised"),
         ("messages_in", "Messages received"), ("messages_out", "Messages sent"),
         ("seconds_established", "Seconds established"), ("connection_drops", "Connection drops"),
+        ("connection_drops_per_hour", "Connection drops per hour"),
     ], [("state", "Connection state"), ("remote_as", "Remote AS"), ("source_address", "Source address"),
         ("neighbor_address", "Neighbor address"), ("location", "Location"), ("edge", "Edge"),
         ("session_type", "Session type (uplink or inter-SR)")]),
@@ -243,7 +258,8 @@ _GROUP_BY_KEY = {
     "standby_sync_entries": "sync", "full_sync_failed": "sync", "standby_in_sync": "sync", "standby_sync_remaining": "sync",
     "standby_out_of_sync_minutes": "sync", "standby_full_sync_age_hours": "sync", "full_sync_duration_s": "sync",
     "full_sync_age_hours": "sync", "minutes_since_collection": "connectivity",
-    "replication_flows": "sync", "replication_flows_unhealthy": "sync", "gm_rtt_ms": "connectivity",
+    "replication_flows": "sync", "replication_flows_unhealthy": "sync", "gm_rtt_ms": "connectivity", "gm_rtt_pct_of_max": "connectivity", "sync_queue_used_pct": "sync",
+    "rx_drop_pct": "rates", "tx_drop_pct": "rates",
     "gm_last_seen_minutes": "connectivity", "split_brain_reported": "global_managers",
     "realization_checked": "collection", "stale_objects_deleted": "collection",
     "intersite_bgp_total": "intersite", "intersite_bgp_established": "intersite", "intersite_bgp_down": "intersite",
@@ -289,6 +305,7 @@ KPI = {
     ("location", "full_sync_failed"), ("sync_channel", "connection_up"),
     ("edge_node", "intersite_bgp_established"), ("rtep_tunnel", "bgp_established"),
     ("rtep_tunnel", "rx_dropped_per_min"), ("rtep_tunnel", "tx_dropped_per_min"),
+    ("rtep_tunnel", "rx_drop_pct"), ("rtep_tunnel", "tx_drop_pct"),
     ("bgp_neighbor", "established"), ("realization", "realized"),
     ("tier0", "error_locations"), ("tier1", "error_locations"), ("segment", "error_locations"),
     ("global_policy", "error_locations"),
@@ -510,6 +527,48 @@ def rtt_values(stat: Any) -> List[float]:
     return []
 
 
+def drop_pct(prev: Dict[str, float], cur: Dict[str, float], dropped: str, packets: str) -> Optional[float]:
+    """Dropped packets as a share of the packets of the interval. NSX counts a dropped packet in total_packets too:
+    in the lab the received total of a tunnel matched the peer's sent total exactly while its drop counter read 1.
+    None when a counter is missing or went down (reset on the NSX side), when the drops exceed the total (counters
+    read at different moments), or when too few packets passed for a percentage to mean anything."""
+    if not all(k in prev and k in cur for k in (dropped, packets)):
+        return None
+    d_drop, d_pkt = cur[dropped] - prev[dropped], cur[packets] - prev[packets]
+    if d_drop < 0 or d_pkt < LOSS_MIN_PACKETS or d_drop > d_pkt:
+        return None
+    return round(100.0 * d_drop / d_pkt, 2)
+
+
+def flow_summary(doc: Dict[str, Any]) -> Dict[str, Dict[str, Optional[float]]]:
+    """Per location path: the highest latency NSX measured on the flows between the Global Manager and the location,
+    and how full the fullest sync queue of these flows is, in %. The flows between Global Managers are left out."""
+    num = lambda v: isinstance(v, (int, float)) and not isinstance(v, bool)
+    seen: Dict[str, Dict[str, List[float]]] = {}
+    for f in doc.get("flow_info") or []:
+        c = f.get("cross_site_flow_info") or {}
+        for path in (c.get("from_site_path"), c.get("to_site_path")):
+            if not str(path or "").startswith("/global-infra/sites/"):
+                continue
+            e = seen.setdefault(path, {"rtt": [], "queue": []})
+            if num(c.get("latency_millis")):
+                e["rtt"].append(float(c["latency_millis"]))
+            for q in f.get("queue_infos") or []:
+                if num(q.get("current_size")) and num(q.get("max_size")) and q["max_size"] > 0:
+                    e["queue"].append(100.0 * q["current_size"] / q["max_size"])
+    return {p: {"rtt_ms": max(e["rtt"]) if e["rtt"] else None,
+                "queue_pct": round(max(e["queue"]), 2) if e["queue"] else None} for p, e in seen.items()}
+
+
+def rtt_pct(rtt: Optional[float], maximum: Any) -> Optional[float]:
+    """Round-trip time as a percentage of the maximum RTT set for the location in NSX."""
+    try:
+        m = float(maximum)
+    except (TypeError, ValueError):
+        return None
+    return round(100.0 * rtt / m, 1) if rtt is not None and m > 0 else None
+
+
 def epoch_seconds(text: Any) -> Optional[float]:
     """NSX prints some timestamps as 'seconds: 1795092255\nnanos: 2094...'."""
     for part in str(text or "").split():
@@ -637,6 +696,10 @@ class Collector:
                 if k in prev and v >= prev[k]:
                     rate_key, per = RATES[k]
                     self.metrics(o, {rate_key: round((v - prev[k]) / dt * per, 2)})
+            for pct_key, (dropped, packets) in LOSS.items():
+                pct = drop_pct(prev, current, dropped, packets)
+                if pct is not None:
+                    self.metrics(o, {pct_key: pct})
         self.new_counters[ident] = dict(current, t=now)
 
     @staticmethod
@@ -1024,6 +1087,11 @@ class Collector:
         doc = {"locations": locations,
                "global_managers": [{"id": g.get("id"), "mode": g.get("mode")} for g in gms]}
 
+        # latency and sync queues of every flow, one call for all the locations. An NSX without this API answers
+        # 404: the round-trip time then comes from the replication status, as before.
+        flow_doc = client.try_get(FLOWS, default={}) or {}
+        flows = {} if client.absent(FLOWS) or not client.ok(FLOWS) else flow_summary(flow_doc)
+
         # Location objects exist as soon as the Global Manager lists them.
         for loc in locations:
             lo = self.obj("location", loc["name"], f"site:{loc['site_id']}")
@@ -1040,7 +1108,7 @@ class Collector:
                 if loc["version"] and gm_version else None,
                 "site_path": loc["path"], "lm_thumbprint": loc["thumbprint"],
             })
-            self.replication(client, lo, loc)
+            self.replication(client, lo, loc, flows.get(loc["path"]))
             if loc["gm_connection_up"] is False:
                 self.down_locations.add(loc["path"])
                 self.event(lo, f"Location {loc['name']} is not connected to the active Global Manager",
@@ -1318,7 +1386,7 @@ class Collector:
                        Criticality.CRITICAL if sev == "CRITICAL" else Criticality.IMMEDIATE if sev == "HIGH" else Criticality.WARNING)
         return name
 
-    def replication(self, client: NsxClient, lo: Object, loc: Dict[str, Any]) -> None:
+    def replication(self, client: NsxClient, lo: Object, loc: Dict[str, Any], flow: Optional[Dict[str, Any]] = None) -> None:
         """What the Location Manager page of NSX shows for a location: the state of each replication flow, the
         round-trip time when NSX reports one, when the location was last seen, and the onboarding status."""
         path = f"/api/v1/federation/replication/gm/sites/{loc['site_id']}/status"
@@ -1329,9 +1397,13 @@ class Collector:
                                            for w in ("ERROR", "FAIL", "DISCONNECT", "DOWN", "STOP", "UNAVAILABLE"))]
             rtts = [v for f in flows for v in rtt_values(f.get("rtt_statistic"))]
             seen = rep.get("last_seen_online")
+            rtt = round(max(rtts), 1) if rtts else None
+            if (flow or {}).get("rtt_ms") is not None:  # NSX 9.1 leaves rtt_statistic empty: the flow details carry it
+                rtt = flow["rtt_ms"]
             self.metrics(lo, {
                 "replication_flows": len(flows), "replication_flows_unhealthy": len(bad),
-                "gm_rtt_ms": round(max(rtts), 1) if rtts else None,
+                "gm_rtt_ms": rtt, "gm_rtt_pct_of_max": rtt_pct(rtt, loc.get("maximum_rtt")),
+                "sync_queue_used_pct": (flow or {}).get("queue_pct"),
                 "gm_last_seen_minutes": round(max(0.0, time.time() * 1000 - float(seen)) / 60000.0, 1) if seen else None})
             self.props(lo, {"replication_state": "; ".join(
                 f"{str(f.get('flow_id', '?')).split('.')[-1]}: {f.get('replication_state')}" for f in flows) or "no flow reported"})
@@ -1591,7 +1663,7 @@ class Collector:
                     self.at(bo, loc["path"])
                     bo.add_parent(t0_obj or lo)
                     state = str(n.get("connection_state", "")).upper()
-                    self.metrics(bo, {
+                    self.counters(bo, key, {
                         "established": 1 if state == "ESTABLISHED" else 0,
                         "prefixes_in": n.get("total_in_prefix_count"), "prefixes_out": n.get("total_out_prefix_count"),
                         "messages_in": n.get("messages_received"), "messages_out": n.get("messages_sent"),

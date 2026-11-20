@@ -225,6 +225,18 @@
         "metricName": "Sent packets dropped per minute",
         "metricKey": "rates|tx_dropped_per_min",
         "resourceKindId": "resourceKind:id:7_::_"
+       },
+       {
+        "boxLabel": "Rx dropped (%)",
+        "metricName": "Share of received packets dropped",
+        "metricKey": "rates|rx_drop_pct",
+        "resourceKindId": "resourceKind:id:7_::_"
+       },
+       {
+        "boxLabel": "Tx dropped (%)",
+        "metricName": "Share of sent packets dropped",
+        "metricKey": "rates|tx_drop_pct",
+        "resourceKindId": "resourceKind:id:7_::_"
        }
       ],
       "mode": "all",
@@ -313,6 +325,12 @@
         "boxLabel": "Drops",
         "metricName": "Connection drops",
         "metricKey": "connection_drops",
+        "resourceKindId": "resourceKind:id:13_::_"
+       },
+       {
+        "boxLabel": "Drops/hour",
+        "metricName": "Connection drops per hour",
+        "metricKey": "connection_drops_per_hour",
         "resourceKindId": "resourceKind:id:13_::_"
        }
       ],
@@ -614,7 +632,7 @@
          "link": "",
          "maxValue": "",
          "yellowBound": 1,
-         "orangeBound": 30,
+         "orangeBound": 10,
          "redBound": 60,
          "colorMethod": 0,
          "id": "extModel1013-1"
@@ -631,10 +649,44 @@
          "link": "",
          "maxValue": "",
          "yellowBound": 1,
-         "orangeBound": 30,
+         "orangeBound": 10,
          "redBound": 60,
          "colorMethod": 0,
          "id": "extModel1014-1"
+        },
+        {
+         "metricKey": "rates|rx_drop_pct",
+         "metricName": "Share of received packets dropped",
+         "resourceKindId": "resourceKind:id:7_::_",
+         "resourceKindName": "RTEP Tunnel",
+         "isStringMetric": false,
+         "label": "Rx dropped (%)",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 0.5,
+         "orangeBound": 1,
+         "redBound": 5,
+         "colorMethod": 0,
+         "id": "extModel1015-1"
+        },
+        {
+         "metricKey": "rates|tx_drop_pct",
+         "metricName": "Share of sent packets dropped",
+         "resourceKindId": "resourceKind:id:7_::_",
+         "resourceKindName": "RTEP Tunnel",
+         "isStringMetric": false,
+         "label": "Tx dropped (%)",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 0.5,
+         "orangeBound": 1,
+         "redBound": 5,
+         "colorMethod": 0,
+         "id": "extModel1016-1"
         },
         {
          "metricKey": "rates|rx_blocked_per_min",
@@ -647,11 +699,11 @@
          "metricUnitId": null,
          "link": "",
          "maxValue": "",
-         "yellowBound": null,
-         "orangeBound": null,
-         "redBound": null,
-         "colorMethod": 2,
-         "id": "extModel1015-1"
+         "yellowBound": 1,
+         "orangeBound": 10,
+         "redBound": 60,
+         "colorMethod": 0,
+         "id": "extModel1017-1"
         },
         {
          "metricKey": "rates|tx_blocked_per_min",
@@ -664,11 +716,11 @@
          "metricUnitId": null,
          "link": "",
          "maxValue": "",
-         "yellowBound": null,
-         "orangeBound": null,
-         "redBound": null,
-         "colorMethod": 2,
-         "id": "extModel1016-1"
+         "yellowBound": 1,
+         "orangeBound": 10,
+         "redBound": 60,
+         "colorMethod": 0,
+         "id": "extModel1018-1"
         },
         {
          "metricKey": "established",
@@ -685,7 +737,7 @@
          "orangeBound": 0.6,
          "redBound": 0.5,
          "colorMethod": 0,
-         "id": "extModel1017-1"
+         "id": "extModel1019-1"
         },
         {
          "metricKey": "prefixes|prefixes_in",
@@ -702,7 +754,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1018-1"
+         "id": "extModel1020-1"
         },
         {
          "metricKey": "prefixes|prefixes_out",
@@ -719,7 +771,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1019-1"
+         "id": "extModel1021-1"
         },
         {
          "metricKey": "seconds_established",
@@ -736,7 +788,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1020-1"
+         "id": "extModel1022-1"
         },
         {
          "metricKey": "connection_drops",
@@ -753,7 +805,24 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1021-1"
+         "id": "extModel1023-1"
+        },
+        {
+         "metricKey": "connection_drops_per_hour",
+         "metricName": "Connection drops per hour",
+         "resourceKindId": "resourceKind:id:13_::_",
+         "resourceKindName": "Tier-0 BGP Neighbor",
+         "isStringMetric": false,
+         "label": "Drops/hour",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 1,
+         "orangeBound": 12,
+         "redBound": 36,
+         "colorMethod": 0,
+         "id": "extModel1024-1"
         }
        ],
        "subMode": "resourceKindAll"

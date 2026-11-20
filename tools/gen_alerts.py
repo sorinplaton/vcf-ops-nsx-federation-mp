@@ -81,14 +81,25 @@ S = {
     "edge_bgp_zero":   ("edge_node", "Edge node has no inter-site BGP session configured", "info", "metric", "intersite_bgp_total", "<", 1),
     "ec_status":       ("edge_cluster", "Inter-site status of the edge cluster is not UP", "immediate", "property", "intersite_status", "!=", "UP"),
     "tun_bgp_down":    ("rtep_tunnel", "Inter-site BGP session of the RTEP tunnel is not established", "immediate", "metric", "bgp_established", "<", 1),
-    "tun_rx_drops":    ("rtep_tunnel", "RTEP tunnel drops more than 60 received packets per minute", "warning", "metric", "rx_dropped_per_min", ">", 60),
-    "tun_tx_drops":    ("rtep_tunnel", "RTEP tunnel drops more than 60 sent packets per minute", "warning", "metric", "tx_dropped_per_min", ">", 60),
+    "tun_rx_drops":    ("rtep_tunnel", "RTEP tunnel drops more than 10 received packets per minute", "warning", "metric", "rx_dropped_per_min", ">", 10),
+    "tun_tx_drops":    ("rtep_tunnel", "RTEP tunnel drops more than 10 sent packets per minute", "warning", "metric", "tx_dropped_per_min", ">", 10),
+    "tun_rx_loss1":    ("rtep_tunnel", "RTEP tunnel drops more than 1% of the received packets", "warning", "metric", "rx_drop_pct", ">", 1),
+    "tun_tx_loss1":    ("rtep_tunnel", "RTEP tunnel drops more than 1% of the sent packets", "warning", "metric", "tx_drop_pct", ">", 1),
+    "tun_rx_loss5":    ("rtep_tunnel", "RTEP tunnel drops more than 5% of the received packets", "immediate", "metric", "rx_drop_pct", ">", 5),
+    "tun_tx_loss5":    ("rtep_tunnel", "RTEP tunnel drops more than 5% of the sent packets", "immediate", "metric", "tx_drop_pct", ">", 5),
+    "tun_rx_blocked":  ("rtep_tunnel", "RTEP tunnel blocks more than 10 received packets per minute", "warning", "metric", "rx_blocked_per_min", ">", 10),
+    "tun_tx_blocked":  ("rtep_tunnel", "RTEP tunnel blocks more than 10 sent packets per minute", "warning", "metric", "tx_blocked_per_min", ">", 10),
     "t0_error":        ("tier0", "Stretched Tier-0 gateway is in error at a location", "immediate", "metric", "error_locations", ">", 0),
     "t1_error":        ("tier1", "Stretched Tier-1 gateway is in error at a location", "immediate", "metric", "error_locations", ">", 0),
     "seg_error":       ("segment", "Stretched segment is in error at a location", "immediate", "metric", "error_locations", ">", 0),
     "pol_error":       ("global_policy", "Global security policy is in error at a location", "immediate", "metric", "error_locations", ">", 0),
     "bgp_down":        ("bgp_neighbor", "BGP neighbor is not established", "immediate", "metric", "established", "<", 1),
     "bgp_internal":    ("bgp_neighbor", "BGP neighbor is a session between edge nodes", "info", "property", "session_type", "!=", "uplink"),
+    "bgp_flap":        ("bgp_neighbor", "BGP session dropped since the previous cycle", "warning", "metric", "connection_drops_per_hour", ">", 0),
+    "bgp_up_now":      ("bgp_neighbor", "BGP neighbor is established in this cycle", "info", "metric", "established", ">", 0),
+    "loc_rtt_150":     ("location", "Round-trip time to the Global Manager is above 150 ms", "warning", "metric", "gm_rtt_ms", ">", 150),
+    "loc_rtt_80":      ("location", "Round-trip time to the Global Manager is above 80% of the maximum RTT setting", "warning", "metric", "gm_rtt_pct_of_max", ">", 80),
+    "loc_rtt_100":     ("location", "Round-trip time to the Global Manager is above the maximum RTT setting", "immediate", "metric", "gm_rtt_pct_of_max", ">", 100),
     "bgp_no_prefix":   ("bgp_neighbor", "No prefixes are received from the BGP neighbor", "warning", "metric", "prefixes_in", "<", 1),
     "real_missing":    ("realization", "Stretched object is not realized at this location", "warning", "metric", "realized", "<", 1),
     # dynamic threshold: VCF Operations learns the usual range of the metric
@@ -145,21 +156,24 @@ OUTAGE_KINDS = {"global_manager": "Global Manager", "location": "Location", "syn
 for _k in OUTAGE_KINDS:
     S["outage_" + _k] = (_k, "A location of the federation is cut off from the Global Manager", "info", "property",
                          "location_outage", "!=", "none")
-QUIET = {"loc_intersite", "chan_down", "edge_bgp_down", "ec_status", "tun_bgp_down", "tun_drops", "t0_error", "t1_error",
+QUIET = {"loc_intersite", "chan_down", "edge_bgp_down", "ec_status", "tun_bgp_down", "tun_drops", "tun_blocked", "bgp_flap", "loc_rtt", "t0_error", "t1_error",
          "seg_error", "pol_error", "bgp_down", "real_missing"}
 
 # ---- wait and cancel cycles: conditions that can flap need two cycles (10 minutes) to raise and to clear
 WAIT = {k: (2, 2) for k in ("chan_down", "loc_bgp_down", "loc_bgp_none", "edge_bgp_none", "tun_bgp_down",
-                            "tun_rx_drops", "tun_tx_drops", "bgp_down", "bgp_no_prefix")}
+                            "tun_rx_drops", "tun_tx_drops", "tun_rx_loss1", "tun_tx_loss1", "tun_rx_loss5", "tun_tx_loss5",
+                            "tun_rx_blocked", "tun_tx_blocked", "loc_rtt_150", "loc_rtt_80", "loc_rtt_100", "bgp_down", "bgp_no_prefix")}
 WAIT.update({"tun_rx_dt": (3, 3), "tun_tx_dt": (3, 3), "gm_standby_sync": (3, 2), "loc_repl": (2, 2),
-             "fed_gaps": (2, 2), "fed_throttled": (3, 2), "fed_slow": (2, 2),
+             "fed_gaps": (2, 2),
+             # one session drop is enough; the alert stays two cycles so a flap is seen, and still clears
+             # before the outage symptom that keeps it quiet
+             "bgp_flap": (1, 2), "fed_throttled": (3, 2), "fed_slow": (2, 2),
              # a full sync or a change in progress is not a fault: these two wait for a second cycle
              "loc_full_sync": (2, 1), "real_missing": (2, 1)})
 # an outage symptom outlives the symptoms it keeps quiet, so that their alerts do not fire in the cycles in which
 # the outage is over and they are not cancelled yet
 WAIT.update({"outage_" + k: (1, 3) for k in OUTAGE_KINDS})
 WAIT["chan_gm_outage"] = (1, 3)
-assert all(WAIT[o][1] > max((c for _w, c in WAIT.values() if _w > 1 or c > 1), default=1) - 1 for o in WAIT if "outage" in o)
 
 # ---- alerts that affect the Risk badge (a condition that will hurt later) instead of Health (broken now)
 RISK = {"gm_version", "gm_upgrade", "loc_newer", "loc_upgrade", "fed_no_standby", "fed_budget", "fed_gaps", "fed_load", "gm_backup", "gm_cert", "loc_cert_trust", "loc_version", "loc_backup", "loc_cert"}
@@ -224,6 +238,16 @@ R = {
                   "the peer router.",
     "tunnel_drops": "Check the RTEP network between the two edge nodes of this tunnel: MTU on the whole path (1700 recommended), "
                     "packet loss on the physical links and the load of the edge nodes.",
+    "tunnel_blocked": "Packets on this tunnel are blocked, not lost. Check the firewalls between the RTEP subnets of the two "
+                      "locations (Geneve, UDP 6081), the gateway firewall rules of the edge nodes, and any change made to them "
+                      "around the time the alert started.",
+    "bgp_flap": "The session went down and came back. Check the edge uplink and the peer router logs for interface flaps, "
+                "hold-timer expiries or BFD events around that time. Repeated flaps usually point to a physical link, "
+                "an MTU mismatch or a peer under load.",
+    "rtt": "Measure the round-trip time between the Global Manager and the Local Manager of this location. NSX Federation "
+           "supports up to 150 ms between locations, and the maximum RTT setting of the location (System, Location "
+           "Manager) is the limit NSX applies. Look for WAN congestion, a path change or a degraded link. See "
+           "https://knowledge.broadcom.com/external/article/345822",
     "object_error": "Open the object in the Global Manager and read the error for each location of its span. Fix the cause "
                     "(a missing edge cluster, an address conflict, a location that is not reachable), then save the object again.",
     "gm_sync": "Check the connectivity between the active and the standby Global Manager (ping, then TCP 443 and 1236) and "
@@ -307,6 +331,10 @@ A = [
     ("loc_intersite", "location", "Inter-site BGP sessions of the location are down",
      "Inter-site (RTEP) BGP sessions of this location are not established. Critical when none is established.",
      NET, AVAIL, [["loc_bgp_down"], ["loc_bgp_none", "!loc_bgp_zero"]], "intersite"),
+    ("loc_rtt", "location", "Round-trip time to the Global Manager is close to the NSX limit",
+     "The round-trip time between the location and the Global Manager is above 80% of the maximum RTT set for the location "
+     "(immediate above 100%), or above the 150 ms that NSX Federation supports.", NET, PERF,
+     [["loc_rtt_150"], ["loc_rtt_80"], ["loc_rtt_100"]], "rtt"),
     ("loc_version", "location", "Location and Global Manager run different NSX releases",
      "The Local Manager and the Global Manager run different NSX releases. A different patch level is not reported.", NET, COMPL, [["loc_version"]], "version"),
     ("loc_backup", "location", "Local Manager backup is missing, old or failed",
@@ -326,7 +354,12 @@ A = [
     ("tun_bgp_down", "rtep_tunnel", "RTEP tunnel inter-site BGP session is down",
      "The inter-site BGP session carried by this RTEP tunnel is not established.", NET, AVAIL, [["tun_bgp_down"]], "intersite"),
     ("tun_drops", "rtep_tunnel", "RTEP tunnel is dropping packets",
-     "The tunnel drops more than 60 packets per minute in one direction.", NET, PERF, [["tun_rx_drops"], ["tun_tx_drops"]], "tunnel_drops"),
+     "In one direction the tunnel drops more than 1% of the packets (5% for immediate), and more than 10 packets per minute.",
+     NET, PERF, [["tun_rx_drops", "tun_rx_loss1"], ["tun_rx_drops", "tun_rx_loss5"], ["tun_tx_drops", "tun_tx_loss1"],
+                 ["tun_tx_drops", "tun_tx_loss5"]], "tunnel_drops"),
+    ("tun_blocked", "rtep_tunnel", "RTEP tunnel is blocking packets",
+     "The tunnel blocks more than 10 packets per minute in one direction.", NET, PERF,
+     [["tun_rx_blocked"], ["tun_tx_blocked"]], "tunnel_blocked"),
     ("t0_error", "tier0", "Stretched Tier-0 gateway is in error at a location",
      "At least one location of the span reports an error for this gateway.", NET, AVAIL, [["t0_error"]], "object_error"),
     ("t1_error", "tier1", "Stretched Tier-1 gateway is in error at a location",
@@ -337,6 +370,9 @@ A = [
      "At least one location of the span reports an error for this policy.", NET, AVAIL, [["pol_error"]], "object_error"),
     ("bgp_down", "bgp_neighbor", "Tier-0 BGP neighbor of a stretched gateway is down",
      "A BGP session of a stretched Tier-0 gateway is not established.", NET, AVAIL, [["bgp_down"]], "bgp"),
+    ("bgp_flap", "bgp_neighbor", "Tier-0 BGP neighbor of a stretched gateway is flapping",
+     "The BGP session dropped since the previous cycle and is established again.", NET, PERF,
+     [["bgp_flap", "bgp_up_now"]], "bgp_flap"),
     ("bgp_no_prefix", "bgp_neighbor", "Tier-0 uplink BGP neighbor sends no prefixes",
      "The uplink BGP session is established but no prefix is received.", NET, AVAIL, [["bgp_no_prefix", "!bgp_down", "!bgp_internal"]], "bgp_prefix"),
     ("real_missing", "realization", "Stretched object is not realized at a location",
@@ -385,6 +421,12 @@ def _quiet(k, kind, sets):
 
 
 A = [(k, kind, name, desc, typ, sub, _quiet(k, kind, sets), rec) for k, kind, name, desc, typ, sub, sets, rec in A]
+# an outage symptom clears strictly after every symptom of the alerts it keeps quiet, so the end of an outage
+# raises nothing (tests/test_adapter.py checks the same on the generated XML)
+for _k, _kind, _n, _d, _t, _s, _sets, _r in A:
+    for _group in _sets:
+        for _o in [x[1:] for x in _group if x.startswith("!") and "outage" in x]:
+            assert all(WAIT.get(_o, (1, 1))[1] > WAIT.get(x, (1, 1))[1] for x in _group if not x.startswith("!")), (_k, _o)
 
 
 def alerts_xml(with_recs=True):

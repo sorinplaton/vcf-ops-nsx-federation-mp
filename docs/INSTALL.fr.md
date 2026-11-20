@@ -25,7 +25,7 @@ Les valeurs à remplacer dans la suite :
 | `<repository>` | `nsxfederation` |
 | `<ops>` | `ops.example.com` |
 | `<gm1>`, `<gm2>` | adresse de cluster du Global Manager actif et du standby |
-| `<version>` | `1.7.8` |
+| `<version>` | `1.7.9` |
 
 ## Liste de contrôle
 

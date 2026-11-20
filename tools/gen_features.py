@@ -19,7 +19,7 @@ _src = open(os.path.join(ROOT, "pack", "app", "adapter.py")).read()
 _ns = {k: getattr(typing, k) for k in ("Dict", "Tuple", "List", "Optional", "Any")}
 exec(_src[_src.index("RATES = {"):_src.index("def get_adapter_definition")], _ns)
 MODEL, GROUPS, KPI, OUTAGE = _ns["MODEL"], _ns["_G"], _ns["KPI"], _ns["OUTAGE_KINDS"]
-metric_group = _ns["metric_group"]
+metric_group, fk, RATE_KEYS = _ns["metric_group"], _ns["fk"], _ns["RATE_KEYS"]
 VERSION = re.search(r'"version": "([^"]+)"', open(os.path.join(ROOT, "pack", "manifest.txt")).read()).group(1)
 SEVERITY = ["info", "warning", "immediate", "critical"]
 OPS = {"<": "below", ">": "above", "=": "is", "!=": "is not", ">=": "at least", "contains": "contains", "regex": "matches"}
@@ -61,7 +61,7 @@ def alert_rows(kind):
         notes = []
         if waits != [(1, 1)]:
             if len(waits) == 1:
-                notes.append("after %d cycles, clears after %d" % waits[0])
+                notes.append("after %d cycle%s, clears after %d" % (waits[0][0], "" if waits[0][0] == 1 else "s", waits[0][1]))
             else:  # the conditions of the alert do not all wait the same number of cycles
                 cancel = sorted({c for _, c in waits})
                 notes.append("after %d to %d cycles depending on the condition, clears after %s" % (
@@ -73,6 +73,31 @@ def alert_rows(kind):
             notes.append("quiet while its Global Manager does not answer")
         rows.append(f"| {cell(name)} | {sev.capitalize()} | {'Risk' if k in ga.RISK else 'Health'} | {cell(trigger)}"
                     f"{'. ' + (lambda s: s[:1].upper() + s[1:])('; '.join(notes)) if notes else ''} | {cell(ga.R[rec])} |")
+    return rows
+
+
+UNIT_TEXT = [("_pct", "%"), ("_pct_of_max", "%"), ("_per_hour", " per hour"), ("_ms", " ms"), ("_per_min", " per minute"), ("_hours", " hours"), ("_days_to_expiry", " days"), ("_s", " s")]
+
+
+def threshold_rows():
+    """The symptoms that compare a metric with a number other than 0 or 1, and the dynamic ones: the thresholds
+    a team may want to tune. The other symptoms test a state (down, in error, not configured)."""
+    alert_of = {}
+    for k, kind, name, *_rest in ga.A:
+        for group in _rest[3]:
+            for sk in group:
+                if not sk.startswith("!"):
+                    alert_of.setdefault(sk, name)
+    rows = []
+    for sk, (kind, name, sev, ctype, mkey, op, value) in ga.S.items():
+        if not (ctype == "dt" or (ctype == "metric" and (value not in (0, 1) or mkey.endswith("_pct") or mkey in RATE_KEYS))):
+            continue
+        label = dict(MODEL[kind][1]).get(mkey, mkey)
+        unit = next((u for suffix, u in UNIT_TEXT if mkey.endswith(suffix)), "")
+        limit = "learned by VCF Operations (dynamic threshold)" if ctype == "dt" else f"{OPS.get(op, op)} {value}{unit}"
+        wait, cancel = ga.WAIT.get(sk, (1, 1))
+        rows.append(f"| {MODEL[kind][0]} | {cell(label)} (`{cell(fk(kind, mkey))}`) | {limit} | {sev.capitalize()} | "
+                    f"{wait} / {cancel} | {cell(alert_of.get(sk, ''))} |")
     return rows
 
 
@@ -114,7 +139,19 @@ def document():
     for k in kinds:
         props = len(MODEL[k][2]) + (k in OUTAGE) + (k == "sync_channel")
         out.append(f"| {MODEL[k][0]} | `{k}` | {len(MODEL[k][1])} | {props} | {sum(1 for a in ga.A if a[1] == k)} |")
-    out += ["", "## Alerts", "",
+    out += ["", "## Thresholds", "",
+            "The symptoms below compare a metric with a number or with the usual range of the metric. Every other "
+            "symptom tests a state: a count above 0 (sessions down, nodes offline, objects in error), a value below 1 "
+            "(not connected, not established, not realized) or a property value (cluster status, upgrade status, "
+            "mode). \"Fires / clears\" is the number of collection cycles the condition has to hold before the "
+            "symptom triggers, and has to be gone before it clears.", "",
+            "| Object type | Metric | Threshold | Severity | Fires / clears (cycles) | Alert |",
+            "| --- | --- | --- | --- | --- | --- |"] + threshold_rows() + [
+            "",
+            "The alerts for the federation alarms of NSX use the thresholds of NSX itself, for example a latency above "
+            "the NSX limit for more than 2 minutes, or a sync between locations that failed for 3 minutes (warning) or "
+            "15 minutes (immediate). How to change a threshold of the pack is in [OPERATIONS.md](OPERATIONS.md#changing-a-threshold).", ""]
+    out += ["## Alerts", "",
             "Severity is the highest severity of the symptoms that trigger the alert. \"Cycles\" are collection "
             "cycles (5 minutes by default); without a note an alert fires and clears in one cycle.", ""]
     for k in kinds:

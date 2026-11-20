@@ -2,7 +2,7 @@
 
 A management pack that monitors NSX Federation (NSX 9.1) in VCF Operations 9.1.1. It is built with the
 [VCF Operations Integration SDK](https://vmware.github.io/vmware-vcf-operations-integration-sdk/introduction)
-in Python. Current version: 1.7.8.
+in Python. Current version: 1.7.9.
 
 This is a lab project, not a Broadcom product. The pack is unsigned and comes with no support. It only reads
 from NSX.
@@ -21,9 +21,12 @@ alert, is in [docs/FEATURES.md](docs/FEATURES.md). In short:
   edge nodes, RTEP tunnels, Tier-0 BGP neighbors, stretched Tier-0 and Tier-1 gateways, segments, global
   security policies, and the realization of each stretched object at each location. Global firewall rules
   are opt-in per policy.
-- Metrics in 17 groups, with rates computed from the NSX counters, federation rollups and 18 key indicators.
-- 63 alert definitions, 98 symptoms and 34 recommendations, including the 13 federation alarm types of
+- Metrics in 17 groups, with rates computed from the NSX counters, federation rollups and 20 key indicators.
+- 66 alert definitions, 109 symptoms and 37 recommendations, including the 13 federation alarm types of
   NSX 9.1 as named alerts, the sync state of a standby Global Manager and alerts on the collection itself.
+- Latency and packet loss: round-trip time to the Global Manager against the maximum RTT set in NSX, drops of
+  each RTEP tunnel as a share of its packets, blocked packets, and BGP session flaps. The thresholds are listed in
+  [docs/FEATURES.md](docs/FEATURES.md#thresholds).
 - A failed NSX call is reported as unknown data, not as an empty answer: no alert fires on data that was
   never received, and the federation object lists the calls without an answer.
 - During a location outage, the alerts of the objects that depend on the location stay quiet behind the alert of
