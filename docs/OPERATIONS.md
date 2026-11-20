@@ -39,7 +39,7 @@ Calls per collection cycle, as measured with the test suite:
   global security policy). Above 200 stretched objects the realization of an object is read again only when the
   object is new, changed in NSX, was not fully realized, or once in six cycles; the last state is used otherwise.
 - Standby Global Manager: 5.
-- Each Local Manager: about 10, plus one per edge cluster, one per edge node, one per Tier-0 locale and one per
+- Each Local Manager: about 10, plus one per edge cluster, two per edge node, one per Tier-0 locale and one per
   collected policy.
 
 The first cycle after a start reads every object, so the budget of 2000 calls per manager covers about 1,900
@@ -81,7 +81,9 @@ For planned work, use a maintenance schedule of VCF Operations on the group "NSX
   Latency" column of the Location Manager page. The metric "Round-trip time to the Global Manager" is the highest of the
   two flows of the location, and "% of the maximum RTT setting" compares it with the maximum RTT set for the location
   in NSX. An NSX without that call answers 404; the adapter then uses the round-trip time of the replication status,
-  which NSX 9.1 leaves empty. NSX measures no latency between the two Global Managers. The alert fires above 150 ms, the limit NSX Federation supports, or
+  which NSX 9.1 leaves empty. NSX measures no latency between the two Global Managers. The same alert also fires when
+  the round-trip time leaves the range VCF Operations learned for the location (dynamic threshold, three cycles), which
+  catches a WAN that degraded long before it reaches 150 ms. The alert fires above 150 ms, the limit NSX Federation supports, or
   above 80% of the setting (warning), and above 100% (immediate). With the default setting of 250 ms, 80% is 200 ms,
   so the 150 ms condition is the one that fires first. The
   latency alarms of NSX itself (between Global Managers, and between a Global Manager and a location) raise their own
@@ -97,7 +99,8 @@ For planned work, use a maintenance schedule of VCF Operations on the group "NSX
   queue_occupancy_threshold_exceeded, which the pack turns into an alert.
 - Blocked packets: NSX counts them apart from drops. More than 10 per minute in one direction for two cycles raises an
   alert, since a firewall on the inter-site path usually explains it.
-- BGP flaps: the connection drop counter of each Tier-0 BGP neighbor gets a rate. A drop since the previous cycle while
+- BGP flaps: the connection drop counter of each Tier-0 BGP neighbor, and of the inter-site session of each RTEP tunnel
+  (from `GET /api/v1/transport-nodes/<id>/inter-site/bgp/summary` on the Local Manager, one call per edge node), gets a rate. A drop since the previous cycle while
   the session is established in the current cycle raises a warning that stays for two cycles. A session that is down
   in the current cycle raises no flap alert, and the "not established" alert follows if it stays down. A restart of
   the edge resets the counter, which gives no rate for that cycle, so a restart is not reported as a flap.

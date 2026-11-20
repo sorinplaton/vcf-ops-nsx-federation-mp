@@ -1041,6 +1041,40 @@ def flow(src, dst, ms, cur=0, mx=1000):
             "cross_site_flow_info": {"status": "GOOD", "from_site_path": src, "to_site_path": dst, "latency_millis": ms}}
 
 
+def intersite_summaries(nsx):
+    return [n for h in nsx.data for k, v in nsx.data[h].items() if k.endswith("/inter-site/bgp/summary") for n in v["neighbor_status"]]
+
+
+def test_an_intersite_session_drop_gets_a_rate_on_the_tunnel(nsx, clock):
+    assert intersite_summaries(nsx)
+    run()
+    clock["now"] += 300
+    r = run()
+    assert all(t["m"]["connection_drops_per_hour"] == 0 for t in r["rtep_tunnel"].values())
+    for n in intersite_summaries(nsx):
+        n["connection_drop_count"] = 1
+    clock["now"] += 300
+    r = run()
+    assert all(t["m"]["connection_drops_per_hour"] == 12.0 for t in r["rtep_tunnel"].values())
+    assert fed(r)["m"]["collection|data_gaps"] == 0
+
+
+def test_a_node_without_the_bgp_summary_is_not_a_data_gap(nsx):
+    for h in nsx.data:
+        for k in [k for k in nsx.data[h] if k.endswith("/inter-site/bgp/summary")]:
+            del nsx.data[h][k]  # answers 404 in the fake: no inter-site BGP on that node
+    r = run()
+    assert fed(r)["m"]["collection|data_gaps"] == 0
+    assert all("connection_drops" not in t["m"] for t in r["rtep_tunnel"].values())
+
+
+def test_a_failed_bgp_summary_is_a_data_gap_and_sends_no_counter(nsx):
+    nsx.fail.append("/inter-site/bgp/summary")
+    r = run()
+    assert fed(r)["m"]["collection|data_gaps"] == 4  # one per edge node
+    assert all("connection_drops" not in t["m"] for t in r["rtep_tunnel"].values())
+
+
 def test_rtt_and_sync_queue_come_from_the_flow_details(nsx):
     gm, a, b = "/global-infra/global-managers/gm-site-a", "/global-infra/sites/site-a-wld01", "/global-infra/sites/site-a-wld03"
     nsx.data[GM_HOSTS[0]]["/global-manager/api/v1/observability/flow-details"] = {"errors": [], "flow_info": [
@@ -1079,5 +1113,8 @@ def test_new_network_alerts_follow_the_rules():
     assert all(any(s.startswith("tun_") and s.endswith("_drops") for s in group) for group in alerts["tun_drops"][6])
     # the flap needs the session up in this cycle: the 2-cycle "down" symptom would let the first cycle of an outage through
     assert all("bgp_up_now" in group for group in alerts["bgp_flap"][6]) and ga.WAIT.get("bgp_up_now", (1, 1)) == (1, 1)
-    for k in ("tun_blocked", "bgp_flap", "loc_rtt"):  # quiet during a location outage like the other network alerts
+    assert all("tun_up_now" in group for group in alerts["tun_flap"][6]) and ga.WAIT.get("tun_up_now", (1, 1)) == (1, 1)
+    # every federation alarm type of NSX 9.1.1 (GET /api/v1/events, feature "federation") has a named alert
+    assert set(ga.GM_ALARMS) >= {"error_in_delta_sync", "connectivity_to_ldap_server_lost"} and len(ga.GM_ALARMS) == 15
+    for k in ("tun_blocked", "tun_flap", "bgp_flap", "loc_rtt"):  # quiet during a location outage like the other network alerts
         assert all(any(s.startswith("!outage_") for s in group) for group in alerts[k][6])

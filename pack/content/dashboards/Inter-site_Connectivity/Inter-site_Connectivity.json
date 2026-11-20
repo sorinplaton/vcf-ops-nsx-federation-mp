@@ -723,6 +723,23 @@
          "id": "extModel1018-1"
         },
         {
+         "metricKey": "connection_drops_per_hour",
+         "metricName": "Inter-site BGP connection drops per hour",
+         "resourceKindId": "resourceKind:id:7_::_",
+         "resourceKindName": "RTEP Tunnel",
+         "isStringMetric": false,
+         "label": "Drops/hour",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 1,
+         "orangeBound": 12,
+         "redBound": 36,
+         "colorMethod": 0,
+         "id": "extModel1019-1"
+        },
+        {
          "metricKey": "established",
          "metricName": "Established",
          "resourceKindId": "resourceKind:id:13_::_",
@@ -737,7 +754,7 @@
          "orangeBound": 0.6,
          "redBound": 0.5,
          "colorMethod": 0,
-         "id": "extModel1019-1"
+         "id": "extModel1020-1"
         },
         {
          "metricKey": "prefixes|prefixes_in",
@@ -754,7 +771,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1020-1"
+         "id": "extModel1021-1"
         },
         {
          "metricKey": "prefixes|prefixes_out",
@@ -771,7 +788,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1021-1"
+         "id": "extModel1022-1"
         },
         {
          "metricKey": "seconds_established",
@@ -788,7 +805,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1022-1"
+         "id": "extModel1023-1"
         },
         {
          "metricKey": "connection_drops",
@@ -805,7 +822,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1023-1"
+         "id": "extModel1024-1"
         },
         {
          "metricKey": "connection_drops_per_hour",
@@ -822,7 +839,7 @@
          "orangeBound": 12,
          "redBound": 36,
          "colorMethod": 0,
-         "id": "extModel1024-1"
+         "id": "extModel1025-1"
         }
        ],
        "subMode": "resourceKindAll"

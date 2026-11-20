@@ -210,7 +210,7 @@
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-intersite"/></Recommendations>
             </State>
         </AlertDefinition>
-        <AlertDefinition adapterKind="NSXFederation" description="The round-trip time between the location and the Global Manager is above 80% of the maximum RTT set for the location (immediate above 100%), or above the 150 ms that NSX Federation supports." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-loc_rtt" name="Round-trip time to the Global Manager is close to the NSX limit" resourceKind="location" subType="19" type="19" waitCycle="1" cancelCycle="1">
+        <AlertDefinition adapterKind="NSXFederation" description="The round-trip time between the location and the Global Manager is above 80% of the maximum RTT set for the location (immediate above 100%), above the 150 ms that NSX Federation supports, or above the usual range VCF Operations learned for the location." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-loc_rtt" name="Round-trip time to the Global Manager is high" resourceKind="location" subType="19" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
                 <SymptomSets operator="or">
                     <SymptomSet applyOn="self" operator="and">
@@ -223,6 +223,10 @@
                     </SymptomSet>
                     <SymptomSet applyOn="self" operator="and">
                         <Symptom ref="SymptomDefinition-NSXFederation-loc_rtt_100"/>
+                        <Symptom ref="SymptomDefinition-NSXFederation-outage_location" negateCondition="true"/>
+                    </SymptomSet>
+                    <SymptomSet applyOn="self" operator="and">
+                        <Symptom ref="SymptomDefinition-NSXFederation-loc_rtt_dt"/>
                         <Symptom ref="SymptomDefinition-NSXFederation-outage_location" negateCondition="true"/>
                     </SymptomSet>
                 </SymptomSets>
@@ -340,6 +344,17 @@
                 </SymptomSets>
                 <Impact key="health" type="badge"/>
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-tunnel_drops"/></Recommendations>
+            </State>
+        </AlertDefinition>
+        <AlertDefinition adapterKind="NSXFederation" description="The inter-site BGP session of this tunnel dropped since the previous cycle and is established again." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-tun_flap" name="RTEP tunnel inter-site BGP session is flapping" resourceKind="rtep_tunnel" subType="19" type="19" waitCycle="1" cancelCycle="1">
+            <State severity="automatic">
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-tun_flap"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-tun_up_now"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_rtep_tunnel" negateCondition="true"/>
+                </SymptomSet>
+                <Impact key="health" type="badge"/>
+                <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-rtep_flap"/></Recommendations>
             </State>
         </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="The tunnel blocks more than 10 packets per minute in one direction." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-tun_blocked" name="RTEP tunnel is blocking packets" resourceKind="rtep_tunnel" subType="19" type="19" waitCycle="1" cancelCycle="1">
@@ -658,6 +673,46 @@
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-intersite"/></Recommendations>
             </State>
         </AlertDefinition>
+        <AlertDefinition adapterKind="NSXFederation" description="A delta sync from the Global Manager to a location failed. Configuration changes made on the Global Manager do not reach that location until it succeeds." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-alarm_error_in_delta_sync" name="NSX alarm: delta sync error" resourceKind="global_manager" subType="18" type="19" waitCycle="1" cancelCycle="1">
+            <State severity="automatic">
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-alarm_error_in_delta_sync"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_global_manager" negateCondition="true"/>
+                </SymptomSet>
+                <Impact key="health" type="badge"/>
+                <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-delta_sync"/></Recommendations>
+            </State>
+        </AlertDefinition>
+        <AlertDefinition adapterKind="NSXFederation" description="A delta sync from the Global Manager to a location failed. Configuration changes made on the Global Manager do not reach that location until it succeeds." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-loc_alarm_error_in_delta_sync" name="NSX alarm: delta sync error" resourceKind="location" subType="18" type="19" waitCycle="1" cancelCycle="1">
+            <State severity="automatic">
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-loc_alarm_error_in_delta_sync"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_location" negateCondition="true"/>
+                </SymptomSet>
+                <Impact key="health" type="badge"/>
+                <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-delta_sync"/></Recommendations>
+            </State>
+        </AlertDefinition>
+        <AlertDefinition adapterKind="NSXFederation" description="The manager lost its connection to an LDAP identity source. Users of that source may not be able to log in." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-alarm_connectivity_to_ldap_server_lost" name="NSX alarm: connectivity to the LDAP server lost" resourceKind="global_manager" subType="18" type="19" waitCycle="1" cancelCycle="1">
+            <State severity="automatic">
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-alarm_connectivity_to_ldap_server_lost"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_global_manager" negateCondition="true"/>
+                </SymptomSet>
+                <Impact key="health" type="badge"/>
+                <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-ldap"/></Recommendations>
+            </State>
+        </AlertDefinition>
+        <AlertDefinition adapterKind="NSXFederation" description="The manager lost its connection to an LDAP identity source. Users of that source may not be able to log in." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-loc_alarm_connectivity_to_ldap_server_lost" name="NSX alarm: connectivity to the LDAP server lost" resourceKind="location" subType="18" type="19" waitCycle="1" cancelCycle="1">
+            <State severity="automatic">
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-loc_alarm_connectivity_to_ldap_server_lost"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_location" negateCondition="true"/>
+                </SymptomSet>
+                <Impact key="health" type="badge"/>
+                <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-ldap"/></Recommendations>
+            </State>
+        </AlertDefinition>
     </AlertDefinitions>
     <SymptomDefinitions>
         <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-fed_no_active" name="No Global Manager is in the active role" resourceKind="federation" waitCycle="1" cancelCycle="1">
@@ -950,6 +1005,16 @@
                 <Condition key="rates|tx_drop_pct" operator="&gt;" thresholdType="static" type="metric" value="5" valueType="numeric"/>
             </State>
         </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-tun_flap" name="Inter-site BGP session of the RTEP tunnel dropped since the previous cycle" resourceKind="rtep_tunnel" waitCycle="1" cancelCycle="2">
+            <State severity="warning">
+                <Condition key="connection_drops_per_hour" operator="&gt;" thresholdType="static" type="metric" value="0" valueType="numeric"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-tun_up_now" name="Inter-site BGP session of the RTEP tunnel is established in this cycle" resourceKind="rtep_tunnel" waitCycle="1" cancelCycle="1">
+            <State severity="info">
+                <Condition key="bgp_established" operator="&gt;" thresholdType="static" type="metric" value="0" valueType="numeric"/>
+            </State>
+        </SymptomDefinition>
         <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-tun_rx_blocked" name="RTEP tunnel blocks more than 10 received packets per minute" resourceKind="rtep_tunnel" waitCycle="2" cancelCycle="2">
             <State severity="warning">
                 <Condition key="rates|rx_blocked_per_min" operator="&gt;" thresholdType="static" type="metric" value="10" valueType="numeric"/>
@@ -1033,6 +1098,11 @@
         <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-tun_tx_dt" name="RTEP tunnel send rate is above its usual range" resourceKind="rtep_tunnel" waitCycle="3" cancelCycle="3">
             <State severity="warning">
                 <Condition key="rates|tx_bytes_per_s" operator="above" type="dtmetric"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-loc_rtt_dt" name="Round-trip time to the Global Manager is above its usual range" resourceKind="location" waitCycle="3" cancelCycle="2">
+            <State severity="warning">
+                <Condition key="connectivity|gm_rtt_ms" operator="above" type="dtmetric"/>
             </State>
         </SymptomDefinition>
         <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-alarm_gm_to_gm_split_brain" name="Global Manager raised NSX alarm gm_to_gm_split_brain" resourceKind="global_manager" waitCycle="1" cancelCycle="1">
@@ -1145,6 +1215,26 @@
                 <Condition eventMsg="NSX alarm rtep_connectivity_lost:(?s).*" eventSubType="5" eventType="11" operator="regex" type="msg_event"/>
             </State>
         </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-alarm_error_in_delta_sync" name="Global Manager raised NSX alarm error_in_delta_sync" resourceKind="global_manager" waitCycle="1" cancelCycle="1">
+            <State severity="critical">
+                <Condition eventMsg="NSX alarm error_in_delta_sync:(?s).*" eventSubType="5" eventType="11" operator="regex" type="msg_event"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-loc_alarm_error_in_delta_sync" name="Local Manager raised NSX alarm error_in_delta_sync" resourceKind="location" waitCycle="1" cancelCycle="1">
+            <State severity="critical">
+                <Condition eventMsg="NSX alarm error_in_delta_sync:(?s).*" eventSubType="5" eventType="11" operator="regex" type="msg_event"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-alarm_connectivity_to_ldap_server_lost" name="Global Manager raised NSX alarm connectivity_to_ldap_server_lost" resourceKind="global_manager" waitCycle="1" cancelCycle="1">
+            <State severity="critical">
+                <Condition eventMsg="NSX alarm connectivity_to_ldap_server_lost:(?s).*" eventSubType="5" eventType="11" operator="regex" type="msg_event"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-loc_alarm_connectivity_to_ldap_server_lost" name="Local Manager raised NSX alarm connectivity_to_ldap_server_lost" resourceKind="location" waitCycle="1" cancelCycle="1">
+            <State severity="critical">
+                <Condition eventMsg="NSX alarm connectivity_to_ldap_server_lost:(?s).*" eventSubType="5" eventType="11" operator="regex" type="msg_event"/>
+            </State>
+        </SymptomDefinition>
         <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-outage_global_manager" name="A location of the federation is cut off from the Global Manager" resourceKind="global_manager" waitCycle="1" cancelCycle="3">
             <State severity="info">
                 <Condition key="location_outage" operator="!=" thresholdType="static" type="property" value="none" valueType="string"/>
@@ -1234,6 +1324,9 @@
         <Recommendation key="Recommendation-df-NSXFederation-tunnel_drops"><Description>Check the RTEP network between the two edge nodes of this tunnel: MTU on the whole path (1700 recommended), packet loss on the physical links and the load of the edge nodes.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-tunnel_blocked"><Description>Packets on this tunnel are blocked, not lost. Check the firewalls between the RTEP subnets of the two locations (Geneve, UDP 6081), the gateway firewall rules of the edge nodes, and any change made to them around the time the alert started.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-bgp_flap"><Description>The session went down and came back. Check the edge uplink and the peer router logs for interface flaps, hold-timer expiries or BFD events around that time. Repeated flaps usually point to a physical link, an MTU mismatch or a peer under load.</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-rtep_flap"><Description>The inter-site BGP session of this tunnel went down and came back. Check the RTEP path between the two edge nodes (physical links, WAN, MTU 1700 on the whole path) and the load of both edges around that time. Repeated flaps on every tunnel of an edge point to the edge or its uplinks; on one tunnel, to the path.</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-delta_sync"><Description>A delta sync from the Global Manager to the location named in the alarm failed. Check the connection between them (TCP 1236 in both directions) and the async-replicator service on both sides (get service async_replicator, log /var/log/async-replicator/ar.log). If the alarm stays after the connection is back, start a full sync of the location from System, Location Manager. See https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vcf-9-0-and-later/9-0/advanced-network-management/administration-guide/managing-nsx-t-in-multiple-locations/nsx-t-federation/using-the-gm-and-lm-ui/monitoring-nsx-federation-locations.html</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-ldap"><Description>Open System, User Management, LDAP on the manager named in the alarm and check the identity source: the LDAP server answers on its port, its certificate is still the trusted one, and the bind credentials are valid. Local accounts keep working while the source is unreachable.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-rtt"><Description>Measure the round-trip time between the Global Manager and the Local Manager of this location. NSX Federation supports up to 150 ms between locations, and the maximum RTT setting of the location (System, Location Manager) is the limit NSX applies. Look for WAN congestion, a path change or a degraded link. See https://knowledge.broadcom.com/external/article/345822</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-object_error"><Description>Open the object in the Global Manager and read the error for each location of its span. Fix the cause (a missing edge cluster, an address conflict, a location that is not reachable), then save the object again.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-gm_sync"><Description>Check the connectivity between the active and the standby Global Manager (ping, then TCP 443 and 1236) and the state of both Global Manager clusters. See https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vcf-9-0-and-later/9-0/advanced-network-management/administration-guide/managing-nsx-t-in-multiple-locations/nsx-t-federation/using-the-gm-and-lm-ui/monitoring-nsx-federation-locations.html</Description></Recommendation>

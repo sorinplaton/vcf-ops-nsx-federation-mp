@@ -201,6 +201,7 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("rx_blocked_per_min", "Received packets blocked per minute"), ("tx_blocked_per_min", "Sent packets blocked per minute"),
         ("rx_drop_pct", "Share of received packets dropped"), ("tx_drop_pct", "Share of sent packets dropped"),
         ("bgp_established", "Inter-site BGP established"),
+        ("connection_drops", "Inter-site BGP connection drops"), ("connection_drops_per_hour", "Inter-site BGP connection drops per hour"),
     ], [("local_rtep", "Local RTEP"), ("remote_rtep", "Remote RTEP"), ("remote_location", "Remote location"),
         ("bgp_state", "Inter-site BGP state")]),
     "tier0": ("Stretched Tier-0 Gateway", [], [("ha_mode", "HA mode"), ("primary_location", "Primary location")]),
@@ -1626,6 +1627,15 @@ class Collector:
                 total, up = int(m.get("total_bgp_sessions") or 0), int(m.get("established_bgp_sessions") or 0)
                 bgp_state = {(n.get("source_address"), n.get("neighbor_address")): str(n.get("connection_state", "")).upper()
                              for n in m.get("neighbor_status") or []}
+                # the per-node summary carries the connection drop counter of each inter-site session, which the
+                # cluster status above does not; a node without inter-site BGP answers 404, which is not a gap
+                bgp_drops: Dict[Tuple[Any, Any], Any] = {}
+                if bgp_state:  # a node with no inter-site session has no tunnel to carry the counter: no call
+                    summary_path = f"/api/v1/transport-nodes/{tn_id}/inter-site/bgp/summary"
+                    summary = client.try_get(summary_path, default={}) or {}
+                    if not client.absent(summary_path) and client.ok(summary_path):
+                        bgp_drops = {(n.get("source_address"), n.get("neighbor_address")): n.get("connection_drop_count")
+                                     for n in summary.get("neighbor_status") or []}
                 stats = client.try_get(f"/api/v1/transport-nodes/{tn_id}/inter-site/statistics", default={}) or {}
                 stats_ok = client.ok(f"/api/v1/transport-nodes/{tn_id}/inter-site/statistics")
                 tunnels = 0
@@ -1636,11 +1646,11 @@ class Collector:
                         src, dst = t.get("tunnel_source_address"), t.get("tunnel_destination_address")
                         seen.add((src, dst))
                         tunnels += 1
-                        self.tunnel(no, edge_key, tn_name, src, dst, remote, t, bgp_state.get((src, dst)))
+                        self.tunnel(no, edge_key, tn_name, src, dst, remote, t, bgp_state.get((src, dst)), bgp_drops.get((src, dst)))
                 for (src, dst), state in bgp_state.items():  # sessions with no tunnel statistics yet
                     if (src, dst) not in seen:
                         tunnels += 1
-                        self.tunnel(no, edge_key, tn_name, src, dst, "?" if stats_ok else None, {}, state)
+                        self.tunnel(no, edge_key, tn_name, src, dst, "?" if stats_ok else None, {}, state, bgp_drops.get((src, dst)))
                 self.metrics(no, {"intersite_bgp_total": total, "intersite_bgp_established": up,
                                   "rtep_tunnels": tunnels if stats_ok else None})
                 self.props(no, {"location": name})
@@ -1706,7 +1716,8 @@ class Collector:
             self.counters(ro, f"real:{pol['path']}@{loc['path']}", totals)
             loc.setdefault("_policy_hits", {})[pol["path"]] = (totals, per_rule)
 
-    def tunnel(self, node: Object, tn_id: str, tn_name: str, src: Any, dst: Any, remote: str, t: dict, bgp_state: Optional[str]) -> None:
+    def tunnel(self, node: Object, tn_id: str, tn_name: str, src: Any, dst: Any, remote: str, t: dict, bgp_state: Optional[str],
+               bgp_drops: Optional[int]) -> None:
         to = self.obj("rtep_tunnel", f"{tn_name}: {src} -> {dst}", f"rtep:{tn_id}:{src}>{dst}")
         self.at(to, *self.sites_of.get(id(node), ()), self.path_of(remote))
         to.add_parent(node)
@@ -1717,6 +1728,7 @@ class Collector:
             "rx_dropped": rx.get("dropped_packets"), "tx_dropped": tx.get("dropped_packets"),
             "rx_blocked": rx.get("blocked_packets"), "tx_blocked": tx.get("blocked_packets"),
             "bgp_established": None if bgp_state is None else (1 if bgp_state == "ESTABLISHED" else 0),
+            "connection_drops": bgp_drops,
         })
         self.props(to, {"local_rtep": src, "remote_rtep": dst, "remote_location": remote, "bgp_state": bgp_state})
 

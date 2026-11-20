@@ -2,7 +2,7 @@
 
 A management pack that monitors NSX Federation (NSX 9.1) in VCF Operations 9.1.1. It is built with the
 [VCF Operations Integration SDK](https://vmware.github.io/vmware-vcf-operations-integration-sdk/introduction)
-in Python. Current version: 1.7.9.
+in Python. Current version: 1.7.10.
 
 This is a lab project, not a Broadcom product. The pack is unsigned and comes with no support. It only reads
 from NSX.
@@ -15,17 +15,18 @@ The design, the install and the tests are described in two blog posts:
 ## What it monitors
 
 The full list of object types, metrics, properties and alerts, with the condition and the recommendation of each
-alert, is in [docs/FEATURES.md](docs/FEATURES.md). In short:
+alert, is in [docs/FEATURES.md](docs/FEATURES.md) (French: [docs/FEATURES.fr.md](docs/FEATURES.fr.md)). In short:
 
 - 15 object types (the global firewall rule is opt-in): the federation, Global Managers and their nodes, locations, sync channels, edge clusters,
   edge nodes, RTEP tunnels, Tier-0 BGP neighbors, stretched Tier-0 and Tier-1 gateways, segments, global
   security policies, and the realization of each stretched object at each location. Global firewall rules
   are opt-in per policy.
 - Metrics in 17 groups, with rates computed from the NSX counters, federation rollups and 20 key indicators.
-- 66 alert definitions, 109 symptoms and 37 recommendations, including the 13 federation alarm types of
-  NSX 9.1 as named alerts, the sync state of a standby Global Manager and alerts on the collection itself.
-- Latency and packet loss: round-trip time to the Global Manager against the maximum RTT set in NSX, drops of
-  each RTEP tunnel as a share of its packets, blocked packets, and BGP session flaps. The thresholds are listed in
+- 71 alert definitions, 116 symptoms and 40 recommendations, including the 15 federation alarm types of
+  NSX 9.1.1 as named alerts, the sync state of a standby Global Manager and alerts on the collection itself.
+- Latency and packet loss: round-trip time to the Global Manager against the maximum RTT set in NSX and against
+  its usual range, drops of each RTEP tunnel as a share of its packets, blocked packets, and flaps of the Tier-0 and
+  inter-site BGP sessions. The thresholds are listed in
   [docs/FEATURES.md](docs/FEATURES.md#thresholds).
 - A failed NSX call is reported as unknown data, not as an empty answer: no alert fires on data that was
   never received, and the federation object lists the calls without an answer.
@@ -56,7 +57,7 @@ account is enough: the built-in `audit` account was tested.
 | `tooling/Dockerfile` | An image with the SDK tools (`mp-init`, `mp-test`, `mp-build`) |
 | `install/` | Scripts for the scripted install of an unsigned pack |
 | `tests/` | Test suite with a mock NSX (an anonymised recording of a small federation) |
-| `docs/FEATURES.md` | Every object type, metric, property and alert of the pack (generated) |
+| `docs/FEATURES.md`, `docs/FEATURES.fr.md` | Every object type, metric, property and alert of the pack, in English and in French (generated) |
 | `docs/INSTALL.md` | Install guide: checklist and the commands for each step, with the machine they run on ([French](docs/INSTALL.fr.md)) |
 | `docs/OPERATIONS.md` | Account settings, certificate trust, sizing, alert behaviour, upgrade |
 

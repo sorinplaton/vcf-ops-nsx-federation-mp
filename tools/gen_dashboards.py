@@ -225,6 +225,7 @@ def connectivity():
         ("rtep_tunnel", "rx_dropped_per_min", (1, 10, 60)), ("rtep_tunnel", "tx_dropped_per_min", (1, 10, 60)),
         ("rtep_tunnel", "rx_drop_pct", (0.5, 1, 5)), ("rtep_tunnel", "tx_drop_pct", (0.5, 1, 5)),
         ("rtep_tunnel", "rx_blocked_per_min", (1, 10, 60)), ("rtep_tunnel", "tx_blocked_per_min", (1, 10, 60)),
+        ("rtep_tunnel", "connection_drops_per_hour", (1, 12, 36)),
         ("bgp_neighbor", "established", (0.9, 0.6, 0.5)), ("bgp_neighbor", "prefixes_in"), ("bgp_neighbor", "prefixes_out"),
         ("bgp_neighbor", "seconds_established"), ("bgp_neighbor", "connection_drops"),
         ("bgp_neighbor", "connection_drops_per_hour", (1, 12, 36)),

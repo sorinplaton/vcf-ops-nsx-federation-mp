@@ -87,6 +87,8 @@ S = {
     "tun_tx_loss1":    ("rtep_tunnel", "RTEP tunnel drops more than 1% of the sent packets", "warning", "metric", "tx_drop_pct", ">", 1),
     "tun_rx_loss5":    ("rtep_tunnel", "RTEP tunnel drops more than 5% of the received packets", "immediate", "metric", "rx_drop_pct", ">", 5),
     "tun_tx_loss5":    ("rtep_tunnel", "RTEP tunnel drops more than 5% of the sent packets", "immediate", "metric", "tx_drop_pct", ">", 5),
+    "tun_flap":        ("rtep_tunnel", "Inter-site BGP session of the RTEP tunnel dropped since the previous cycle", "warning", "metric", "connection_drops_per_hour", ">", 0),
+    "tun_up_now":      ("rtep_tunnel", "Inter-site BGP session of the RTEP tunnel is established in this cycle", "info", "metric", "bgp_established", ">", 0),
     "tun_rx_blocked":  ("rtep_tunnel", "RTEP tunnel blocks more than 10 received packets per minute", "warning", "metric", "rx_blocked_per_min", ">", 10),
     "tun_tx_blocked":  ("rtep_tunnel", "RTEP tunnel blocks more than 10 sent packets per minute", "warning", "metric", "tx_blocked_per_min", ">", 10),
     "t0_error":        ("tier0", "Stretched Tier-0 gateway is in error at a location", "immediate", "metric", "error_locations", ">", 0),
@@ -105,6 +107,7 @@ S = {
     # dynamic threshold: VCF Operations learns the usual range of the metric
     "tun_rx_dt":       ("rtep_tunnel", "RTEP tunnel receive rate is above its usual range", "warning", "dt", "rx_bytes_per_s", "above", None),
     "tun_tx_dt":       ("rtep_tunnel", "RTEP tunnel send rate is above its usual range", "warning", "dt", "tx_bytes_per_s", "above", None),
+    "loc_rtt_dt":      ("location", "Round-trip time to the Global Manager is above its usual range", "warning", "dt", "gm_rtt_ms", "above", None),
 }
 
 # ---- NSX alarms of the Global Manager, which the adapter forwards as events "NSX alarm <event_type>: <summary>"
@@ -136,6 +139,11 @@ GM_ALARMS = {
                       "NSX reports an inter-site (RTEP) BGP session as down.", "intersite"),
     "rtep_connectivity_lost": ("immediate", "NSX alarm: RTEP connectivity lost",
                                "An edge node lost RTEP connectivity with a remote location.", "intersite"),
+    # the two federation alarm types NSX 9.1.1 lists beyond the 13 above (GET /api/v1/events, feature federation)
+    "error_in_delta_sync": ("critical", "NSX alarm: delta sync error",
+                            "A delta sync from the Global Manager to a location failed. Configuration changes made on the Global Manager do not reach that location until it succeeds.", "delta_sync"),
+    "connectivity_to_ldap_server_lost": ("critical", "NSX alarm: connectivity to the LDAP server lost",
+                                         "The manager lost its connection to an LDAP identity source. Users of that source may not be able to log in.", "ldap"),
 }
 # the Global Manager object gets every type; a location (alarms of its Local Manager) all but the GM-to-GM ones
 ALARM_KINDS = {"alarm_": ("global_manager", "Global Manager"), "loc_alarm_": ("location", "Local Manager")}
@@ -156,7 +164,7 @@ OUTAGE_KINDS = {"global_manager": "Global Manager", "location": "Location", "syn
 for _k in OUTAGE_KINDS:
     S["outage_" + _k] = (_k, "A location of the federation is cut off from the Global Manager", "info", "property",
                          "location_outage", "!=", "none")
-QUIET = {"loc_intersite", "chan_down", "edge_bgp_down", "ec_status", "tun_bgp_down", "tun_drops", "tun_blocked", "bgp_flap", "loc_rtt", "t0_error", "t1_error",
+QUIET = {"loc_intersite", "chan_down", "edge_bgp_down", "ec_status", "tun_bgp_down", "tun_drops", "tun_blocked", "tun_flap", "bgp_flap", "loc_rtt", "t0_error", "t1_error",
          "seg_error", "pol_error", "bgp_down", "real_missing"}
 
 # ---- wait and cancel cycles: conditions that can flap need two cycles (10 minutes) to raise and to clear
@@ -167,7 +175,9 @@ WAIT.update({"tun_rx_dt": (3, 3), "tun_tx_dt": (3, 3), "gm_standby_sync": (3, 2)
              "fed_gaps": (2, 2),
              # one session drop is enough; the alert stays two cycles so a flap is seen, and still clears
              # before the outage symptom that keeps it quiet
-             "bgp_flap": (1, 2), "fed_throttled": (3, 2), "fed_slow": (2, 2),
+             "bgp_flap": (1, 2), "tun_flap": (1, 2),
+             # the usual range of the latency: three cycles to fire, two to clear (below the outage cancel of three)
+             "loc_rtt_dt": (3, 2), "fed_throttled": (3, 2), "fed_slow": (2, 2),
              # a full sync or a change in progress is not a fault: these two wait for a second cycle
              "loc_full_sync": (2, 1), "real_missing": (2, 1)})
 # an outage symptom outlives the symptoms it keeps quiet, so that their alerts do not fire in the cycles in which
@@ -244,6 +254,16 @@ R = {
     "bgp_flap": "The session went down and came back. Check the edge uplink and the peer router logs for interface flaps, "
                 "hold-timer expiries or BFD events around that time. Repeated flaps usually point to a physical link, "
                 "an MTU mismatch or a peer under load.",
+    "rtep_flap": "The inter-site BGP session of this tunnel went down and came back. Check the RTEP path between the two edge "
+                 "nodes (physical links, WAN, MTU 1700 on the whole path) and the load of both edges around that time. Repeated "
+                 "flaps on every tunnel of an edge point to the edge or its uplinks; on one tunnel, to the path.",
+    "delta_sync": "A delta sync from the Global Manager to the location named in the alarm failed. Check the connection between "
+                  "them (TCP 1236 in both directions) and the async-replicator service on both sides (get service async_replicator, "
+                  "log /var/log/async-replicator/ar.log). If the alarm stays after the connection is back, start a full sync of the "
+                  "location from System, Location Manager. See https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vcf-9-0-and-later/9-0/advanced-network-management/administration-guide/managing-nsx-t-in-multiple-locations/nsx-t-federation/using-the-gm-and-lm-ui/monitoring-nsx-federation-locations.html",
+    "ldap": "Open System, User Management, LDAP on the manager named in the alarm and check the identity source: the LDAP server "
+            "answers on its port, its certificate is still the trusted one, and the bind credentials are valid. Local accounts "
+            "keep working while the source is unreachable.",
     "rtt": "Measure the round-trip time between the Global Manager and the Local Manager of this location. NSX Federation "
            "supports up to 150 ms between locations, and the maximum RTT setting of the location (System, Location "
            "Manager) is the limit NSX applies. Look for WAN congestion, a path change or a degraded link. See "
@@ -331,10 +351,10 @@ A = [
     ("loc_intersite", "location", "Inter-site BGP sessions of the location are down",
      "Inter-site (RTEP) BGP sessions of this location are not established. Critical when none is established.",
      NET, AVAIL, [["loc_bgp_down"], ["loc_bgp_none", "!loc_bgp_zero"]], "intersite"),
-    ("loc_rtt", "location", "Round-trip time to the Global Manager is close to the NSX limit",
+    ("loc_rtt", "location", "Round-trip time to the Global Manager is high",
      "The round-trip time between the location and the Global Manager is above 80% of the maximum RTT set for the location "
-     "(immediate above 100%), or above the 150 ms that NSX Federation supports.", NET, PERF,
-     [["loc_rtt_150"], ["loc_rtt_80"], ["loc_rtt_100"]], "rtt"),
+     "(immediate above 100%), above the 150 ms that NSX Federation supports, or above the usual range VCF Operations learned "
+     "for the location.", NET, PERF, [["loc_rtt_150"], ["loc_rtt_80"], ["loc_rtt_100"], ["loc_rtt_dt"]], "rtt"),
     ("loc_version", "location", "Location and Global Manager run different NSX releases",
      "The Local Manager and the Global Manager run different NSX releases. A different patch level is not reported.", NET, COMPL, [["loc_version"]], "version"),
     ("loc_backup", "location", "Local Manager backup is missing, old or failed",
@@ -357,6 +377,9 @@ A = [
      "In one direction the tunnel drops more than 1% of the packets (5% for immediate), and more than 10 packets per minute.",
      NET, PERF, [["tun_rx_drops", "tun_rx_loss1"], ["tun_rx_drops", "tun_rx_loss5"], ["tun_tx_drops", "tun_tx_loss1"],
                  ["tun_tx_drops", "tun_tx_loss5"]], "tunnel_drops"),
+    ("tun_flap", "rtep_tunnel", "RTEP tunnel inter-site BGP session is flapping",
+     "The inter-site BGP session of this tunnel dropped since the previous cycle and is established again.", NET, PERF,
+     [["tun_flap", "tun_up_now"]], "rtep_flap"),
     ("tun_blocked", "rtep_tunnel", "RTEP tunnel is blocking packets",
      "The tunnel blocks more than 10 packets per minute in one direction.", NET, PERF,
      [["tun_rx_blocked"], ["tun_tx_blocked"]], "tunnel_blocked"),

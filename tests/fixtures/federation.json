@@ -2813,6 +2813,88 @@
 ],
 "sort_ascending": true,
 "sort_by": "display_name"
+},
+"/api/v1/transport-nodes/47ee7a1e-e214-13e8-3cbc-73ab9ed92e23/inter-site/bgp/summary": {
+"transport_node_id": "47ee7a1e-e214-13e8-3cbc-73ab9ed92e23",
+"neighbor_status": [
+{
+"connection_state": "ESTABLISHED",
+"neighbor_address": "192.0.2.16",
+"remote_site": {
+"is_valid": true,
+"target_display_name": "site-a-wld03",
+"target_id": "50adcaea-7448-8f66-da51-251459b09927"
+},
+"source_address": "192.0.2.15",
+"connection_drop_count": 0,
+"established_connection_count": 1,
+"hold_time": 15,
+"keep_alive_interval": 5,
+"messages_received": 1000,
+"messages_sent": 1000,
+"time_since_established": 5000,
+"remote_as_number": "65000"
+},
+{
+"connection_state": "ESTABLISHED",
+"neighbor_address": "192.0.2.17",
+"remote_site": {
+"is_valid": true,
+"target_display_name": "site-a-wld03",
+"target_id": "50adcaea-7448-8f66-da51-251459b09927"
+},
+"source_address": "192.0.2.15",
+"connection_drop_count": 0,
+"established_connection_count": 1,
+"hold_time": 15,
+"keep_alive_interval": 5,
+"messages_received": 1000,
+"messages_sent": 1000,
+"time_since_established": 5000,
+"remote_as_number": "65000"
+}
+]
+},
+"/api/v1/transport-nodes/0c93aefb-3c4d-45cd-4e06-3a368184f76a/inter-site/bgp/summary": {
+"transport_node_id": "0c93aefb-3c4d-45cd-4e06-3a368184f76a",
+"neighbor_status": [
+{
+"connection_state": "ESTABLISHED",
+"neighbor_address": "192.0.2.16",
+"remote_site": {
+"is_valid": true,
+"target_display_name": "site-a-wld03",
+"target_id": "50adcaea-7448-8f66-da51-251459b09927"
+},
+"source_address": "192.0.2.14",
+"connection_drop_count": 0,
+"established_connection_count": 1,
+"hold_time": 15,
+"keep_alive_interval": 5,
+"messages_received": 1000,
+"messages_sent": 1000,
+"time_since_established": 5000,
+"remote_as_number": "65000"
+},
+{
+"connection_state": "ESTABLISHED",
+"neighbor_address": "192.0.2.17",
+"remote_site": {
+"is_valid": true,
+"target_display_name": "site-a-wld03",
+"target_id": "50adcaea-7448-8f66-da51-251459b09927"
+},
+"source_address": "192.0.2.14",
+"connection_drop_count": 0,
+"established_connection_count": 1,
+"hold_time": 15,
+"keep_alive_interval": 5,
+"messages_received": 1000,
+"messages_sent": 1000,
+"time_since_established": 5000,
+"remote_as_number": "65000"
+}
+]
 }
 },
 "192.0.2.4": {
@@ -7844,6 +7926,88 @@
 ],
 "sort_ascending": true,
 "sort_by": "display_name"
+},
+"/api/v1/transport-nodes/9ef468d8-416e-e3d0-6421-7caf10983154/inter-site/bgp/summary": {
+"transport_node_id": "9ef468d8-416e-e3d0-6421-7caf10983154",
+"neighbor_status": [
+{
+"connection_state": "ESTABLISHED",
+"neighbor_address": "192.0.2.14",
+"remote_site": {
+"is_valid": true,
+"target_display_name": "site-a-wld01",
+"target_id": "6241f0a1-eb90-457d-85b1-3ebc53fb030d"
+},
+"source_address": "192.0.2.16",
+"connection_drop_count": 0,
+"established_connection_count": 1,
+"hold_time": 15,
+"keep_alive_interval": 5,
+"messages_received": 1000,
+"messages_sent": 1000,
+"time_since_established": 5000,
+"remote_as_number": "65000"
+},
+{
+"connection_state": "ESTABLISHED",
+"neighbor_address": "192.0.2.15",
+"remote_site": {
+"is_valid": true,
+"target_display_name": "site-a-wld01",
+"target_id": "6241f0a1-eb90-457d-85b1-3ebc53fb030d"
+},
+"source_address": "192.0.2.16",
+"connection_drop_count": 0,
+"established_connection_count": 1,
+"hold_time": 15,
+"keep_alive_interval": 5,
+"messages_received": 1000,
+"messages_sent": 1000,
+"time_since_established": 5000,
+"remote_as_number": "65000"
+}
+]
+},
+"/api/v1/transport-nodes/acecccf4-0920-e63d-7543-33bad9937189/inter-site/bgp/summary": {
+"transport_node_id": "acecccf4-0920-e63d-7543-33bad9937189",
+"neighbor_status": [
+{
+"connection_state": "ESTABLISHED",
+"neighbor_address": "192.0.2.14",
+"remote_site": {
+"is_valid": true,
+"target_display_name": "site-a-wld01",
+"target_id": "6241f0a1-eb90-457d-85b1-3ebc53fb030d"
+},
+"source_address": "192.0.2.17",
+"connection_drop_count": 0,
+"established_connection_count": 1,
+"hold_time": 15,
+"keep_alive_interval": 5,
+"messages_received": 1000,
+"messages_sent": 1000,
+"time_since_established": 5000,
+"remote_as_number": "65000"
+},
+{
+"connection_state": "ESTABLISHED",
+"neighbor_address": "192.0.2.15",
+"remote_site": {
+"is_valid": true,
+"target_display_name": "site-a-wld01",
+"target_id": "6241f0a1-eb90-457d-85b1-3ebc53fb030d"
+},
+"source_address": "192.0.2.17",
+"connection_drop_count": 0,
+"established_connection_count": 1,
+"hold_time": 15,
+"keep_alive_interval": 5,
+"messages_received": 1000,
+"messages_sent": 1000,
+"time_since_established": 5000,
+"remote_as_number": "65000"
+}
+]
 }
 }
 }
