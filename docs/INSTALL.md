@@ -4,6 +4,8 @@ How to build the NSX Federation pack and install it in VCF Operations 9.1.1, wit
 runs on. The steps are the ones used in the lab; part 2 of the
 [blog](https://sorinplaton.github.io/posts/nsx-federation-management-pack-install/) shows them with screenshots.
 
+Version française : [INSTALL.fr.md](INSTALL.fr.md).
+
 ## Where things run
 
 | Machine | Role |
@@ -22,7 +24,7 @@ The placeholders used below:
 | `<repository>` | `nsxfederation` |
 | `<ops>` | `ops.example.com` |
 | `<gm1>`, `<gm2>` | cluster address of the active and of the standby Global Manager |
-| `<version>` | `1.7.7` |
+| `<version>` | `1.7.8` |
 
 ## Checklist
 

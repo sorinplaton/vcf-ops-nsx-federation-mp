@@ -54,7 +54,7 @@ account is enough: the built-in `audit` account was tested.
 | `install/` | Scripts for the scripted install of an unsigned pack |
 | `tests/` | Test suite with a mock NSX (an anonymised recording of a small federation) |
 | `docs/FEATURES.md` | Every object type, metric, property and alert of the pack (generated) |
-| `docs/INSTALL.md` | Install guide: checklist and the commands for each step, with the machine they run on |
+| `docs/INSTALL.md` | Install guide: checklist and the commands for each step, with the machine they run on ([French](docs/INSTALL.fr.md)) |
 | `docs/OPERATIONS.md` | Account settings, certificate trust, sizing, alert behaviour, upgrade |
 
 ## Build
@@ -82,7 +82,7 @@ docker run --rm --network host -u $(id -u):$(getent group docker | cut -d: -f3) 
 
 ## Install
 
-Step by step, with the machine each command runs on: [docs/INSTALL.md](docs/INSTALL.md).
+Step by step, with the machine each command runs on: [docs/INSTALL.md](docs/INSTALL.md) (in French: [docs/INSTALL.fr.md](docs/INSTALL.fr.md)).
 
 The pack is not signed, so VCF Operations 9 refuses it until "Allow unsigned PAK installation" is turned on
 in the admin console (Broadcom KB 415279). The cloud proxy must also trust the certificate of the registry.
@@ -96,7 +96,7 @@ Scripted, with `google-chrome`, `node` and Python `requests` on the host:
 ```bash
 export OPS_HOST=<vcf-operations-fqdn> OPS_PW=<admin password>
 install/upi.sh enableUPI
-install/install_unsigned.sh pack/build/NSXFederation_1.7.7.pak   # turns the switch off at the end
+install/install_unsigned.sh pack/build/NSXFederation_<version>.pak   # turns the switch off at the end
 ```
 
 The scripted route uses calls that are internal to the VCF Operations UI. They are unsupported and can
