@@ -15,7 +15,7 @@ English version: [INSTALL.md](INSTALL.md).
 | Registre | Un registre d'images servi en HTTPS, joignable par le proxy cloud. Le proxy cloud ne se replie pas sur HTTP |
 | Proxy cloud | Le collecteur VCF Operations qui exécute le conteneur de l'adaptateur. Il récupère l'image depuis le registre |
 | VCF Operations | Console d'administration (`https://<ops>/admin`) et interface du produit (`https://<ops>/`) |
-| NSX | Les Global Managers (actif et de secours) et les Local Managers d'une fédération |
+| NSX | Les Global Managers (actif et standby) et les Local Managers d'une fédération |
 
 Les valeurs à remplacer dans la suite :
 
@@ -24,7 +24,7 @@ Les valeurs à remplacer dans la suite :
 | `<registry>` | `registry.example.com:5000` (hôte et port, sans `https://`) |
 | `<repository>` | `nsxfederation` |
 | `<ops>` | `ops.example.com` |
-| `<gm1>`, `<gm2>` | adresse de cluster du Global Manager actif et de celui de secours |
+| `<gm1>`, `<gm2>` | adresse de cluster du Global Manager actif et du standby |
 | `<version>` | `1.7.8` |
 
 ## Liste de contrôle
@@ -194,7 +194,7 @@ version.
 *À exécuter dans : l'interface du produit VCF Operations*, Administration, Integrations, Accounts, ajouter un
 compte de type NSX Federation.
 
-- [ ] Adresses des Global Managers : `<gm1>,<gm2>`, l'adresse de cluster de l'actif et celle du secours. Un
+- [ ] Adresses des Global Managers : `<gm1>,<gm2>`, l'adresse de cluster de l'actif et celle du standby. Un
       compte par fédération.
 - [ ] Identifiant : le compte NSX en lecture seule. N'ajouter l'identifiant des Local Managers que s'il est
       différent.
