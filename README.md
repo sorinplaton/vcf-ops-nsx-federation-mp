@@ -54,6 +54,7 @@ account is enough: the built-in `audit` account was tested.
 | `install/` | Scripts for the scripted install of an unsigned pack |
 | `tests/` | Test suite with a mock NSX (an anonymised recording of a small federation) |
 | `docs/FEATURES.md` | Every object type, metric, property and alert of the pack (generated) |
+| `docs/INSTALL.md` | Install guide: checklist and the commands for each step, with the machine they run on |
 | `docs/OPERATIONS.md` | Account settings, certificate trust, sizing, alert behaviour, upgrade |
 
 ## Build
@@ -80,6 +81,8 @@ docker run --rm --network host -u $(id -u):$(getent group docker | cut -d: -f3) 
 `tools/repack.py <pak> <host:port> <repository>` corrects it.
 
 ## Install
+
+Step by step, with the machine each command runs on: [docs/INSTALL.md](docs/INSTALL.md).
 
 The pack is not signed, so VCF Operations 9 refuses it until "Allow unsigned PAK installation" is turned on
 in the admin console (Broadcom KB 415279). The cloud proxy must also trust the certificate of the registry.
