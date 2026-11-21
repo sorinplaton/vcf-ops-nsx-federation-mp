@@ -264,8 +264,8 @@ R = {
     "ldap": "Open System, User Management, LDAP on the manager named in the alarm and check the identity source: the LDAP server "
             "answers on its port, its certificate is still the trusted one, and the bind credentials are valid. Local accounts "
             "keep working while the source is unreachable.",
-    "rtt": "Measure the round-trip time between the Global Manager and the Local Manager of this location. NSX Federation "
-           "supports up to 150 ms between locations, and the maximum RTT setting of the location (System, Location "
+    "rtt": "Measure the round-trip time between the Global Manager and the Local Manager of this location. Broadcom documents "
+           "150 ms as the limit between locations that share stretched networks (500 ms otherwise), and the maximum RTT setting of the location (System, Location "
            "Manager) is the limit NSX applies. Look for WAN congestion, a path change or a degraded link. See "
            "https://knowledge.broadcom.com/external/article/345822",
     "object_error": "Open the object in the Global Manager and read the error for each location of its span. Fix the cause "
@@ -278,8 +278,8 @@ R = {
     "lm_lm_sync": "Run get site-replicator remote-sites on the Local Managers to see the connection state between the "
                   "locations, then check TCP 1236 between them. A location that is connected but not synchronized may still "
                   "be electing its leader; check again after a few seconds.",
-    "latency": "Measure the round-trip time between the two managers named in the alarm. Federation supports up to 150 ms "
-               "between locations; look for WAN congestion or a path change. See https://knowledge.broadcom.com/external/article/345822",
+    "latency": "Measure the round-trip time between the two managers named in the alarm. Broadcom documents 150 ms as the limit "
+               "between locations that share stretched networks (500 ms otherwise); look for WAN congestion or a path change. See https://knowledge.broadcom.com/external/article/345822",
     "queue": "The sync queue grows when the remote location cannot keep up or cannot be reached. Check the connectivity to "
              "the remote location and /var/log/async-replicator/ar.log. See https://knowledge.broadcom.com/external/article/414606",
     "onboarding": "The location is in an inconsistent state. Delete the onboarding status of the location on the Global "
@@ -353,7 +353,7 @@ A = [
      NET, AVAIL, [["loc_bgp_down"], ["loc_bgp_none", "!loc_bgp_zero"]], "intersite"),
     ("loc_rtt", "location", "Round-trip time to the Global Manager is high",
      "The round-trip time between the location and the Global Manager is above 80% of the maximum RTT set for the location "
-     "(immediate above 100%), above the 150 ms that NSX Federation supports, or above the usual range VCF Operations learned "
+     "(immediate above 100%), above the 150 ms documented for locations with stretched networks, or above the usual range VCF Operations learned "
      "for the location.", NET, PERF, [["loc_rtt_150"], ["loc_rtt_80"], ["loc_rtt_100"], ["loc_rtt_dt"]], "rtt"),
     ("loc_version", "location", "Location and Global Manager run different NSX releases",
      "The Local Manager and the Global Manager run different NSX releases. A different patch level is not reported.", NET, COMPL, [["loc_version"]], "version"),

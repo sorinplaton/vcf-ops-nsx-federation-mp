@@ -83,7 +83,7 @@ For planned work, use a maintenance schedule of VCF Operations on the group "NSX
   in NSX. An NSX without that call answers 404; the adapter then uses the round-trip time of the replication status,
   which NSX 9.1 leaves empty. NSX measures no latency between the two Global Managers. The same alert also fires when
   the round-trip time leaves the range VCF Operations learned for the location (dynamic threshold, three cycles), which
-  catches a WAN that degraded long before it reaches 150 ms. The alert fires above 150 ms, the limit NSX Federation supports, or
+  catches a WAN that degraded long before it reaches 150 ms. The alert fires above 150 ms, the limit Broadcom documents for locations that share stretched networks (500 ms otherwise), or
   above 80% of the setting (warning), and above 100% (immediate). With the default setting of 250 ms, 80% is 200 ms,
   so the 150 ms condition is the one that fires first. The
   latency alarms of NSX itself (between Global Managers, and between a Global Manager and a location) raise their own
@@ -103,7 +103,7 @@ For planned work, use a maintenance schedule of VCF Operations on the group "NSX
   (from `GET /api/v1/transport-nodes/<id>/inter-site/bgp/summary` on the Local Manager, one call per edge node), gets a rate. A drop since the previous cycle while
   the session is established in the current cycle raises a warning that stays for two cycles. A session that is down
   in the current cycle raises no flap alert, and the "not established" alert follows if it stays down. A restart of
-  the edge resets the counter, which gives no rate for that cycle, so a restart is not reported as a flap.
+  the edge resets the counter, which gives a rate of 0 for that cycle, so a restart is not reported as a flap.
 
 ## Changing a threshold
 
@@ -154,7 +154,7 @@ container and is lost when the container restarts.
 3. Metrics appear after three cycles, rates after four.
 
 An upgrade replaces the alert content of the pack. A symptom definition that a new version no longer ships can
-stay in VCF Operations, unused by any alert; delete it under Operations, Configurations, Symptom Definitions, or
+stay in VCF Operations, unused by any alert; delete it under Operate, Administration, Configurations, Symptom Definitions, or
 with `DELETE /api/symptomdefinitions/{id}`.
 
 ## Objects that no longer exist
@@ -180,7 +180,7 @@ pack raises the alarm alerts itself, links nothing in `auto`, and deletes nothin
 
 ```bash
 docker build -t fedmp-tooling tooling
-docker run --rm -v $PWD:/work -w /work fedmp-tooling python -m pytest -q tests
+docker run --rm -u $(id -u):$(id -g) -v $PWD:/work -w /work fedmp-tooling python -m pytest -q tests -p no:cacheprovider
 ```
 
 The tests answer the adapter's calls from `tests/fixtures/federation.json`, an anonymised recording of a federation

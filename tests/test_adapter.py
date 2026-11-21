@@ -1118,3 +1118,36 @@ def test_new_network_alerts_follow_the_rules():
     assert set(ga.GM_ALARMS) >= {"error_in_delta_sync", "connectivity_to_ldap_server_lost"} and len(ga.GM_ALARMS) == 15
     for k in ("tun_blocked", "tun_flap", "bgp_flap", "loc_rtt"):  # quiet during a location outage like the other network alerts
         assert all(any(s.startswith("!outage_") for s in group) for group in alerts[k][6])
+
+
+def test_flow_latency_is_kept_when_the_replication_status_call_fails(nsx):
+    gm, a = "/global-infra/global-managers/gm-site-a", "/global-infra/sites/site-a-wld01"
+    nsx.data[GM_HOSTS[0]]["/global-manager/api/v1/observability/flow-details"] = {"flow_info": [flow(gm, a, 42, cur=100)]}
+    nsx.fail.append("/api/v1/federation/replication/gm/sites/")
+    m = run()["location"]["site-a-wld01"]["m"]
+    assert m["connectivity|gm_rtt_ms"] == 42 and m["sync|sync_queue_used_pct"] == 10.0
+    assert "sync|replication_flows" not in m  # that one does come from the failed call
+
+
+def test_a_reset_of_the_session_drop_counter_gives_a_rate_of_zero(nsx, clock):
+    run()
+    for n in intersite_summaries(nsx):
+        n["connection_drop_count"] += 1
+    clock["now"] += 300
+    assert all(t["m"]["connection_drops_per_hour"] == 12.0 for t in run()["rtep_tunnel"].values())
+    for n in intersite_summaries(nsx):
+        n["connection_drop_count"] = 0  # the edge restarted
+    clock["now"] += 300
+    assert all(t["m"]["connection_drops_per_hour"] == 0 for t in run()["rtep_tunnel"].values())
+
+
+def test_flows_between_locations_and_negative_latency_are_not_a_round_trip_time_to_the_global_manager():
+    import adapter
+    site = flow("/global-infra/sites/loc-a", "/global-infra/sites/loc-b", 400)
+    site["flow_type"] = "LM_TO_LM"
+    unknown = flow("/global-infra/global-managers/gm-a", "/global-infra/sites/loc-a", -1)
+    good = flow("/global-infra/sites/loc-b", "/global-infra/global-managers/gm-a", 7)
+    good["flow_type"] = "LM_TO_GM"
+    out = adapter.flow_summary({"flow_info": [site, unknown, good]})
+    assert out["/global-infra/sites/loc-a"]["rtt_ms"] is None
+    assert out["/global-infra/sites/loc-b"]["rtt_ms"] == 7.0

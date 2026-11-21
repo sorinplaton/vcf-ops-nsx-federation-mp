@@ -24,7 +24,7 @@ The placeholders used below:
 | `<repository>` | `nsxfederation` |
 | `<ops>` | `ops.example.com` |
 | `<gm1>`, `<gm2>` | cluster address of the active and of the standby Global Manager |
-| `<version>` | `1.7.10` |
+| `<version>` | `1.7.11` |
 
 ## Checklist
 
@@ -215,4 +215,4 @@ Federation.
 3. Metrics return after three cycles, rates after four.
 
 A symptom definition the new version no longer ships stays in VCF Operations unused. Delete it under
-Operations, Configurations, Symptom Definitions.
+Operate, Administration, Configurations, Symptom Definitions.

@@ -543,19 +543,22 @@ def drop_pct(prev: Dict[str, float], cur: Dict[str, float], dropped: str, packet
 
 def flow_summary(doc: Dict[str, Any]) -> Dict[str, Dict[str, Optional[float]]]:
     """Per location path: the highest latency NSX measured on the flows between the Global Manager and the location,
-    and how full the fullest sync queue of these flows is, in %. The flows between Global Managers are left out."""
+    and how full the fullest sync queue of these flows is, in %. Only the flows between a Global Manager and a location
+    count, and a negative latency is read as no measurement."""
     num = lambda v: isinstance(v, (int, float)) and not isinstance(v, bool)
     seen: Dict[str, Dict[str, List[float]]] = {}
     for f in doc.get("flow_info") or []:
         c = f.get("cross_site_flow_info") or {}
+        if str(f.get("flow_type") or "GM_TO_LM").upper() not in ("GM_TO_LM", "LM_TO_GM"):
+            continue  # between Global Managers, or between locations: not a round-trip time to the Global Manager
         for path in (c.get("from_site_path"), c.get("to_site_path")):
             if not str(path or "").startswith("/global-infra/sites/"):
                 continue
             e = seen.setdefault(path, {"rtt": [], "queue": []})
-            if num(c.get("latency_millis")):
+            if num(c.get("latency_millis")) and c["latency_millis"] >= 0:
                 e["rtt"].append(float(c["latency_millis"]))
             for q in f.get("queue_infos") or []:
-                if num(q.get("current_size")) and num(q.get("max_size")) and q["max_size"] > 0:
+                if num(q.get("current_size")) and num(q.get("max_size")) and q["max_size"] > 0 and q["current_size"] >= 0:
                     e["queue"].append(100.0 * q["current_size"] / q["max_size"])
     return {p: {"rtt_ms": max(e["rtt"]) if e["rtt"] else None,
                 "queue_pct": round(max(e["queue"]), 2) if e["queue"] else None} for p, e in seen.items()}
@@ -686,7 +689,8 @@ class Collector:
 
     def counters(self, o: Object, ident: str, values: Dict[str, Any]) -> None:
         """Send running totals and, from the second cycle on, their rate since the previous cycle.
-        A counter that went down (reset on the NSX side) gives no rate for that cycle."""
+        A counter that went down (reset on the NSX side) gives no rate for that cycle, except the session drop counter,
+        which gives 0."""
         self.metrics(o, values)
         now = time.time()
         current = {k: float(v) for k, v in values.items() if k in RATES and v is not None}
@@ -697,6 +701,10 @@ class Collector:
                 if k in prev and v >= prev[k]:
                     rate_key, per = RATES[k]
                     self.metrics(o, {rate_key: round((v - prev[k]) / dt * per, 2)})
+                elif k in prev and k == "connection_drops":
+                    # the session counter restarted with the edge: 0, so that a flap rate of the cycle before does
+                    # not stay as the last value and keep the flap alert open
+                    self.metrics(o, {RATES[k][0]: 0.0})
             for pct_key, (dropped, packets) in LOSS.items():
                 pct = drop_pct(prev, current, dropped, packets)
                 if pct is not None:
@@ -1400,14 +1408,16 @@ class Collector:
             seen = rep.get("last_seen_online")
             rtt = round(max(rtts), 1) if rtts else None
             if (flow or {}).get("rtt_ms") is not None:  # NSX 9.1 leaves rtt_statistic empty: the flow details carry it
-                rtt = flow["rtt_ms"]
+                rtt = None  # sent below, with or without an answer to the status call
             self.metrics(lo, {
                 "replication_flows": len(flows), "replication_flows_unhealthy": len(bad),
                 "gm_rtt_ms": rtt, "gm_rtt_pct_of_max": rtt_pct(rtt, loc.get("maximum_rtt")),
-                "sync_queue_used_pct": (flow or {}).get("queue_pct"),
                 "gm_last_seen_minutes": round(max(0.0, time.time() * 1000 - float(seen)) / 60000.0, 1) if seen else None})
             self.props(lo, {"replication_state": "; ".join(
                 f"{str(f.get('flow_id', '?')).split('.')[-1]}: {f.get('replication_state')}" for f in flows) or "no flow reported"})
+        if flow:  # from the flow details, which do not depend on the status call above
+            self.metrics(lo, {"gm_rtt_ms": flow.get("rtt_ms"), "gm_rtt_pct_of_max": rtt_pct(flow.get("rtt_ms"), loc.get("maximum_rtt")),
+                              "sync_queue_used_pct": flow.get("queue_pct")})
         onboarding = self.cache.cached(f"onboarding:{loc['policy_id']}", INVENTORY_TTL, lambda: client.try_get(
             f"{GI}/sites/{loc['policy_id']}/onboarding/status"))
         if onboarding:

@@ -25,7 +25,7 @@ Les valeurs à remplacer dans la suite :
 | `<repository>` | `nsxfederation` |
 | `<ops>` | `ops.example.com` |
 | `<gm1>`, `<gm2>` | adresse de cluster du Global Manager actif et du standby |
-| `<version>` | `1.7.10` |
+| `<version>` | `1.7.11` |
 
 ## Liste de contrôle
 
@@ -215,7 +215,7 @@ compte de type NSX Federation.
       journal du registre.
 - [ ] Avec un intervalle de 5 minutes, les données arrivent en trois cycles : d'abord les objets et les
       relations, puis les propriétés et les événements, puis les métriques après une dizaine de minutes. Les
-      débits demandent un cycle de plus.
+      taux demandent un cycle de plus.
 - [ ] L'objet fédération ne liste aucun appel en échec.
 
 ## Mise à niveau
@@ -223,7 +223,7 @@ compte de type NSX Federation.
 1. Construire la nouvelle version (étape 4) et l'installer (étape 6).
 2. Arrêter puis démarrer le compte. Vérifier qu'il passe à l'état « Collecting » ; le démarrer une seconde fois s'il
    reste arrêté.
-3. Les métriques reviennent après trois cycles, les débits après quatre.
+3. Les métriques reviennent après trois cycles, les taux après quatre.
 
 Une définition de symptôme que la nouvelle version ne fournit plus reste inutilisée dans VCF Operations. La
-supprimer sous Operations, Configurations, Symptom Definitions.
+supprimer sous Operate, Administration, Configurations, Symptom Definitions.

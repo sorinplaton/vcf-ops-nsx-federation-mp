@@ -85,7 +85,7 @@ def alert_rows(kind):
         quiet = any(s.startswith("!outage_") for group in sets for s in group)
         gm_quiet = any(s == "!chan_gm_outage" for group in sets for s in group)
         sev = max((ga.S[s][2] for group in positive for s in group), key=SEVERITY.index)
-        waits = sorted({ga.WAIT.get(s, (1, 1)) for group in positive for s in group})
+        waits = sorted({ga.WAIT.get(s, (1, 1)) for group in positive for s in group if not s.endswith("_up_now")})
         # conditions that must NOT hold are shown too, except the outage ones (see the notes)
         def part(group):
             shown = [condition(s) for s in group if not s.startswith("!")]
