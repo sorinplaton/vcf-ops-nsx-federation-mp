@@ -140,10 +140,10 @@ GM_ALARMS = {
     "rtep_connectivity_lost": ("immediate", "NSX alarm: RTEP connectivity lost",
                                "An edge node lost RTEP connectivity with a remote location.", "intersite"),
     # the two federation alarm types NSX 9.1.1 lists beyond the 13 above (GET /api/v1/events, feature federation)
-    "error_in_delta_sync": ("critical", "NSX alarm: delta sync error",
-                            "A delta sync from the Global Manager to a location failed. Configuration changes made on the Global Manager do not reach that location until it succeeds.", "delta_sync"),
+    "error_in_delta_sync": ("critical", "NSX alarm: delta sync with the directory failed",
+                            "The delta sync of the Global Manager with an Active Directory domain failed. The AD groups used by Identity Firewall are not updated until it succeeds.", "delta_sync"),
     "connectivity_to_ldap_server_lost": ("critical", "NSX alarm: connectivity to the LDAP server lost",
-                                         "The manager lost its connection to an LDAP identity source. Users of that source may not be able to log in.", "ldap"),
+                                         "The Global Manager lost its connection to the LDAP server of an Active Directory domain. The AD groups used by Identity Firewall are not updated until it is back.", "ldap"),
 }
 # the Global Manager object gets every type; a location (alarms of its Local Manager) all but the GM-to-GM ones
 ALARM_KINDS = {"alarm_": ("global_manager", "Global Manager"), "loc_alarm_": ("location", "Local Manager")}
@@ -257,13 +257,12 @@ R = {
     "rtep_flap": "The inter-site BGP session of this tunnel went down and came back. Check the RTEP path between the two edge "
                  "nodes (physical links, WAN, MTU 1700 on the whole path) and the load of both edges around that time. Repeated "
                  "flaps on every tunnel of an edge point to the edge or its uplinks; on one tunnel, to the path.",
-    "delta_sync": "A delta sync from the Global Manager to the location named in the alarm failed. Check the connection between "
-                  "them (TCP 1236 in both directions) and the async-replicator service on both sides (get service async_replicator, "
-                  "log /var/log/async-replicator/ar.log). If the alarm stays after the connection is back, start a full sync of the "
-                  "location from System, Location Manager. See https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vcf-9-0-and-later/9-0/advanced-network-management/administration-guide/managing-nsx-t-in-multiple-locations/nsx-t-federation/using-the-gm-and-lm-ui/monitoring-nsx-federation-locations.html",
-    "ldap": "Open System, User Management, LDAP on the manager named in the alarm and check the identity source: the LDAP server "
-            "answers on its port, its certificate is still the trusted one, and the bind credentials are valid. Local accounts "
-            "keep working while the source is unreachable.",
+    "delta_sync": "Look first for an alarm \"connectivity to the LDAP server lost\" on the same manager. Then read /var/log/syslog on "
+                  "the manager around the time of the alarm and search for \"Error happened when synchronize LDAP objects\". Ask the "
+                  "Active Directory administrator about recent changes in the domain named in the alarm.",
+    "ldap": "Check that the LDAP server named in the alarm runs and is reachable from the Global Manager nodes, that no firewall "
+            "blocks the path, and that its details are right in NSX. Then use Test Connection under Identity Firewall AD in the "
+            "Global Manager UI.",
     "rtt": "Measure the round-trip time between the Global Manager and the Local Manager of this location. Broadcom documents "
            "150 ms as the limit between locations that share stretched networks (500 ms otherwise), and the maximum RTT setting of the location (System, Location "
            "Manager) is the limit NSX applies. Look for WAN congestion, a path change or a degraded link. See "
