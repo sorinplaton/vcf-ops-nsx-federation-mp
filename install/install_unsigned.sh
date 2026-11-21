@@ -27,7 +27,10 @@ finish() {
 trap finish EXIT
 trap 'rc=130; exit 130' INT TERM HUP
 node "$D/uitoken.mjs" >/dev/null 2>&1; sleep 12
-if ( umask 077; node "$D/uisess.mjs" > "$W/uisess.json" 2>/dev/null ); then
+got=1; for i in 1 2 3 4 5 6; do  # the token frame can take a while to load after the login
+  ( umask 077; node "$D/uisess.mjs" > "$W/uisess.json" 2>/dev/null ) && { got=0; break; }; sleep 10
+done
+if [ $got = 0 ]; then
   timeout 2100 python3 "$D/install_pak.py" "$W/uisess.json" "$1"; rc=$?
 else
   echo "no UI session" >&2

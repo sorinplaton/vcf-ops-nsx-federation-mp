@@ -1151,3 +1151,88 @@ def test_flows_between_locations_and_negative_latency_are_not_a_round_trip_time_
     out = adapter.flow_summary({"flow_info": [site, unknown, good]})
     assert out["/global-infra/sites/loc-a"]["rtt_ms"] is None
     assert out["/global-infra/sites/loc-b"]["rtt_ms"] == 7.0
+
+
+def standby_of(r):
+    return next(g for g in r["global_manager"].values() if g["p"]["mode"] == "STANDBY")
+
+
+def test_a_healthy_standby_is_ready_to_take_over(nsx):
+    r = run()
+    f = fed(r)
+    assert f["m"]["switchover_ready"] == 1 and f["p"]["switchover_readiness"].endswith(": ready")
+    assert standby_of(r)["m"]["switchover_ready"] == 1
+    active = next(g for g in r["global_manager"].values() if g["p"]["mode"] == "ACTIVE")
+    assert active["p"]["switchover_readiness"] == "not applicable (active)" and active["m"]["switchover_ready"] == 0
+    assert all(lo["m"]["healthy"] == 1 for lo in r["location"].values())
+
+
+def test_a_standby_out_of_sync_is_not_ready(nsx):
+    status = nsx.data[GM_HOSTS[0]][SITES_STATUS]["active_standby_sync_statuses"][0]
+    status["status"], status["full_sync_status"]["status"] = "ERROR", "FAILED"
+    r = run()
+    assert fed(r)["m"]["switchover_ready"] == 0
+    assert standby_of(r)["p"]["switchover_readiness"] == "not ready: not in sync with the active Global Manager"
+
+
+def test_a_standby_on_another_version_is_not_ready(nsx):
+    nsx.data[GM_HOSTS[1]]["/api/v1/sites/self"]["site"]["site_version"] = "9.1.0.0.1"
+    r = run()
+    assert fed(r)["m"]["switchover_ready"] == 0 and "the active Global Manager runs" in standby_of(r)["p"]["switchover_readiness"]
+
+
+def test_an_unreachable_standby_is_not_ready(nsx):
+    run()
+    del nsx.data[GM_HOSTS[1]]
+    r = run()
+    standby = next(g for g in r["global_manager"].values() if g["m"]["connectivity|reachable"] == 0)
+    assert standby["m"]["switchover_ready"] == 0
+    assert standby["p"]["switchover_readiness"] == "unknown: not reachable by the collector, so its cluster state is unknown"
+    assert fed(r)["m"]["switchover_ready"] == 0
+
+
+def test_readiness_is_unknown_when_the_sync_state_is_not_read(nsx):
+    nsx.fail = [SITES_STATUS]
+    r = run()
+    assert fed(r)["m"]["switchover_ready"] == 0 and standby_of(r)["p"]["switchover_readiness"] == "unknown: sync state not read"
+
+
+def test_without_a_standby_no_switchover_is_possible(nsx):
+    key = "/global-manager/api/v1/global-infra/global-managers?page_size=500"
+    gms = nsx.data[GM_HOSTS[0]][key]
+    gms["results"] = [g for g in gms["results"] if str(g.get("mode")).upper() != "STANDBY"]
+    nsx.data[GM_HOSTS[0]][SITES_STATUS]["active_standby_sync_statuses"] = []
+    r = run(gm_hosts=[GM_HOSTS[0]])
+    assert fed(r)["p"]["standby_configured"] == "False" and fed(r)["m"]["switchover_ready"] == 0
+    assert fed(r)["p"]["switchover_readiness"] == "not ready: no standby Global Manager is configured"
+
+
+def test_a_location_with_a_node_offline_is_not_healthy(nsx):
+    lm_host = next(h for h in nsx.data if h not in GM_HOSTS)
+    mcs = nsx.data[lm_host]["/api/v1/cluster/status"]["mgmt_cluster_status"]
+    mcs["offline_nodes"] = mcs["online_nodes"][:1]
+    r = run()
+    assert sorted(lo["m"]["healthy"] for lo in r["location"].values()) == [0, 1]
+    assert fed(r)["m"]["locations|locations_healthy"] == 1
+
+
+def test_a_standby_the_active_does_not_report_is_not_ready(nsx):
+    nsx.data[GM_HOSTS[0]][SITES_STATUS]["active_standby_sync_statuses"] = []
+    r = run()
+    assert fed(r)["m"]["switchover_ready"] == 0
+    assert standby_of(r)["p"]["switchover_readiness"] == "unknown: the active Global Manager reports no sync state for it"
+
+
+def test_a_standby_the_account_does_not_monitor_is_unknown(nsx):
+    r = run(gm_hosts=[GM_HOSTS[0]])
+    assert fed(r)["p"]["standby_configured"] == "True" and fed(r)["m"]["switchover_ready"] == 0
+    assert fed(r)["p"]["switchover_readiness"].startswith("unknown: the standby Global Manager is not monitored")
+
+
+def test_a_former_standby_does_not_keep_ready(nsx):
+    standby = standby_of(run())["p"]["address"]
+    nsx.data[standby]["/api/v1/sites/self"]["site"]["active_gm"] = "NONE"
+    nsx.data[GM_HOSTS[0]][SITES_STATUS]["active_standby_sync_statuses"] = []
+    r = run()
+    gm = next(g for g in r["global_manager"].values() if g["p"]["address"] == standby)
+    assert gm["m"]["switchover_ready"] == 0 and gm["p"]["switchover_readiness"] == "not applicable (mode NONE)"

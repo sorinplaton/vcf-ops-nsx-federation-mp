@@ -1,0 +1,1041 @@
+{
+ "entries": {
+  "resourceKind": [
+   {
+    "resourceKindKey": "federation",
+    "internalId": "resourceKind:id:0_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "global_manager",
+    "internalId": "resourceKind:id:1_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "manager_node",
+    "internalId": "resourceKind:id:2_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "location",
+    "internalId": "resourceKind:id:3_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "sync_channel",
+    "internalId": "resourceKind:id:4_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "edge_cluster",
+    "internalId": "resourceKind:id:5_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "edge_node",
+    "internalId": "resourceKind:id:6_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "rtep_tunnel",
+    "internalId": "resourceKind:id:7_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "tier0",
+    "internalId": "resourceKind:id:8_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "tier1",
+    "internalId": "resourceKind:id:9_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "segment",
+    "internalId": "resourceKind:id:10_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "global_policy",
+    "internalId": "resourceKind:id:11_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "realization",
+    "internalId": "resourceKind:id:12_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "bgp_neighbor",
+    "internalId": "resourceKind:id:13_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "rule",
+    "internalId": "resourceKind:id:14_::_",
+    "adapterKindKey": "NSXFederation"
+   }
+  ],
+  "adapterKind": [
+   {
+    "internalId": "adapterKind:id:0_::_",
+    "adapterKindKey": "NSXFederation"
+   }
+  ],
+  "resource": []
+ },
+ "dashboards": [
+  {
+   "shared": true,
+   "hidden": false,
+   "creationTime": 1795000000000,
+   "autoswitchEnabled": false,
+   "importAttempts": 0,
+   "columnProportion": "1",
+   "importComplete": true,
+   "description": "One row per location with the checks that decide if it is healthy. Select a location to see its values and properties, click a value to chart it.",
+   "widgets": [
+    {
+     "tabId": "00ba39b5-96fe-5db1-8903-cac379262cf0",
+     "collapsed": false,
+     "id": "c2df7de8-396a-5004-b69d-f72b8e394247",
+     "gridsterCoords": {
+      "w": 12,
+      "x": 1,
+      "h": 7,
+      "y": 1
+     },
+     "state": "",
+     "type": "ResourceList",
+     "title": "Locations",
+     "config": {
+      "resource": [],
+      "relationshipMode": {
+       "relationshipMode": -1
+      },
+      "additionalColumns": [
+       {
+        "boxLabel": "Healthy",
+        "metricName": "Location healthy (1 = yes)",
+        "metricKey": "healthy",
+        "resourceKindId": "resourceKind:id:3_::_"
+       },
+       {
+        "boxLabel": "GM connection",
+        "metricName": "Connected to the active Global Manager",
+        "metricKey": "connectivity|gm_connection_up",
+        "resourceKindId": "resourceKind:id:3_::_"
+       },
+       {
+        "boxLabel": "Collector reach",
+        "metricName": "Reached by the collector",
+        "metricKey": "connectivity|collector_reachable",
+        "resourceKindId": "resourceKind:id:3_::_"
+       },
+       {
+        "boxLabel": "Nodes offline",
+        "metricName": "Local Manager nodes offline",
+        "metricKey": "cluster|nodes_offline",
+        "resourceKindId": "resourceKind:id:3_::_"
+       },
+       {
+        "boxLabel": "Inter-site BGP down",
+        "metricName": "Inter-site BGP sessions not established",
+        "metricKey": "intersite|intersite_bgp_down",
+        "resourceKindId": "resourceKind:id:3_::_"
+       },
+       {
+        "boxLabel": "Full sync failed",
+        "metricName": "Full syncs not completed",
+        "metricKey": "sync|full_sync_failed",
+        "resourceKindId": "resourceKind:id:3_::_"
+       },
+       {
+        "boxLabel": "Flows in error",
+        "metricName": "Replication flows in an error state",
+        "metricKey": "sync|replication_flows_unhealthy",
+        "resourceKindId": "resourceKind:id:3_::_"
+       },
+       {
+        "boxLabel": "RTT (% of max)",
+        "metricName": "Round-trip time to the Global Manager, % of the maximum RTT setting",
+        "metricKey": "connectivity|gm_rtt_pct_of_max",
+        "resourceKindId": "resourceKind:id:3_::_"
+       },
+       {
+        "boxLabel": "Sync queue (%)",
+        "metricName": "Sync queue used, fullest queue with the Global Manager",
+        "metricKey": "sync|sync_queue_used_pct",
+        "resourceKindId": "resourceKind:id:3_::_"
+       },
+       {
+        "boxLabel": "Backup age (h)",
+        "metricName": "Hours since last successful backup",
+        "metricKey": "backup|backup_age_hours",
+        "resourceKindId": "resourceKind:id:3_::_"
+       },
+       {
+        "boxLabel": "Cert expiry (days)",
+        "metricName": "Days until the first certificate expires",
+        "metricKey": "certificates|cert_min_days_to_expiry",
+        "resourceKindId": "resourceKind:id:3_::_"
+       },
+       {
+        "boxLabel": "Critical alarms",
+        "metricName": "Open alarms: critical",
+        "metricKey": "alarms|alarms_open_critical",
+        "resourceKindId": "resourceKind:id:3_::_"
+       },
+       {
+        "boxLabel": "Same version as GM",
+        "metricName": "Same version as the Global Manager",
+        "metricKey": "version_matches_gm",
+        "resourceKindId": "resourceKind:id:3_::_"
+       }
+      ],
+      "mode": "all",
+      "filterMode": "tagPicker",
+      "tagFilter": {
+       "path": [
+        "/source/kind/kind:resourceKind:id:3_::_"
+       ],
+       "value": {
+        "bus": [],
+        "adapterKind": [],
+        "kind": [
+         "resourceKind:id:3_::_"
+        ],
+        "exclaim": false,
+        "healthRange": [],
+        "maintenanceSchedule": [],
+        "adapterInstance": [],
+        "collector": [],
+        "tier": [],
+        "state": [],
+        "tag": [],
+        "day": [],
+        "status": []
+       }
+      },
+      "depth": 1,
+      "customFilter": {
+       "filter": [],
+       "excludedResources": null,
+       "includedResources": null
+      },
+      "selectFirstRow": {
+       "selectFirstRow": true
+      },
+      "selfProvider": {
+       "selfProvider": true
+      },
+      "title": "Locations",
+      "refreshInterval": 300,
+      "refreshContent": {
+       "refreshContent": true
+      }
+     },
+     "height": 0,
+     "states": []
+    },
+    {
+     "tabId": "00ba39b5-96fe-5db1-8903-cac379262cf0",
+     "collapsed": false,
+     "id": "d496f441-d135-55c7-b1bf-b0d7c9b25b03",
+     "gridsterCoords": {
+      "w": 4,
+      "x": 1,
+      "h": 5,
+      "y": 8
+     },
+     "state": "",
+     "type": "ResourceList",
+     "title": "Federation",
+     "config": {
+      "resource": [],
+      "relationshipMode": {
+       "relationshipMode": -1
+      },
+      "additionalColumns": [
+       {
+        "boxLabel": "Healthy (%)",
+        "metricName": "Share of locations healthy",
+        "metricKey": "locations|locations_healthy_pct",
+        "resourceKindId": "resourceKind:id:0_::_"
+       }
+      ],
+      "mode": "all",
+      "filterMode": "tagPicker",
+      "tagFilter": {
+       "path": [
+        "/source/kind/kind:resourceKind:id:0_::_"
+       ],
+       "value": {
+        "bus": [],
+        "adapterKind": [],
+        "kind": [
+         "resourceKind:id:0_::_"
+        ],
+        "exclaim": false,
+        "healthRange": [],
+        "maintenanceSchedule": [],
+        "adapterInstance": [],
+        "collector": [],
+        "tier": [],
+        "state": [],
+        "tag": [],
+        "day": [],
+        "status": []
+       }
+      },
+      "depth": 1,
+      "customFilter": {
+       "filter": [],
+       "excludedResources": null,
+       "includedResources": null
+      },
+      "selectFirstRow": {
+       "selectFirstRow": true
+      },
+      "selfProvider": {
+       "selfProvider": true
+      },
+      "title": "Federation",
+      "refreshInterval": 300,
+      "refreshContent": {
+       "refreshContent": true
+      }
+     },
+     "height": 0,
+     "states": []
+    },
+    {
+     "tabId": "00ba39b5-96fe-5db1-8903-cac379262cf0",
+     "collapsed": false,
+     "id": "ef55730d-fc26-59ef-a587-b5ecd68bcc91",
+     "gridsterCoords": {
+      "w": 8,
+      "x": 5,
+      "h": 5,
+      "y": 8
+     },
+     "state": "",
+     "type": "Scoreboard",
+     "title": "Federation: key values",
+     "config": {
+      "visualTheme": 5,
+      "showMetricName": {
+       "showMetricName": true
+      },
+      "valueSize": 24,
+      "boxHeight": null,
+      "showResourceName": {
+       "showResourceName": false
+      },
+      "roundDecimals": 1,
+      "showMetricUnit": {
+       "showMetricUnit": false
+      },
+      "mode": {
+       "layoutMode": "fixedView"
+      },
+      "labelSize": 12,
+      "boxColumns": 3,
+      "periodLength": "last24Hour",
+      "metric": {
+       "mode": "resourceKind",
+       "resourceMetrics": [],
+       "resourceKindMetrics": [
+        {
+         "metricKey": "locations|locations_total",
+         "metricName": "Locations",
+         "resourceKindId": "resourceKind:id:0_::_",
+         "resourceKindName": "NSX Federation",
+         "isStringMetric": false,
+         "label": "Locations",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1001-1"
+        },
+        {
+         "metricKey": "locations|locations_healthy",
+         "metricName": "Locations healthy",
+         "resourceKindId": "resourceKind:id:0_::_",
+         "resourceKindName": "NSX Federation",
+         "isStringMetric": false,
+         "label": "Locations healthy",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1002-1"
+        },
+        {
+         "metricKey": "locations|locations_healthy_pct",
+         "metricName": "Share of locations healthy",
+         "resourceKindId": "resourceKind:id:0_::_",
+         "resourceKindName": "NSX Federation",
+         "isStringMetric": false,
+         "label": "Locations healthy (%)",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 99,
+         "orangeBound": 75,
+         "redBound": 50,
+         "colorMethod": 0,
+         "id": "extModel1003-1"
+        },
+        {
+         "metricKey": "locations|locations_gm_connected",
+         "metricName": "Locations connected to the Global Manager",
+         "resourceKindId": "resourceKind:id:0_::_",
+         "resourceKindName": "NSX Federation",
+         "isStringMetric": false,
+         "label": "Locations connected",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1004-1"
+        },
+        {
+         "metricKey": "intersite|rtep_tunnels_bgp_down",
+         "metricName": "RTEP tunnels with inter-site BGP down",
+         "resourceKindId": "resourceKind:id:0_::_",
+         "resourceKindName": "NSX Federation",
+         "isStringMetric": false,
+         "label": "RTEP BGP down",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 0.1,
+         "orangeBound": 0.5,
+         "redBound": 0.9,
+         "colorMethod": 0,
+         "id": "extModel1005-1"
+        },
+        {
+         "metricKey": "switchover_ready",
+         "metricName": "A standby Global Manager is ready to take over (1 = yes)",
+         "resourceKindId": "resourceKind:id:0_::_",
+         "resourceKindName": "NSX Federation",
+         "isStringMetric": false,
+         "label": "Ready to take over",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 0.9,
+         "orangeBound": 0.6,
+         "redBound": 0.5,
+         "colorMethod": 0,
+         "id": "extModel1006-1"
+        }
+       ],
+       "subMode": "resourceKindAll"
+      },
+      "showSparkline": {
+       "showSparkline": true
+      },
+      "selfProvider": {
+       "selfProvider": false
+      },
+      "resource": [],
+      "relationshipMode": {
+       "relationshipMode": 0
+      },
+      "depth": 1,
+      "customFilter": {
+       "filter": [],
+       "excludedResources": null,
+       "includedResources": null
+      },
+      "title": "Federation: key values",
+      "refreshInterval": 300,
+      "refreshContent": {
+       "refreshContent": true
+      }
+     },
+     "height": 0,
+     "states": []
+    },
+    {
+     "tabId": "00ba39b5-96fe-5db1-8903-cac379262cf0",
+     "collapsed": false,
+     "id": "985f7a5a-5316-5b78-b375-a57760946924",
+     "gridsterCoords": {
+      "w": 7,
+      "x": 1,
+      "h": 7,
+      "y": 13
+     },
+     "state": "",
+     "type": "Scoreboard",
+     "title": "Selected location: key values",
+     "config": {
+      "visualTheme": 5,
+      "showMetricName": {
+       "showMetricName": true
+      },
+      "valueSize": 24,
+      "boxHeight": null,
+      "showResourceName": {
+       "showResourceName": false
+      },
+      "roundDecimals": 1,
+      "showMetricUnit": {
+       "showMetricUnit": false
+      },
+      "mode": {
+       "layoutMode": "fixedView"
+      },
+      "labelSize": 12,
+      "boxColumns": 3,
+      "periodLength": "last24Hour",
+      "metric": {
+       "mode": "resourceKind",
+       "resourceMetrics": [],
+       "resourceKindMetrics": [
+        {
+         "metricKey": "healthy",
+         "metricName": "Location healthy (1 = yes)",
+         "resourceKindId": "resourceKind:id:3_::_",
+         "resourceKindName": "Location",
+         "isStringMetric": false,
+         "label": "Healthy",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 0.9,
+         "orangeBound": 0.6,
+         "redBound": 0.5,
+         "colorMethod": 0,
+         "id": "extModel1007-1"
+        },
+        {
+         "metricKey": "connectivity|gm_connection_up",
+         "metricName": "Connected to the active Global Manager",
+         "resourceKindId": "resourceKind:id:3_::_",
+         "resourceKindName": "Location",
+         "isStringMetric": false,
+         "label": "GM connection",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 0.9,
+         "orangeBound": 0.6,
+         "redBound": 0.5,
+         "colorMethod": 0,
+         "id": "extModel1008-1"
+        },
+        {
+         "metricKey": "connectivity|collector_reachable",
+         "metricName": "Reached by the collector",
+         "resourceKindId": "resourceKind:id:3_::_",
+         "resourceKindName": "Location",
+         "isStringMetric": false,
+         "label": "Collector reach",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 0.9,
+         "orangeBound": 0.6,
+         "redBound": 0.5,
+         "colorMethod": 0,
+         "id": "extModel1009-1"
+        },
+        {
+         "metricKey": "cluster|nodes_offline",
+         "metricName": "Local Manager nodes offline",
+         "resourceKindId": "resourceKind:id:3_::_",
+         "resourceKindName": "Location",
+         "isStringMetric": false,
+         "label": "Nodes offline",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 0.1,
+         "orangeBound": 0.5,
+         "redBound": 0.9,
+         "colorMethod": 0,
+         "id": "extModel1010-1"
+        },
+        {
+         "metricKey": "intersite|intersite_bgp_established",
+         "metricName": "Inter-site BGP sessions established",
+         "resourceKindId": "resourceKind:id:3_::_",
+         "resourceKindName": "Location",
+         "isStringMetric": false,
+         "label": "Inter-site up",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1011-1"
+        },
+        {
+         "metricKey": "intersite|intersite_bgp_down",
+         "metricName": "Inter-site BGP sessions not established",
+         "resourceKindId": "resourceKind:id:3_::_",
+         "resourceKindName": "Location",
+         "isStringMetric": false,
+         "label": "Inter-site down",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 0.1,
+         "orangeBound": 0.5,
+         "redBound": 0.9,
+         "colorMethod": 0,
+         "id": "extModel1012-1"
+        },
+        {
+         "metricKey": "sync|full_sync_failed",
+         "metricName": "Full syncs not completed",
+         "resourceKindId": "resourceKind:id:3_::_",
+         "resourceKindName": "Location",
+         "isStringMetric": false,
+         "label": "Full sync failed",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 0.1,
+         "orangeBound": 0.5,
+         "redBound": 0.9,
+         "colorMethod": 0,
+         "id": "extModel1013-1"
+        },
+        {
+         "metricKey": "sync|replication_flows_unhealthy",
+         "metricName": "Replication flows in an error state",
+         "resourceKindId": "resourceKind:id:3_::_",
+         "resourceKindName": "Location",
+         "isStringMetric": false,
+         "label": "Flows in error",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 0.1,
+         "orangeBound": 0.5,
+         "redBound": 0.9,
+         "colorMethod": 0,
+         "id": "extModel1014-1"
+        },
+        {
+         "metricKey": "connectivity|gm_rtt_ms",
+         "metricName": "Round-trip time to the Global Manager",
+         "resourceKindId": "resourceKind:id:3_::_",
+         "resourceKindName": "Location",
+         "isStringMetric": false,
+         "label": "RTT to GM (ms)",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 50,
+         "orangeBound": 100,
+         "redBound": 150,
+         "colorMethod": 0,
+         "id": "extModel1015-1"
+        },
+        {
+         "metricKey": "connectivity|gm_rtt_pct_of_max",
+         "metricName": "Round-trip time to the Global Manager, % of the maximum RTT setting",
+         "resourceKindId": "resourceKind:id:3_::_",
+         "resourceKindName": "Location",
+         "isStringMetric": false,
+         "label": "RTT (% of max)",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 50,
+         "orangeBound": 80,
+         "redBound": 100,
+         "colorMethod": 0,
+         "id": "extModel1016-1"
+        },
+        {
+         "metricKey": "sync|sync_queue_used_pct",
+         "metricName": "Sync queue used, fullest queue with the Global Manager",
+         "resourceKindId": "resourceKind:id:3_::_",
+         "resourceKindName": "Location",
+         "isStringMetric": false,
+         "label": "Sync queue used (%)",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 10,
+         "orangeBound": 50,
+         "redBound": 80,
+         "colorMethod": 0,
+         "id": "extModel1017-1"
+        },
+        {
+         "metricKey": "connectivity|gm_last_seen_minutes",
+         "metricName": "Time since the Global Manager last saw the location",
+         "resourceKindId": "resourceKind:id:3_::_",
+         "resourceKindName": "Location",
+         "isStringMetric": false,
+         "label": "Seen by GM (min ago)",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 5,
+         "orangeBound": 15,
+         "redBound": 60,
+         "colorMethod": 0,
+         "id": "extModel1018-1"
+        },
+        {
+         "metricKey": "backup|backup_age_hours",
+         "metricName": "Hours since last successful backup",
+         "resourceKindId": "resourceKind:id:3_::_",
+         "resourceKindName": "Location",
+         "isStringMetric": false,
+         "label": "Backup age (h)",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 24,
+         "orangeBound": 48,
+         "redBound": 72,
+         "colorMethod": 0,
+         "id": "extModel1019-1"
+        },
+        {
+         "metricKey": "certificates|cert_min_days_to_expiry",
+         "metricName": "Days until the first certificate expires",
+         "resourceKindId": "resourceKind:id:3_::_",
+         "resourceKindName": "Location",
+         "isStringMetric": false,
+         "label": "Cert expiry (days)",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 60,
+         "orangeBound": 30,
+         "redBound": 7,
+         "colorMethod": 0,
+         "id": "extModel1020-1"
+        },
+        {
+         "metricKey": "alarms|alarms_open_critical",
+         "metricName": "Open alarms: critical",
+         "resourceKindId": "resourceKind:id:3_::_",
+         "resourceKindName": "Location",
+         "isStringMetric": false,
+         "label": "Critical alarms",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 0.1,
+         "orangeBound": 0.5,
+         "redBound": 0.9,
+         "colorMethod": 0,
+         "id": "extModel1021-1"
+        }
+       ],
+       "subMode": "resourceKindAll"
+      },
+      "showSparkline": {
+       "showSparkline": true
+      },
+      "selfProvider": {
+       "selfProvider": false
+      },
+      "resource": [],
+      "relationshipMode": {
+       "relationshipMode": 0
+      },
+      "depth": 1,
+      "customFilter": {
+       "filter": [],
+       "excludedResources": null,
+       "includedResources": null
+      },
+      "title": "Selected location: key values",
+      "refreshInterval": 300,
+      "refreshContent": {
+       "refreshContent": true
+      }
+     },
+     "height": 0,
+     "states": []
+    },
+    {
+     "tabId": "00ba39b5-96fe-5db1-8903-cac379262cf0",
+     "collapsed": false,
+     "id": "e68ac3c7-e573-54b5-aa84-d3de6a75c53a",
+     "gridsterCoords": {
+      "w": 5,
+      "x": 8,
+      "h": 7,
+      "y": 13
+     },
+     "state": "",
+     "type": "PropertyList",
+     "title": "Selected location: properties",
+     "config": {
+      "visualTheme": 2,
+      "resource": [],
+      "relationshipMode": {
+       "relationshipMode": 0
+      },
+      "depth": 1,
+      "showMetricFullName": {
+       "metricFullName": false
+      },
+      "selfProvider": {
+       "selfProvider": false
+      },
+      "metric": {
+       "mode": "resourceKind",
+       "resourceMetrics": [],
+       "resourceKindMetrics": [
+        {
+         "metricKey": "version",
+         "metricName": "Version",
+         "resourceKindId": "resourceKind:id:3_::_",
+         "resourceKindName": "Location",
+         "isStringMetric": true,
+         "label": "Version",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1022-1"
+        },
+        {
+         "metricKey": "version_matches_gm",
+         "metricName": "Same version as the Global Manager",
+         "resourceKindId": "resourceKind:id:3_::_",
+         "resourceKindName": "Location",
+         "isStringMetric": true,
+         "label": "Same version as the Global Manager",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1023-1"
+        },
+        {
+         "metricKey": "cluster_status",
+         "metricName": "Local Manager cluster status",
+         "resourceKindId": "resourceKind:id:3_::_",
+         "resourceKindName": "Location",
+         "isStringMetric": true,
+         "label": "Local Manager cluster status",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1024-1"
+        },
+        {
+         "metricKey": "replication_state",
+         "metricName": "Replication flows",
+         "resourceKindId": "resourceKind:id:3_::_",
+         "resourceKindName": "Location",
+         "isStringMetric": true,
+         "label": "Replication flows",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1025-1"
+        },
+        {
+         "metricKey": "full_sync_stage",
+         "metricName": "Last full sync stage",
+         "resourceKindId": "resourceKind:id:3_::_",
+         "resourceKindName": "Location",
+         "isStringMetric": true,
+         "label": "Last full sync stage",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1026-1"
+        },
+        {
+         "metricKey": "upgrade_status",
+         "metricName": "Upgrade status",
+         "resourceKindId": "resourceKind:id:3_::_",
+         "resourceKindName": "Location",
+         "isStringMetric": true,
+         "label": "Upgrade status",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1027-1"
+        },
+        {
+         "metricKey": "backup_last_result",
+         "metricName": "Last backup result",
+         "resourceKindId": "resourceKind:id:3_::_",
+         "resourceKindName": "Location",
+         "isStringMetric": true,
+         "label": "Last backup result",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1028-1"
+        },
+        {
+         "metricKey": "collector_error",
+         "metricName": "Collector error",
+         "resourceKindId": "resourceKind:id:3_::_",
+         "resourceKindName": "Location",
+         "isStringMetric": true,
+         "label": "Collector error",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1029-1"
+        }
+       ]
+      },
+      "title": "Selected location: properties",
+      "refreshInterval": 300,
+      "refreshContent": {
+       "refreshContent": true
+      }
+     },
+     "height": 0,
+     "states": []
+    },
+    {
+     "tabId": "00ba39b5-96fe-5db1-8903-cac379262cf0",
+     "collapsed": false,
+     "id": "44c1a67f-9530-5532-b378-156d5444ed43",
+     "gridsterCoords": {
+      "w": 12,
+      "x": 1,
+      "h": 7,
+      "y": 20
+     },
+     "state": "",
+     "type": "MetricChart",
+     "title": "Trend of the value clicked above",
+     "config": {
+      "title": "Trend of the value clicked above",
+      "refreshInterval": 300,
+      "refreshContent": {
+       "refreshContent": true
+      }
+     },
+     "height": 0,
+     "states": []
+    }
+   ],
+   "states": [],
+   "editAllowed": true,
+   "homeTab": false,
+   "rank": 0,
+   "disabled": false,
+   "id": "00ba39b5-96fe-5db1-8903-cac379262cf0",
+   "locked": false,
+   "dashboardNavigations": {},
+   "widgetInteractions": [
+    {
+     "widgetIdProvider": "d496f441-d135-55c7-b1bf-b0d7c9b25b03",
+     "type": "resourceId",
+     "widgetIdReceiver": "ef55730d-fc26-59ef-a587-b5ecd68bcc91"
+    },
+    {
+     "widgetIdProvider": "c2df7de8-396a-5004-b69d-f72b8e394247",
+     "type": "resourceId",
+     "widgetIdReceiver": "985f7a5a-5316-5b78-b375-a57760946924"
+    },
+    {
+     "widgetIdProvider": "c2df7de8-396a-5004-b69d-f72b8e394247",
+     "type": "resourceId",
+     "widgetIdReceiver": "e68ac3c7-e573-54b5-aa84-d3de6a75c53a"
+    },
+    {
+     "widgetIdProvider": "985f7a5a-5316-5b78-b375-a57760946924",
+     "type": "metricId",
+     "widgetIdReceiver": "44c1a67f-9530-5532-b378-156d5444ed43"
+    }
+   ],
+   "namePath": "NSX Federation",
+   "lastUpdateUserId": "dc8f7126-4c23-4621-9011-e5390abe7398",
+   "columnCount": 1,
+   "userId": "dc8f7126-4c23-4621-9011-e5390abe7398",
+   "name": "NSX Federation/Location Matrix",
+   "gridsterMaxColumns": 12,
+   "lastUpdateTime": 1795000000000
+  }
+ ],
+ "uuid": "7b5a3cc6-5d6f-59e5-b994-ea694400bdcf"
+}

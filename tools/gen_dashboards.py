@@ -57,7 +57,10 @@ SHORT = {"global_managers_active": "Active GMs", "global_managers_unreachable": 
          "rx_blocked_per_min": "Rx blocked/min", "tx_blocked_per_min": "Tx blocked/min", "hit_count_per_min": "Rule hits/min",
          "rx_drop_pct": "Rx dropped (%)", "tx_drop_pct": "Tx dropped (%)", "connection_drops_per_hour": "Drops/hour",
          "gm_rtt_ms": "RTT to GM (ms)", "gm_rtt_pct_of_max": "RTT (% of max)", "sync_queue_used_pct": "Sync queue used (%)",
-         "rules_total": "Rules", "rules_disabled": "Rules disabled", "hit_count": "Rule hits", "realized": "Realized"}
+         "rules_total": "Rules", "rules_disabled": "Rules disabled", "hit_count": "Rule hits", "realized": "Realized",
+         "switchover_ready": "Ready to take over", "healthy": "Healthy", "locations_healthy": "Locations healthy",
+         "standby_full_sync_age_hours": "Last full sync (h)", "standby_sync_remaining": "Entries to send",
+         "service_groups_degraded": "Services degraded", "reachable": "Reachable"}
 IS_PROP = {k: {p for p, _ in MODEL[k][2]} for k in KINDS}
 
 
@@ -267,6 +270,77 @@ def stretched():
     return d
 
 
+def locations():
+    d = Dash("NSX Federation" + SALT + "/Location Matrix",
+             "One row per location with the checks that decide if it is healthy. Select a location to see its "
+             "values and properties, click a value to chart it.")
+    a = d.object_list("Locations", (1, 1, 12, 7), ["location"], [
+        ("location", "healthy", "Healthy"), ("location", "gm_connection_up", "GM connection"),
+        ("location", "collector_reachable", "Collector reach"), ("location", "nodes_offline", "Nodes offline"),
+        ("location", "intersite_bgp_down", "Inter-site BGP down"), ("location", "full_sync_failed", "Full sync failed"),
+        ("location", "replication_flows_unhealthy", "Flows in error"), ("location", "gm_rtt_pct_of_max", "RTT (% of max)"),
+        ("location", "sync_queue_used_pct", "Sync queue (%)"), ("location", "backup_age_hours", "Backup age (h)"),
+        ("location", "cert_min_days_to_expiry", "Cert expiry (days)"), ("location", "alarms_open_critical", "Critical alarms"),
+        ("location", "version_matches_gm", "Same version as GM")])
+    fl = d.object_list("Federation", (1, 8, 4, 5), ["federation"], [("federation", "locations_healthy_pct", "Healthy (%)")])
+    f = d.scoreboard("Federation: key values", (5, 8, 8, 5), [
+        ("federation", "locations_total"), ("federation", "locations_healthy"), ("federation", "locations_healthy_pct", (99, 75, 50)),
+        ("federation", "locations_gm_connected"), ("federation", "rtep_tunnels_bgp_down", (0.1, 0.5, 0.9)),
+        ("federation", "switchover_ready", (0.9, 0.6, 0.5))], columns=3)
+    d.link(fl, f)
+    sb = d.scoreboard("Selected location: key values", (1, 13, 7, 7), [
+        ("location", "healthy", (0.9, 0.6, 0.5)), ("location", "gm_connection_up", (0.9, 0.6, 0.5)),
+        ("location", "collector_reachable", (0.9, 0.6, 0.5)), ("location", "nodes_offline", (0.1, 0.5, 0.9)),
+        ("location", "intersite_bgp_established"), ("location", "intersite_bgp_down", (0.1, 0.5, 0.9)),
+        ("location", "full_sync_failed", (0.1, 0.5, 0.9)), ("location", "replication_flows_unhealthy", (0.1, 0.5, 0.9)),
+        ("location", "gm_rtt_ms", (50, 100, 150)), ("location", "gm_rtt_pct_of_max", (50, 80, 100)),
+        ("location", "sync_queue_used_pct", (10, 50, 80)), ("location", "gm_last_seen_minutes", (5, 15, 60)),
+        ("location", "backup_age_hours", (24, 48, 72)), ("location", "cert_min_days_to_expiry", (60, 30, 7)),
+        ("location", "alarms_open_critical", (0.1, 0.5, 0.9))], columns=3)
+    pl = d.property_list("Selected location: properties", (8, 13, 5, 7), [
+        ("location", "version"), ("location", "version_matches_gm"), ("location", "cluster_status"),
+        ("location", "replication_state"), ("location", "full_sync_stage"), ("location", "upgrade_status"),
+        ("location", "backup_last_result"), ("location", "collector_error")])
+    ch = d.chart("Trend of the value clicked above", (1, 20, 12, 7))
+    d.link(a, sb, pl)
+    d.link(sb, ch, kind="metricId")
+    return d
+
+
+def switchover():
+    d = Dash("NSX Federation" + SALT + "/Switchover Readiness",
+             "Can a standby Global Manager take over now? Each standby lists what stands in the way: sync with the "
+             "active, cluster health, version, certificates, an upgrade in progress. Select a Global Manager to see why.")
+    a = d.object_list("Global Managers", (1, 1, 12, 5), ["global_manager"], [
+        ("global_manager", "mode", "Mode"), ("global_manager", "switchover_ready", "Ready to take over"),
+        ("global_manager", "switchover_readiness", "Readiness"), ("global_manager", "reachable", "Reachable"),
+        ("global_manager", "standby_in_sync", "In sync"), ("global_manager", "standby_out_of_sync_minutes", "Out of sync (min)"),
+        ("global_manager", "nodes_offline", "Nodes offline"), ("global_manager", "version", "Version"),
+        ("global_manager", "backup_age_hours", "Backup age (h)")])
+    fl = d.object_list("Federation", (1, 6, 4, 5), ["federation"], [("federation", "switchover_readiness", "Readiness")])
+    f = d.scoreboard("Federation: key values", (5, 6, 8, 5), [
+        ("federation", "switchover_ready", (0.9, 0.6, 0.5)), ("federation", "global_managers_reachable"),
+        ("federation", "global_managers_active"), ("federation", "global_managers_unreachable", (0.1, 0.5, 0.9))], columns=2)
+    d.link(fl, f)
+    sb = d.scoreboard("Selected Global Manager: key values", (1, 11, 7, 7), [
+        ("global_manager", "switchover_ready", (0.9, 0.6, 0.5)), ("global_manager", "reachable", (0.9, 0.6, 0.5)),
+        ("global_manager", "standby_in_sync", (0.9, 0.6, 0.5)), ("global_manager", "standby_out_of_sync_minutes", (1, 15, 60)),
+        ("global_manager", "standby_sync_remaining"), ("global_manager", "standby_full_sync_age_hours"),
+        ("global_manager", "nodes_online"), ("global_manager", "nodes_offline", (0.1, 0.5, 0.9)),
+        ("global_manager", "service_groups_degraded", (0.1, 0.5, 0.9)), ("global_manager", "backup_age_hours", (24, 48, 72)),
+        ("global_manager", "cert_min_days_to_expiry", (60, 30, 7)), ("global_manager", "alarms_open_critical", (0.1, 0.5, 0.9))],
+        columns=3)
+    pl = d.property_list("Selected Global Manager: properties", (8, 11, 5, 7), [
+        ("global_manager", "switchover_readiness"), ("global_manager", "mode"), ("global_manager", "version"),
+        ("global_manager", "version_matches_active_gm"), ("global_manager", "cluster_status"),
+        ("global_manager", "standby_sync_status"), ("global_manager", "switchover_status"),
+        ("global_manager", "upgrade_status"), ("global_manager", "backup_last_result"), ("global_manager", "cert_first_to_expire")])
+    ch = d.chart("Trend of the value clicked above", (1, 18, 12, 7))
+    d.link(a, sb, pl)
+    d.link(sb, ch, kind="metricId")
+    return d
+
+
 def bundle(dashes):
     """dashboard.json holding the given dashboards plus the lookup table of kinds."""
     return {"entries": {"resourceKind": [{"resourceKindKey": k, "internalId": KID[k], "adapterKindKey": AK} for k in KINDS],
@@ -285,7 +359,7 @@ def properties(dashes):
 
 
 if __name__ == "__main__":
-    dashes = [overview(), connectivity(), stretched()]
+    dashes = [overview(), locations(), switchover(), connectivity(), stretched()]
     for d in dashes:
         folder = os.path.join(OUT, d.name.split("/")[-1].replace(" ", "_"))
         shutil.rmtree(folder, ignore_errors=True)

@@ -3,7 +3,7 @@
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import aria.ops.adapter_logging as logging
 from aria.ops.adapter_instance import AdapterInstance
@@ -96,6 +96,7 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("rtep_dropped_per_min", "RTEP packets dropped per minute, all tunnels"),
         ("cert_min_days_to_expiry", "Days until the first manager certificate expires"),
         ("alarms_open_critical", "Open critical alarms, all managers"),
+        ("switchover_ready", "A standby Global Manager is ready to take over (1 = yes)"),
     ], [
         ("federation_id", "Federation ID"),
         ("active_global_manager", "Active Global Manager"),
@@ -108,6 +109,7 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("global_manager_addresses", "Global Manager addresses of the account"),
         ("vcf_operations_api", "VCF Operations API from the adapter"),
         ("stale_objects", "Objects deleted because they no longer exist in NSX"),
+        ("switchover_readiness", "Switchover readiness"),
     ]),
     "global_manager": ("Global Manager", [
         ("reachable", "Reachable by the collector"),
@@ -124,6 +126,7 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("standby_sync_remaining", "Entries left to send to the standby"),
         ("standby_out_of_sync_minutes", "Standby out of sync for"),
         ("standby_full_sync_age_hours", "Time since the last full sync to the standby"),
+        ("switchover_ready", "Ready to take over as the active Global Manager (1 = yes)"),
     ], [
         ("mode", "Mode"), ("cluster_status", "Cluster status"), ("version", "Version"),
         ("address", "Address used by the collector"),
@@ -134,10 +137,12 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("standby_data_consistent", "Standby data consistent (as NSX reports it)"),
         ("version_matches_active_gm", "Same version as the active Global Manager"),
         ("upgrade_status", "Upgrade status"), ("upgrade_target_version", "Upgrade target version"),
+        ("switchover_readiness", "Switchover readiness"),
     ]),
     "manager_node": ("Manager Node", [("online", "Online")],
                      [("address", "Address"), ("uuid", "Node UUID")]),
     "location": ("Location", [
+        ("healthy", "Location healthy (1 = yes)"),
         ("gm_connection_up", "Connected to the active Global Manager"),
         ("collector_reachable", "Reached by the collector"),
         ("nodes_online", "Local Manager nodes online"),
@@ -302,7 +307,8 @@ def fk(kind: str, key: str) -> str:
 # ---- metric flags. KPI: VCF Operations weighs these first when it looks for evidence of a problem.
 KPI = {
     ("federation", "global_managers_active"), ("federation", "locations_healthy_pct"),
-    ("global_manager", "nodes_offline"), ("global_manager", "standby_in_sync"), ("location", "gm_connection_up"), ("location", "intersite_bgp_down"),
+    ("global_manager", "nodes_offline"), ("global_manager", "standby_in_sync"),
+    ("federation", "switchover_ready"), ("location", "healthy"), ("location", "gm_connection_up"), ("location", "intersite_bgp_down"),
     ("location", "full_sync_failed"), ("sync_channel", "connection_up"),
     ("edge_node", "intersite_bgp_established"), ("rtep_tunnel", "bgp_established"),
     ("rtep_tunnel", "rx_dropped_per_min"), ("rtep_tunnel", "tx_dropped_per_min"),
@@ -312,7 +318,7 @@ KPI = {
     ("global_policy", "error_locations"),
 }
 # state metrics that are 0 or 1
-DISCRETE = {"standby_in_sync", "reachable", "online", "gm_connection_up", "collector_reachable", "connection_up", "bgp_established",
+DISCRETE = {"switchover_ready", "healthy", "standby_in_sync", "reachable", "online", "gm_connection_up", "collector_reachable", "connection_up", "bgp_established",
             "established", "realized"}
 RATE_KEYS = {v[0] for v in RATES.values()}
 
@@ -662,6 +668,8 @@ class Collector:
         self.standby_since: Dict[str, float] = {}  # standby name -> minutes out of sync
         self.active_name: Optional[str] = None
         self.sync_read = False  # the active Global Manager answered the sync status call in this cycle
+        self.gm_state: Dict[str, Dict[str, Any]] = {}  # Global Manager name -> what decides if it can take over
+        self.gm_answered: Set[str] = set()  # Global Managers that answered in this cycle (their data may be partial)
         # counter values of the previous cycle, for rates: object id -> {"t": epoch, counter: value}
         self.prev_counters: Dict[str, Dict[str, float]] = self.cache.get_any_age("counters") or {}
         self.new_counters: Dict[str, Dict[str, float]] = {}
@@ -890,6 +898,7 @@ class Collector:
             go = self.gm_objects.get(g["site"].get("name") or g["host"])
             if go is not None and active_version and g["site"].get("site_version"):
                 self.props(go, {"version_matches_active_gm": g["site"].get("site_version") == active_version})
+        ready, readiness = self.switchover_readiness(standby_known, active_version)
         clean = (mode == "normal" and not self.over_budget and len(answered) == len(cfg.gm_hosts) and not foreign
                  and collected == len(lm_sites) and not any(c.failed for c in self.clients))
         if clean:
@@ -922,6 +931,7 @@ class Collector:
             "managers_over_budget": self.over_budget,
         })
         self.metrics(fed, self.rollups())
+        self.metrics(fed, {"switchover_ready": ready})
         self.props(fed, {
             "failed_calls": "; ".join(failed[:8]) + (f"; and {len(failed) - 8} more" if len(failed) > 8 else "") or "none",
             "federation_id": self.fed_id,
@@ -936,6 +946,7 @@ class Collector:
             "active_global_manager": gm["site"].get("name") if gm else "none",
             "standby_configured": standby_known,
             "collection_mode": mode,
+            "switchover_readiness": readiness,
         })
         if self.over_budget:
             self.event(fed, f"{self.over_budget} manager(s) used the whole API call budget; the data of this cycle is partial. "
@@ -944,6 +955,73 @@ class Collector:
         self.cache.save()
         for c in self.clients:
             c.close()
+
+    def switchover_readiness(self, standby_known: Optional[bool], active_version: Optional[str]) -> Tuple[int, str]:
+        """Can a standby Global Manager take over now? The metric is 1 only when that is confirmed: nothing
+        stands in the way and every value behind it was read. Otherwise it is 0, and the property says why:
+        "not ready: <reasons>", "unknown: <what could not be read>" or "not applicable (...)". The value is sent
+        in every cycle, so an earlier 1 never stays on a manager that changed role. The federation reads 1 when one
+        standby is ready. The reasons are the ones NSX checks before a switchover, or that make it fail."""
+        sync = {n: ok for n, ok, _r, _a in self.standby_sync}
+        results: Dict[str, Tuple[int, str]] = {}
+        for name, go in self.gm_objects.items():
+            st = self.gm_state.get(name)
+            text = None
+            if name == self.active_name:
+                text = "not applicable (active)"
+            elif st is not None and st["mode"] != "STANDBY" and name not in sync:
+                text = f"not applicable (mode {st['mode']})"
+            elif st is None and name not in self.gm_answered and self.sync_read and name not in sync:
+                # not reachable, and the active does not list it as a standby (a former active, or removed)
+                text = "not applicable (not a standby of the active Global Manager)"
+            if text:
+                self.metrics(go, {"switchover_ready": 0})
+                self.props(go, {"switchover_readiness": text})
+                continue
+            blockers: List[str] = []
+            unknown: List[str] = []
+            if st is None and name in self.gm_answered:
+                unknown.append("the data of this cycle is incomplete")
+            elif st is None:
+                # the collector does not reach it; its own state is unknown, the path between the managers may be fine
+                unknown.append("not reachable by the collector, so its cluster state is unknown")
+            else:
+                if st["cluster"] is None:
+                    unknown.append("cluster status not read")
+                elif st["cluster"] != "STABLE":
+                    blockers.append(f"cluster status {st['cluster']}")
+                if st["offline"]:
+                    blockers.append(f"{st['offline']} node(s) offline")
+                if st["degraded"]:
+                    blockers.append(f"{st['degraded']} service group(s) not stable")
+                if st["version"] and active_version and st["version"] != active_version:
+                    blockers.append(f"runs {st['version']}, the active Global Manager runs {active_version}")
+                if st["cert_days"] is not None and st["cert_days"] <= 0:
+                    blockers.append("a certificate has expired")
+                if str(st["upgrade"] or "").upper() in ("IN_PROGRESS", "PAUSED", "PAUSING"):
+                    blockers.append(f"upgrade {str(st['upgrade']).lower().replace('_', ' ')}")
+            if not self.active_name:
+                unknown.append("no active Global Manager reports the sync state")
+            elif name in sync:
+                if not sync[name]:
+                    blockers.append("not in sync with the active Global Manager")
+            elif not self.sync_read:
+                unknown.append("sync state not read")
+            else:
+                unknown.append("the active Global Manager reports no sync state for it")
+            ready = 0 if blockers or unknown else 1
+            text = ("not ready: " + "; ".join(blockers)) if blockers else ("unknown: " + "; ".join(unknown)) if unknown else "ready"
+            self.metrics(go, {"switchover_ready": ready})
+            self.props(go, {"switchover_readiness": text})
+            results[name] = (ready, text)
+        if standby_known is False:
+            return 0, "not ready: no standby Global Manager is configured"
+        if not results:
+            if standby_known:
+                return 0, "unknown: the standby Global Manager is not monitored by this account (add its address)"
+            return 0, "unknown: no standby Global Manager was read"
+        fed_ready = 1 if any(r == 1 for r, _t in results.values()) else 0
+        return fed_ready, "; ".join(f"{n}: {t}" for n, (_r, t) in sorted(results.items()))
 
     @property
     def over_budget(self) -> int:
@@ -1042,6 +1120,8 @@ class Collector:
         locs = get("location")
         healthy = [o for o in locs if val(o, "gm_connection_up") != 0 and val(o, "collector_reachable") == 1
                    and not val(o, "intersite_bgp_down") and not val(o, "nodes_offline") and not val(o, "full_sync_failed")]
+        for o in locs:
+            self.metrics(o, {"healthy": int(o in healthy)})
         tunnels = get("rtep_tunnel")
         drops = [val(o, k) for o in tunnels for k in ("rx_dropped_per_min", "tx_dropped_per_min")]
         drops = [d for d in drops if d is not None]
@@ -1294,6 +1374,7 @@ class Collector:
         name = site.get("name") or g["host"]
         go = self.obj("global_manager", name, f"gm:{site.get('id')}")
         self.gm_objects[name] = go
+        self.gm_answered.add(name)
         go.add_parent(self.fed)
         cs = client.try_get("/api/v1/cluster/status", default={}) or {}
         mcs = cs.get("mgmt_cluster_status") or {}
@@ -1317,6 +1398,11 @@ class Collector:
         })
         up = self.upgrade_state(client)
         self.props(go, {"upgrade_status": up.get("upgrade_status"), "upgrade_target_version": up.get("target_version") or "none"})
+        self.gm_state[name] = {
+            "mode": mode, "version": site.get("site_version"), "cert_days": c_days, "upgrade": up.get("upgrade_status"),
+            "cluster": mcs.get("status") if cs_ok else None,
+            "offline": len(mcs.get("offline_nodes") or []) if cs_ok else None,
+            "degraded": sum(1 for x in groups if x.get("group_status") != "STABLE") if cs_ok else None}
         for node in mcs.get("online_nodes") or []:
             self.node(go, node, 1)
         for node in mcs.get("offline_nodes") or []:

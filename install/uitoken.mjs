@@ -15,10 +15,15 @@ await cdp('Page.navigate', { url: `https://${host}/ui/login.action` });
 await sleep(6000);
 const body = new URLSearchParams({ mainAction: 'login', userName: 'admin', password: pw, authSourceId: 'localItem',
   authSourceName: 'Local Users', authSourceType: '', forceLogin: 'true', timezone: '0', languageCode: 'us' }).toString();
-const res = await ev(`fetch('login.action',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8'},body:${JSON.stringify(body)}}).then(r=>r.text())`);
+// a profile that is still logged in is sent on to index.action; a second login there answers nothing
+const loggedIn = /\/ui\/index\.action/.test(String(await ev('location.href')));
+const res = loggedIn ? 'ok' : await ev(`fetch('login.action',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8'},body:${JSON.stringify(body)}}).then(r=>r.text())`);
 if (res !== 'ok') { console.error('login: ' + String(res).slice(0, 100)); process.exit(1); }
 await cdp('Page.navigate', { url: `https://${host}/ui/index.action` });
-let token; for (let i = 0; i < 60 && !token; i++) { await sleep(1000); token = await ev(`typeof secureToken==='undefined'?null:secureToken`); }
+// VCF Operations 9.x keeps the token in the /vcf-operations/plug/ops frame (read by uisess.mjs): wait for it
+let token, frame; for (let i = 0; i < 90 && !token && !frame; i++) { await sleep(1000);
+  token = await ev(`typeof secureToken==='undefined'?null:secureToken`);
+  frame = await ev(`[...document.querySelectorAll('iframe')].some(f=>/plug\\/ops/.test(f.src))`); }
 const cookies = (await cdp('Network.getCookies', { urls: [`https://${host}/ui/`] })).result.cookies;
 console.log(JSON.stringify({ token, cookie: cookies.find(c => c.name === 'JSESSIONID')?.value }));
 ws.close(); process.exit(token ? 0 : 2);

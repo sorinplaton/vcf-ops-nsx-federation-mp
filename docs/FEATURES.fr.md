@@ -1,4 +1,4 @@
-# Fonctionnalités et alertes du pack NSX Federation, version 1.7.11
+# Fonctionnalités et alertes du pack NSX Federation, version 1.8.0
 
 Généré par `tools/gen_features.py` à partir du modèle d'objets et des tables d'alertes du pack. Ne pas modifier à la main. Version anglaise : [FEATURES.md](FEATURES.md).
 
@@ -6,9 +6,9 @@ Les noms des métriques, des propriétés, des alertes et des symptômes, ainsi 
 
 ## Résumé
 
-- 15 types d'objet, 135 métriques dans 17 groupes, 117 propriétés, 20 indicateurs clés.
+- 15 types d'objet, 138 métriques dans 17 groupes, 119 propriétés, 22 indicateurs clés.
 - 71 définitions d'alerte, 116 symptômes, 40 recommandations. 14 alertes pèsent sur le badge Risk, les autres sur Health.
-- 4 groupes personnalisés, 3 tableaux de bord, 5 vues en liste, 1 rapport, 1 arborescence d'inventaire, 1 icône par type d'objet.
+- 4 groupes personnalisés, 5 tableaux de bord, 5 vues en liste, 1 rapport, 1 arborescence d'inventaire, 1 icône par type d'objet.
 - Collecte en lecture seule depuis NSX. Les réglages du compte, l'approbation des certificats, le dimensionnement et la mise à niveau sont dans [OPERATIONS.md](OPERATIONS.md) (en anglais).
 
 ## Ce que fait la collecte
@@ -24,16 +24,17 @@ Les noms des métriques, des propriétés, des alertes et des symptômes, ainsi 
 - Lit la réalisation de chaque objet étendu à chaque cycle jusqu'à 200 objets, et par balayage sur six cycles au-delà.
 - Laisse les alarmes de fédération d'un Local Manager à l'intégration NSX native quand celle-ci le supervise, et relie ses nœuds Edge et ses clusters Edge aux objets natifs.
 - Garde silencieuses les alertes des objets dépendants tant qu'un emplacement est coupé du Global Manager.
+- Dit si un Global Manager standby peut prendre le relais : prêt, pas prêt avec les raisons (synchronisation avec l'actif, état du cluster, version, certificat expiré, mise à niveau en cours ou en pause) ou inconnu quand une valeur n'a pas pu être lue. La métrique vaut 1 seulement quand c'est confirmé.
 - Supprime en option les objets qui ont quitté NSX (option désactivée par défaut).
 
 ## Types d'objet
 
 | Type d'objet | Clé | Métriques | Propriétés | Définitions d'alerte |
 | --- | --- | --- | --- | --- |
-| NSX Federation | `federation` | 28 | 11 | 9 |
-| Global Manager | `global_manager` | 14 | 14 | 22 |
+| NSX Federation | `federation` | 29 | 12 | 9 |
+| Global Manager | `global_manager` | 15 | 15 | 22 |
 | Manager Node | `manager_node` | 1 | 2 | 0 |
-| Location | `location` | 23 | 22 | 24 |
+| Location | `location` | 24 | 22 | 24 |
 | Sync Channel | `sync_channel` | 1 | 5 | 1 |
 | Federation Edge Cluster | `edge_cluster` | 4 | 5 | 1 |
 | Federation Edge Node | `edge_node` | 4 | 2 | 1 |
@@ -252,8 +253,9 @@ La criticité indiquée est la plus haute parmi celles des symptômes qui décle
 | Inter-site | RTEP packets dropped per minute, all tunnels | `intersite\|rtep_dropped_per_min` |  |
 | Certificates | Days until the first manager certificate expires | `certificates\|cert_min_days_to_expiry` |  |
 | Alarms | Open critical alarms, all managers | `alarms\|alarms_open_critical` |  |
+|  | A standby Global Manager is ready to take over (1 = yes) | `switchover_ready` | oui |
 
-Propriétés : Federation ID (`federation_id`) ; Active Global Manager (`active_global_manager`) ; Standby Global Manager configured (`standby_configured`) ; Collection mode (`collection_mode`) ; NSX API calls without an answer (`failed_calls`) ; Global Managers not collected (`global_manager_errors`) ; Locations in outage (`location_outage`) ; Federation configuration version (`config_version`) ; Global Manager addresses of the account (`global_manager_addresses`) ; VCF Operations API from the adapter (`vcf_operations_api`) ; Objects deleted because they no longer exist in NSX (`stale_objects`).
+Propriétés : Federation ID (`federation_id`) ; Active Global Manager (`active_global_manager`) ; Standby Global Manager configured (`standby_configured`) ; Collection mode (`collection_mode`) ; NSX API calls without an answer (`failed_calls`) ; Global Managers not collected (`global_manager_errors`) ; Locations in outage (`location_outage`) ; Federation configuration version (`config_version`) ; Global Manager addresses of the account (`global_manager_addresses`) ; VCF Operations API from the adapter (`vcf_operations_api`) ; Objects deleted because they no longer exist in NSX (`stale_objects`) ; Switchover readiness (`switchover_readiness`).
 
 ### Global Manager
 
@@ -273,8 +275,9 @@ Propriétés : Federation ID (`federation_id`) ; Active Global Manager (`activ
 | Sync | Entries left to send to the standby | `sync\|standby_sync_remaining` |  |
 | Sync | Standby out of sync for | `sync\|standby_out_of_sync_minutes` |  |
 | Sync | Time since the last full sync to the standby | `sync\|standby_full_sync_age_hours` |  |
+|  | Ready to take over as the active Global Manager (1 = yes) | `switchover_ready` |  |
 
-Propriétés : Mode (`mode`) ; Cluster status (`cluster_status`) ; Version (`version`) ; Address used by the collector (`address`) ; Backup enabled (`backup_enabled`) ; Last backup result (`backup_last_result`) ; First certificate to expire (`cert_first_to_expire`) ; Switchover status (`switchover_status`) ; Standby sync status (`standby_sync_status`) ; Standby data consistent (as NSX reports it) (`standby_data_consistent`) ; Same version as the active Global Manager (`version_matches_active_gm`) ; Upgrade status (`upgrade_status`) ; Upgrade target version (`upgrade_target_version`) ; Locations in outage (`location_outage`).
+Propriétés : Mode (`mode`) ; Cluster status (`cluster_status`) ; Version (`version`) ; Address used by the collector (`address`) ; Backup enabled (`backup_enabled`) ; Last backup result (`backup_last_result`) ; First certificate to expire (`cert_first_to_expire`) ; Switchover status (`switchover_status`) ; Standby sync status (`standby_sync_status`) ; Standby data consistent (as NSX reports it) (`standby_data_consistent`) ; Same version as the active Global Manager (`version_matches_active_gm`) ; Upgrade status (`upgrade_status`) ; Upgrade target version (`upgrade_target_version`) ; Switchover readiness (`switchover_readiness`) ; Locations in outage (`location_outage`).
 
 ### Manager Node
 
@@ -288,6 +291,7 @@ Propriétés : Address (`address`) ; Node UUID (`uuid`).
 
 | Groupe | Métrique | Clé | Indicateur clé |
 | --- | --- | --- | --- |
+|  | Location healthy (1 = yes) | `healthy` | oui |
 | Connectivity | Connected to the active Global Manager | `connectivity\|gm_connection_up` | oui |
 | Connectivity | Reached by the collector | `connectivity\|collector_reachable` |  |
 | Cluster | Local Manager nodes online | `cluster\|nodes_online` |  |
@@ -462,7 +466,7 @@ Propriétés : Action (`action`) ; Disabled (`disabled`) ; Sources (`sources`
 
 ## Tableaux de bord, vues, rapport et groupes
 
-- Tableaux de bord (dossier « NSX Federation ») : Federation Overview, Inter-site Connectivity, Stretched Objects.
+- Tableaux de bord (dossier « NSX Federation ») : Federation Overview, Location Matrix, Switchover Readiness, Inter-site Connectivity, Stretched Objects.
 - Vues en liste : NSX Federation - Locations ; NSX Federation - Sync channels ; NSX Federation - RTEP tunnels ; NSX Federation - Tier-0 BGP neighbors ; NSX Federation - Realization per location.
 - Rapport : NSX Federation - Health report.
 - Groupes personnalisés : NSX Federation - All objects ; NSX Federation - Managers and locations ; NSX Federation - Inter-site connectivity ; NSX Federation - Stretched objects.

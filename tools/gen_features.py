@@ -21,6 +21,7 @@ exec(_src[_src.index("RATES = {"):_src.index("def get_adapter_definition")], _ns
 MODEL, GROUPS, KPI, OUTAGE = _ns["MODEL"], _ns["_G"], _ns["KPI"], _ns["OUTAGE_KINDS"]
 metric_group, fk, RATE_KEYS = _ns["metric_group"], _ns["fk"], _ns["RATE_KEYS"]
 VERSION = re.search(r'"version": "([^"]+)"', open(os.path.join(ROOT, "pack", "manifest.txt")).read()).group(1)
+DASHES = [d for d in os.listdir(os.path.join(ROOT, "pack", "content", "dashboards")) if not d.startswith(".")]
 SEVERITY = ["info", "warning", "immediate", "critical"]
 LANG = "en"
 # French for the text this script writes around the names of the pack. Metric, property, alert and symptom names and
@@ -174,7 +175,7 @@ def document():
                f"{len(KPI)} indicateurs clés.",
                f"- {n_alerts} définitions d'alerte, {n_symptoms} symptômes, {len(ga.R)} recommandations. "
                f"{n_risk} alertes pèsent sur le badge Risk, les autres sur Health.",
-               f"- {len(gg.GROUPS)} groupes personnalisés, 3 tableaux de bord, {len(gv.VIEWS)} vues en liste, 1 rapport, "
+               f"- {len(gg.GROUPS)} groupes personnalisés, {len(DASHES)} tableaux de bord, {len(gv.VIEWS)} vues en liste, 1 rapport, "
                "1 arborescence d'inventaire, 1 icône par type d'objet.",
                "- Collecte en lecture seule depuis NSX. Les réglages du compte, l'approbation des certificats, le "
                "dimensionnement et la mise à niveau sont dans [OPERATIONS.md](OPERATIONS.md) (en anglais).", "",
@@ -199,6 +200,7 @@ def document():
                "- Laisse les alarmes de fédération d'un Local Manager à l'intégration NSX native quand celle-ci le "
                "supervise, et relie ses nœuds Edge et ses clusters Edge aux objets natifs.",
                "- Garde silencieuses les alertes des objets dépendants tant qu'un emplacement est coupé du Global Manager.",
+               "- Dit si un Global Manager standby peut prendre le relais\u00a0: prêt, pas prêt avec les raisons (synchronisation avec l'actif, état du cluster, version, certificat expiré, mise à niveau en cours ou en pause) ou inconnu quand une valeur n'a pas pu être lue. La métrique vaut 1 seulement quand c'est confirmé.",
                "- Supprime en option les objets qui ont quitté NSX (option désactivée par défaut).", "",
                "## Types d'objet", "",
                "| Type d'objet | Clé | Métriques | Propriétés | Définitions d'alerte |", "| --- | --- | --- | --- | --- |"]
@@ -211,7 +213,7 @@ def document():
                f"{len(KPI)} key indicators.",
                f"- {n_alerts} alert definitions, {n_symptoms} symptoms, {len(ga.R)} recommendations. "
                f"{n_risk} alerts count against the Risk badge, the others against Health.",
-               f"- {len(gg.GROUPS)} custom groups, 3 dashboards, {len(gv.VIEWS)} list views, 1 report, 1 inventory tree, "
+               f"- {len(gg.GROUPS)} custom groups, {len(DASHES)} dashboards, {len(gv.VIEWS)} list views, 1 report, 1 inventory tree, "
                "an icon per object type.",
                "- Read-only collection from NSX. Account settings, certificate trust, sizing and upgrade are in "
                "[OPERATIONS.md](OPERATIONS.md).", "",
@@ -236,6 +238,7 @@ def document():
                "- Leaves the federation alarms of a Local Manager to the built-in NSX integration when that integration "
                "monitors it, and links its edge nodes and edge clusters to the built-in objects.",
                "- Keeps the alerts of dependent objects quiet while a location is cut off from the Global Manager.",
+               "- Tells whether a standby Global Manager can take over: ready, not ready with the reasons (sync with the active, cluster health, version, expired certificate, upgrade in progress or paused), or unknown when a value could not be read. The metric is 1 only when that is confirmed.",
                "- Optionally deletes the objects that left NSX (off by default).", "",
                "## Object types", "",
                "| Object type | Key | Metrics | Properties | Alert definitions |", "| --- | --- | --- | --- | --- |"]
@@ -269,7 +272,7 @@ def document():
         for k in kinds:
             out += [f"### {MODEL[k][0]}", ""] + metric_rows(k, ["| Groupe | Métrique | Clé | Indicateur clé |", "| --- | --- | --- | --- |"])
         out += ["## Tableaux de bord, vues, rapport et groupes", "",
-                "- Tableaux de bord (dossier « NSX Federation ») : Federation Overview, Inter-site Connectivity, Stretched Objects.",
+                "- Tableaux de bord (dossier « NSX Federation ») : Federation Overview, Location Matrix, Switchover Readiness, Inter-site Connectivity, Stretched Objects.",
                 "- Vues en liste : " + _("; ").join(keep(v[0]) for v in gv.VIEWS) + ".",
                 f"- Rapport : {gv.REPORT[0]}.",
                 "- Groupes personnalisés : " + _("; ").join(keep(g[0] if isinstance(g, (list, tuple)) else str(g)) for g in gg.GROUPS) + ".",
@@ -299,7 +302,7 @@ def document():
     for k in kinds:
         out += [f"### {MODEL[k][0]}", ""] + metric_rows(k, ["| Group | Metric | Key | Key indicator |", "| --- | --- | --- | --- |"])
     out += ["## Dashboards, views, report and groups", "",
-            "- Dashboards (folder \"NSX Federation\"): Federation Overview, Inter-site Connectivity, Stretched Objects.",
+            "- Dashboards (folder \"NSX Federation\"): Federation Overview, Location Matrix, Switchover Readiness, Inter-site Connectivity, Stretched Objects.",
             "- List views: " + "; ".join(v[0] for v in gv.VIEWS) + ".",
             f"- Report: {gv.REPORT[0]}.",
             "- Custom groups: " + "; ".join(g[0] if isinstance(g, (list, tuple)) else str(g) for g in gg.GROUPS) + ".",

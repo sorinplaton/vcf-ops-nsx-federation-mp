@@ -2,7 +2,7 @@
 
 A management pack that monitors NSX Federation (NSX 9.1) in VCF Operations 9.1.1. It is built with the
 [VCF Operations Integration SDK](https://vmware.github.io/vmware-vcf-operations-integration-sdk/introduction)
-in Python. Current version: 1.7.11.
+in Python. Current version: 1.8.0.
 
 This is a lab project, not a Broadcom product. The pack is unsigned and comes with no support. It only reads
 from NSX.
@@ -21,7 +21,7 @@ alert, is in [docs/FEATURES.md](docs/FEATURES.md) (French: [docs/FEATURES.fr.md]
   edge nodes, RTEP tunnels, Tier-0 BGP neighbors, stretched Tier-0 and Tier-1 gateways, segments, global
   security policies, and the realization of each stretched object at each location. Global firewall rules
   are opt-in per policy.
-- Metrics in 17 groups, with rates computed from the NSX counters, federation rollups and 20 key indicators.
+- Metrics in 17 groups, with rates computed from the NSX counters, federation rollups and 22 key indicators.
 - 71 alert definitions, 116 symptoms and 40 recommendations, including the 15 federation alarm types of
   NSX 9.1.1 as named alerts, the sync state of a standby Global Manager and alerts on the collection itself.
 - Latency and packet loss: round-trip time to the Global Manager against the maximum RTT set in NSX and against
@@ -34,10 +34,16 @@ alert, is in [docs/FEATURES.md](docs/FEATURES.md) (French: [docs/FEATURES.fr.md]
   the location.
 - Versions and upgrades: Global Managers on different versions, a location ahead of the Global Manager, an
   upgrade in progress, paused or failed.
+- Switchover readiness: each standby Global Manager reads ready, not ready with the reasons (sync with the
+  active, cluster health, version, expired certificate, upgrade in progress or paused), or unknown when a value
+  could not be read. The metric is 1 only when readiness is confirmed. The federation reads ready when one standby
+  is.
+- A healthy flag per location, from the same checks as the share of locations healthy.
 - Replication flows, last-seen time and onboarding status of each location, as on the Location Manager page of NSX.
 - No double alerts: the federation alarms of a Local Manager that the built-in NSX integration monitors are left
   to that integration.
-- Four custom groups, three dashboards, five list views, one report and an inventory tree.
+- Four custom groups, five dashboards (Federation Overview, Location Matrix, Switchover Readiness,
+  Inter-site Connectivity, Stretched Objects), five list views, one report and an inventory tree.
 - Optional links from edge nodes and edge clusters to the objects of the built-in NSX integration.
 
 The account takes one or two Global Manager addresses and one credential. The Local Managers are discovered
