@@ -1,7 +1,7 @@
 # Install guide
 
-How to build the NSX Federation pack and install it in VCF Operations 9.1.1, with the machine every command
-runs on. The steps are the ones used in the lab; part 2 of the
+How to build the NSX Federation pack and install it in VCF Operations 9.1.1, with the machine each command
+runs on. These are the steps used in the lab. Part 2 of the
 [blog](https://sorinplaton.github.io/posts/nsx-federation-management-pack-install/) shows them with screenshots.
 
 Version française : [INSTALL.fr.md](INSTALL.fr.md).
@@ -16,7 +16,7 @@ Version française : [INSTALL.fr.md](INSTALL.fr.md).
 | VCF Operations | Admin console (`https://<ops>/admin`) and product UI (`https://<ops>/`) |
 | NSX | The Global Managers (active and standby) and the Local Managers of one federation |
 
-The placeholders used below:
+Placeholders:
 
 | Placeholder | Example |
 | --- | --- |
@@ -46,13 +46,13 @@ The placeholders used below:
 - [ ] Network: cloud proxy to every NSX manager on TCP 443, cloud proxy to the registry on its port, build
       host to the registry.
 - [ ] Admin password of VCF Operations: the unsigned-pack switch is in the admin console.
-- [ ] A change approval for turning on "Allow unsigned PAK installation" for the length of the install, if
-      your organisation needs one. The pack is not signed by Broadcom (KB 415279).
+- [ ] A change approval to turn on "Allow unsigned PAK installation" for the length of the install, if the
+      organisation requires one. The pack is not signed by Broadcom (KB 415279).
 
 ## 2. Registry over HTTPS
 
-Skip this step if you already have a registry (Harbor or other) with a certificate from an authority the cloud
-proxy trusts. Then step 3 is not needed either.
+Skip this step and step 3 if a registry (Harbor or other) already exists with a certificate from an authority
+the cloud proxy trusts.
 
 *Run on: the registry host.* A `registry:2` container with a self-signed certificate:
 
@@ -76,15 +76,15 @@ curl --cacert certs/registry.crt https://<registry>/v2/     # answers {}
 
 ## 3. Cloud proxy trusts the registry certificate
 
-Docker on the cloud proxy trusts a private registry when its certificate is in a folder named after the
-registry, port included:
+Docker on the cloud proxy trusts a private registry whose certificate is in a folder named after the registry,
+port included:
 
 ```
 /etc/docker/certs.d/<registry>/ca.crt
 ```
 
 *Run on: any host with `govc` and access to the vCenter that runs the cloud proxy VM.* SSH on the cloud proxy
-can stay disabled; vCenter guest operations write the file with the appliance root account:
+can stay disabled: vCenter guest operations write the file with the appliance root account.
 
 ```bash
 export GOVC_URL=<vcenter> GOVC_USERNAME=<user> GOVC_PASSWORD=<password> GOVC_INSECURE=1
@@ -96,7 +96,7 @@ govc guest.upload -vm "$VM" -l "root:<proxy-root-password>" -f certs/registry.cr
 
 *Or run on: the cloud proxy*, if SSH is enabled there: create the folder and copy `registry.crt` as `ca.crt`.
 
-An upgrade or a redeploy of the cloud proxy can remove the file. Repeat this step after either.
+An upgrade or a redeploy of the cloud proxy can remove the file. Repeat this step after either one.
 
 ## 4. Build the pack
 
@@ -108,7 +108,7 @@ cd vcf-ops-nsx-federation-mp
 docker build -t fedmp-tooling tooling
 ```
 
-The build host's own Docker must also trust a self-signed registry before it can push. Copy the same
+Docker on the build host must also trust a self-signed registry before it can push. Copy the same
 `registry.crt` to `/etc/docker/certs.d/<registry>/ca.crt` on the build host (needs root).
 
 Build the pack and push the adapter image:
@@ -122,8 +122,8 @@ docker run --rm --network host -u $(id -u):$(getent group docker | cut -d: -f3) 
 
 The result is `pack/build/NSXFederation_<version>.pak`.
 
-When the registry is given as `host:port` without a domain, `mp-build` writes Docker Hub into the pack. Correct
-it before the install:
+When the registry is given as `host:port` without a domain, `mp-build` writes Docker Hub into the pack. Fix
+the address before the install:
 
 ```bash
 python3 tools/repack.py pack/build/NSXFederation_<version>.pak <registry> <repository>
@@ -137,20 +137,19 @@ curl --cacert certs/registry.crt https://<registry>/v2/<repository>/tags/list
 
 ## 5. Optional: test a collection without VCF Operations
 
-*Run on: the build host.* It needs access to the NSX managers on TCP 443.
+*Run on: the build host.* It needs to reach the NSX managers on TCP 443.
 
 ```bash
 docker run --rm --network host -v $PWD:/work -e GM_HOSTS=<gm1>,<gm2> \
   -e NSX_USER=audit -e NSX_PASSWORD='<password>' fedmp-tooling python tools/localrun.py
 ```
 
-It prints the objects and metrics of one cycle. A failed call shows up here before it shows up in VCF
-Operations.
+It prints the objects and metrics of one cycle. A failed call shows up here before it does in VCF Operations.
 
 ## 6. Install the unsigned pack
 
-Both ways turn "Allow unsigned PAK installation" on for the upload and off again after it. The switch applies
-to the whole VCF Operations instance.
+Both methods turn "Allow unsigned PAK installation" on for the upload and off again afterwards. The switch
+applies to the whole VCF Operations instance.
 
 ### By hand
 
@@ -161,9 +160,9 @@ to the whole VCF Operations instance.
 2. Product UI: Administration, Integrations, Repository, add a pack.
 3. Select `NSXFederation_<version>.pak`, tick "install even if already installed" and "Ignore the PAK file
    signature checking".
-4. Upload, accept the warning about the unsigned file, wait for the install to finish.
-5. Admin console: deactivate unsigned PAK installation. While the install is still running the console refuses
-   the change; try again when it has finished.
+4. Upload, accept the warning about the unsigned file and wait for the install to finish.
+5. Admin console: deactivate unsigned PAK installation. The console refuses the change while the install is
+   running; try again once it has finished.
 
 ### Scripted
 
@@ -177,9 +176,9 @@ install/upi.sh enableUPI
 install/install_unsigned.sh pack/build/NSXFederation_<version>.pak
 ```
 
-Run `install_unsigned.sh` after `upi.sh`: the admin console login logs the product UI session out, and the
-install script logs in again. It turns the switch off however it ends; exit code 0 means the install completed
-and the switch is off.
+Run `install_unsigned.sh` after `upi.sh`: the admin console login ends the product UI session, and the install
+script logs in again. It turns the switch off however it ends. Exit code 0 means the install completed and the
+switch is off.
 
 Check: Administration, Integrations, Repository lists the NSX Federation pack with the new version.
 
@@ -198,7 +197,7 @@ Federation.
 - [ ] Validate the connection and accept the Global Manager certificates. Without an accepted certificate,
       `enforce` collects nothing. An account created through the API has no accepted certificate; edit it in
       the UI, validate and accept, or use `ca`.
-- [ ] Other settings can stay at their defaults. [OPERATIONS.md](OPERATIONS.md) describes each one.
+- [ ] The other settings can keep their defaults. [OPERATIONS.md](OPERATIONS.md) describes each one.
 
 ## 8. Check the collection
 
@@ -213,8 +212,8 @@ Federation.
 
 ## 9. Optional: policy for a lab or test federation
 
-*Run on: the jump host, from the root of the repository (or import the file in the UI: Operations, Configurations,
-Policies, Import).*
+*Run on: the build host, from the root of the repository.* Or import the file in the UI: Administration,
+Configurations, Policy Definition, Import.
 
 ```bash
 export OPS_HOST=<vcf-operations-fqdn> OPS_PW='<admin password>'
@@ -232,8 +231,7 @@ python3 install/import_policy.py        # policies/NSX_Federation_Non-production
 3. Metrics return after three cycles, rates after four.
 
 `install_unsigned.sh` deletes the alert, symptom and recommendation definitions that the new version no longer
-ships. After a
-manual install, run `install/cleanup_content.py <pak> --delete` (see [OPERATIONS.md](OPERATIONS.md), Upgrade).
+ships. After a manual install, run `install/cleanup_content.py <pak> --delete` (see [OPERATIONS.md](OPERATIONS.md), Upgrade).
 
 From a version before 1.9.0, the edge nodes, RTEP tunnels and sync channels are created again under a key based
 on their NSX ID, and the old objects stop receiving data. `cleanup_content.py <pak> --legacy-objects --delete`

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Import the policy shipped with the pack into VCF Operations (the same as Operations, Configurations, Policies, Import).
+"""Import the policy shipped with the pack into VCF Operations (the same as Administration, Configurations, Policy Definition, Import).
 
 Reads OPS_HOST and OPS_PW (and OPS_USER, OPS_AUTH_SOURCE, OPS_CA) from the environment, like cleanup_content.py.
 The policy keeps a fixed ID, so importing it again updates it. Importing does not assign it: assign it to the custom

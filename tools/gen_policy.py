@@ -7,7 +7,7 @@ merges one, so the build fails. The policy is an import file instead; install/im
 "NSX Federation - Non-production" keeps the alerts for outages, broken sync, failover and realization, and turns off
 the alerts a lab or test federation often raises on purpose: backups, no standby Global Manager, firewall rule review,
 overrides, NSX configuration limits and edge capacity. Assign it to a custom group that holds the objects of such a
-federation (Operations, Configurations, Policies). The other federations keep the default policy, with every alert on.
+federation (Administration, Configurations, Policy Definition). The other federations keep the default policy, with every alert on.
 """
 import os
 import sys
@@ -26,7 +26,7 @@ OFF = ["gm_backup", "loc_backup", "fed_no_standby", "pol_review", "pol_any", "lo
 
 
 def policy_xml() -> str:
-    """The policy in the form VCF Operations exports and imports (Operations, Configurations, Policies, Import)."""
+    """The policy in the form VCF Operations exports and imports (Administration, Configurations, Policy Definition, Import)."""
     kinds = {a[0]: a[1] for a in gen_alerts.A}
     missing = [k for k in OFF if k not in kinds]
     assert not missing, f"unknown alerts: {missing}"

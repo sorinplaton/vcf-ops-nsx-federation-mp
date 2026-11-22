@@ -1,7 +1,7 @@
 # Guide d'installation
 
 Comment construire le pack NSX Federation et l'installer dans VCF Operations 9.1.1, avec la machine sur
-laquelle chaque commande s'exécute. Les étapes sont celles suivies dans le lab ; la partie 2 du
+laquelle chaque commande s'exécute. Ce sont les étapes suivies dans le lab. La partie 2 du
 [blog](https://sorinplaton.github.io/fr/posts/nsx-federation-management-pack-install/) les montre avec des
 captures d'écran.
 
@@ -17,7 +17,7 @@ English version: [INSTALL.md](INSTALL.md).
 | VCF Operations | Console d'administration (`https://<ops>/admin`) et interface du produit (`https://<ops>/`) |
 | NSX | Les Global Managers (actif et standby) et les Local Managers d'une fédération |
 
-Les valeurs à remplacer dans la suite :
+Valeurs à remplacer :
 
 | Valeur | Exemple |
 | --- | --- |
@@ -53,8 +53,8 @@ Les valeurs à remplacer dans la suite :
 
 ## 2. Registre en HTTPS
 
-Passer cette étape si un registre (Harbor ou autre) existe déjà avec un certificat émis par une autorité à
-laquelle le proxy cloud fait confiance. L'étape 3 devient alors inutile elle aussi.
+Passer cette étape et l'étape 3 si un registre (Harbor ou autre) existe déjà avec un certificat émis par une
+autorité à laquelle le proxy cloud fait confiance.
 
 *À exécuter sur : l'hôte du registre.* Un conteneur `registry:2` avec un certificat autosigné :
 
@@ -78,7 +78,7 @@ curl --cacert certs/registry.crt https://<registry>/v2/     # répond {}
 
 ## 3. Le proxy cloud fait confiance au certificat du registre
 
-Docker, sur le proxy cloud, fait confiance à un registre privé quand son certificat se trouve dans un dossier
+Docker, sur le proxy cloud, fait confiance à un registre privé dont le certificat se trouve dans un dossier
 qui porte le nom du registre, port compris :
 
 ```
@@ -86,8 +86,8 @@ qui porte le nom du registre, port compris :
 ```
 
 *À exécuter sur : tout hôte équipé de `govc` qui accède au vCenter hébergeant la VM du proxy cloud.* SSH peut
-rester désactivé sur le proxy cloud ; les opérations d'invité de vCenter écrivent le fichier avec le compte
-root de l'appliance :
+rester désactivé sur le proxy cloud : les opérations d'invité de vCenter écrivent le fichier avec le compte
+root de l'appliance.
 
 ```bash
 export GOVC_URL=<vcenter> GOVC_USERNAME=<user> GOVC_PASSWORD=<password> GOVC_INSECURE=1
@@ -129,7 +129,7 @@ docker run --rm --network host -u $(id -u):$(getent group docker | cut -d: -f3) 
 Le résultat est `pack/build/NSXFederation_<version>.pak`.
 
 Quand le registre est donné sous la forme `host:port` sans domaine, `mp-build` écrit Docker Hub dans le pack.
-Corriger cette adresse avant l'installation :
+Corriger l'adresse avant l'installation :
 
 ```bash
 python3 tools/repack.py pack/build/NSXFederation_<version>.pak <registry> <repository>
@@ -150,8 +150,8 @@ docker run --rm --network host -v $PWD:/work -e GM_HOSTS=<gm1>,<gm2> \
   -e NSX_USER=audit -e NSX_PASSWORD='<password>' fedmp-tooling python tools/localrun.py
 ```
 
-La commande affiche les objets et les métriques d'un cycle. Un appel en échec apparaît ici avant d'apparaître
-dans VCF Operations.
+La commande affiche les objets et les métriques d'un cycle. Un appel en échec apparaît ici avant de
+apparaître dans VCF Operations.
 
 ## 6. Installer le pack non signé
 
@@ -167,9 +167,9 @@ L'option s'applique à toute l'instance VCF Operations.
 2. Interface du produit : Administration, Integrations, Repository, ajouter un pack.
 3. Choisir `NSXFederation_<version>.pak`, cocher « install even if already installed » et « Ignore the PAK file
    signature checking ».
-4. Envoyer le fichier, accepter l'avertissement sur le fichier non signé, attendre la fin de l'installation.
-5. Console d'administration : désactiver l'installation des PAK non signés. Tant que l'installation est en cours, la
-   console refuse le changement ; réessayer une fois l'installation terminée.
+4. Envoyer le fichier, accepter l'avertissement sur le fichier non signé et attendre la fin de l'installation.
+5. Console d'administration : désactiver l'installation des PAK non signés. La console refuse le changement tant que
+   l'installation est en cours ; réessayer une fois l'installation terminée.
 
 ### Par script
 
@@ -185,7 +185,7 @@ install/install_unsigned.sh pack/build/NSXFederation_<version>.pak
 
 Lancer `install_unsigned.sh` après `upi.sh` : la connexion à la console d'administration ferme la session de
 l'interface du produit, et le script d'installation se reconnecte. Il désactive l'option quelle que soit
-l'issue ; le code de sortie 0 signifie que l'installation est terminée et que l'option est désactivée.
+l'issue. Le code de sortie 0 signifie que l'installation est terminée et que l'option est désactivée.
 
 Vérification : Administration, Integrations, Repository affiche le pack NSX Federation dans sa nouvelle
 version.
@@ -223,8 +223,8 @@ compte de type NSX Federation.
 
 ## 9. Facultatif : politique pour une fédération de lab ou de test
 
-*À exécuter sur : le jumphost, à la racine du dépôt (ou importer le fichier dans l'interface : Operations, Configurations,
-Policies, Import).*
+*À exécuter sur : l'hôte de construction, à la racine du dépôt.* Ou importer le fichier dans l'interface :
+Administration, Configurations, Policy Definition, Import.
 
 ```bash
 export OPS_HOST=<fqdn-de-vcf-operations> OPS_PW='<mot de passe admin>'
@@ -244,9 +244,8 @@ python3 install/import_policy.py        # policies/NSX_Federation_Non-production
 3. Les métriques reviennent après trois cycles, les taux après quatre.
 
 `install_unsigned.sh` supprime les définitions d'alertes, de symptômes et de recommandations que la nouvelle
-version ne fournit plus.
-Après une installation manuelle, lancer `install/cleanup_content.py <pak> --delete` (voir
-[OPERATIONS.md](OPERATIONS.md), Upgrade, en anglais).
+version ne fournit plus. Après une installation manuelle, lancer `install/cleanup_content.py <pak> --delete`
+(voir [OPERATIONS.md](OPERATIONS.md), Upgrade, en anglais).
 
 Depuis une version antérieure à 1.9.0, les edge nodes, les tunnels RTEP et les canaux de synchronisation sont
 recréés sous une clé fondée sur leur ID NSX, et les anciens objets ne reçoivent plus de données.

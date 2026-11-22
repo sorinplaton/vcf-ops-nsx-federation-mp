@@ -19,29 +19,29 @@
 
 ## Certificate trust
 
-The adapter reads the certificate a manager presents, compares its SHA-256 fingerprint with the trusted ones, and
-then binds every connection of the cycle to that fingerprint. The credentials are not sent to a server that
-presents another certificate.
+The adapter reads the certificate a manager presents and compares its SHA-256 fingerprint with the trusted
+ones. Every connection of the cycle is then bound to that fingerprint, so the credentials never go to a server
+that presents another certificate.
 
 - A Global Manager is trusted by the certificate accepted on the account in VCF Operations.
 - A Local Manager is trusted by the thumbprint the Global Manager holds for it.
-- `enforce`: a manager whose certificate is not a trusted one, or that has no trusted certificate on record, is
-  not collected. The alert names the manager.
+- `enforce`: a manager is not collected when its certificate is not a trusted one, or when no trusted
+  certificate is on record for it. The alert names the manager.
 - `ca`: as `enforce`, and a certificate is also trusted when it chains to a trusted CA and is valid for the
   address the adapter uses (a DNS name or an IP address in its subject alternative names). The trusted CAs are
   the certificates in "Trusted CA certificates (PEM)", any CA certificate accepted on the account, and the
-  OpenSSL store of the adapter container image. CAs imported into the cloud proxy or into VCF Operations are not
-  part of that store: paste them in the setting. A manager address must then match its certificate: use the FQDN of the Global Manager
-  cluster, and an override for a Local Manager that the Global Manager knows by an address that is not in the
-  certificate. The connection test reports a block of the PEM setting that is not a certificate, and text with no
-  PEM block at all.
+  OpenSSL store of the adapter container image. CAs imported into the cloud proxy or into VCF Operations are
+  not in that store: paste them in the setting. Each manager address must match its certificate. Use the FQDN
+  of the Global Manager cluster, and set an override for a Local Manager that the Global Manager knows by an
+  address that is not in the certificate. The connection test reports a block of the PEM setting that is not a
+  certificate, and text with no PEM block at all.
 - `report`: the manager is collected and the mismatch raises an alert on the location.
 
-The property "Certificate trust" of each Global Manager and location that is collected says how its certificate
-was trusted: `trusted` (pinned) or `trusted (CA chain)`. In `report` mode it reads `NOT TRUSTED (reported only)`
-for a certificate that is not trusted. A location that is not collected because of its certificate reads
-`NOT TRUSTED`. When the chain check fails, the reason OpenSSL gives (an unknown issuer, a name mismatch) is in the
-property "Collector error" of the location, or for a Global Manager in "Global Managers not collected" of the
+The property "Certificate trust" of each collected Global Manager and location says how its certificate was
+trusted: `trusted` (pinned) or `trusted (CA chain)`. In `report` mode an untrusted certificate reads
+`NOT TRUSTED (reported only)`. A location left uncollected because of its certificate reads `NOT TRUSTED`.
+When the chain check fails, the OpenSSL reason (an unknown issuer, a name mismatch) is in the property
+"Collector error" of the location, or, for a Global Manager, in "Global Managers not collected" on the
 federation.
 
 An account created through the API has no accepted certificate. With `enforce` it collects nothing until the
@@ -50,25 +50,25 @@ as soon as the managers present certificates signed by a trusted CA.
 
 ## Sizing
 
-Calls per collection cycle, as measured with the test suite:
+Calls per collection cycle, measured with the test suite:
 
 - Active Global Manager: about 20, plus one per location and one per stretched object (Tier-0, Tier-1, segment,
-  global security policy). Above 200 stretched objects the realization of an object is read again only when the
-  object is new, changed in NSX, was not fully realized, or once in six cycles; the last state is used otherwise.
+  global security policy). Above 200 stretched objects, the realization of an object is read again only when the
+  object is new, changed in NSX or not fully realized, or once in six cycles. Otherwise the last state is used.
 - Standby Global Manager: 7.
 - Each Local Manager: about 12, plus one per edge cluster, three per edge node, one per Tier-0 locale and one per
   collected policy.
-- Every 30 minutes, two more per Local Manager (configuration limits, overrides); every hour, one more per manager
-  (NTP servers).
+- Every 30 minutes, two more per Local Manager (configuration limits, overrides). Every hour, one more per
+  manager (NTP servers).
 
-The first cycle after a start reads every object, so the budget of 2000 calls per manager covers about 1,900
-  stretched objects in that cycle; the following cycles need about a sixth. Above that, raise the budget and check
-the metric "Collection duration": a cycle has to finish inside the collection interval (5 minutes by default).
-The alert "NSX Federation collection is slow or throttled" fires above 4 minutes or when NSX answers HTTP 429.
-NSX limits each client to 100 requests per second by default.
+The first cycle after a start reads every object, so the budget of 2000 calls per manager covers about 1,800
+stretched objects in that cycle. The following cycles need about a sixth. For more objects, raise the budget and
+watch the metric "Collection duration": a cycle has to finish inside the collection interval (5 minutes by
+default). The alert "NSX Federation collection is slow or throttled" fires above 4 minutes or when NSX answers
+HTTP 429. NSX limits each client to 100 requests per second by default.
 
-Only a two-location federation was measured on real managers. Larger sizes were run against the mock NSX of the
-test suite (`test_scale_sizing`). With 1,000 more segments, 200 more Tier-1 gateways and 100 more global security
+Only a two-location federation was measured on real managers. Larger sizes ran against the mock NSX of the test
+suite (`test_scale_sizing`), with 1,000 more segments, 200 more Tier-1 gateways and 100 more global security
 policies of 50 rules each (1,310 stretched objects):
 
 | Cycle | Active Global Manager | Busiest Local Manager | Realization states read |
@@ -76,9 +76,9 @@ policies of 50 rules each (1,310 stretched objects):
 | First after a start (empty cache) | 1,440 calls | 126 calls | 1,310 |
 | Following cycles | 233 calls | 115 calls | 218 |
 
-The time of a cycle depends on how fast the managers answer: in the lab a call took 0.2 to 0.5 seconds, and the
-adapter reads up to 8 managers in parallel ("Managers collected in parallel"). The calls of the active Global
-Manager are the ones to watch: at about 1,800 stretched objects the first cycle after a start reaches the budget of
+The duration of a cycle depends on how fast the managers answer. In the lab a call took 0.2 to 0.5 seconds,
+and the adapter reads up to 8 managers in parallel ("Managers collected in parallel"). Watch the calls of the
+active Global Manager: at about 1,800 stretched objects the first cycle after a start reaches the budget of
 2000. That cycle is then partial (alert "NSX Federation collection is partial"), and the next ones complete it.
 
 ## Alerts during a location outage
@@ -87,81 +87,83 @@ When the active Global Manager reports a location as not connected, the adapter 
 to the property "Locations in outage" of the objects that depend on it: the location itself, its edge clusters,
 edge nodes and BGP neighbors, the tunnels and sync channels with one end at that location, the stretched objects
 whose span includes it and their realization there, and the Global Managers. The alerts of these objects require
-that the property reads "none", so they stay quiet and the alert of the location itself is the one to act on.
-If the fault is still there, they fire once the outage symptom has cleared, three cycles after the location is
-back. Objects of the other locations are not affected: a fault
-there raises its alert.
+the property to read "none". They stay quiet, and the alert of the location is the one to act on. If their
+fault is still there, they fire once the outage symptom has cleared, three cycles after the location is back.
+Objects of the other locations are not affected: a fault there raises its alert.
 
 The alarm alerts of the Global Manager and of the locations are quiet in the same way, except the alarms between
-Global Managers. A stretched object is quiet while any location of its span is in outage; its realization at each
-of the other locations still raises its own alert. The outage symptom clears three cycles after the location is
-back, one cycle after the symptoms it keeps quiet, so the end of an outage raises no alert either. When a Global Manager does not answer, the alerts of its own sync channels are quiet behind the
-alert on the federation; when none is active, those of every channel with a Global Manager at one end. Channels
-between two locations are never quiet for that reason.
+Global Managers. A stretched object is quiet while any location of its span is in outage; its realization at
+each of the other locations still raises its own alert. The outage symptom clears three cycles after the
+location is back, one cycle after the symptoms it keeps quiet, so the end of an outage raises no alert either.
 
-A second, unrelated fault on the objects of the location in outage is not alerted on while the outage lasts. Its metrics and properties are
-still collected.
+When a Global Manager does not answer, the alerts of its own sync channels are quiet behind the alert on the
+federation. When no Global Manager is active, the same applies to every channel with a Global Manager at one
+end. Channels between two locations are never quiet for that reason.
 
-For planned work, use a maintenance schedule of VCF Operations on the group "NSX Federation - All objects".
+A second, unrelated fault on the objects of the location in outage raises no alert while the outage lasts. Its
+metrics and properties are still collected.
+
+For planned work, use a VCF Operations maintenance schedule on the group "NSX Federation - All objects".
 
 ## Latency, packet loss and BGP flaps
 
-- Latency: the adapter reads the latency NSX measures on each flow between the Global Manager and a location, from
-  `GET /global-manager/api/v1/observability/flow-details` on the active Global Manager, the call behind the "Latest
-  Latency" column of the Location Manager page. The metric "Round-trip time to the Global Manager" is the highest of the
-  two flows of the location, and "% of the maximum RTT setting" compares it with the maximum RTT set for the location
-  in NSX. An NSX without that call answers 404; the adapter then uses the round-trip time of the replication status,
-  which NSX 9.1 leaves empty. NSX measures no latency between the two Global Managers. The same alert also fires when
-  the round-trip time leaves the range VCF Operations learned for the location (dynamic threshold, three cycles), which
-  catches a WAN that degraded long before it reaches 150 ms. The alert fires above 150 ms, the limit Broadcom documents for locations that share stretched networks (500 ms otherwise), or
-  above 80% of the setting (warning), and above 100% (immediate). With the default setting of 250 ms, 80% is 200 ms,
-  so the 150 ms condition is the one that fires first. The
-  latency alarms of NSX itself (between Global Managers, and between a Global Manager and a location) raise their own
-  alerts.
-- Packet loss: for each RTEP tunnel and direction, the dropped packets of the interval are divided by the packets of the
-  interval. NSX counts a dropped packet in the packet total too: in the lab the received total of a tunnel matched the
-  sent total of its peer exactly while one packet was counted as dropped (only receive drops were seen; the send
-  counters are taken to work the same way). The percentage is sent once at least 50 packets crossed the tunnel since
-  the previous cycle, so an idle tunnel does not show 50% for one lost packet. The alert needs both more than 1% (5% for immediate) and
-  more than 10 drops per minute, for two cycles.
-- Sync queues: the same call gives the size and the maximum size of the sync queues of each flow. "Sync queue used"
-  is the fullest queue of the location, in percent. It has no alert of its own: NSX raises the alarm
+- Latency: the adapter reads the latency NSX measures on each flow between the Global Manager and a location,
+  from `GET /global-manager/api/v1/observability/flow-details` on the active Global Manager. This is the call
+  behind the "Latest Latency" column of the Location Manager page. The metric "Round-trip time to the Global
+  Manager" is the higher value of the two flows of the location. "% of the maximum RTT setting" compares it with
+  the maximum RTT set for the location in NSX. An NSX without that call answers 404, and the adapter then uses
+  the round-trip time of the replication status, which NSX 9.1 leaves empty. NSX measures no latency between
+  the two Global Managers. The alert fires above 150 ms, the limit Broadcom documents for locations that share
+  stretched networks (500 ms otherwise), or above 80% of the setting (warning), and above 100% (immediate).
+  With the default setting of 250 ms, 80% is 200 ms, so the 150 ms condition fires first. The same alert also
+  fires when the round-trip time leaves the range VCF Operations learned for the location (dynamic threshold,
+  three cycles). This catches a degraded WAN long before it reaches 150 ms. The latency alarms of NSX itself
+  (between Global Managers, and between a Global Manager and a location) raise their own alerts.
+- Packet loss: for each RTEP tunnel and direction, the dropped packets of the interval are divided by the
+  packets of the interval. NSX also counts a dropped packet in the packet total. In the lab, the received total
+  of a tunnel matched the sent total of its peer exactly while one packet was counted as dropped. Only receive
+  drops were seen; the send counters are assumed to work the same way. The percentage is sent once at least 50
+  packets crossed the tunnel since the previous cycle, so an idle tunnel does not show 50% for one lost packet.
+  The alert needs both more than 1% (5% for immediate) and more than 10 drops per minute, for two cycles.
+- Sync queues: the same call gives the size and the maximum size of the sync queues of each flow. "Sync queue
+  used" is the fullest queue of the location, in percent. It has no alert of its own: NSX raises the alarm
   queue_occupancy_threshold_exceeded, which the pack turns into an alert.
-- Blocked packets: NSX counts them apart from drops. More than 10 per minute in one direction for two cycles raises an
-  alert, since a firewall on the inter-site path usually explains it.
-- BGP flaps: the connection drop counter of each Tier-0 BGP neighbor, and of the inter-site session of each RTEP tunnel
-  (from `GET /api/v1/transport-nodes/<id>/inter-site/bgp/summary` on the Local Manager, one call per edge node), gets a rate. A drop since the previous cycle while
-  the session is established in the current cycle raises a warning that stays for two cycles. A session that is down
-  in the current cycle raises no flap alert, and the "not established" alert follows if it stays down. A restart of
-  the edge resets the counter, which gives a rate of 0 for that cycle, so a restart is not reported as a flap.
+- Blocked packets: NSX counts them separately from drops. More than 10 per minute in one direction for two
+  cycles raises an alert, since a firewall on the inter-site path is the usual cause.
+- BGP flaps: the connection drop counter of each Tier-0 BGP neighbor, and of the inter-site session of each RTEP
+  tunnel, gets a rate. The inter-site counter comes from `GET /api/v1/transport-nodes/<id>/inter-site/bgp/summary`
+  on the Local Manager, one call per edge node. A drop since the previous cycle, with the session established in
+  the current cycle, raises a warning that stays for two cycles. A session that is down in the current cycle
+  raises no flap alert; the "not established" alert follows if it stays down. A restart of the edge resets the
+  counter, which gives a rate of 0 for that cycle, so a restart is not reported as a flap.
 
 ## Edge capacity and Tier-0 service routers
 
 One call per federation edge node, `GET /api/v1/transport-nodes/<id>/status` on its Local Manager, gives both:
 
-- Capacity, on the edge node: the average usage of the datapath (DPDK) cores and of the busiest one, the average
-  usage of the other cores (services), system memory, datapath memory, the fullest datapath memory pool and the
-  fullest file system, all in percent. NSX gives them as a current value; VCF Operations keeps the history, so the
-  trend and the dynamic threshold come from there. The alerts fire after three cycles above 75% datapath CPU (85%
-  immediate), 80% memory (90% immediate), 85% for a memory pool, and 80% for a file system (90% immediate). The
-  status alert is quiet while the edge is in, entering or leaving maintenance mode, and for three cycles after.
-  The status and threshold alerts are quiet for an edge whose Local Manager the built-in NSX
-  integration monitors, since that integration raises the NSX alarms of the edge ("Edge status and capacity alerts
-  raised by" on the edge node says which). The alert on the usual range of the datapath CPU is always raised by
-  this pack.
+- Capacity, on the edge node: in percent, the average usage of the datapath (DPDK) cores and of the busiest
+  one, the average usage of the other cores (services), system memory, datapath memory, the fullest datapath
+  memory pool and the fullest file system. NSX gives current values only; VCF Operations keeps the history, and
+  the trend and the dynamic threshold come from there. The alerts fire after three cycles above 75% datapath CPU
+  (85% immediate), 80% memory (90% immediate), 85% for a memory pool, and 80% for a file system (90%
+  immediate). The status alert is quiet while the edge is in, entering or leaving maintenance mode, and for
+  three cycles after. The status and threshold alerts are quiet for an edge whose Local Manager the built-in NSX
+  integration monitors, since that integration raises the NSX alarms of the edge. The property "Edge status and
+  capacity alerts raised by" on the edge node says which one raises them. This pack always raises the alert on
+  the usual range of the datapath CPU.
 - Service routers: one object "Tier-0 Service Router" per stretched Tier-0 gateway and edge node, keyed by the
-  NSX IDs of both, with the HA state, the routing status and the BGP neighbors up and down that NSX reports for it.
-  Tier-0 gateways local to one location are left out. On the stretched Tier-0 gateway, the adapter counts the
-  service routers, the active ones and those with routing down over the locations of its span. For an
-  active-active gateway it also counts the locations of the span without an active service router; for an
-  active-standby gateway one active service router in the federation is the expected state, so only "no active
+  NSX IDs of both, with the HA state, the routing status and the BGP neighbors up and down that NSX reports for
+  it. Tier-0 gateways local to one location are left out. On the stretched Tier-0 gateway, the adapter counts
+  the service routers, the active ones and those with routing down, over the locations of its span. For an
+  active-active gateway it also counts the locations of the span without an active service router. For an
+  active-standby gateway, one active service router in the federation is the expected state, so only "no active
   service router" raises an alert. When the span is not known (realization not read), the locations where the
   gateway has service routers are used. When an edge of the span does not answer, the totals of that gateway are
-  not sent for the cycle; a location whose edges all answered and that has no active service router is still
-  counted, and HA state changes are still counted. A service router that an edge which answers no longer reports
-  reads ABSENT (for a day at most), so a failover through a rebooting edge is seen. The alert on a service router
-  that is down is quiet while its edge is in, entering or leaving maintenance mode. A service router that changes
-  HA state between two cycles (a failover) is a change of the timeline below and raises a warning on the gateway
+  not sent for the cycle. A location whose edges all answered and that has no active service router is still
+  counted, and HA state changes are still counted. A service router that a responding edge no longer reports
+  reads ABSENT (for a day at most), so a failover through a rebooting edge is seen. The alert on a down service
+  router is quiet while its edge is in, entering or leaving maintenance mode. A service router that changes HA
+  state between two cycles (a failover) is a change in the timeline below and raises a warning on the gateway
   for two cycles.
 
 ## Change timeline
@@ -173,101 +175,111 @@ The adapter keeps what it saw in its cache and compares each cycle with the prev
 - the edge nodes of the RTEP edge clusters of each location (added, removed, renamed);
 - the HA state of each Tier-0 service router;
 - the stretched gateways, segments and global security policies (created, changed, deleted). A change is a new
-  revision in NSX; the message names the user NSX recorded. The list is the inventory of the Global Manager, which
-  the adapter reads again every 30 minutes, so such a change shows up within 30 minutes. A change of the primary
-  location of a Tier-0 or Tier-1 gateway gets its own message.
+  revision in NSX, and the message names the user NSX recorded. The list is the inventory of the Global
+  Manager, which the adapter reads again every 30 minutes, so such a change shows up within 30 minutes. A change
+  of the primary location of a Tier-0 or Tier-1 gateway gets its own message.
 
 Each change is an information event on the object it concerns (on the federation for an object that no longer
 exists), at most 25 per cycle. VCF Operations shows it as a notification on that object, and it clears after a
-cycle. On the federation, "Changes detected in this cycle" counts them, and "Last change" and "Recent changes" (the
+cycle. On the federation, "Changes detected in this cycle" counts them. "Last change" and "Recent changes" (the
 last ten, newest first, with the time in UTC) list them, so the property history of the federation is the
 timeline. The first cycle after an empty cache (new container, new account) only records the state. A cycle in
-which a call failed reports no removal, and an object is reported as added only against a complete earlier read,
-so a gap in the data does not show up as a change.
+which a call failed reports no removal, and an object is reported as added only against a complete earlier
+read, so a gap in the data does not show up as a change.
 
 ## Clocks, configuration limits and overrides
 
-- Clocks: in every cycle the adapter reads the system time of each manager (`GET /api/v1/node/status`) and takes off
-  the middle of the call, which gives the offset of the manager against the cloud proxy. The calls are timed on a
-  monotonic clock from one reading of the clock of the cloud proxy per cycle, so the difference of two managers read
-  in the same cycle does not depend on that clock, even when it steps during the cycle. Each Global Manager and location
-  gets its difference with the active Global Manager ("Clock difference with the active Global Manager"), and a
-  property says ahead or behind, and within how much the reading is (half the duration of the two calls). A call
-  that takes more than 3 seconds gives no reading. The alert fires above 5 seconds (60 seconds immediate) for two
-  cycles, or when the NTP service of the manager is not running. The NTP servers come from
-  `GET /api/v1/node/services/ntp` once an hour, the state of the service from its status call in every cycle. The node that answers behind the cluster address is
-  the one read.
-- Configuration limits: `GET /policy/api/v1/infra/capacity/dashboard/usage` on each Local Manager, the data of the
-  Capacity page of NSX, every 30 minutes. NSX rates each limit with its own thresholds (70% and 100% by default, set
-  in NSX): its WARNING counts as warning, its CRITICAL or ERROR, or a limit reached (100% or more), as critical. A
-  limit whose maximum is 1, such as the one compute manager of a Local Manager, is full by design and left out.
-  The location gets the most used limit, the number of limits at warning and at critical, and a list of the
-  limits above a threshold. The Global Manager has no such call; global objects count at every location of their
-  span, so the locations show it. The alert is left to the built-in NSX integration for a Local Manager it
-  monitors, as NSX raises capacity alarms of its own and that integration forwards them (property "Configuration
-  limit alerts raised by"); the setting for the federation alarms does not change this. The values are sent only
-  when the Local Manager answers in the cycle, so a cached value never stands for a manager that is down.
-- Overrides: a search for `overridden:true` on each Local Manager, every 30 minutes, lists the global objects that
-  were changed locally. Each one counts on the location and is listed; a new override, or one removed, is a change
-  of the timeline.
+- Clocks: in every cycle the adapter reads the system time of each manager (`GET /api/v1/node/status`) and
+  subtracts the midpoint of the call, which gives the offset of the manager against the cloud proxy. The calls
+  are timed on a monotonic clock from one reading of the cloud proxy clock per cycle. The difference between two
+  managers read in the same cycle therefore does not depend on that clock, even when it steps during the cycle.
+  Each Global Manager and location gets its difference with the active Global Manager ("Clock difference with
+  the active Global Manager"). A property says ahead or behind, and the precision of the reading (half the
+  duration of the two calls). A call that takes more than 3 seconds gives no reading. The alert fires above 5
+  seconds (60 seconds immediate) for two cycles, or when the NTP service of the manager is not running. The NTP
+  servers come from `GET /api/v1/node/services/ntp` once an hour, and the state of the service from its status
+  call in every cycle. The node that answers behind the cluster address is the one read.
+- Configuration limits: `GET /policy/api/v1/infra/capacity/dashboard/usage` on each Local Manager, every 30
+  minutes. This is the data of the Capacity page of NSX. NSX rates each limit with its own thresholds (70% and
+  100% by default, set in NSX). Its WARNING counts as warning; its CRITICAL or ERROR, or a limit reached (100% or
+  more), counts as critical. A limit whose maximum is 1, such as the one compute manager of a Local Manager, is
+  full by design and left out. The location gets the most used limit, the number of limits at warning and at
+  critical, and a list of the limits above a threshold. The Global Manager has no such call. Global objects
+  count at every location of their span, so the locations show them. For a Local Manager the built-in NSX
+  integration monitors, the alert is left to that integration, because NSX raises its own capacity alarms and
+  the integration forwards them (property "Configuration limit alerts raised by"). The setting for the
+  federation alarms does not change this. The values are sent only when the Local Manager answers in the cycle,
+  so a cached value never stands for a manager that is down.
+- Overrides: a search for `overridden:true` on each Local Manager, every 30 minutes, lists the global objects
+  that were changed locally. Each one counts on the location and is listed. A new override, or a removed one,
+  is a change in the timeline.
 
 ## Password expiry, firewall rule review and availability
 
-- Password expiry: once an hour the adapter reads `GET /api/v1/node/users` on each manager (the `audit` account can)
-  and finds the account it collects with. NSX gives the days since the last change and the days a password is
-  valid (90 by default); the difference is "Days until the password of the collection account expires". The alert
-  fires below 30 days (warning), 7 days (critical) and on the last day or once expired (immediate). An account
-  whose password never expires reads 9999, so an alert raised before the expiry was turned off clears. An account that NSX does not hold
-  locally (LDAP or VIDM) gets a property saying its directory sets the expiry, and no value. When the password
-  expires, NSX refuses the logins and the collection of that manager stops, so the alert comes first.
-- Firewall rule review: for every global security policy the adapter checks three things.
-  - Shadowed rules: an enabled rule placed after an enabled rule of the same policy that matches all its traffic:
-    the same or wider sources, destinations, services, context profiles and Applied To, the same or both
-    directions and IP versions. Group membership is not expanded, and negated source or destination lists must be
-    identical, so the check reports only rules that can never be hit.
+- Password expiry: once an hour the adapter reads `GET /api/v1/node/users` on each manager (the `audit` account
+  can) and finds the account it collects with. NSX gives the days since the last change and the days a password
+  is valid (90 by default). The difference is "Days until the password of the collection account expires". The
+  alert fires below 30 days (warning), below 7 days (critical), and on the last day or once expired (immediate).
+  An account whose password never expires reads 9999, so an alert raised before the expiry was turned off
+  clears. An account that NSX does not hold locally (LDAP or VIDM) gets no value and a property saying its
+  directory sets the expiry. When the password expires, NSX refuses the logins and the collection of that
+  manager stops, so the alert comes first.
+- Firewall rule review: the adapter checks three things in every global security policy.
+  - Shadowed rules: an enabled rule placed after an enabled rule of the same policy that matches all its
+    traffic, meaning the same or wider sources, destinations, services, context profiles and Applied To, and
+    the same or both directions and IP versions. Group membership is not expanded, and negated source or
+    destination lists must be identical, so the check reports only rules that can never be hit.
   - Rules that allow any traffic: an enabled ALLOW rule with any source, destination, service and profile, in a
     rule and a policy that apply everywhere.
-  - Unused rules: the hit counts of each rule, summed over the locations of its span, are compared between cycles.
-    A rule whose count has not grown for the unused-rule period (30 days by default) is unused. A rule that never
-    had a hit counts from the day the adapter first saw it, so after an install nothing is unused for 30 days. A
-    counter reset (a smaller count) starts the period again. When a location does not answer, the number is not
-    sent for that cycle, and the period is kept. The dates are kept in the adapter cache, so a new adapter
-    container (an upgrade of the pack) starts the period again.
-  The system policies of NSX (`default-` IDs) are left out, as for the rest of the collection. The alert "Global
+  - Unused rules: the hit counts of each rule, summed over the locations of its span, are compared between
+    cycles. A rule whose count has not grown for the unused-rule period (30 days by default) is unused. For a
+    rule that never had a hit, the period starts the day the adapter first saw it, so after an install nothing
+    is unused for 30 days. A counter reset (a smaller count) restarts the period. When a location does not
+    answer, the number is not sent for that cycle and the period is kept. The dates live in the adapter cache,
+    so a new adapter container (an upgrade of the pack) restarts the period.
+
+  The system policies of NSX (`default-` IDs) are left out, as in the rest of the collection. The alert "Global
   security policy has rules that are never hit" is information; "Global security policy allows any traffic" is a
   warning. Both count against the Risk badge.
-- Availability: in every cycle, a 0 or 100 value for the federation (exactly one Global Manager answers in the
-  active role), each Global Manager (reachable, no node offline), each location (healthy) and each stretched Tier-0
-  (an active service router where its HA mode needs one). Its average over a period is the share of that period
-  the object was available. The report "NSX Federation - Availability report" shows it for the last 30 days with
-  the lowest values, the inter-site BGP and RTT figures and the number of Tier-0 HA changes; schedule it monthly on
-  the federation object (Visualize, Reports). Cycles in which the adapter did not run send no value, so they do not
-  count either way.
+- Availability: in every cycle, a value of 0 or 100 for the federation (exactly one Global Manager answers in
+  the active role), each Global Manager (reachable, no node offline), each location (healthy) and each stretched
+  Tier-0 (an active service router where its HA mode needs one). Its average over a period is the share of that
+  period the object was available. The report "NSX Federation - Availability report" shows it for the last 30
+  days, with the lowest values, the inter-site BGP and RTT figures and the number of Tier-0 HA changes. Schedule
+  it monthly on the federation object (Visualize, Reports). Cycles in which the adapter did not run send no
+  value, so they count neither way.
 
 ## Policy for non-production federations
 
-`policies/NSX_Federation_Non-production.xml` is a VCF Operations policy, "NSX Federation - Non-production". It turns
-off 11 alerts that a lab or test federation often raises on purpose: missing backups, no standby Global Manager,
-firewall rule review, overrides, NSX configuration limits and edge capacity. The alerts for outages, sync,
-failover and realization stay on. To use it:
+`policies/NSX_Federation_Non-production.xml` is a VCF Operations policy, "NSX Federation - Non-production". It
+turns off 11 alerts that a lab or test federation often raises on purpose: missing backups, no standby Global
+Manager, firewall rule review, overrides, NSX configuration limits and edge capacity. The alerts for outages,
+sync, failover and realization stay on. To use it:
 
-1. Import it: Operations, Configurations, Policies, Import, or `install/import_policy.py` (it reads `OPS_HOST` and
-   `OPS_PW` like the other install scripts). Importing again updates the same policy.
+1. Import it: Administration, Configurations, Policy Definition, Import, or `install/import_policy.py` (it reads `OPS_HOST`
+   and `OPS_PW` like the other install scripts). Importing again updates the same policy.
 2. Create a custom group with the objects of that federation (membership: descendants of its federation object,
    and the federation object itself), and assign the policy to the group.
 
-The other federations keep the default policy, with every alert on. (The policy is a separate file because a policy
-inside the PAK needs a describe fragment, and the SDK drops a required attribute of it when it builds the PAK.)
+The other federations keep the default policy, with every alert on. The policy ships as a separate file because
+a policy inside the PAK needs a describe fragment, and the SDK drops one of its required attributes when it
+builds the PAK.
 
 ## Changing a threshold
 
-The thresholds of the pack are listed in [FEATURES.md](FEATURES.md#thresholds). They are part of the symptom
-definitions and the same for every site. To use another value without rebuilding the pack, override the symptom in
-the policy of the objects: Operate, Administration, Configurations, Policy Definition, select the policy and Edit, open
-Alerts and Symptoms, then the Symptom Definitions tab, pick NSX Federation in the object types (or type the name of the
-symptom in the filter), select the symptom and change the value under Override Symptoms, then Save. To change the value for everyone, edit the table `S` in `tools/gen_alerts.py`, run the
-generators and build a new version. The names of some symptoms and alerts carry the value (for example "more than 1%
-of the received packets"): change the name in the same table.
+[FEATURES.md](FEATURES.md#thresholds) lists the thresholds of the pack. They are part of the symptom definitions
+and the same for every site.
+
+To use another value without rebuilding the pack, override the symptom in the policy of the objects:
+
+1. Administration, Configurations, Policy Definition: select the policy and Edit.
+2. Open Alerts and Symptoms, then the Symptom Definitions tab.
+3. Pick NSX Federation in the object types, or type the name of the symptom in the filter.
+4. Select the symptom, change the value under Override Symptoms, then Save.
+
+To change the value for everyone, edit the table `S` in `tools/gen_alerts.py`, run the generators and build a
+new version. Some symptom and alert names carry the value (for example "more than 1% of the received packets"):
+change the name in the same table.
 
 ## Collection health
 
@@ -279,27 +291,29 @@ On the federation object:
 | NSX API calls without an answer (property) | Manager, call and HTTP status of each failed call |
 | NSX API calls retried after a timeout | A call is retried once after a timeout or a dropped connection |
 | Global Managers not collected | Address and reason: not reachable, certificate not trusted, or another federation. A Global Manager known from an earlier cycle (or, after a restart of the adapter container, from VCF Operations) that does not answer, or that answers for another federation, reads 0 on its metric "Reachable" |
-| Collection mode | `normal`, or `degraded` with the reason (no Global Manager answers, none is active, or the active one did not return its locations) and where the location list comes from (the cache or VCF Operations) |
+| Collection mode | `normal`, or `degraded` with the reason (no Global Manager answers, none is active, or the active one did not return its locations) and the source of the location list (the cache or VCF Operations) |
 
 A location outside the known span of a policy is not asked for its statistics. When the span is not known yet,
-an HTTP 404 from a Local Manager means the policy does not exist there, and it is not counted as a failed call.
-Where the policy is realized, a 404 is a failed call and the counters of the policy are not sent for that cycle;
-a location that keeps answering 404 for a realized policy keeps the "data gaps" alert open. A "full sync did not complete" or "not realized" condition has to last two cycles before its
-alert fires, so a sync or a change that completes within a cycle or two raises nothing.
+an HTTP 404 from a Local Manager means the policy does not exist there, and it does not count as a failed call.
+Where the policy is realized, a 404 is a failed call and the counters of the policy are not sent for that cycle.
+A location that keeps answering 404 for a realized policy keeps the "data gaps" alert open.
+
+A "full sync did not complete" or "not realized" condition has to last two cycles before its alert fires, so a
+sync or a change that completes within a cycle or two raises nothing.
 
 A sync channel for which the active Global Manager lists no connection detail is reported as unknown: no value is
 sent, and VCF Operations keeps the last one.
 
-HTTP 403 on a call points to missing rights of the account. A Local Manager whose cluster status call fails, together with
-most of its other calls (HTTP 401, 403, 5xx or timeouts), is reported as not reached. A manager whose requests
-time out or stay throttled (HTTP 429 or 503 after the retries) three times in a row is skipped for the rest of
-the cycle.
+HTTP 403 on a call points to missing rights of the account. A Local Manager is reported as not reached when its
+cluster status call fails together with most of its other calls (HTTP 401, 403, 5xx or timeouts). A manager
+whose requests time out or stay throttled (HTTP 429 or 503 after the retries) three times in a row is skipped
+for the rest of the cycle.
 
 One account stays with one federation. If the federation is rebuilt with a new ID, create a new account: when
-every listed Global Manager answers for the new federation, the new account follows it. Remove the old account:
-after a restart of its container it can follow the rebuilt federation too, and two accounts would then collect
-the same objects. The cache of the location list lives in the adapter
-container and is lost when the container restarts.
+every listed Global Manager answers for the new federation, the new account follows it. Remove the old account,
+because after a restart of its container it can follow the rebuilt federation too, and two accounts would then
+collect the same objects. The cache of the location list lives in the adapter container and is lost when the
+container restarts.
 
 ## Upgrade
 
@@ -307,11 +321,11 @@ container and is lost when the container restarts.
 2. Stop and start the account. Check that it reaches "Collecting"; start it a second time if it stays stopped.
 3. Metrics appear after three cycles, rates after four.
 
-An upgrade replaces the alert content of the pack but keeps the alert, symptom and recommendation definitions that
-the new version no longer ships. `install/cleanup_content.py` compares what VCF Operations holds with what the PAK
-ships and deletes those orphans. It only touches the IDs the pack generates (`AlertDefinition-NSXFederation-*`,
-`SymptomDefinition-NSXFederation-*`, `Recommendation-df-NSXFederation-*`), never a definition made in the UI.
-`install/install_unsigned.sh` runs it after every install. By hand:
+An upgrade replaces the alert content of the pack but keeps the alert, symptom and recommendation definitions
+that the new version no longer ships. `install/cleanup_content.py` compares what VCF Operations holds with what
+the PAK ships and deletes those orphans. It only touches the IDs the pack generates
+(`AlertDefinition-NSXFederation-*`, `SymptomDefinition-NSXFederation-*`, `Recommendation-df-NSXFederation-*`),
+never a definition made in the UI. `install/install_unsigned.sh` runs it after every install. By hand:
 
 ```bash
 export OPS_HOST=<vcf-operations-fqdn> OPS_PW=<admin password>
@@ -324,10 +338,8 @@ python3 install/cleanup_content.py pack/build/NSXFederation_<version>.pak --dele
 Edge nodes and RTEP tunnels are keyed by the NSX transport node ID, and sync channels by the site IDs of both
 ends. Before 1.9.0 they were keyed by name: a renamed edge node became a new object, and so did the sync
 channels of a renamed location or Global Manager. Locations and Global Managers themselves were always keyed by
-site ID. After the
-upgrade, every edge node, RTEP tunnel and sync channel is created again under its new key, and the old objects
-stop receiving data. Their history stays on the old objects. Delete the old objects once their history is no
-longer needed:
+site ID. After the upgrade, every edge node, RTEP tunnel and sync channel is created again under its new key.
+The old objects stop receiving data and keep their history. Delete them once that history is no longer needed:
 
 ```bash
 python3 install/cleanup_content.py pack/build/NSXFederation_<version>.pak --legacy-objects            # list them
@@ -341,20 +353,24 @@ python3 install/cleanup_content.py pack/build/NSXFederation_<version>.pak --lega
 An object deleted in NSX stops receiving data and stays in the inventory. Delete it in the UI, or through the
 suite API with `DELETE /api/resources/{id}`. Both also delete its history.
 
-The account can do it: with "Delete objects that left NSX after (days)" above 0, the adapter deletes the objects of
-its federation that NSX no longer returns and that have had no data for that many days (one day at least). It
-checks once an hour and deletes at most 50 objects at a time. It deletes nothing in a cycle that is not complete:
-a Global Manager or a location not collected, a failed call, a call budget used up. The federation object lists
-what was deleted.
+The account can do this itself. With "Delete objects that left NSX after (days)" above 0, the adapter deletes
+the objects of its federation that NSX no longer returns and that have had no data for that many days (one day
+at least). It checks once an hour and deletes at most 50 objects at a time. It deletes nothing after an
+incomplete cycle: a Global Manager or a location not collected, a failed call, a call budget used up. The
+federation object lists what was deleted.
 
 ## What the adapter reads from VCF Operations
 
-The adapter uses the connection the collector gives it to VCF Operations for three things: the list of NSX
-clusters the built-in NSX integration monitors (settings `auto` above), the location list of earlier cycles when
-no Global Manager answers and the container cache is empty, and the objects to delete when that setting is on.
-The same list decides who raises the status and capacity alerts of an edge node. The property "VCF Operations API
-from the adapter" on the federation object says whether it works. Without it the pack raises the alarm alerts and the
-edge alerts itself, links nothing in `auto`, and deletes nothing.
+The adapter uses the connection to VCF Operations that the collector gives it for three things:
+
+- the list of NSX clusters the built-in NSX integration monitors (the `auto` settings above). The same list
+  decides who raises the status and capacity alerts of an edge node;
+- the location list of earlier cycles, when no Global Manager answers and the container cache is empty;
+- the objects to delete, when that setting is on.
+
+The property "VCF Operations API from the adapter" on the federation object says whether the connection works.
+Without it the pack raises the alarm alerts and the edge alerts itself, links nothing in `auto`, and deletes
+nothing.
 
 ## Tests
 
@@ -363,11 +379,11 @@ docker build -t fedmp-tooling tooling
 docker run --rm -u $(id -u):$(id -g) -v $PWD:/work -w /work fedmp-tooling python -m pytest -q tests -p no:cacheprovider
 ```
 
-The tests answer the adapter's calls from `tests/fixtures/federation.json`, an anonymised recording of a federation
-with two Global Managers and two locations. They cover a normal cycle, failed calls, a location outage, a Global
-Manager of another federation, the cached location list and the one from VCF Operations, the call budget,
-certificate trust, versions and upgrades, tiered realization on 600 more segments, stale-object deletion, edge
-capacity, Tier-0 service routers in both HA modes, the change timeline (first cycle, failover, partial reads),
-clock differences, configuration limits and overrides, password expiry, the firewall rule review (shadowed,
-any-allow and unused rules, partial reads, counter resets), availability, a federation of 1,310 stretched objects,
-and the consistency of the alert content and the shipped policy with the object model.
+The tests answer the adapter's calls from `tests/fixtures/federation.json`, an anonymised recording of a
+federation with two Global Managers and two locations. They cover a normal cycle, failed calls, a location
+outage, a Global Manager of another federation, the cached location list and the one from VCF Operations, the
+call budget, certificate trust, versions and upgrades, tiered realization on 600 more segments, stale-object
+deletion, edge capacity, Tier-0 service routers in both HA modes, the change timeline (first cycle, failover,
+partial reads), clock differences, configuration limits and overrides, password expiry, the firewall rule review
+(shadowed, any-allow and unused rules, partial reads, counter resets), availability, a federation of 1,310
+stretched objects, and the consistency of the alert content and the shipped policy with the object model.

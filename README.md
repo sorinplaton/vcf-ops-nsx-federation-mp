@@ -1,84 +1,84 @@
 # NSX Federation management pack for VCF Operations
 
-A management pack that monitors NSX Federation (NSX 9.1) in VCF Operations 9.1.1. It is built with the
-[VCF Operations Integration SDK](https://vmware.github.io/vmware-vcf-operations-integration-sdk/introduction)
-in Python. Current version: 1.12.0.
+A management pack for VCF Operations 9.1.1 that monitors NSX Federation (NSX 9.1). It is written in Python with
+the [VCF Operations Integration SDK](https://vmware.github.io/vmware-vcf-operations-integration-sdk/introduction).
+Current version: 1.12.0.
 
-This is a lab project, not a Broadcom product. The pack is unsigned and comes with no support. It only reads
-from NSX.
+This is a lab project, not a Broadcom product. The pack is unsigned, has no support, and only reads from NSX.
 
-The design, the install and the tests are described in two blog posts:
+Two blog posts cover the design, the install and the tests:
 
 - [Part 1: design](https://sorinplaton.github.io/posts/nsx-federation-management-pack-design/)
 - [Part 2: building, installing and what the pack captures](https://sorinplaton.github.io/posts/nsx-federation-management-pack-install/)
 
 ## What it monitors
 
-The full list of object types, metrics, properties and alerts, with the condition and the recommendation of each
-alert, is in [docs/FEATURES.md](docs/FEATURES.md) (French: [docs/FEATURES.fr.md](docs/FEATURES.fr.md)). In short:
+[docs/FEATURES.md](docs/FEATURES.md) (French: [docs/FEATURES.fr.md](docs/FEATURES.fr.md)) lists every object
+type, metric, property and alert, with the condition and the recommendation of each alert. In short:
 
 - 16 object types: the federation, Global Managers and their nodes, locations, sync channels, edge clusters,
-  edge nodes, RTEP tunnels, Tier-0 service routers, Tier-0 BGP neighbors, stretched Tier-0 and Tier-1 gateways, segments, global
-  security policies, and the realization of each stretched object at each location. Global firewall rules
-  are opt-in per policy.
+  edge nodes, RTEP tunnels, Tier-0 service routers, Tier-0 BGP neighbors, stretched Tier-0 and Tier-1 gateways,
+  segments, global security policies, and the realization of each stretched object at each location. Global
+  firewall rules are opt-in per policy.
 - Metrics in 23 groups, with rates computed from the NSX counters, federation rollups and 26 key indicators.
-- 83 alert definitions, 144 symptoms and 50 recommendations, including the 15 federation alarm types of
-  NSX 9.1.1 as named alerts, the sync state of a standby Global Manager and alerts on the collection itself.
+- 83 alert definitions, 144 symptoms and 50 recommendations. They include the 15 federation alarm types of
+  NSX 9.1.1 as named alerts, the sync state of a standby Global Manager, and alerts on the collection itself.
 - Latency and packet loss: round-trip time to the Global Manager against the maximum RTT set in NSX and against
-  its usual range, drops of each RTEP tunnel as a share of its packets, blocked packets, and flaps of the Tier-0 and
-  inter-site BGP sessions. The thresholds are listed in
-  [docs/FEATURES.md](docs/FEATURES.md#thresholds).
-- A failed NSX call is reported as unknown data, not as an empty answer: no alert fires on data that was
-  never received, and the federation object lists the calls without an answer.
-- During a location outage, the alerts of the objects that depend on the location stay quiet behind the alert of
-  the location.
+  its usual range, drops of each RTEP tunnel as a share of its packets, blocked packets, and flaps of the Tier-0
+  and inter-site BGP sessions. [docs/FEATURES.md](docs/FEATURES.md#thresholds) lists the thresholds.
+- A failed NSX call is reported as unknown data, not as an empty answer. No alert fires on data that never
+  arrived, and the federation object lists the calls without an answer.
+- During a location outage, the alerts of the objects that depend on the location stay quiet behind the alert
+  of the location.
 - Versions and upgrades: Global Managers on different versions, a location ahead of the Global Manager, an
   upgrade in progress, paused or failed.
 - Switchover readiness: each standby Global Manager reads ready, not ready with the reasons (sync with the
   active, cluster health, version, expired certificate, upgrade in progress or paused), or unknown when a value
-  could not be read. The metric is 1 only when readiness is confirmed. The federation reads ready when one standby
-  is.
+  could not be read. The metric is 1 only when readiness is confirmed. The federation reads ready when one
+  standby is.
 - A healthy flag per location, from the same checks as the share of locations healthy.
-- Edge capacity: datapath and services CPU, system and datapath memory, the fullest memory pool and file system of
-  each federation edge node. The status and threshold alerts stay quiet when the built-in NSX integration
-  monitors the edge.
-- Tier-0 failover: the HA state and routing of each stretched Tier-0 service router on each edge, an alert when a
-  Tier-0 has no active service router (in the federation, or at a location for an active-active Tier-0), and one
-  when a service router changes HA state.
-- Change timeline: the active Global Manager, Global Manager roles and versions, locations, edge nodes, service
-  router HA state and stretched objects are compared between cycles. Each change is an information event on its
-  object, and the last ten are listed on the federation.
+- Edge capacity: datapath and services CPU, system and datapath memory, and the fullest memory pool and file
+  system of each federation edge node. The status and threshold alerts stay quiet when the built-in NSX
+  integration monitors the edge.
+- Tier-0 failover: the HA state and routing of each stretched Tier-0 service router on each edge. One alert
+  fires when a Tier-0 has no active service router (in the federation, or at a location for an active-active
+  Tier-0), another when a service router changes HA state.
+- Change timeline: each cycle compares the active Global Manager, Global Manager roles and versions, locations,
+  edge nodes, service router HA state and stretched objects with the previous one. Each change is an information
+  event on its object, and the federation lists the last ten.
 - Clocks: the clock of each manager against the active Global Manager, and the NTP servers and service of each.
 - Configuration limits: each Local Manager's usage of the NSX limits, as NSX rates it, and the global objects
   overridden at a location.
 - Password expiry: the days until the password of the collection account expires on each manager, with an alert
   before the collection stops.
-- Firewall rule review: rules of the global security policies that are shadowed by an earlier rule, unused for a
-  period (30 days by default) at every location of their span, or allowing any traffic everywhere.
+- Firewall rule review: rules of the global security policies that are shadowed by an earlier rule, unused for
+  a period (30 days by default) at every location of their span, or allowing any traffic everywhere.
 - Availability: a 0/100 value per cycle for the federation, the Global Managers, the locations and the stretched
   Tier-0 gateways, and a 30-day availability report.
 - A policy for lab and test federations, "NSX Federation - Non-production", to import and assign to a group
   (`policies/`, `install/import_policy.py`).
-- Replication flows, last-seen time and onboarding status of each location, as on the Location Manager page of NSX.
+- Replication flows, last-seen time and onboarding status of each location, as on the Location Manager page of
+  NSX.
 - No double alerts: the federation alarms of a Local Manager that the built-in NSX integration monitors are left
   to that integration.
-- Four custom groups, five dashboards (Federation Overview, Location Matrix, Switchover Readiness,
-  Inter-site Connectivity, Stretched Objects), thirteen list views, two reports (health, availability) and an inventory tree.
+- Four custom groups, five dashboards (Federation Overview, Location Matrix, Switchover Readiness, Inter-site
+  Connectivity, Stretched Objects), thirteen list views, two reports (health, availability) and an inventory
+  tree.
 - Optional links from edge nodes and edge clusters to the objects of the built-in NSX integration.
 
-The account takes one or two Global Manager addresses and one credential. The Local Managers are discovered
-from the Global Manager and checked against the certificate thumbprint it holds for them. With certificate trust
-`ca`, a certificate signed by a trusted CA and valid for the address is trusted too. A read-only NSX
-account is enough: the built-in `audit` account was tested.
+The account takes one or two Global Manager addresses and one credential. The pack discovers the Local Managers
+from the Global Manager and checks them against the certificate thumbprint the Global Manager holds for each.
+With certificate trust `ca`, a certificate signed by a trusted CA and valid for the address is trusted too. A
+read-only NSX account is enough; the built-in `audit` account was tested.
 
 ## Layout
 
 | Path | Content |
 | --- | --- |
-| `pack/` | The SDK project: `app/adapter.py` (object model, collection, events), `app/nsxclient.py` (read-only NSX client), `content/` (alerts, dashboards, views, report, custom groups, traversal spec) |
+| `pack/` | The SDK project: `app/adapter.py` (object model, collection, events), `app/nsxclient.py` (read-only NSX client), `content/` (alerts, dashboards, views, reports, custom groups, traversal spec) |
 | `tools/gen_*.py` | Generators for the content and the icons. They read the object model from `adapter.py` and write into `pack/content` |
 | `tools/localrun.py` | Runs a collection against live NSX managers without VCF Operations |
-| `tools/test_gaps.py` | Same run with chosen NSX calls made to fail, to check that their data is reported as unknown |
+| `tools/test_gaps.py` | The same run with chosen NSX calls made to fail, to check that their data is reported as unknown |
 | `tools/repack.py` | Rewrites the registry address inside a built `.pak` |
 | `tools/schemas/` | The SDK schema files for alert definitions and traversal specs. They must stay out of `pack/content` (see the blog) |
 | `tooling/Dockerfile` | An image with the SDK tools (`mp-init`, `mp-test`, `mp-build`) |
@@ -97,7 +97,7 @@ The build needs Docker and an image registry the cloud proxy can reach over HTTP
 docker build -t fedmp-tooling tooling
 
 # regenerate the content after a change to the object model
-for g in alerts dashboards groups views features; do python3 tools/gen_$g.py; done
+for g in alerts dashboards groups views policy features; do python3 tools/gen_$g.py; done
 
 # test a collection without VCF Operations
 docker run --rm --network host -v $PWD:/work -e GM_HOSTS=<gm1>,<gm2> -e NSX_USER=admin -e NSX_PASSWORD=... \
@@ -109,19 +109,20 @@ docker run --rm --network host -u $(id -u):$(getent group docker | cut -d: -f3) 
   fedmp-tooling mp-build --no-ttl -r <registry>/<repository> --registry-username <user> --registry-password <password>
 ```
 
-`mp-build` writes Docker Hub into the pack when the registry is given as `host:port` without a domain.
+When the registry is given as `host:port` without a domain, `mp-build` writes Docker Hub into the pack.
 `tools/repack.py <pak> <host:port> <repository>` corrects it.
 
 ## Install
 
-Step by step, with the machine each command runs on: [docs/INSTALL.md](docs/INSTALL.md) (in French: [docs/INSTALL.fr.md](docs/INSTALL.fr.md)).
+[docs/INSTALL.md](docs/INSTALL.md) (French: [docs/INSTALL.fr.md](docs/INSTALL.fr.md)) gives each step with the
+machine its commands run on.
 
-The pack is not signed, so VCF Operations 9 refuses it until "Allow unsigned PAK installation" is turned on
-in the admin console (Broadcom KB 415279). The cloud proxy must also trust the certificate of the registry.
-Both steps are described with screenshots in part 2 of the blog.
+The pack is not signed, so VCF Operations 9 refuses it until "Allow unsigned PAK installation" is turned on in
+the admin console (Broadcom KB 415279). The cloud proxy must also trust the certificate of the registry. Part 2
+of the blog shows both steps with screenshots.
 
-By hand: turn the switch on, upload the `.pak` under Administration, Integrations, Repository with
-"Ignore the PAK file signature checking", then turn the switch off.
+By hand: turn the switch on, upload the `.pak` under Administration, Integrations, Repository with "Ignore the
+PAK file signature checking", then turn the switch off.
 
 Scripted, with `google-chrome`, `node` and Python `requests` on the host:
 
@@ -131,16 +132,16 @@ install/upi.sh enableUPI
 install/install_unsigned.sh pack/build/NSXFederation_<version>.pak   # turns the switch off at the end
 ```
 
-The scripted route uses calls that are internal to the VCF Operations UI. They are unsupported and can
-change with any release.
+The scripts use calls that are internal to the VCF Operations UI. They are unsupported and can change with any
+release.
 
-After an upgrade of the pack, stop and start the account. `install_unsigned.sh` also deletes the alert,
-symptom and recommendation definitions the new version no longer ships (`install/cleanup_content.py`).
+After an upgrade of the pack, stop and start the account. `install_unsigned.sh` also deletes the alert, symptom
+and recommendation definitions the new version no longer ships (`install/cleanup_content.py`).
 
 ## Tested with
 
-NSX 9.1.1 (two Global Managers, active and standby, and two locations), VCF Operations 9.1.1.0, Integration
-SDK 1.3.1, in a nested lab. Most alert definitions have not fired, because the lab has no such fault.
+NSX 9.1.1 (two Global Managers, active and standby, and two locations), VCF Operations 9.1.1.0 and Integration
+SDK 1.3.1, in a nested lab. Most alert definitions have never fired, because the lab has none of those faults.
 
 ## Licence
 
