@@ -509,6 +509,9 @@ def get_adapter_definition() -> AdapterDefinition:
                 ot.define_string_property("location_outage", "Locations in outage")
             if key == "sync_channel":
                 ot.define_string_property("gm_outage", "Global Manager outage")
+            if not any(pkey == "federation_id" for pkey, _ in props):
+                # on every object: one custom group per federation selects its objects by it (install/federation_groups.py)
+                ot.define_string_property("federation_id", "Federation ID")
         return d
 
 
@@ -1181,6 +1184,7 @@ class Collector:
         for o in self.result.objects.values():
             if o.adapter_type() != ADAPTER_KIND:
                 continue
+            o.with_property("federation_id", self.fed_id)
             if o.object_type() == "global_manager":
                 o.with_property("location_outage", outage)
             elif o.object_type() in OUTAGE_KINDS:

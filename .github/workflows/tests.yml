@@ -2,6 +2,8 @@ name: tests
 on:
   push:
   pull_request:
+  schedule:
+    - cron: "0 6 * * 1"  # every Monday: a newly published vulnerability fails the dependencies job
 permissions:
   contents: read
 jobs:
@@ -24,3 +26,19 @@ jobs:
           for f in install/*.mjs; do node --check "$f"; done
           python -m py_compile install/*.py tools/*.py
       - run: python -m pytest -q tests
+  dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install pip-audit cyclonedx-bom
+      - name: Known vulnerabilities in the Python packages of the adapter image
+        run: pip-audit --no-deps --disable-pip -r pack/image-requirements.txt --progress-spinner off
+      - name: SBOM of the adapter image (CycloneDX)
+        run: cyclonedx-py requirements pack/image-requirements.txt --of JSON -o sbom.cdx.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.cdx.json

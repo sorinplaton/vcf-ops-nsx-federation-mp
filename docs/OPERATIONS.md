@@ -258,12 +258,65 @@ sync, failover and realization stay on. To use it:
 
 1. Import it: Administration, Configurations, Policy Definition, Import, or `install/import_policy.py` (it reads `OPS_HOST`
    and `OPS_PW` like the other install scripts). Importing again updates the same policy.
-2. Create a custom group with the objects of that federation (membership: descendants of its federation object,
-   and the federation object itself), and assign the policy to the group.
+2. Assign it to the group of that federation: `install/federation_groups.py --federation '<federation>' --policy
+   'NSX Federation - Non-production'` (see "Groups per federation").
 
 The other federations keep the default policy, with every alert on. The policy ships as a separate file because
 a policy inside the PAK needs a describe fragment, and the SDK drops one of its required attributes when it
 builds the PAK.
+
+## Groups per federation
+
+The custom groups of the pack (All objects, Managers and locations, Inter-site connectivity, Stretched objects)
+hold the objects of every federation. Every object of the pack also carries the property `federation_id`, and
+`install/federation_groups.py` uses it to create one group per federation, "NSX Federation - <federation>"
+(a federation name that already starts with "NSX Federation" does not get the prefix twice). Its rule is "object type of the pack and
+`federation_id` equals the ID of the federation", so the group follows the objects as they come and go, and an
+object of another federation never enters it. Objects that no longer get data (for example the ones keyed by
+name before 1.9.0) do not carry the property and stay out.
+
+```bash
+export OPS_HOST=<vcf-operations-fqdn> OPS_PW='<admin password>'
+python3 install/federation_groups.py                       # every federation
+python3 install/federation_groups.py --federation '<federation>' --policy 'NSX Federation - Non-production'
+```
+
+The federation name is the name of the federation object in VCF Operations (the account setting "Federation
+name", or else "NSX Federation" and the first 8 characters of its ID). The script needs one collection with 1.13.0 or later.
+Running it again updates the group and keeps its ID, so assignments, notification rules and dashboards that use
+the group stay in place. It never deletes a group. Renaming the federation creates a new group; delete the old
+one by hand.
+
+Use the group to assign a policy, to scope a notification rule (`--group` below) or to filter a dashboard or a
+view to one federation.
+
+## Sending the alerts
+
+`install/notification_rules.py` creates a notification rule for the alerts of the pack. The outbound instance
+(email server, webhook, ServiceNow, Slack, SNMP trap or log file) must exist first: Administration,
+Configurations, Outbound Settings. The script does not handle mail or ticketing credentials.
+
+```bash
+python3 install/notification_rules.py --outbound '<outbound instance>'      # immediate and critical, every federation
+python3 install/notification_rules.py --outbound '<outbound instance>' --min-criticality warning \
+        --group 'NSX Federation - <federation>' --name 'NSX Federation - <federation> warnings'
+```
+
+| Option | Effect |
+| --- | --- |
+| `--min-criticality` | `immediate` (default): immediate and critical alerts. `warning` adds the warnings, `critical` keeps only the critical ones. Information alerts (firewall rule review, upgrade in progress) are never sent |
+| `--group` | Only the alerts on the members of this custom group, for example the group of one federation |
+| `--template` | A payload template of the plugin type; default: the built-in one ("Default Webhook Template", "Default Email Template", ...) |
+| `--name` | The rule name; default "NSX Federation - <outbound instance>". The same name again updates the rule |
+
+The rule takes alerts that are new, updated and cancelled, so a ticket or a chat thread also learns that the
+alert cleared. It covers every object type of the pack, including the alerts raised from NSX alarms and events.
+While a location is cut off from the Global Manager, the alerts that depend on it stay quiet (see "Alerts during a
+location outage"), so the outage sends one alert instead of one per object.
+
+In the lab, a rule for a webhook outbound instance, scoped to the group of the federation, sent two "Canceled"
+payloads when the non-production policy turned off the two Global Manager backup alerts. When the policy was
+removed, the alerts returned and two "Active" payloads followed about three seconds later.
 
 ## Changing a threshold
 
@@ -314,6 +367,35 @@ every listed Global Manager answers for the new federation, the new account foll
 because after a restart of its container it can follow the rebuilt federation too, and two accounts would then
 collect the same objects. The cache of the location list lives in the adapter container and is lost when the
 container restarts.
+
+## Troubleshooting
+
+`install/diagnostics.py` reads, and never changes, what a support request needs: the VCF Operations and pack
+versions, each account of the pack (settings, state, collector, last collection), the objects per type and those
+without data, the collection health of each federation and the open alerts. It writes everything to one JSON file,
+then prints the problems it found and what to check. It reads no credential, but the file holds host names and
+addresses; read it before sending it outside the organization. A read-only VCF Operations user is enough.
+
+```bash
+python3 install/diagnostics.py            # nsxfederation-diagnostics-<date>.json
+```
+
+| What you see | Check |
+| --- | --- |
+| The account stays `FAILED` with an empty message | The cloud proxy could not pull the adapter image: the registry certificate (INSTALL.md, steps 2 and 3) and the registry log |
+| The account test fails on a certificate | Accept the certificate, or use trust `ca` with the CA certificates (see "Certificate trust"). After a certificate change on a manager, accept it again |
+| No objects, the account is "Collecting" | The federation object lists the reason under "Global Managers not collected": address, certificate or account |
+| "NSX API calls without an answer" above 0 | The property of the same name: the manager, the call and the HTTP status. 403 is a missing right of the account, 429 or 503 is NSX throttling |
+| "Managers that used their call budget" above 0 | Raise the API call budget, or leave "Policies collected rule by rule" empty (see "Sizing") |
+| Collection mode `degraded` | The reason is in the property: no Global Manager answers, none is active, or the active one did not return its locations |
+| "VCF Operations API from the adapter" not `ok` | See "What the adapter reads from VCF Operations" |
+| Objects that receive no data | They left NSX (setting "Delete objects that left NSX after (days)"), or they are edge nodes, RTEP tunnels and sync channels keyed by name before 1.9.0 (`cleanup_content.py --legacy-objects`) |
+| Alerts of an old version still open | `install/cleanup_content.py <pak> --delete` removes the definitions the new version no longer ships |
+| Metrics missing right after an upgrade | Normal for the first cycle after the restart; they return from the next one |
+
+The adapter log is on the cloud proxy that runs the account, in the log of the adapter container of the pack.
+To see what a collection would return without VCF Operations, run `tools/localrun.py` against the managers from the
+build host (README, Layout).
 
 ## Upgrade
 
@@ -386,4 +468,9 @@ call budget, certificate trust, versions and upgrades, tiered realization on 600
 deletion, edge capacity, Tier-0 service routers in both HA modes, the change timeline (first cycle, failover,
 partial reads), clock differences, configuration limits and overrides, password expiry, the firewall rule review
 (shadowed, any-allow and unused rules, partial reads, counter resets), availability, a federation of 1,310
-stretched objects, and the consistency of the alert content and the shipped policy with the object model.
+stretched objects, the consistency of the alert content and the shipped policy with the object model, the
+federation ID on every object, the group, notification rule and diagnostics scripts, and the image packages
+against the Dockerfile.
+
+CI also checks the Python packages of the adapter image (`pack/image-requirements.txt`) against the known
+vulnerabilities every week and builds an SBOM; see [SECURITY.md](../SECURITY.md).

@@ -25,7 +25,7 @@ Valeurs à remplacer :
 | `<repository>` | `nsxfederation` |
 | `<ops>` | `ops.example.com` |
 | `<gm1>`, `<gm2>` | adresse de cluster du Global Manager actif et du standby |
-| `<version>` | `1.12.0` |
+| `<version>` | `1.13.0` |
 
 ## Liste de contrôle
 
@@ -37,7 +37,8 @@ Valeurs à remplacer :
 - [ ] 6. Pack non signé installé, option à nouveau désactivée
 - [ ] 7. Compte créé, certificats acceptés
 - [ ] 8. Compte à l'état « Collecting », métriques présentes après trois cycles
-- [ ] 9. Facultatif : politique pour une fédération de lab ou de test importée et affectée
+- [ ] 9. Facultatif : groupe par fédération, politique pour une fédération de lab ou de test
+- [ ] 10. Facultatif : alertes envoyées par e-mail, à un webhook ou à un outil de tickets
 
 ## 1. Prérequis
 
@@ -221,7 +222,7 @@ compte de type NSX Federation.
       taux demandent un cycle de plus.
 - [ ] L'objet fédération ne liste aucun appel en échec.
 
-## 9. Facultatif : politique pour une fédération de lab ou de test
+## 9. Facultatif : groupe par fédération et politique pour une fédération de lab ou de test
 
 *À exécuter sur : l'hôte de construction, à la racine du dépôt.* Ou importer le fichier dans l'interface :
 Administration, Configurations, Policy Definition, Import.
@@ -232,9 +233,32 @@ python3 install/import_policy.py        # policies/NSX_Federation_Non-production
 ```
 
 - [ ] La politique « NSX Federation - Non-production » apparaît sous Policies. Une nouvelle importation la met à jour.
-- [ ] L'affecter à un groupe personnalisé qui regroupe les objets de la fédération de lab ou de test. Elle désactive
-      11 alertes (sauvegardes, standby, revue des règles de pare-feu, surcharges, limites de configuration, capacité
-      des edges) ; voir OPERATIONS.md.
+
+Créer ensuite le groupe de chaque fédération et, pour une fédération de lab ou de test, lui affecter la politique.
+Elle désactive 11 alertes (sauvegardes, standby, revue des règles de pare-feu, surcharges, limites de configuration,
+capacité des edges) ; voir OPERATIONS.md.
+
+```bash
+python3 install/federation_groups.py                     # « NSX Federation - <fédération> » pour chaque fédération
+python3 install/federation_groups.py --federation '<fédération>' --policy 'NSX Federation - Non-production'
+```
+
+- [ ] Le groupe « NSX Federation - <fédération> » liste les objets de cette fédération (Environment, Custom Groups).
+      Le script nécessite une collecte par la version 1.13.0 ou ultérieure ; le relancer met les groupes à jour.
+
+## 10. Facultatif : envoyer les alertes
+
+*À exécuter sur : l'hôte de construction, à la racine du dépôt.* Créer d'abord l'instance sortante (serveur de
+messagerie, webhook, ServiceNow, Slack, SNMP ou fichier journal) sous Administration, Configurations, Outbound Settings.
+
+```bash
+python3 install/notification_rules.py --outbound '<instance sortante>'                    # immediate et critical
+python3 install/notification_rules.py --outbound '<instance sortante>' --min-criticality warning \
+        --group 'NSX Federation - <fédération>' --name 'NSX Federation - <fédération> warnings'
+```
+
+- [ ] La règle « NSX Federation - <instance sortante> » apparaît sous Alerts, Notifications. Elle envoie les
+      alertes nouvelles, mises à jour et annulées : un ticket apprend aussi que l'alerte a disparu.
 
 ## Mise à niveau
 

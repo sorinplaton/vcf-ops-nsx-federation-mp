@@ -1,0 +1,8 @@
+version: 2
+# GitHub Actions only. The Python packages of the adapter image are pinned by the SDK library and the Dockerfile;
+# pack/image-requirements.txt is written from a built image by tools/image_lock.sh, never by hand or by a bot.
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

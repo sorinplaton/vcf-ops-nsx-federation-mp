@@ -155,15 +155,20 @@ def metric_rows(k, header):
         props.append(("location_outage", "Locations in outage"))
     if k == "sync_channel":
         props.append(("gm_outage", "Global Manager outage"))
+    if not any(key == "federation_id" for key, _l in props):
+        props.append(("federation_id", "Federation ID"))  # on every object (adapter.py, get_adapter_definition)
     if props:
         out += [_("Properties: ") + _("; ").join(f"{keep(cell(label))} (`{key}`)" for key, label in props) + ".", ""]
     return out
 
 
+FED_ID = sum(1 for k in MODEL if not any(key == "federation_id" for key, _l in MODEL[k][2]))  # added on every type
+
+
 def document():
     kinds = list(MODEL)
     n_alerts, n_symptoms = len(ga.A), len(ga.S)
-    n_metrics, n_props = sum(len(MODEL[k][1]) for k in kinds), sum(len(MODEL[k][2]) for k in kinds) + len(OUTAGE) + 1
+    n_metrics, n_props = sum(len(MODEL[k][1]) for k in kinds), sum(len(MODEL[k][2]) for k in kinds) + len(OUTAGE) + 1 + FED_ID
     n_risk = sum(1 for a in ga.A if a[0] in ga.RISK)
     if LANG == "fr":
         out = [f"# Fonctionnalités et alertes du pack NSX Federation, version {VERSION}", "",
@@ -226,7 +231,10 @@ def document():
                "période (30 jours par défaut), et règles qui autorisent tout le trafic partout.",
                "- Envoie à chaque cycle une valeur de disponibilité (100 ou 0) pour la fédération, chaque Global Manager, "
                "chaque emplacement et chaque Tier-0 étendu ; le rapport de disponibilité en fait la moyenne sur 30 jours.",
-               "- Supprime en option les objets qui ont quitté NSX (option désactivée par défaut).", "",
+               "- Supprime en option les objets qui ont quitté NSX (option désactivée par défaut).",
+               "- Chaque objet porte l'ID de sa fédération : un script crée un groupe personnalisé par fédération et peut lui "
+               "affecter une politique ; un autre envoie les alertes du pack à une instance sortante (e-mail, webhook, "
+               "ServiceNow, Slack, SNMP), un troisième rassemble l'état de la collecte pour une demande de support.", "",
                "## Types d'objet", "",
                "| Type d'objet | Clé | Métriques | Propriétés | Définitions d'alerte |", "| --- | --- | --- | --- | --- |"]
     else:
@@ -287,11 +295,14 @@ def document():
                "any traffic everywhere.",
                "- Sends an availability value (100 or 0) for the federation, each Global Manager, each location and each "
                "stretched Tier-0 in every cycle; the availability report averages it over 30 days.",
-               "- Optionally deletes the objects that left NSX (off by default).", "",
+               "- Optionally deletes the objects that left NSX (off by default).",
+               "- Every object carries the ID of its federation: a script creates one custom group per federation and can "
+               "assign a policy to it; another sends the alerts of the pack to an outbound instance (email, webhook, "
+               "ServiceNow, Slack, SNMP), and a third gathers the state of the collection for a support request.", "",
                "## Object types", "",
                "| Object type | Key | Metrics | Properties | Alert definitions |", "| --- | --- | --- | --- | --- |"]
     for k in kinds:
-        props = len(MODEL[k][2]) + (k in OUTAGE) + (k == "sync_channel")
+        props = len(MODEL[k][2]) + (k in OUTAGE) + (k == "sync_channel") + (not any(x[0] == "federation_id" for x in MODEL[k][2]))
         out.append(f"| {MODEL[k][0]} | `{k}` | {len(MODEL[k][1])} | {props} | {sum(1 for a in ga.A if a[1] == k)} |")
     if LANG == "fr":
         out += ["", "## Seuils", "",
@@ -326,7 +337,8 @@ def document():
                 f"- Politique livrée avec le pack : {keep(gp.NAME)}, à affecter à un groupe qui regroupe les objets d'une "
                 "fédération de lab ou de test (elle désactive les alertes de sauvegarde, de standby, de revue des règles "
                 "de pare-feu, de surcharges, de limites de configuration et de capacité des edges).",
-                "- Groupes personnalisés : " + _("; ").join(keep(g[0] if isinstance(g, (list, tuple)) else str(g)) for g in gg.GROUPS) + ".",
+                "- Groupes personnalisés : " + _("; ").join(keep(g[0] if isinstance(g, (list, tuple)) else str(g)) for g in gg.GROUPS)
+                + " ; et un groupe par fédération, NSX Federation - <fédération>, créé par install/federation_groups.py.",
                 "- Arborescence d'inventaire : NSX Federation (Inventory, Detailed View, dernier onglet).", ""]
         return "\n".join(nb(line) for line in out)
     out += ["", "## Thresholds", "",
@@ -359,7 +371,8 @@ def document():
             f"- Policy shipped with the pack: {gp.NAME}, to assign to a group that holds the objects of a lab or test "
             "federation (it turns off the alerts for backups, standby, firewall rule review, overrides, configuration "
             "limits and edge capacity).",
-            "- Custom groups: " + "; ".join(g[0] if isinstance(g, (list, tuple)) else str(g) for g in gg.GROUPS) + ".",
+            "- Custom groups: " + "; ".join(g[0] if isinstance(g, (list, tuple)) else str(g) for g in gg.GROUPS)
+            + "; and one group per federation, NSX Federation - <federation>, created by install/federation_groups.py.",
             "- Inventory tree: NSX Federation (Inventory, Detailed View, last tab).", ""]
     return "\n".join(out)
 

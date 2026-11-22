@@ -24,7 +24,7 @@ Placeholders:
 | `<repository>` | `nsxfederation` |
 | `<ops>` | `ops.example.com` |
 | `<gm1>`, `<gm2>` | cluster address of the active and of the standby Global Manager |
-| `<version>` | `1.12.0` |
+| `<version>` | `1.13.0` |
 
 ## Checklist
 
@@ -36,7 +36,8 @@ Placeholders:
 - [ ] 6. Unsigned pack installed, switch turned off again
 - [ ] 7. Account created, certificates accepted
 - [ ] 8. Account "Collecting", metrics after three cycles
-- [ ] 9. Optional: policy for a lab or test federation imported and assigned
+- [ ] 9. Optional: group per federation, policy for a lab or test federation
+- [ ] 10. Optional: alerts sent to email, a webhook or a ticketing tool
 
 ## 1. Prerequisites
 
@@ -210,7 +211,7 @@ Federation.
       properties and events, then metrics after about ten minutes. Rates need one more cycle.
 - [ ] The federation object lists no failed calls.
 
-## 9. Optional: policy for a lab or test federation
+## 9. Optional: group per federation and policy for a lab or test federation
 
 *Run on: the build host, from the root of the repository.* Or import the file in the UI: Administration,
 Configurations, Policy Definition, Import.
@@ -221,8 +222,32 @@ python3 install/import_policy.py        # policies/NSX_Federation_Non-production
 ```
 
 - [ ] The policy "NSX Federation - Non-production" is listed under Policies. Importing it again updates it.
-- [ ] Assign it to a custom group that holds the objects of the lab or test federation. It turns off 11 alerts
-      (backups, standby, firewall rule review, overrides, configuration limits, edge capacity); see OPERATIONS.md.
+
+Then create the group of each federation and, for a lab or test federation, assign the policy to it. The
+policy turns off 11 alerts (backups, standby, firewall rule review, overrides, configuration limits, edge
+capacity); see OPERATIONS.md.
+
+```bash
+python3 install/federation_groups.py                     # "NSX Federation - <federation>" for every federation
+python3 install/federation_groups.py --federation '<federation>' --policy 'NSX Federation - Non-production'
+```
+
+- [ ] The group "NSX Federation - <federation>" lists the objects of that federation (Environment, Custom Groups).
+      The script needs one collection with 1.13.0 or later; running it again updates the groups.
+
+## 10. Optional: send the alerts
+
+*Run on: the build host, from the root of the repository.* First create the outbound instance (email server,
+webhook, ServiceNow, Slack, SNMP or log file) under Administration, Configurations, Outbound Settings.
+
+```bash
+python3 install/notification_rules.py --outbound '<outbound instance>'                    # immediate and critical
+python3 install/notification_rules.py --outbound '<outbound instance>' --min-criticality warning \
+        --group 'NSX Federation - <federation>' --name 'NSX Federation - <federation> warnings'
+```
+
+- [ ] The rule "NSX Federation - <outbound instance>" is listed under Alerts, Notifications. It sends new,
+      updated and cancelled alerts, so a ticket also learns that the alert cleared.
 
 ## Upgrade
 

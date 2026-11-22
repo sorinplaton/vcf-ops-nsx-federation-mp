@@ -1,4 +1,4 @@
-# Fonctionnalités et alertes du pack NSX Federation, version 1.12.0
+# Fonctionnalités et alertes du pack NSX Federation, version 1.13.0
 
 Généré par `tools/gen_features.py` à partir du modèle d'objets et des tables d'alertes du pack. Ne pas modifier à la main. Version anglaise : [FEATURES.md](FEATURES.md).
 
@@ -6,7 +6,7 @@ Les noms des métriques, des propriétés, des alertes et des symptômes, ainsi 
 
 ## Résumé
 
-- 16 types d'objet, 175 métriques dans 25 groupes, 153 propriétés, 26 indicateurs clés.
+- 16 types d'objet, 175 métriques dans 25 groupes, 168 propriétés, 26 indicateurs clés.
 - 87 définitions d'alerte, 153 symptômes, 53 recommandations. 21 alertes pèsent sur le badge Risk, les autres sur Health.
 - 4 groupes personnalisés, 5 tableaux de bord, 13 vues en liste, 2 rapports, 1 politique, 1 arborescence d'inventaire, 1 icône par type d'objet.
 - Collecte en lecture seule depuis NSX. Les réglages du compte, l'approbation des certificats, le dimensionnement et la mise à niveau sont dans [OPERATIONS.md](OPERATIONS.md) (en anglais).
@@ -35,27 +35,28 @@ Les noms des métriques, des propriétés, des alertes et des symptômes, ainsi 
 - Passe en revue les règles des politiques de sécurité globales : règles masquées par une règle précédente de la politique, règles sans aucun hit à tous les emplacements de leur étendue pendant une période (30 jours par défaut), et règles qui autorisent tout le trafic partout.
 - Envoie à chaque cycle une valeur de disponibilité (100 ou 0) pour la fédération, chaque Global Manager, chaque emplacement et chaque Tier-0 étendu ; le rapport de disponibilité en fait la moyenne sur 30 jours.
 - Supprime en option les objets qui ont quitté NSX (option désactivée par défaut).
+- Chaque objet porte l'ID de sa fédération : un script crée un groupe personnalisé par fédération et peut lui affecter une politique ; un autre envoie les alertes du pack à une instance sortante (e-mail, webhook, ServiceNow, Slack, SNMP), un troisième rassemble l'état de la collecte pour une demande de support.
 
 ## Types d'objet
 
 | Type d'objet | Clé | Métriques | Propriétés | Définitions d'alerte |
 | --- | --- | --- | --- | --- |
 | NSX Federation | `federation` | 36 | 14 | 9 |
-| Global Manager | `global_manager` | 18 | 20 | 24 |
-| Manager Node | `manager_node` | 1 | 2 | 0 |
-| Location | `location` | 31 | 30 | 28 |
-| Sync Channel | `sync_channel` | 1 | 5 | 1 |
-| Federation Edge Cluster | `edge_cluster` | 4 | 5 | 1 |
-| Federation Edge Node | `edge_node` | 11 | 7 | 6 |
-| Tier-0 Service Router | `tier0_sr` | 4 | 9 | 1 |
-| RTEP Tunnel | `rtep_tunnel` | 21 | 5 | 5 |
-| Stretched Tier-0 Gateway | `tier0` | 10 | 10 | 3 |
-| Stretched Tier-1 Gateway | `tier1` | 4 | 8 | 1 |
-| Stretched Segment | `segment` | 4 | 9 | 1 |
-| Global Security Policy | `global_policy` | 11 | 12 | 3 |
-| Stretched Object at Location | `realization` | 6 | 5 | 1 |
-| Tier-0 BGP Neighbor | `bgp_neighbor` | 8 | 8 | 3 |
-| Global Firewall Rule | `rule` | 5 | 4 | 0 |
+| Global Manager | `global_manager` | 18 | 21 | 24 |
+| Manager Node | `manager_node` | 1 | 3 | 0 |
+| Location | `location` | 31 | 31 | 28 |
+| Sync Channel | `sync_channel` | 1 | 6 | 1 |
+| Federation Edge Cluster | `edge_cluster` | 4 | 6 | 1 |
+| Federation Edge Node | `edge_node` | 11 | 8 | 6 |
+| Tier-0 Service Router | `tier0_sr` | 4 | 10 | 1 |
+| RTEP Tunnel | `rtep_tunnel` | 21 | 6 | 5 |
+| Stretched Tier-0 Gateway | `tier0` | 10 | 11 | 3 |
+| Stretched Tier-1 Gateway | `tier1` | 4 | 9 | 1 |
+| Stretched Segment | `segment` | 4 | 10 | 1 |
+| Global Security Policy | `global_policy` | 11 | 13 | 3 |
+| Stretched Object at Location | `realization` | 6 | 6 | 1 |
+| Tier-0 BGP Neighbor | `bgp_neighbor` | 8 | 9 | 3 |
+| Global Firewall Rule | `rule` | 5 | 5 | 0 |
 
 ## Seuils
 
@@ -334,7 +335,7 @@ Propriétés : Federation ID (`federation_id`) ; Active Global Manager (`activ
 | Availability | Availability: reachable with no node offline (100 = yes) | `availability\|availability_pct` |  |
 | Collection account | Days until the password of the collection account expires | `account\|password_days_left` |  |
 
-Propriétés : Mode (`mode`) ; Cluster status (`cluster_status`) ; Version (`version`) ; Address used by the collector (`address`) ; Backup enabled (`backup_enabled`) ; Last backup result (`backup_last_result`) ; First certificate to expire (`cert_first_to_expire`) ; Switchover status (`switchover_status`) ; Standby sync status (`standby_sync_status`) ; Standby data consistent (as NSX reports it) (`standby_data_consistent`) ; Same version as the active Global Manager (`version_matches_active_gm`) ; Upgrade status (`upgrade_status`) ; Upgrade target version (`upgrade_target_version`) ; Switchover readiness (`switchover_readiness`) ; Certificate trust (`certificate_trust`) ; Clock offset to the active Global Manager (`clock_offset_to_active`) ; NTP servers (`ntp_servers`) ; NTP service (`ntp_service`) ; Password expiry of the collection account (`password_expiry`) ; Locations in outage (`location_outage`).
+Propriétés : Mode (`mode`) ; Cluster status (`cluster_status`) ; Version (`version`) ; Address used by the collector (`address`) ; Backup enabled (`backup_enabled`) ; Last backup result (`backup_last_result`) ; First certificate to expire (`cert_first_to_expire`) ; Switchover status (`switchover_status`) ; Standby sync status (`standby_sync_status`) ; Standby data consistent (as NSX reports it) (`standby_data_consistent`) ; Same version as the active Global Manager (`version_matches_active_gm`) ; Upgrade status (`upgrade_status`) ; Upgrade target version (`upgrade_target_version`) ; Switchover readiness (`switchover_readiness`) ; Certificate trust (`certificate_trust`) ; Clock offset to the active Global Manager (`clock_offset_to_active`) ; NTP servers (`ntp_servers`) ; NTP service (`ntp_service`) ; Password expiry of the collection account (`password_expiry`) ; Locations in outage (`location_outage`) ; Federation ID (`federation_id`).
 
 ### Manager Node
 
@@ -342,7 +343,7 @@ Propriétés : Mode (`mode`) ; Cluster status (`cluster_status`) ; Version (`
 | --- | --- | --- | --- |
 |  | Online | `online` |  |
 
-Propriétés : Address (`address`) ; Node UUID (`uuid`).
+Propriétés : Address (`address`) ; Node UUID (`uuid`) ; Federation ID (`federation_id`).
 
 ### Location
 
@@ -380,7 +381,7 @@ Propriétés : Address (`address`) ; Node UUID (`uuid`).
 | Availability | Availability: location healthy (100 = yes) | `availability\|availability_pct` |  |
 | Collection account | Days until the password of the collection account expires | `account\|password_days_left` |  |
 
-Propriétés : Site ID (`site_id`) ; Version (`version`) ; Same version as the Global Manager (`version_matches_gm`) ; Local Manager address (`local_manager_address`) ; RTEP addresses (`rtep_ips`) ; Maximum RTT setting (ms) (`maximum_rtt_ms`) ; Local Manager cluster status (`cluster_status`) ; Last full sync stage (`full_sync_stage`) ; Backup enabled (`backup_enabled`) ; Last backup result (`backup_last_result`) ; First certificate to expire (`cert_first_to_expire`) ; Certificate trust (`certificate_trust`) ; Collector error (`collector_error`) ; NSX release newer than the Global Manager (`release_newer_than_gm`) ; Upgrade status (`upgrade_status`) ; Upgrade target version (`upgrade_target_version`) ; Federation alarm alerts raised by (`alarm_alerts_by`) ; Replication flows (`replication_state`) ; Onboarding status (`onboarding_status`) ; Site path (`site_path`) ; Local Manager certificate thumbprint (from the Global Manager) (`lm_thumbprint`) ; Clock offset to the active Global Manager (`clock_offset_to_gm`) ; NTP servers (`ntp_servers`) ; NTP service (`ntp_service`) ; NSX configuration limit most used (`capacity_fullest`) ; NSX configuration limits above a threshold (`capacity_over_threshold`) ; Global objects overridden at this location (`overridden_list`) ; Configuration limit alerts raised by (`capacity_alerts_by`) ; Password expiry of the collection account (`password_expiry`) ; Locations in outage (`location_outage`).
+Propriétés : Site ID (`site_id`) ; Version (`version`) ; Same version as the Global Manager (`version_matches_gm`) ; Local Manager address (`local_manager_address`) ; RTEP addresses (`rtep_ips`) ; Maximum RTT setting (ms) (`maximum_rtt_ms`) ; Local Manager cluster status (`cluster_status`) ; Last full sync stage (`full_sync_stage`) ; Backup enabled (`backup_enabled`) ; Last backup result (`backup_last_result`) ; First certificate to expire (`cert_first_to_expire`) ; Certificate trust (`certificate_trust`) ; Collector error (`collector_error`) ; NSX release newer than the Global Manager (`release_newer_than_gm`) ; Upgrade status (`upgrade_status`) ; Upgrade target version (`upgrade_target_version`) ; Federation alarm alerts raised by (`alarm_alerts_by`) ; Replication flows (`replication_state`) ; Onboarding status (`onboarding_status`) ; Site path (`site_path`) ; Local Manager certificate thumbprint (from the Global Manager) (`lm_thumbprint`) ; Clock offset to the active Global Manager (`clock_offset_to_gm`) ; NTP servers (`ntp_servers`) ; NTP service (`ntp_service`) ; NSX configuration limit most used (`capacity_fullest`) ; NSX configuration limits above a threshold (`capacity_over_threshold`) ; Global objects overridden at this location (`overridden_list`) ; Configuration limit alerts raised by (`capacity_alerts_by`) ; Password expiry of the collection account (`password_expiry`) ; Locations in outage (`location_outage`) ; Federation ID (`federation_id`).
 
 ### Sync Channel
 
@@ -388,7 +389,7 @@ Propriétés : Site ID (`site_id`) ; Version (`version`) ; Same version as th
 | --- | --- | --- | --- |
 |  | Connection up | `connection_up` | oui |
 
-Propriétés : Source (`source`) ; Target (`target`) ; Target address (`target_address`) ; Locations in outage (`location_outage`) ; Global Manager outage (`gm_outage`).
+Propriétés : Source (`source`) ; Target (`target`) ; Target address (`target_address`) ; Locations in outage (`location_outage`) ; Global Manager outage (`gm_outage`) ; Federation ID (`federation_id`).
 
 ### Federation Edge Cluster
 
@@ -399,7 +400,7 @@ Propriétés : Source (`source`) ; Target (`target`) ; Target address (`targe
 | Inter-site | Inter-site BGP sessions not established | `intersite\|intersite_bgp_down` |  |
 |  | Edge nodes | `members` |  |
 
-Propriétés : Inter-site status (`intersite_status`) ; RTEP addresses (`rtep_ips`) ; Inter-site forwarding enabled (`intersite_forwarding`) ; Location (`location`) ; Locations in outage (`location_outage`).
+Propriétés : Inter-site status (`intersite_status`) ; RTEP addresses (`rtep_ips`) ; Inter-site forwarding enabled (`intersite_forwarding`) ; Location (`location`) ; Locations in outage (`location_outage`) ; Federation ID (`federation_id`).
 
 ### Federation Edge Node
 
@@ -417,7 +418,7 @@ Propriétés : Inter-site status (`intersite_status`) ; RTEP addresses (`rtep_
 | Capacity | Datapath memory pool used, fullest pool | `capacity\|datapath_pool_peak_pct` |  |
 | Capacity | Disk used, fullest file system | `capacity\|disk_fullest_pct` |  |
 
-Propriétés : Location (`location`) ; Edge status (`edge_status`) ; Maintenance mode (`maintenance_mode`) ; Software version (`software_version`) ; Fullest datapath memory pool (`datapath_pool_fullest`) ; Edge status and capacity alerts raised by (`capacity_alerts_by`) ; Locations in outage (`location_outage`).
+Propriétés : Location (`location`) ; Edge status (`edge_status`) ; Maintenance mode (`maintenance_mode`) ; Software version (`software_version`) ; Fullest datapath memory pool (`datapath_pool_fullest`) ; Edge status and capacity alerts raised by (`capacity_alerts_by`) ; Locations in outage (`location_outage`) ; Federation ID (`federation_id`).
 
 ### Tier-0 Service Router
 
@@ -428,7 +429,7 @@ Propriétés : Location (`location`) ; Edge status (`edge_status`) ; Maintena
 |  | BGP neighbors up | `bgp_neighbors_up` |  |
 |  | BGP neighbors down | `bgp_neighbors_down` |  |
 
-Propriétés : HA state (`ha_status`) ; Routing status (`routing_status`) ; Tier-0 gateway (`tier0`) ; HA mode of the Tier-0 (`ha_mode`) ; Edge node (`edge`) ; Location (`location`) ; Edge maintenance mode (`edge_maintenance`) ; Last HA state change (`last_ha_change`) ; Locations in outage (`location_outage`).
+Propriétés : HA state (`ha_status`) ; Routing status (`routing_status`) ; Tier-0 gateway (`tier0`) ; HA mode of the Tier-0 (`ha_mode`) ; Edge node (`edge`) ; Location (`location`) ; Edge maintenance mode (`edge_maintenance`) ; Last HA state change (`last_ha_change`) ; Locations in outage (`location_outage`) ; Federation ID (`federation_id`).
 
 ### RTEP Tunnel
 
@@ -456,7 +457,7 @@ Propriétés : HA state (`ha_status`) ; Routing status (`routing_status`) ; T
 |  | Inter-site BGP connection drops | `connection_drops` |  |
 |  | Inter-site BGP connection drops per hour | `connection_drops_per_hour` |  |
 
-Propriétés : Local RTEP (`local_rtep`) ; Remote RTEP (`remote_rtep`) ; Remote location (`remote_location`) ; Inter-site BGP state (`bgp_state`) ; Locations in outage (`location_outage`).
+Propriétés : Local RTEP (`local_rtep`) ; Remote RTEP (`remote_rtep`) ; Remote location (`remote_location`) ; Inter-site BGP state (`bgp_state`) ; Locations in outage (`location_outage`) ; Federation ID (`federation_id`).
 
 ### Stretched Tier-0 Gateway
 
@@ -473,7 +474,7 @@ Propriétés : Local RTEP (`local_rtep`) ; Remote RTEP (`remote_rtep`) ; Remo
 | Realization | Locations not realized | `realization\|unrealized_locations` |  |
 | Realization | Locations in error | `realization\|error_locations` | oui |
 
-Propriétés : HA mode (`ha_mode`) ; Primary location (`primary_location`) ; Active service routers (`active_service_routers`) ; Locations without an active service router (`no_active_sr_at`) ; Consolidated status (`status`) ; Policy path (`path`) ; Revision (`revision`) ; Last modified by (`last_modified_user`) ; Last modified (`last_modified_time`) ; Locations in outage (`location_outage`).
+Propriétés : HA mode (`ha_mode`) ; Primary location (`primary_location`) ; Active service routers (`active_service_routers`) ; Locations without an active service router (`no_active_sr_at`) ; Consolidated status (`status`) ; Policy path (`path`) ; Revision (`revision`) ; Last modified by (`last_modified_user`) ; Last modified (`last_modified_time`) ; Locations in outage (`location_outage`) ; Federation ID (`federation_id`).
 
 ### Stretched Tier-1 Gateway
 
@@ -484,7 +485,7 @@ Propriétés : HA mode (`ha_mode`) ; Primary location (`primary_location`) ; 
 | Realization | Locations not realized | `realization\|unrealized_locations` |  |
 | Realization | Locations in error | `realization\|error_locations` | oui |
 
-Propriétés : Connected Tier-0 (`tier0`) ; Primary location (`primary_location`) ; Consolidated status (`status`) ; Policy path (`path`) ; Revision (`revision`) ; Last modified by (`last_modified_user`) ; Last modified (`last_modified_time`) ; Locations in outage (`location_outage`).
+Propriétés : Connected Tier-0 (`tier0`) ; Primary location (`primary_location`) ; Consolidated status (`status`) ; Policy path (`path`) ; Revision (`revision`) ; Last modified by (`last_modified_user`) ; Last modified (`last_modified_time`) ; Locations in outage (`location_outage`) ; Federation ID (`federation_id`).
 
 ### Stretched Segment
 
@@ -495,7 +496,7 @@ Propriétés : Connected Tier-0 (`tier0`) ; Primary location (`primary_locatio
 | Realization | Locations not realized | `realization\|unrealized_locations` |  |
 | Realization | Locations in error | `realization\|error_locations` | oui |
 
-Propriétés : Subnets (`subnets`) ; Connected gateway (`gateway`) ; Type (`segment_type`) ; Consolidated status (`status`) ; Policy path (`path`) ; Revision (`revision`) ; Last modified by (`last_modified_user`) ; Last modified (`last_modified_time`) ; Locations in outage (`location_outage`).
+Propriétés : Subnets (`subnets`) ; Connected gateway (`gateway`) ; Type (`segment_type`) ; Consolidated status (`status`) ; Policy path (`path`) ; Revision (`revision`) ; Last modified by (`last_modified_user`) ; Last modified (`last_modified_time`) ; Locations in outage (`location_outage`) ; Federation ID (`federation_id`).
 
 ### Global Security Policy
 
@@ -513,7 +514,7 @@ Propriétés : Subnets (`subnets`) ; Connected gateway (`gateway`) ; Type (`s
 | Realization | Locations not realized | `realization\|unrealized_locations` |  |
 | Realization | Locations in error | `realization\|error_locations` | oui |
 
-Propriétés : Category (`category`) ; Domain (`domain`) ; Applied to (`scope`) ; Rules with no hit for the unused-rule period (`unused_rules`) ; Shadowed rules (and the rule that matches first) (`shadowed_rules`) ; Rules that allow any traffic (`any_allow_rules`) ; Consolidated status (`status`) ; Policy path (`path`) ; Revision (`revision`) ; Last modified by (`last_modified_user`) ; Last modified (`last_modified_time`) ; Locations in outage (`location_outage`).
+Propriétés : Category (`category`) ; Domain (`domain`) ; Applied to (`scope`) ; Rules with no hit for the unused-rule period (`unused_rules`) ; Shadowed rules (and the rule that matches first) (`shadowed_rules`) ; Rules that allow any traffic (`any_allow_rules`) ; Consolidated status (`status`) ; Policy path (`path`) ; Revision (`revision`) ; Last modified by (`last_modified_user`) ; Last modified (`last_modified_time`) ; Locations in outage (`location_outage`) ; Federation ID (`federation_id`).
 
 ### Stretched Object at Location
 
@@ -526,7 +527,7 @@ Propriétés : Category (`category`) ; Domain (`domain`) ; Applied to (`scope
 | Traffic | Bytes | `traffic\|byte_count` |  |
 | Traffic | Sessions | `traffic\|session_count` |  |
 
-Propriétés : Realization status (`status`) ; Location (`location`) ; Object path (`object_path`) ; Object type (`object_type`) ; Locations in outage (`location_outage`).
+Propriétés : Realization status (`status`) ; Location (`location`) ; Object path (`object_path`) ; Object type (`object_type`) ; Locations in outage (`location_outage`) ; Federation ID (`federation_id`).
 
 ### Tier-0 BGP Neighbor
 
@@ -541,7 +542,7 @@ Propriétés : Realization status (`status`) ; Location (`location`) ; Object
 |  | Connection drops | `connection_drops` |  |
 |  | Connection drops per hour | `connection_drops_per_hour` |  |
 
-Propriétés : Connection state (`state`) ; Remote AS (`remote_as`) ; Source address (`source_address`) ; Neighbor address (`neighbor_address`) ; Location (`location`) ; Edge (`edge`) ; Session type (uplink or inter-SR) (`session_type`) ; Locations in outage (`location_outage`).
+Propriétés : Connection state (`state`) ; Remote AS (`remote_as`) ; Source address (`source_address`) ; Neighbor address (`neighbor_address`) ; Location (`location`) ; Edge (`edge`) ; Session type (uplink or inter-SR) (`session_type`) ; Locations in outage (`location_outage`) ; Federation ID (`federation_id`).
 
 ### Global Firewall Rule
 
@@ -553,7 +554,7 @@ Propriétés : Connection state (`state`) ; Remote AS (`remote_as`) ; Source 
 | Traffic | Bytes | `traffic\|byte_count` |  |
 | Traffic | Sessions | `traffic\|session_count` |  |
 
-Propriétés : Action (`action`) ; Disabled (`disabled`) ; Sources (`sources`) ; Destinations (`destinations`).
+Propriétés : Action (`action`) ; Disabled (`disabled`) ; Sources (`sources`) ; Destinations (`destinations`) ; Federation ID (`federation_id`).
 
 ## Tableaux de bord, vues, rapports et groupes
 
@@ -561,5 +562,5 @@ Propriétés : Action (`action`) ; Disabled (`disabled`) ; Sources (`sources`
 - Vues en liste : NSX Federation - Locations ; NSX Federation - Sync channels ; NSX Federation - RTEP tunnels ; NSX Federation - Tier-0 BGP neighbors ; NSX Federation - Edge capacity ; NSX Federation - Tier-0 service routers ; NSX Federation - Recent changes ; NSX Federation - Firewall rule review ; NSX Federation - Realization per location ; NSX Federation - Availability of the federation ; NSX Federation - Availability of the Global Managers ; NSX Federation - Availability of the locations ; NSX Federation - Availability of the Tier-0 gateways.
 - Rapports : NSX Federation - Health report ; NSX Federation - Availability report.
 - Politique livrée avec le pack : NSX Federation - Non-production, à affecter à un groupe qui regroupe les objets d'une fédération de lab ou de test (elle désactive les alertes de sauvegarde, de standby, de revue des règles de pare-feu, de surcharges, de limites de configuration et de capacité des edges).
-- Groupes personnalisés : NSX Federation - All objects ; NSX Federation - Managers and locations ; NSX Federation - Inter-site connectivity ; NSX Federation - Stretched objects.
+- Groupes personnalisés : NSX Federation - All objects ; NSX Federation - Managers and locations ; NSX Federation - Inter-site connectivity ; NSX Federation - Stretched objects ; et un groupe par fédération, NSX Federation - <fédération>, créé par install/federation_groups.py.
 - Arborescence d'inventaire : NSX Federation (Inventory, Detailed View, dernier onglet).

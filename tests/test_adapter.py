@@ -2179,3 +2179,93 @@ def test_a_policy_realized_nowhere_does_not_block_the_rollup(nsx):
     r = run()
     assert fed(r)["m"]["rules|rules_to_review"] == 1
     assert r["global_policy"]["fed-demo"]["p"]["unused_rules"] == "not realized at any location"
+
+
+def _install_module(name):
+    import importlib
+    import sys
+    sys.path.insert(0, os.path.join(ROOT, "install"))
+    return importlib.import_module(name)
+
+
+def test_every_object_carries_the_federation_id(nsx):
+    r = run()
+    fid = fed(r)["p"]["federation_id"]
+    assert fid
+    for kind, objs in r.items():
+        if kind.startswith("_"):
+            continue
+        for name, o in objs.items():
+            assert o["p"].get("federation_id") == fid, (kind, name)
+
+
+def test_the_federation_id_property_is_defined_on_every_type():
+    import adapter
+    d = adapter.get_adapter_definition().to_json()
+    for t in d["object_types"]:
+        props = [a["key"] for a in t["attributes"] if a.get("is_property")]
+        assert props.count("federation_id") == 1, t["key"]
+
+
+def test_a_federation_group_selects_every_type_of_the_pack_by_federation_id():
+    import adapter
+    fg = _install_module("federation_groups")
+    assert set(fg.KINDS) == set(adapter.MODEL)
+    g = fg.group_definition("NSX Federation 316f70b9", "316f70b9-8093")
+    assert g["resourceKey"]["name"] == "NSX Federation - 316f70b9"
+    assert fg.group_name("lab") == "NSX Federation - lab" and fg.group_name("NSX Federation") == "NSX Federation - NSX Federation"
+    rules = g["membershipDefinition"]["rules"]
+    assert {r["resourceKindKey"]["resourceKind"] for r in rules} == set(fg.KINDS)
+    for r in rules:
+        assert r["resourceKindKey"]["adapterKind"] == "NSXFederation"
+        assert r["propertyConditionRules"] == [{"key": "federation_id", "stringValue": "316f70b9-8093", "compareOperator": "EQ"}]
+
+
+def test_a_notification_rule_takes_the_pack_alerts_at_the_chosen_level_and_their_end():
+    nr = _install_module("notification_rules")
+    r = nr.rule_definition("NSX Federation - mail", "p1", "t1", "immediate")
+    assert r["criticalities"] == ["IMMEDIATE", "CRITICAL"]
+    assert "CANCELED" in r["alertStatuses"] and r["ruleType"] == "ALERT" and "resourceFilters" not in r
+    assert {f["adapterKind"] for f in r["resourceKindFilters"]} == {"NSXFederation"}
+    assert nr.rule_definition("x", "p", "t", "warning")["criticalities"] == ["WARNING", "IMMEDIATE", "CRITICAL"]
+    g = nr.rule_definition("x", "p", "t", "critical", group_id="g1")
+    assert g["criticalities"] == ["CRITICAL"] and g["resourceFilters"][0]["resourceId"] == "g1"
+
+
+def test_diagnostics_findings():
+    dg = _install_module("diagnostics")
+    now = 10_000_000_000
+    ok = {"accounts": [{"name": "a", "state": "STARTED", "message": "", "last_collected_ms": now - 60_000,
+                        "interval_min": 5, "collector": "cp", "collector_state": "UP"}],
+          "objects_without_data": {},
+          "federations": [{"name": "f", "stats": {"collection|data_gaps": 0.0}, "properties": {
+              "collection_mode": "normal", "global_manager_errors": "none", "vcf_operations_api": "ok"}}]}
+    assert dg.findings(ok, now) == []
+    bad = json.loads(json.dumps(ok))
+    bad["accounts"][0].update(state="STOPPED", last_collected_ms=now - 3_600_000, collector_state="DOWN")
+    bad["objects_without_data"] = {"edge_node": 4}
+    bad["federations"][0]["stats"]["collection|data_gaps"] = 3.0
+    bad["federations"][0]["properties"].update(failed_calls="10.1.1.24/api/v1/x (HTTP 500)",
+                                                global_manager_errors="10.1.1.38: timeout")
+    text = " | ".join(p for p, _ in dg.findings(bad, now))
+    for part in ("is STOPPED", "60 minutes ago", "is DOWN", "4 edge_node", "3 NSX API calls", "10.1.1.38: timeout"):
+        assert part in text
+
+
+def test_the_image_lock_has_the_fixed_cryptography_of_the_dockerfile():
+    import re
+    docker = open(os.path.join(ROOT, "pack", "Dockerfile")).read()
+    lock = open(os.path.join(ROOT, "pack", "image-requirements.txt")).read()
+    for pkg in ("cryptography", "setuptools"):
+        want = re.search(pkg + r"==([\d.]+)", docker).group(1)
+        assert f"{pkg}=={want}\n" in lock, pkg
+
+
+def test_install_scripts_read_every_page():
+    fg = _install_module("federation_groups")
+
+    class FakeOps:
+        def get(self, path, params):
+            items = [{"n": i} for i in range(2500)][params["page"] * 1000:(params["page"] + 1) * 1000]
+            return {"groups": items, "pageInfo": {"totalCount": 2500}}
+    assert len(fg.all_pages(FakeOps(), "/api/resources/groups", {}, "groups")) == 2500
