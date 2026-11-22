@@ -26,6 +26,7 @@ class FakeNsx:
         self.data = copy.deepcopy(FIXTURE)
         self.fail = []
         self.calls = 0
+        self.by_host = {}  # host -> calls
         self.clock_ms = {}  # host -> clock offset in milliseconds
 
     def get(self, client, path, params=None):
@@ -37,6 +38,7 @@ class FakeNsx:
                 raise nsxclient.BudgetExceeded(client.host)
             client.calls += 1
         self.calls += 1
+        self.by_host[client.host] = self.by_host.get(client.host, 0) + 1
         key = path + ("?" + "&".join(f"{k}={v}" for k, v in sorted((params or {}).items())) if params else "")
         if any(f in key for f in self.fail):
             with client._lock:

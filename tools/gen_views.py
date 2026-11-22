@@ -37,7 +37,7 @@ VIEWS = [
         ("cert_min_days_to_expiry", "Cert expiry (days)"), ("alarms_open_critical", "Critical alarms"),
         ("alarms_open_high", "High alarms"), ("upgrade_status", "Upgrade"),
         ("replication_flows_unhealthy", "Replication flows in error"), ("minutes_since_collection", "Last collected (min ago)"),
-        ("clock_skew_to_gm_s", "Clock difference (s)"), ("capacity_max_pct", "Limit most used (%)"),
+        ("clock_skew_to_gm_s", "Clock difference (s)"), ("password_days_left", "Password expires (days)"), ("capacity_max_pct", "Limit most used (%)"),
         ("overridden_objects", "Overridden objects")]),
     ("NSX Federation - Sync channels", "sync_channel", "Connections between the managers of the federation.", [
         ("source", "Source"), ("target", "Target"), ("target_address", "Target address"), ("connection_up", "Up")]),
@@ -62,14 +62,55 @@ VIEWS = [
     ("NSX Federation - Realization per location", "realization", "Each stretched object at each location of its span.", [
         ("object_type", "Object type"), ("location", "Location"), ("status", "Status"), ("realized", "Realized")]),
 ]
-REPORT = ("NSX Federation - Health report",
-          "Locations, sync channels, RTEP tunnels, Tier-0 BGP neighbors, edge capacity, Tier-0 service routers, "
-          "recent changes and the realization of stretched objects.")
+VIEWS.insert(len(VIEWS) - 1, (
+    "NSX Federation - Firewall rule review", "global_policy",
+    "Rules of the global security policies to review: disabled, shadowed by an earlier rule, unused, or allowing any traffic.", [
+        ("rules_total", "Rules"), ("rules_disabled", "Disabled"), ("rules_shadowed", "Shadowed"), ("rules_unused", "Unused"),
+        ("rules_any_allow", "Allow any"), ("shadowed_rules", "Shadowed rules"), ("unused_rules", "Unused rules"),
+        ("any_allow_rules", "Rules allowing any traffic")]))
+HEALTH_VIEWS = [v[0] for v in VIEWS]
+# availability over the last 30 days: the average of a 0/100 value is the share of the time it was 100
+D30 = 30
+VIEWS += [
+    ("NSX Federation - Availability of the federation", "federation",
+     "Share of the last 30 days with exactly one active Global Manager answering, so that global configuration can change.", [
+         ("availability_pct", "Availability (%)", "AVG"), ("availability_pct", "Lowest", "MIN"),
+         ("global_managers_reachable", "Global Managers reachable, lowest", "MIN"),
+         ("locations_healthy_pct", "Locations healthy (%), average", "AVG"),
+         ("switchover_ready", "Standby ready to take over (share)", "AVG"),
+         ("changes_detected", "Changes detected", "SUM")], D30),
+    ("NSX Federation - Availability of the Global Managers", "global_manager",
+     "Share of the last 30 days each Global Manager was reachable with no node offline.", [
+         ("availability_pct", "Availability (%)", "AVG"), ("mode", "Mode", "CURRENT"),
+         ("nodes_offline", "Nodes offline, most", "MAX"), ("standby_in_sync", "Standby in sync (share)", "AVG")], D30),
+    ("NSX Federation - Availability of the locations", "location",
+     "Share of the last 30 days each location was healthy: connected to the active Global Manager, reached by the "
+     "collector, no node offline, inter-site BGP up and full sync complete.", [
+         ("availability_pct", "Availability (%)", "AVG"), ("gm_connection_up", "GM connection (share)", "AVG"),
+         ("intersite_bgp_down", "Inter-site BGP down, most", "MAX"), ("gm_rtt_ms", "RTT to the GM (ms), average", "AVG"),
+         ("gm_rtt_ms", "RTT to the GM (ms), highest", "MAX"), ("full_sync_failed", "Full syncs failed, most", "MAX")], D30),
+    ("NSX Federation - Availability of the Tier-0 gateways", "tier0",
+     "Share of the last 30 days each stretched Tier-0 had an active service router where its HA mode needs one, and "
+     "the number of service router HA changes (failovers).", [
+         ("availability_pct", "Availability (%)", "AVG"), ("sr_ha_changes", "HA state changes", "SUM"),
+         ("locations_without_active_sr", "Locations without an active SR, most", "MAX"),
+         ("ha_mode", "HA mode", "CURRENT")], D30),
+]
+REPORTS = [
+    ("NSX Federation - Health report",
+     "Locations, sync channels, RTEP tunnels, Tier-0 BGP neighbors, edge capacity, Tier-0 service routers, firewall rule review, "
+     "recent changes and the realization of stretched objects.", HEALTH_VIEWS),
+    ("NSX Federation - Availability report",
+     "Availability over the last 30 days of the federation, the Global Managers, the locations and the stretched "
+     "Tier-0 gateways, with the failovers. Schedule it monthly on the federation object.",
+     [v[0] for v in VIEWS if v[0] not in HEALTH_VIEWS]),
+]
 
 
-def view_xml(title, kind, desc, cols, n):
+def view_xml(title, kind, desc, cols, n, days=7):
     items = []
-    for key, label in cols:
+    for col in cols:
+        key, label, how = (col + ("CURRENT",))[:3]
         prop = key in IS_PROP[kind]
         assert key in LABEL[kind], (kind, key)
         items.append(
@@ -79,7 +120,7 @@ def view_xml(title, kind, desc, cols, n):
             f'<Property name="adapterKind" value="{AK}"/><Property name="resourceKind" value="{kind}"/>'
             + ('' if prop else '<Property name="rollUpType" value="NONE"/>') +
             '<Property name="rollUpCount" value="0"/>'
-            '<Property name="transformations"><List><Item value="CURRENT"/></List></Property>'
+            f'<Property name="transformations"><List><Item value="{"CURRENT" if prop else how}"/></List></Property>'
             f'<Property name="isProperty" value="{"true" if prop else "false"}"/>'
             f'<Property name="displayName" value={quoteattr(label)}/>'
             '<Property name="addTimestampAsColumn" value="false"/><Property name="isShowRelativeTimestamp" value="false"/>'
@@ -89,7 +130,7 @@ def view_xml(title, kind, desc, cols, n):
             f'<SubjectType adapterKind="{AK}" resourceKind="{kind}" type="self"/>'
             '<Usage>dashboard</Usage><Usage>report</Usage><Usage>details</Usage><Usage>content</Usage><Controls>'
             f'<Control id="time-interval-selector_id_{n}1" type="time-interval-selector" visible="false">'
-            '<Property name="advancedTimeMode" value="false"/><Property name="unit" value="DAYS"/><Property name="count" value="7"/></Control>'
+            f'<Property name="advancedTimeMode" value="false"/><Property name="unit" value="DAYS"/><Property name="count" value="{days}"/></Control>'
             f'<Control id="attributes-selector_id_{n}2" type="attributes-selector" visible="false">'
             f'<Property name="attributeInfos"><List>{"".join(items)}</List></Property></Control>'
             f'<Control id="pagination-control_id_{n}3" type="pagination-control" visible="true">'
@@ -102,18 +143,18 @@ def view_xml(title, kind, desc, cols, n):
 
 def views_doc():
     return ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Content><Views>'
-            + "".join(view_xml(t, k, d, c, 900 + i) for i, (t, k, d, c) in enumerate(VIEWS)) + '</Views></Content>\n')
+            + "".join(view_xml(*v[:4], 900 + i, *v[4:]) for i, v in enumerate(VIEWS)) + '</Views></Content>\n')
 
 
-def report_xml():
+def report_xml(title, desc, views):
     sections = ('<Section><ContentType>CoverPage</ContentType><ContentKey>COVER_PAGE</ContentKey></Section>'
                 '<Section><ContentType>TableOfContents</ContentType><ContentKey>TABLE_OF_CONTENTS</ContentKey></Section>')
-    for t, *_ in VIEWS:
+    for t in views:
         sections += (f'<Section><ContentType>View</ContentType><ContentKey>{uid(t)}</ContentKey>'
                      '<ContentOrientation>Landscape</ContentOrientation>'
                      '<ContentFormatting><ColorizeListView>true</ColorizeListView></ContentFormatting></Section>')
-    return (f'<ReportDef id="{uid("report", REPORT[0])}"><isTenant>false</isTenant><Title>{escape(REPORT[0])}</Title>'
-            f'<Description>{escape(REPORT[1])}</Description>'
+    return (f'<ReportDef id="{uid("report", title)}"><isTenant>false</isTenant><Title>{escape(title)}</Title>'
+            f'<Description>{escape(desc)}</Description>'
             f'<SubjectType adapterKind="{AK}" resourceKind="federation" type="self"/>'
             f'<Sections>{sections}</Sections>'
             '<Settings><ShowPageFooter>true</ShowPageFooter><OutputFormat>pdf</OutputFormat><OutputFormat>csv</OutputFormat></Settings>'
@@ -123,12 +164,12 @@ def report_xml():
 def pack_doc():
     """Views and the report in one content.xml, the form the SDK expects under content/reports."""
     v = views_doc()
-    return v.replace('</Views></Content>', f'</Views><Reports>{report_xml()}</Reports></Content>')
+    return v.replace('</Views></Content>', f'</Views><Reports>{"".join(report_xml(*r) for r in REPORTS)}</Reports></Content>')
 
 
 def properties():
     lines = []
-    for t, _k, d, _c in VIEWS:
+    for t, _k, d, *_ in VIEWS:
         lines += [f"view.{uid(t)}.title={t}", f"view.{uid(t)}.desc={d}"]
     return "\n".join(lines) + "\n"
 
@@ -137,7 +178,7 @@ if __name__ == "__main__":
     os.makedirs(os.path.join(OUT, "resources"), exist_ok=True)
     open(os.path.join(OUT, "content.xml"), "w").write(pack_doc())
     open(os.path.join(OUT, "resources", "content.properties"), "w").write(properties())
-    print("wrote", OUT, len(VIEWS), "views, 1 report")
+    print("wrote", OUT, len(VIEWS), "views,", len(REPORTS), "reports")
     if "--zip" in sys.argv:
         inner = io.BytesIO()
         with zipfile.ZipFile(inner, "w", zipfile.ZIP_DEFLATED) as z:

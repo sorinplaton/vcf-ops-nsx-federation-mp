@@ -57,8 +57,15 @@ for _k in ("datapath_cpu_pct", "datapath_cpu_peak_pct", "services_cpu_pct", "mem
            "datapath_pool_peak_pct", "disk_fullest_pct"):
     UNITS[_k] = Units.RATIO.PERCENT
 UNITS.update({"capacity_max_pct": Units.RATIO.PERCENT, "clock_skew_to_gm_s": Units.TIME.SECONDS,
-              "clock_skew_to_active_s": Units.TIME.SECONDS, "clock_max_skew_s": Units.TIME.SECONDS})
-CLOCK_MAX_RTT_S = 3.0  # a clock reading whose call took longer than this is too imprecise to use
+              "clock_skew_to_active_s": Units.TIME.SECONDS, "clock_max_skew_s": Units.TIME.SECONDS,
+              "availability_pct": Units.RATIO.PERCENT, "password_days_left": Units.TIME.DAYS,
+              "password_min_days_left": Units.TIME.DAYS})
+CLOCK_MAX_RTT_S = 3.0
+RULE_FIELDS = ("id", "display_name", "path", "action", "disabled", "source_groups", "destination_groups", "rule_id",
+               "sequence_number", "services", "service_entries", "scope", "profiles", "direction", "ip_protocol",
+               "sources_excluded", "destinations_excluded")
+PASSWORD_NEVER_EXPIRES = 9999  # days sent for an account whose password does not expire
+UNUSED_RULE_DAYS = 30  # default of the setting: a rule with no new hit for this many days is reported as unused  # a clock reading whose call took longer than this is too imprecise to use
 # counters that also get a rate: key -> (rate key, seconds the rate is expressed in)
 RATES = {
     "rx_packets": ("rx_packets_per_min", 60), "tx_packets": ("tx_packets_per_min", 60),
@@ -108,6 +115,9 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("clock_max_skew_s", "Largest clock difference with the active Global Manager"),
         ("capacity_max_pct", "NSX configuration limit most used, all locations"),
         ("overridden_objects", "Global objects overridden at a location, all locations"),
+        ("availability_pct", "Availability: one active Global Manager answers (100 = yes)"),
+        ("password_min_days_left", "Days until the first password of the collection accounts expires"),
+        ("rules_to_review", "Global firewall rules to review (unused, shadowed or allowing any traffic)"),
     ], [
         ("federation_id", "Federation ID"),
         ("active_global_manager", "Active Global Manager"),
@@ -140,6 +150,8 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("standby_full_sync_age_hours", "Time since the last full sync to the standby"),
         ("switchover_ready", "Ready to take over as the active Global Manager (1 = yes)"),
         ("clock_skew_to_active_s", "Clock difference with the active Global Manager"),
+        ("availability_pct", "Availability: reachable with no node offline (100 = yes)"),
+        ("password_days_left", "Days until the password of the collection account expires"),
     ], [
         ("mode", "Mode"), ("cluster_status", "Cluster status"), ("version", "Version"),
         ("address", "Address used by the collector"),
@@ -154,6 +166,7 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("certificate_trust", "Certificate trust"),
         ("clock_offset_to_active", "Clock offset to the active Global Manager"),
         ("ntp_servers", "NTP servers"), ("ntp_service", "NTP service"),
+        ("password_expiry", "Password expiry of the collection account"),
     ]),
     "manager_node": ("Manager Node", [("online", "Online")],
                      [("address", "Address"), ("uuid", "Node UUID")]),
@@ -187,6 +200,8 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("capacity_items_warning", "NSX configuration limits above the warning threshold"),
         ("capacity_items_critical", "NSX configuration limits above the critical threshold"),
         ("overridden_objects", "Global objects overridden at this location"),
+        ("availability_pct", "Availability: location healthy (100 = yes)"),
+        ("password_days_left", "Days until the password of the collection account expires"),
     ], [
         ("site_id", "Site ID"), ("version", "Version"), ("version_matches_gm", "Same version as the Global Manager"),
         ("local_manager_address", "Local Manager address"), ("rtep_ips", "RTEP addresses"),
@@ -206,6 +221,7 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("capacity_over_threshold", "NSX configuration limits above a threshold"),
         ("overridden_list", "Global objects overridden at this location"),
         ("capacity_alerts_by", "Configuration limit alerts raised by"),
+        ("password_expiry", "Password expiry of the collection account"),
     ]),
     "sync_channel": ("Sync Channel", [("connection_up", "Connection up")],
                      [("source", "Source"), ("target", "Target"), ("target_address", "Target address")]),
@@ -256,6 +272,7 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("sr_down", "Service routers with routing down"),
         ("locations_without_active_sr", "Locations without an active service router"),
         ("sr_ha_changes", "Service router HA state changes in this cycle"),
+        ("availability_pct", "Availability: an active service router where the HA mode needs one (100 = yes)"),
     ], [("ha_mode", "HA mode"), ("primary_location", "Primary location"),
         ("active_service_routers", "Active service routers"),
         ("no_active_sr_at", "Locations without an active service router")]),
@@ -264,7 +281,13 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
     "global_policy": ("Global Security Policy", [
         ("rules_total", "Rules"), ("rules_disabled", "Rules disabled"),
         ("hit_count", "Rule hits (all locations)"), ("hit_count_per_min", "Rule hits per minute (all locations)"),
-    ], [("category", "Category"), ("domain", "Domain"), ("scope", "Applied to")]),
+        ("rules_unused", "Rules with no hit for the unused-rule period"),
+        ("rules_shadowed", "Rules that an earlier rule of the policy always matches first"),
+        ("rules_any_allow", "Rules that allow any source, destination and service"),
+    ], [("category", "Category"), ("domain", "Domain"), ("scope", "Applied to"),
+        ("unused_rules", "Rules with no hit for the unused-rule period"),
+        ("shadowed_rules", "Shadowed rules (and the rule that matches first)"),
+        ("any_allow_rules", "Rules that allow any traffic")]),
     "realization": ("Stretched Object at Location", [
         ("realized", "Realized"),
         ("hit_count", "Rule hits"), ("hit_count_per_min", "Rule hits per minute"),
@@ -305,7 +328,7 @@ _G = {
     "totals": "Counters since start", "rates": "Rates", "realization": "Realization", "rules": "Rules",
     "traffic": "Traffic", "prefixes": "Prefixes and messages", "capacity": "Capacity",
     "service_routers": "Service routers", "changes": "Changes", "time": "Time", "limits": "Configuration limits",
-    "configuration": "Configuration",
+    "configuration": "Configuration", "availability": "Availability", "account": "Collection account",
 }
 _GROUP_BY_KEY = {
     "alarms_open_critical": "alarms", "alarms_open_high": "alarms", "alarms_open_other": "alarms",
@@ -343,6 +366,8 @@ _GROUP_BY_KEY = {
     "clock_skew_to_gm_s": "time", "clock_skew_to_active_s": "time", "clock_max_skew_s": "time",
     "capacity_max_pct": "limits", "capacity_items_warning": "limits", "capacity_items_critical": "limits",
     "overridden_objects": "configuration",
+    "availability_pct": "availability", "password_days_left": "account", "password_min_days_left": "account",
+    "rules_unused": "rules", "rules_shadowed": "rules", "rules_any_allow": "rules", "rules_to_review": "rules",
 }
 for _k in ("rx_bytes", "tx_bytes", "rx_packets", "tx_packets", "rx_dropped", "tx_dropped", "rx_blocked", "tx_blocked"):
     _GROUP_BY_KEY[_k] = "totals"
@@ -441,6 +466,12 @@ def get_adapter_definition() -> AdapterDefinition:
                         "is sent as an information event on the object, and listed in 'Recent changes' on the "
                         "federation. off: only the list.",
             default="on", advanced=True)
+        d.define_int_parameter(
+            "unused_rule_days", label="Unused firewall rule period (days)",
+            description="A rule of a global security policy whose hit count has not grown for this many days, at every "
+                        "location of its span, is reported as unused. A rule that never had a hit counts from the day "
+                        "the collection first saw it. 0 turns the check off.",
+            default=UNUSED_RULE_DAYS, advanced=True)
         d.define_string_parameter(
             "delete_stale_after_days", label="Delete objects that left NSX after (days)",
             description="0: never (default). Above 0: an object of this account that NSX no longer returns and that "
@@ -517,6 +548,7 @@ class Config:
         self.max_parallel = number("max_parallel", 8, 1)
         self.timeout = number("request_timeout", 30, 1)
         self.call_budget = number("call_budget", 2000, 1)
+        self.unused_rule_days = number("unused_rule_days", UNUSED_RULE_DAYS, 0)
         # thresholds of the alert definitions; change them in a VCF Operations policy, not here
         self.backup_max_age_h = 24
         self.cert_warning_days = 30
@@ -874,6 +906,45 @@ class Collector:
                        "ntp_service": state.get("runtime_state") if isinstance(state, dict)
                        and client.ok("/api/v1/node/services/ntp/status") else None})
 
+    def password_expiry(self, client: NsxClient, user: str, o: Object) -> None:
+        """Days until the password of the collection account expires on this manager. NSX counts the days since
+        the last change and the days a password is valid; both change once a day, so the list is cached."""
+        path = "/api/v1/node/users"
+
+        def load() -> Optional[List[Dict[str, Any]]]:
+            doc = client.try_get(path, default={}) or {}
+            if not client.ok(path) or not isinstance(doc, dict):
+                return None
+            return [{k: u.get(k) for k in ("username", "status", "last_password_change", "password_change_frequency",
+                                           "password_reset_required", "locked")}
+                    for u in doc.get("results") or [] if isinstance(u, dict)]
+        users = self.cache.cached(f"users:{client.host}", SLOW_TTL, load)
+        if users is None:
+            return  # unknown
+        me = next((u for u in users if str(u.get("username")) == user), None)
+        days: Optional[int] = None
+        if me is None:
+            text = "not a local NSX account: the directory that holds it sets the expiry"
+        else:
+            try:
+                freq, since = int(me.get("password_change_frequency") or 0), int(me.get("last_password_change") or 0)
+            except (TypeError, ValueError):
+                freq, since = 0, 0
+            if me.get("password_reset_required") or str(me.get("status")).upper() == "PASSWORD_EXPIRED":
+                days, text = 0, "expired: NSX asks for a new password"
+            elif freq <= 0:
+                # a value far above any threshold, so an alert raised before expiry was turned off clears
+                days, text = PASSWORD_NEVER_EXPIRES, "never expires (expiry turned off for this account)"
+            else:
+                days = freq - since
+                text = (f"expired {-days} day(s) ago" if days < 0 else "expires today" if days == 0
+                        else f"expires in {days} day(s)") + f" ({freq}-day policy, changed {since} day(s) ago)"
+            locked = me.get("locked")
+            if locked:
+                text += "; locked on " + (", ".join(str(x) for x in locked) if isinstance(locked, list) else str(locked))
+        self.metrics(o, {"password_days_left": None if days is None else max(days, 0)})
+        self.props(o, {"password_expiry": f"{user}: {text}"})
+
     @staticmethod
     def load_ntp_servers(client: NsxClient) -> Optional[List[str]]:
         conf = client.try_get("/api/v1/node/services/ntp", default={}) or {}
@@ -1144,6 +1215,8 @@ class Collector:
             "locations_down": len(self.down_locations) if gm else None,
             "api_calls_retried": sum(c.retried for c in self.clients),
             "global_managers_active": len(active),
+            # global configuration can be changed: exactly one Global Manager answers in the active role
+            "availability_pct": 100 if len(active) == 1 else 0,
             "locations_total": len(lm_sites),
             "locations_gm_connected": (sum(1 for s in lm_sites if s.get("gm_connection_up"))
                                        if gm and all(s.get("gm_connection_up") is not None for s in lm_sites) else None),
@@ -1275,7 +1348,7 @@ class Collector:
             _a, _r, moved, old_prim = self.diff("primary_location", {k: v for k, v in prim.items() if v}, False)
             for k in moved:
                 self.note(by_path.get(k) or fed, f"Primary location of {tail(k)} changed: {old_prim[k]} -> {prim[k]}")
-            added, removed, changed, old = self.diff("stretched", cur, "gm_inventory" not in self.partial,
+            added, removed, changed, old = self.diff("stretched", cur, "gm_inventory_v2" not in self.partial,
                                                      same=lambda a, b: a[2] == b[2])
             changed = [k for k in changed if k not in moved]
             notes = [(by_path.get(k), f"{MODEL[cur[k][0]][0]} {cur[k][1]} created" + (f" by {cur[k][3]}" if cur[k][3] else ""))
@@ -1385,7 +1458,9 @@ class Collector:
                 continue  # an edge of the span did not answer, or no service router yet: the totals would be wrong
             active = [r for r in mine if r["ha"] == "ACTIVE"]
             self.metrics(t0, {"sr_total": len(mine), "sr_active": len(active),
-                              "sr_down": sum(1 for r in mine if r["routing"] and r["routing"] != "UP")})
+                              "sr_down": sum(1 for r in mine if r["routing"] and r["routing"] != "UP"),
+                              # active-active: an active service router at every location of the span
+                              "availability_pct": 100 if active and not (aa and without) else 0})
             self.props(t0, {"active_service_routers": ", ".join(sorted(f"{r['edge']} ({r['location']})" for r in active)) or "none"})
 
     def switchover_readiness(self, standby_known: Optional[bool], active_version: Optional[str]) -> Tuple[int, str]:
@@ -1561,7 +1636,12 @@ class Collector:
         healthy = [o for o in locs if val(o, "gm_connection_up") != 0 and val(o, "collector_reachable") == 1
                    and not val(o, "intersite_bgp_down") and not val(o, "nodes_offline") and not val(o, "full_sync_failed")]
         for o in locs:
-            self.metrics(o, {"healthy": int(o in healthy)})
+            self.metrics(o, {"healthy": int(o in healthy), "availability_pct": 100 if o in healthy else 0})
+        # availability: the average of these 0/100 values over a period is the share of the time a manager was up
+        for o in get("global_manager"):
+            self.metrics(o, {"availability_pct": 100 if val(o, "reachable") == 1 and not val(o, "nodes_offline") else 0})
+        pw = [val(o, "password_days_left") for o in get("global_manager") + locs]
+        pw = [x for x in pw if x is not None]
         tunnels = get("rtep_tunnel")
         drops = [val(o, k) for o in tunnels for k in ("rx_dropped_per_min", "tx_dropped_per_min")]
         drops = [d for d in drops if d is not None]
@@ -1575,6 +1655,8 @@ class Collector:
         overridden = [val(o, "overridden_objects") for o in locs]
         return {
             "clock_max_skew_s": max(skews) if skews else None,
+            "password_min_days_left": min(pw) if pw else None,
+            "rules_to_review": getattr(self, "rules_to_review", None),
             "capacity_max_pct": max(caps) if caps else None,
             # a sum over the locations; unknown when the Local Manager of one did not answer in this cycle
             "overridden_objects": sum(overridden) if overridden and None not in overridden else None,
@@ -1668,7 +1750,7 @@ class Collector:
         return doc
 
     def collect_stretched(self, client: NsxClient) -> None:
-        inventory = self.cached_clean(client, "gm_inventory", INVENTORY_TTL, lambda: self.load_gm_inventory(client))
+        inventory = self.cached_clean(client, "gm_inventory_v2", INVENTORY_TTL, lambda: self.load_gm_inventory(client))
         items: List[Tuple[str, dict]] = []
         for kind in STRETCHED:
             items.extend((kind, o) for o in inventory.get(kind, []))
@@ -1741,11 +1823,12 @@ class Collector:
                 self.props(so, {"subnets": ", ".join(s.get("network", "") for s in o.get("subnets") or []),
                                 "gateway": tail(o.get("connectivity_path")), "segment_type": o.get("type")})
             elif kind == "global_policy":
-                rules = o.get("rules") or []
+                rules = o.get("rules")
                 self.props(so, {"category": o.get("category"), "domain": tail(o.get("parent_path")),
                                 "scope": ", ".join(tail(s) for s in o.get("scope") or [])})
-                self.metrics(so, {"rules_total": o.get("rule_count", len(rules)),
-                                  "rules_disabled": sum(1 for r in rules if r.get("disabled"))})
+                if rules is not None:
+                    self.metrics(so, {"rules_total": o.get("rule_count", len(rules)),
+                                      "rules_disabled": sum(1 for r in rules if r.get("disabled"))})
             if st and st.get("_budget"):
                 budget_hit = True
                 continue
@@ -1812,9 +1895,9 @@ class Collector:
                     full: Dict[str, Any] = {}
                 else:
                     full = client.try_get(detail, default={}) or {}
-                entry["rules"] = [{k: r.get(k) for k in ("id", "display_name", "path", "action", "disabled",
-                                                           "source_groups", "destination_groups", "rule_id")}
-                                  for r in full.get("rules") or []]
+                # None: the rules are unknown (failed call, budget), not an empty policy
+                entry["rules"] = [{k: r.get(k) for k in RULE_FIELDS} for r in full.get("rules") or []] \
+                    if client.ok(detail) else None
                 entry["domain_id"] = domain["id"]
                 inv["global_policy"].append(entry)
         return inv
@@ -1852,6 +1935,8 @@ class Collector:
         up = self.upgrade_state(client)
         self.props(go, {"upgrade_status": up.get("upgrade_status"), "upgrade_target_version": up.get("target_version") or "none"})
         self.read_clock(client, "gm:" + name, go)
+        if cs_ok:
+            self.password_expiry(client, self.cfg.user, go)
         self.gm_state[name] = {
             "mode": mode, "version": site.get("site_version"), "cert_days": c_days, "upgrade": up.get("upgrade_status"),
             "cluster": mcs.get("status") if cs_ok else None,
@@ -2123,6 +2208,8 @@ class Collector:
             "full_sync_failed": len(not_done) if client.ok("/policy/api/v1/infra/full-sync-states") else None,
         })
         self.read_clock(client, "loc:" + loc["path"], lo)
+        if cs_ok:  # a cached expiry must not stand for a manager that is down
+            self.password_expiry(client, self.cfg.lm_user, lo)
         # configuration limits and overrides change slowly: read with the inventory, every INVENTORY_TTL seconds.
         # Only when the Local Manager answered in this cycle: cached values must not stand for a manager that is down.
         # A fault here leaves the values unknown and never stops the rest of the location.
@@ -2385,12 +2472,63 @@ class Collector:
             t0s.append({"id": t0["id"], "name": t0.get("display_name") or t0["id"], "path": t0.get("path"), "locales": locales})
         return {"edge_clusters": clusters, "edge_names": names, "tier0_locales": t0s}
 
+    def review_rules(self, po: Object, pol: Dict[str, Any], hits: Optional[Dict[str, Dict[str, int]]],
+                     realized: bool = True) -> None:
+        """Shadowed rules, rules that allow any traffic, and rules with no new hit for the unused-rule period.
+        `hits`: the hits of each rule summed over the span, None when a location did not answer. `realized`: False
+        when the policy is realized at no location, so there are no hits to count."""
+        if pol.get("rules") is None or any("services" not in r for r in pol["rules"]):
+            self.review_complete = False  # rules unknown in this cycle, or read before 1.12.0: nothing is sent
+            return
+        shadowed, wide = rule_review(pol)
+        review = self.rule_review_paths
+        self.metrics(po, {"rules_shadowed": len(shadowed), "rules_any_allow": len(wide)})
+        self.props(po, {"shadowed_rules": name_list([f"{rule_name(b)} (by {rule_name(a)})" for b, a in shadowed]),
+                        "any_allow_rules": name_list([rule_name(r) for r in wide])})
+        review.update(str(r.get("path")) for r, _a in shadowed)
+        review.update(str(r.get("path")) for r in wide)
+        days = self.cfg.unused_rule_days
+        if days <= 0:
+            self.props(po, {"unused_rules": "check turned off"})
+            return
+        if not realized:
+            self.props(po, {"unused_rules": "not realized at any location"})
+            return
+        if hits is None:
+            self.review_complete = False
+            return  # unknown, not zero
+        now = time.time()
+        seen = self.rule_seen
+        unused = []
+        for r in pol.get("rules") or []:
+            path = str(r.get("path"))
+            if r.get("disabled"):
+                seen.pop(path, None)  # once enabled again, the period starts on that day
+                continue
+            total = (hits.get(str(r.get("id"))) or hits.get(str(r.get("rule_id"))) or {}).get("hit_count", 0)
+            last = seen.get(path)
+            if last is None or total != last[0]:  # first seen, new hits, or a counter reset: the period starts again
+                seen[path] = [total, now]
+            elif now - last[1] >= days * 86400:
+                unused.append(r)
+        self.metrics(po, {"rules_unused": len(unused)})
+        self.props(po, {"unused_rules": name_list([
+            f"{rule_name(r)} (no hit since {time.strftime('%Y-%m-%d', time.gmtime(seen[str(r.get('path'))][1]))})"
+            for r in unused])})
+        review.update(str(r.get("path")) for r in unused)
+
     def finish_policies(self, lm_sites: List[Dict[str, Any]]) -> None:
         """Sum the per-location policy statistics, and create rule objects for the selected policies."""
         by_path = getattr(self, "stretched_by_path", {})
-        for pol in getattr(self, "inventory", {}).get("global_policy", []):
+        self.rule_review_paths: set = set()
+        # the rollup is sent only when every policy of a fresh inventory was reviewed
+        self.review_complete = getattr(self, "inventory", None) is not None
+        self.rule_seen: Dict[str, List[float]] = dict(self.cache.get_any_age("rule_seen") or {})
+        policies = getattr(self, "inventory", {}).get("global_policy", [])
+        for pol in policies:
             po = by_path.get(pol["path"])
             if po is None:
+                self.review_complete = False
                 continue
             total_hits = 0
             rule_totals: Dict[str, Dict[str, int]] = {}
@@ -2407,6 +2545,7 @@ class Collector:
                         agg[k] = agg.get(k, 0) + v
             if complete:  # a sum without one location would read as a drop, then as a burst
                 self.counters(po, f"policy:{pol['path']}", {"hit_count": total_hits})
+            self.review_rules(po, pol, rule_totals if complete else None, realized=bool(members))
             wanted = self.cfg.rule_policies
             if wanted and ("*" in wanted or pol["id"] in wanted):
                 for r in pol.get("rules") or []:
@@ -2419,6 +2558,77 @@ class Collector:
                     self.props(ro, {"action": r.get("action"), "disabled": bool(r.get("disabled")),
                                     "sources": ", ".join(tail(g) for g in r.get("source_groups") or []),
                                     "destinations": ", ".join(tail(g) for g in r.get("destination_groups") or [])})
+        if getattr(self, "inventory", None) is not None and all(pol.get("rules") is not None for pol in policies):
+            # forget the rules that left NSX (not when the rules of a policy are unknown in this cycle)
+            current = {str(r.get("path")) for pol in policies for r in pol.get("rules") or []}
+            self.rule_seen = {k: v for k, v in self.rule_seen.items() if k in current}
+        self.cache.put("rule_seen", self.rule_seen)
+        # a partial count would read as rules fixed, then as new ones
+        self.rules_to_review = len(self.rule_review_paths) if self.review_complete else None
+
+
+# ---- firewall rule review ---------------------------------------------------------------
+def _is_any(v: Any) -> bool:
+    return not v or list(v) == ["ANY"]
+
+
+def _covers(a: Any, b: Any) -> bool:
+    """Every value list `b` allows is in `a` (group membership is not expanded, so this never over-reports)."""
+    if _is_any(a):
+        return True
+    return not _is_any(b) and set(b) <= set(a)
+
+
+def rule_covers(a: Dict[str, Any], b: Dict[str, Any]) -> bool:
+    """True when rule `a` matches every packet rule `b` matches, so `b` placed after it can never be hit."""
+    for f, ex in (("source_groups", "sources_excluded"), ("destination_groups", "destinations_excluded")):
+        if a.get(ex) or b.get(ex):  # negated lists: only the exact same match is certain
+            if bool(a.get(ex)) != bool(b.get(ex)) or set(a.get(f) or ["ANY"]) != set(b.get(f) or ["ANY"]):
+                return False
+        elif not _covers(a.get(f), b.get(f)):
+            return False
+    if a.get("service_entries"):  # services written in the rule itself: only a list of the same services is certain
+        # (with ANY next to them, what NSX matches is not certain from the rule alone)
+        if b.get("service_entries") or _is_any(a.get("services")) or _is_any(b.get("services")) \
+                or not _covers(a.get("services"), b.get("services")):
+            return False
+    elif b.get("service_entries"):
+        if not _is_any(a.get("services")):
+            return False
+    elif not _covers(a.get("services"), b.get("services")):
+        return False
+    if not _covers(a.get("profiles"), b.get("profiles")) or not _covers(a.get("scope"), b.get("scope")):
+        return False
+    da, db = str(a.get("direction") or "IN_OUT"), str(b.get("direction") or "IN_OUT")
+    pa, pb = str(a.get("ip_protocol") or "IPV4_IPV6"), str(b.get("ip_protocol") or "IPV4_IPV6")
+    return da in ("IN_OUT", db) and pa in ("IPV4_IPV6", pb)
+
+
+def rule_review(policy: Dict[str, Any]) -> Tuple[List[Tuple[dict, dict]], List[dict]]:
+    """(shadowed rules with the rule that matches first, rules that allow any traffic) of one policy. Rules read
+    before 1.12.0 lack the fields: nothing is reported for them until the inventory is read again."""
+    rules = [r for r in policy.get("rules") or [] if "services" in r]
+    if len(rules) != len(policy.get("rules") or []):
+        return [], []
+    order = sorted(range(len(rules)), key=lambda i: (rules[i].get("sequence_number") or 0, i))
+    enabled = [rules[i] for i in order if not rules[i].get("disabled")]
+    shadowed = []
+    for n, b in enumerate(enabled):
+        first = next((a for a in enabled[:n] if rule_covers(a, b)), None)
+        if first is not None:
+            shadowed.append((b, first))
+    wide = [r for r in enabled if str(r.get("action")).upper() == "ALLOW" and _is_any(policy.get("scope"))
+            and all(_is_any(r.get(f)) for f in ("source_groups", "destination_groups", "services", "profiles", "scope"))
+            and not r.get("service_entries") and not r.get("sources_excluded") and not r.get("destinations_excluded")]
+    return shadowed, wide
+
+
+def rule_name(r: Dict[str, Any]) -> str:
+    return str(r.get("display_name") or r.get("id"))
+
+
+def name_list(names: List[str], most: int = 10) -> str:
+    return ", ".join(names[:most]) + (f" and {len(names) - most} more" if len(names) > most else "") or "none"
 
 
 # ---- SDK entry points -----------------------------------------------------------------

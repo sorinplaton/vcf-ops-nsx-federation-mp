@@ -14,6 +14,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import gen_alerts as ga  # noqa: E402
 import gen_groups as gg  # noqa: E402
 import gen_views as gv  # noqa: E402
+import gen_policy as gp  # noqa: E402
 
 _src = open(os.path.join(ROOT, "pack", "app", "adapter.py")).read()
 _ns = {k: getattr(typing, k) for k in ("Dict", "Tuple", "List", "Optional", "Any")}
@@ -175,7 +176,7 @@ def document():
                f"{len(KPI)} indicateurs clés.",
                f"- {n_alerts} définitions d'alerte, {n_symptoms} symptômes, {len(ga.R)} recommandations. "
                f"{n_risk} alertes pèsent sur le badge Risk, les autres sur Health.",
-               f"- {len(gg.GROUPS)} groupes personnalisés, {len(DASHES)} tableaux de bord, {len(gv.VIEWS)} vues en liste, 1 rapport, "
+               f"- {len(gg.GROUPS)} groupes personnalisés, {len(DASHES)} tableaux de bord, {len(gv.VIEWS)} vues en liste, {len(gv.REPORTS)} rapports, 1 politique, "
                "1 arborescence d'inventaire, 1 icône par type d'objet.",
                "- Collecte en lecture seule depuis NSX. Les réglages du compte, l'approbation des certificats, le "
                "dimensionnement et la mise à niveau sont dans [OPERATIONS.md](OPERATIONS.md) (en anglais).", "",
@@ -219,6 +220,13 @@ def document():
                "globaux comptent à chaque emplacement de leur étendue, et liste les objets globaux surchargés "
                "localement à un emplacement.",
                "- Dit si un Global Manager standby peut prendre le relais\u00a0: prêt, pas prêt avec les raisons (synchronisation avec l'actif, état du cluster, version, certificat expiré, mise à niveau en cours ou en pause) ou inconnu quand une valeur n'a pas pu être lue. La métrique vaut 1 seulement quand c'est confirmé.",
+               "- Lit sur chaque manager la date d'expiration du mot de passe du compte de collecte, pour que la collecte "
+               "ne s'arrête pas sur un mot de passe expiré.",
+               "- Passe en revue les règles des politiques de sécurité globales : règles masquées par une règle "
+               "précédente de la politique, règles sans aucun hit à tous les emplacements de leur étendue pendant une "
+               "période (30 jours par défaut), et règles qui autorisent tout le trafic partout.",
+               "- Envoie à chaque cycle une valeur de disponibilité (100 ou 0) pour la fédération, chaque Global Manager, "
+               "chaque emplacement et chaque Tier-0 étendu ; le rapport de disponibilité en fait la moyenne sur 30 jours.",
                "- Supprime en option les objets qui ont quitté NSX (option désactivée par défaut).", "",
                "## Types d'objet", "",
                "| Type d'objet | Clé | Métriques | Propriétés | Définitions d'alerte |", "| --- | --- | --- | --- | --- |"]
@@ -231,7 +239,7 @@ def document():
                f"{len(KPI)} key indicators.",
                f"- {n_alerts} alert definitions, {n_symptoms} symptoms, {len(ga.R)} recommendations. "
                f"{n_risk} alerts count against the Risk badge, the others against Health.",
-               f"- {len(gg.GROUPS)} custom groups, {len(DASHES)} dashboards, {len(gv.VIEWS)} list views, 1 report, 1 inventory tree, "
+               f"- {len(gg.GROUPS)} custom groups, {len(DASHES)} dashboards, {len(gv.VIEWS)} list views, {len(gv.REPORTS)} reports, 1 policy, 1 inventory tree, "
                "an icon per object type.",
                "- Read-only collection from NSX. Account settings, certificate trust, sizing and upgrade are in "
                "[OPERATIONS.md](OPERATIONS.md).", "",
@@ -273,6 +281,13 @@ def document():
                "- Reads the configuration limits of each Local Manager as NSX rates them, since global objects count at "
                "every location of their span, and lists the global objects overridden at a location.",
                "- Tells whether a standby Global Manager can take over: ready, not ready with the reasons (sync with the active, cluster health, version, expired certificate, upgrade in progress or paused), or unknown when a value could not be read. The metric is 1 only when that is confirmed.",
+               "- Reads, on every manager, when the password of the collection account expires, so the collection "
+               "does not stop on an expired password.",
+               "- Reviews the rules of the global security policies: rules shadowed by an earlier rule of the policy, "
+               "rules with no hit at any location of their span for a period (30 days by default), and rules that allow "
+               "any traffic everywhere.",
+               "- Sends an availability value (100 or 0) for the federation, each Global Manager, each location and each "
+               "stretched Tier-0 in every cycle; the availability report averages it over 30 days.",
                "- Optionally deletes the objects that left NSX (off by default).", "",
                "## Object types", "",
                "| Object type | Key | Metrics | Properties | Alert definitions |", "| --- | --- | --- | --- | --- |"]
@@ -308,7 +323,10 @@ def document():
         out += ["## Tableaux de bord, vues, rapport et groupes", "",
                 "- Tableaux de bord (dossier « NSX Federation ») : Federation Overview, Location Matrix, Switchover Readiness, Inter-site Connectivity, Stretched Objects.",
                 "- Vues en liste : " + _("; ").join(keep(v[0]) for v in gv.VIEWS) + ".",
-                f"- Rapport : {gv.REPORT[0]}.",
+                "- Rapports : " + _("; ").join(keep(r[0]) for r in gv.REPORTS) + ".",
+                f"- Politique livrée avec le pack : {keep(gp.NAME)}, à affecter à un groupe qui regroupe les objets d'une "
+                "fédération de lab ou de test (elle désactive les alertes de sauvegarde, de standby, de revue des règles "
+                "de pare-feu, de surcharges, de limites de configuration et de capacité des edges).",
                 "- Groupes personnalisés : " + _("; ").join(keep(g[0] if isinstance(g, (list, tuple)) else str(g)) for g in gg.GROUPS) + ".",
                 "- Arborescence d'inventaire : NSX Federation (Inventory, Detailed View, dernier onglet).", ""]
         return "\n".join(nb(line) for line in out)
@@ -338,7 +356,10 @@ def document():
     out += ["## Dashboards, views, report and groups", "",
             "- Dashboards (folder \"NSX Federation\"): Federation Overview, Location Matrix, Switchover Readiness, Inter-site Connectivity, Stretched Objects.",
             "- List views: " + "; ".join(v[0] for v in gv.VIEWS) + ".",
-            f"- Report: {gv.REPORT[0]}.",
+            "- Reports: " + "; ".join(r[0] for r in gv.REPORTS) + ".",
+            f"- Policy shipped with the pack: {gp.NAME}, to assign to a group that holds the objects of a lab or test "
+            "federation (it turns off the alerts for backups, standby, firewall rule review, overrides, configuration "
+            "limits and edge capacity).",
             "- Custom groups: " + "; ".join(g[0] if isinstance(g, (list, tuple)) else str(g) for g in gg.GROUPS) + ".",
             "- Inventory tree: NSX Federation (Inventory, Detailed View, last tab).", ""]
     return "\n".join(out)

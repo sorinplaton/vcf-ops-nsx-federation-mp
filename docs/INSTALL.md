@@ -24,7 +24,7 @@ The placeholders used below:
 | `<repository>` | `nsxfederation` |
 | `<ops>` | `ops.example.com` |
 | `<gm1>`, `<gm2>` | cluster address of the active and of the standby Global Manager |
-| `<version>` | `1.11.0` |
+| `<version>` | `1.12.0` |
 
 ## Checklist
 
@@ -36,6 +36,7 @@ The placeholders used below:
 - [ ] 6. Unsigned pack installed, switch turned off again
 - [ ] 7. Account created, certificates accepted
 - [ ] 8. Account "Collecting", metrics after three cycles
+- [ ] 9. Optional: policy for a lab or test federation imported and assigned
 
 ## 1. Prerequisites
 
@@ -209,6 +210,20 @@ Federation.
 - [ ] With a 5-minute interval, the data arrives over three cycles: objects and relationships first, then
       properties and events, then metrics after about ten minutes. Rates need one more cycle.
 - [ ] The federation object lists no failed calls.
+
+## 9. Optional: policy for a lab or test federation
+
+*Run on: the jump host, from the root of the repository (or import the file in the UI: Operations, Configurations,
+Policies, Import).*
+
+```bash
+export OPS_HOST=<vcf-operations-fqdn> OPS_PW='<admin password>'
+python3 install/import_policy.py        # policies/NSX_Federation_Non-production.xml; add --insecure in a lab only
+```
+
+- [ ] The policy "NSX Federation - Non-production" is listed under Policies. Importing it again updates it.
+- [ ] Assign it to a custom group that holds the objects of the lab or test federation. It turns off 11 alerts
+      (backups, standby, firewall rule review, overrides, configuration limits, edge capacity); see OPERATIONS.md.
 
 ## Upgrade
 

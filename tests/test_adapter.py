@@ -1873,3 +1873,309 @@ def test_edge_alerts_follow_the_builtin_integration_not_the_alarm_setting(nsx, o
     ops.nsx_clusters = []  # the built-in integration monitors no Local Manager
     r = run(lm_alarm_alerts="never")
     assert {e["p"]["capacity_alerts_by"] for e in r["edge_node"].values()} == {"this pack"}
+
+
+# ---- 1.12.0: password expiry, firewall rule review, availability, shipped policy, scale ----------------------
+POLICY = "/global-manager/api/v1/global-infra/domains/default/security-policies/fed-demo"
+STATS = "/policy/api/v1/global-infra/domains/default/security-policies/fed-demo/statistics"
+USERS = "/api/v1/node/users"
+
+
+def _user(nsx, host, **changes):
+    u = next(x for x in nsx.data[host][USERS]["results"] if x["username"] == "audit")
+    u.update(changes)
+
+
+def test_password_expiry_of_the_collection_account(nsx):
+    r = run()
+    for gm in r["global_manager"].values():
+        assert gm["m"]["account|password_days_left"] == 85
+        assert gm["p"]["password_expiry"] == "audit: expires in 85 day(s) (90-day policy, changed 5 day(s) ago)"
+    for loc in r["location"].values():
+        assert loc["m"]["account|password_days_left"] == 35
+    assert fed(r)["m"]["account|password_min_days_left"] == 35
+
+
+def test_an_expired_a_never_expiring_and_a_directory_account(nsx):
+    _user(nsx, LM_HOSTS[0], password_reset_required=True)
+    _user(nsx, LM_HOSTS[1], password_change_frequency=0)
+    _user(nsx, GM_HOSTS[1], username="someone-else")
+    r = run()
+    by_days = {o["p"]["password_expiry"]: o["m"].get("account|password_days_left") for o in r["location"].values()}
+    assert by_days == {"audit: expired: NSX asks for a new password": 0,
+                       "audit: never expires (expiry turned off for this account)": 9999}
+    standby = next(g for g in r["global_manager"].values() if g["p"]["mode"] == "STANDBY")
+    assert "account|password_days_left" not in standby["m"] and "not a local NSX account" in standby["p"]["password_expiry"]
+    assert fed(r)["m"]["account|password_min_days_left"] == 0
+
+
+def test_a_failed_user_list_gives_no_value_and_is_read_again(nsx):
+    nsx.fail = [USERS]
+    r = run()
+    managers = list(r["location"].values()) + list(r["global_manager"].values())
+    assert all("account|password_days_left" not in o["m"] and "password_expiry" not in o["p"] for o in managers)
+    nsx.fail = []
+    r = run()  # a failure is not cached
+    assert all(o["m"]["account|password_days_left"] == 35 for o in r["location"].values())
+
+
+def _rules(nsx, rules):
+    base = dict(nsx.data[GM_HOSTS[0]][POLICY]["rules"][0], disabled=False, action="ALLOW", service_entries=None)
+    out = []
+    for i, r in enumerate(rules):
+        rid = r.pop("id")
+        out.append(dict(base, id=rid, display_name=rid, rule_id=2000 + i, sequence_number=10 * (i + 1),
+                        path=f"/global-infra/domains/default/security-policies/fed-demo/rules/{rid}", **r))
+    nsx.data[GM_HOSTS[0]][POLICY]["rules"] = out
+    return out
+
+
+def _hits(nsx, per_rule):
+    for host in LM_HOSTS:
+        res = nsx.data[host][STATS]["results"][0]["statistics"]
+        res["results"] = [{"rule": f"/infra/domains/default/security-policies/fed-demo/rules/{k}", "hit_count": v,
+                           "packet_count": v, "byte_count": 0, "session_count": 0} for k, v in per_rule.items()]
+
+
+A_TO_B = {"source_groups": ["/global-infra/domains/default/groups/fed-vm-str-a"],
+          "destination_groups": ["/global-infra/domains/default/groups/fed-vm-str-b"]}
+
+
+def test_shadowed_and_any_allow_rules(nsx):
+    _rules(nsx, [
+        dict(id="web", services=["/s/HTTP", "/s/HTTPS"], **A_TO_B),
+        dict(id="web-again", services=["/s/HTTPS"], **A_TO_B),  # covered by "web": never hit
+        dict(id="custom", services=["ANY"], service_entries=[{"l4_protocol": "TCP"}], **A_TO_B),  # not covered by "web"
+        dict(id="out-only", direction="OUT", services=["/s/HTTP"], **A_TO_B),  # covered by "web" (IN_OUT)
+        dict(id="negated", sources_excluded=True, services=["/s/HTTP"], **A_TO_B),  # negated: not covered by "web"
+        dict(id="open", source_groups=["ANY"], destination_groups=["ANY"], services=["ANY"]),
+        dict(id="after-open", services=["/s/SSH"], **A_TO_B),  # everything after "open" is shadowed
+        dict(id="off", disabled=True, services=["/s/HTTPS"], **A_TO_B),  # disabled: not reported
+    ])
+    r = run()
+    pol = r["global_policy"]["fed-demo"]
+    assert pol["m"]["rules|rules_shadowed"] == 3 and pol["m"]["rules|rules_any_allow"] == 1
+    assert pol["p"]["shadowed_rules"] == "web-again (by web), out-only (by web), after-open (by open)"
+    assert pol["p"]["any_allow_rules"] == "open"
+    assert pol["m"]["rules|rules_disabled"] == 1
+
+
+def test_a_scoped_policy_or_rule_is_not_any_allow(nsx):
+    _rules(nsx, [dict(id="open", source_groups=["ANY"], destination_groups=["ANY"], services=["ANY"],
+                      scope=["/global-infra/domains/default/groups/fed-vm-str-a"])])
+    r = run()
+    assert r["global_policy"]["fed-demo"]["m"]["rules|rules_any_allow"] == 0
+    _rules(nsx, [dict(id="open", source_groups=["ANY"], destination_groups=["ANY"], services=["ANY"], scope=["ANY"])])
+    nsx.data[GM_HOSTS[0]][POLICY]["scope"] = ["/global-infra/domains/default/groups/fed-vm-str-a"]
+    pols = nsx.data[GM_HOSTS[0]]["/global-manager/api/v1/global-infra/domains/default/security-policies?page_size=500"]
+    next(p for p in pols["results"] if p["id"] == "fed-demo")["scope"] = ["/global-infra/domains/default/groups/fed-vm-str-a"]
+    for f in os.listdir(nsxclient.CACHE_DIR):  # read the inventory again
+        os.remove(os.path.join(nsxclient.CACHE_DIR, f))
+    assert run()["global_policy"]["fed-demo"]["m"]["rules|rules_any_allow"] == 0
+
+
+def test_direction_and_ip_protocol_of_a_shadowing_rule():
+    import adapter
+    out = {"direction": "OUT", "services": ["ANY"]}
+    both = {"direction": "IN_OUT", "services": ["ANY"]}
+    v4 = {"ip_protocol": "IPV4", "services": ["ANY"]}
+    assert adapter.rule_covers(both, out) and not adapter.rule_covers(out, both)
+    assert not adapter.rule_covers(out, {"direction": "IN", "services": ["ANY"]})
+    assert not adapter.rule_covers(v4, {"ip_protocol": "IPV4_IPV6", "services": ["ANY"]})
+    assert adapter.rule_covers({"services": ["ANY"]}, v4)
+
+
+def test_unused_rules_after_the_period(nsx, monkeypatch):
+    _rules(nsx, [dict(id="busy", services=["/s/HTTP"], **A_TO_B), dict(id="idle", services=["/s/SSH"], **A_TO_B)])
+    _hits(nsx, {"busy": 10, "idle": 0})
+    r = run()
+    pol = r["global_policy"]["fed-demo"]
+    assert pol["m"]["rules|rules_unused"] == 0 and pol["p"]["unused_rules"] == "none"
+    assert fed(r)["m"]["rules|rules_to_review"] == 0
+    now = time.time()
+    monkeypatch.setattr(time, "time", lambda: now + 31 * 86400)
+    _hits(nsx, {"busy": 25, "idle": 0})  # "busy" had new hits, "idle" none in 31 days
+    r = run()
+    pol = r["global_policy"]["fed-demo"]
+    assert pol["m"]["rules|rules_unused"] == 1 and pol["p"]["unused_rules"].startswith("idle (no hit since ")
+    assert fed(r)["m"]["rules|rules_to_review"] == 1
+    assert run(unused_rule_days="0")["global_policy"]["fed-demo"]["p"]["unused_rules"] == "check turned off"
+
+
+def test_unused_rules_are_unknown_when_a_location_does_not_answer(nsx, monkeypatch):
+    _rules(nsx, [dict(id="idle", services=["/s/SSH"], **A_TO_B)])
+    _hits(nsx, {"idle": 0})
+    run()
+    now = time.time()
+    monkeypatch.setattr(time, "time", lambda: now + 31 * 86400)
+    nsx.fail = [STATS]
+    r = run()
+    assert "rules|rules_unused" not in r["global_policy"]["fed-demo"]["m"]
+    assert "rules|rules_to_review" not in fed(r)["m"]
+    nsx.fail = []
+    assert run()["global_policy"]["fed-demo"]["m"]["rules|rules_unused"] == 1  # the period was kept
+
+
+def test_a_counter_reset_starts_the_unused_period_again(nsx, monkeypatch):
+    _rules(nsx, [dict(id="r", services=["/s/SSH"], **A_TO_B)])
+    _hits(nsx, {"r": 40})
+    run()
+    now = time.time()
+    monkeypatch.setattr(time, "time", lambda: now + 31 * 86400)
+    _hits(nsx, {"r": 3})  # statistics reset: new hits, not a quiet month
+    assert run()["global_policy"]["fed-demo"]["m"]["rules|rules_unused"] == 0
+
+
+def test_rules_read_before_1_12_are_not_reviewed():
+    import adapter
+    old = {"scope": ["ANY"], "rules": [{"id": "a", "source_groups": ["ANY"], "destination_groups": ["ANY"], "action": "ALLOW"},
+                                       {"id": "b", "source_groups": ["ANY"], "destination_groups": ["ANY"], "action": "ALLOW"}]}
+    assert adapter.rule_review(old) == ([], [])
+
+
+def test_availability_in_a_normal_cycle(nsx):
+    r = run()
+    assert fed(r)["m"]["availability|availability_pct"] == 100
+    assert all(o["m"]["availability|availability_pct"] == 100 for o in r["global_manager"].values())
+    assert all(o["m"]["availability|availability_pct"] == 100 for o in r["location"].values())
+    assert all(o["m"]["availability|availability_pct"] == 100 for o in r["tier0"].values())
+
+
+def test_availability_without_an_active_global_manager(nsx):
+    run()
+    nsx.fail = ["/api/v1/sites/self"]
+    r = run()
+    assert fed(r)["m"]["availability|availability_pct"] == 0
+    assert all(o["m"]["availability|availability_pct"] == 0 for o in r["global_manager"].values())
+
+
+def test_the_shipped_policy_names_existing_alerts_and_is_up_to_date():
+    import re
+    import sys
+    sys.path.insert(0, os.path.join(ROOT, "tools"))
+    import gen_policy
+    with open(os.path.join(ROOT, "policies", "NSX_Federation_Non-production.xml")) as f:
+        assert f.read() == gen_policy.policy_xml()
+    with open(os.path.join(ROOT, "pack/content/alertdefs/nsxfederation_alerts.xml")) as f:
+        alerts = f.read()
+    ids = re.findall(r'<Alert enabled="false" id="([^"]+)"/>', gen_policy.policy_xml())
+    assert len(ids) == len(gen_policy.OFF) and all(f'id="{i}"' in alerts for i in ids)
+
+
+def _grow(nsx, segments, tier1s, policies, rules):
+    gm = nsx.data[GM_HOSTS[0]]
+    segs = gm["/global-manager/api/v1/global-infra/segments?page_size=500"]
+    t1s = gm["/global-manager/api/v1/global-infra/tier-1s?page_size=500"]
+    pols = gm["/global-manager/api/v1/global-infra/domains/default/security-policies?page_size=500"]
+    seg0, t10 = segs["results"][0], t1s["results"][0]
+    pol0 = next(p for p in pols["results"] if p["id"] == "fed-demo")
+    for i in range(segments):
+        segs["results"].append(dict(seg0, id=f"s{i}", display_name=f"s{i}", path=f"/global-infra/segments/s{i}", unique_id=f"s{i}"))
+    for i in range(tier1s):
+        t1s["results"].append(dict(t10, id=f"t{i}", display_name=f"t{i}", path=f"/global-infra/tier-1s/t{i}", unique_id=f"t{i}"))
+    for i in range(policies):
+        pid = f"p{i}"
+        path = f"/global-infra/domains/default/security-policies/{pid}"
+        pols["results"].append(dict(pol0, id=pid, display_name=pid, path=path, unique_id=pid))
+        rule0 = gm[POLICY]["rules"][0]
+        gm[f"/global-manager/api/v1{path}"] = dict(
+            gm[POLICY], id=pid, display_name=pid, path=path,
+            rules=[dict(rule0, id=f"r{j}", display_name=f"r{j}", rule_id=10000 + 100 * i + j, sequence_number=j,
+                        disabled=False, services=[f"/global-infra/services/S{j}"], path=f"{path}/rules/r{j}")
+                   for j in range(rules)])
+        for host in LM_HOSTS:
+            nsx.data[host][STATS.replace("fed-demo", pid)] = nsx.data[host][STATS]
+
+
+@pytest.mark.parametrize("segments,tier1s,policies,rules", [(1000, 200, 100, 50)])
+def test_scale_sizing(nsx, segments, tier1s, policies, rules, capsys):
+    """A federation 10 times the lab, and more: calls per manager and cycle, and the time of a cycle on the mock."""
+    _grow(nsx, segments, tier1s, policies, rules)
+    rows = []
+    for cycle in range(1, 4):
+        nsx.calls, nsx.by_host = 0, {}
+        started = time.time()
+        r = run()
+        f = fed(r)
+        rows.append((cycle, nsx.calls, nsx.by_host[GM_HOSTS[0]], max(nsx.by_host[h] for h in LM_HOSTS), round(time.time() - started, 1), f["m"]["collection|managers_over_budget"],
+                     f["m"]["collection|data_gaps"], f["m"]["collection|realization_checked"]))
+        assert f["m"]["collection|managers_over_budget"] == 0 and f["m"]["collection|data_gaps"] == 0, f["p"]["failed_calls"]
+        assert len(r["segment"]) == segments + 5 and len(r["global_policy"]) == policies + 1
+        assert sum(o["m"]["rules|rules_shadowed"] for o in r["global_policy"].values()) == 0
+    with capsys.disabled():
+        print(f"\nsizing {segments} segments, {tier1s} tier-1, {policies} policies x {rules} rules:")
+        for row in rows:
+            print("  cycle %d: %d calls (active GM %d, busiest LM %d), %.1f s, over budget %d, gaps %d, realization read %d" % row)
+    # cycle 1 reads the inventory and every object; cycles 2 and 3 read a sixth of the objects above 200
+    assert rows[0][2] < 2000 and rows[1][2] < rows[0][2] and all(row[4] < 60 for row in rows)
+
+
+# ---- review of 1.12.0: the rollup and the unused period stay honest ------------------------------------------
+def _drop_inventory():
+    for f in os.listdir(nsxclient.CACHE_DIR):
+        p = os.path.join(nsxclient.CACHE_DIR, f)
+        try:
+            d = json.load(open(p))
+        except Exception:
+            continue
+        if isinstance(d, dict) and "gm_inventory_v2" in d:
+            d.pop("gm_inventory_v2")
+            json.dump(d, open(p, "w"))
+
+
+def test_no_rules_to_review_without_an_active_global_manager(nsx):
+    run()
+    nsx.fail = ["/api/v1/sites/self"]
+    assert "rules|rules_to_review" not in fed(run())["m"]
+
+
+def test_a_rule_enabled_again_starts_a_new_unused_period(nsx, monkeypatch):
+    _rules(nsx, [dict(id="r", services=["/s/SSH"], **A_TO_B)])
+    _hits(nsx, {"r": 0})
+    run()
+    now = time.time()
+    nsx.data[GM_HOSTS[0]][POLICY]["rules"][0]["disabled"] = True
+    monkeypatch.setattr(time, "time", lambda: now + 3600)
+    _drop_inventory()
+    run()
+    monkeypatch.setattr(time, "time", lambda: now + 40 * 86400)
+    _drop_inventory()
+    run()  # still disabled 40 days later
+    nsx.data[GM_HOSTS[0]][POLICY]["rules"][0]["disabled"] = False
+    monkeypatch.setattr(time, "time", lambda: now + 40 * 86400 + 600)
+    _drop_inventory()
+    assert run()["global_policy"]["fed-demo"]["m"]["rules|rules_unused"] == 0
+
+
+def test_a_failed_policy_read_sends_no_rule_values(nsx):
+    _rules(nsx, [dict(id="open", source_groups=["ANY"], destination_groups=["ANY"], services=["ANY"])])
+    nsx.fail = [POLICY]
+    r = run()
+    pol = r["global_policy"]["fed-demo"]["m"]
+    assert not any(k in pol for k in ("rules|rules_any_allow", "rules|rules_shadowed", "rules|rules_total"))
+    assert "rules|rules_to_review" not in fed(r)["m"]
+
+
+def test_an_inventory_cached_by_1_11_is_not_used(nsx):
+    _rules(nsx, [dict(id="open", source_groups=["ANY"], destination_groups=["ANY"], services=["ANY"])])
+    run()
+    for f in os.listdir(nsxclient.CACHE_DIR):  # the 1.11 key, with the rules of 1.11 (no services)
+        p = os.path.join(nsxclient.CACHE_DIR, f)
+        d = json.load(open(p))
+        if "gm_inventory_v2" in d:
+            d["gm_inventory"] = d.pop("gm_inventory_v2")
+            for pol in d["gm_inventory"]["v"]["global_policy"]:
+                pol["rules"] = [{k: x.get(k) for k in ("id", "path", "action", "disabled")} for x in pol["rules"]]
+            json.dump(d, open(p, "w"))
+    assert fed(run())["m"]["rules|rules_to_review"] == 1
+
+
+def test_a_policy_realized_nowhere_does_not_block_the_rollup(nsx):
+    _rules(nsx, [dict(id="open", source_groups=["ANY"], destination_groups=["ANY"], services=["ANY"])])
+    rs = "/global-manager/api/v1/global-infra/realized-state/status?intent_path=/global-infra/domains/default/security-policies/fed-demo"
+    nsx.data[GM_HOSTS[0]][rs]["consolidated_status_per_enforcement_point"] = []
+    for h in LM_HOSTS:
+        nsx.data[h].pop(STATS, None)
+    r = run()
+    assert fed(r)["m"]["rules|rules_to_review"] == 1
+    assert r["global_policy"]["fed-demo"]["p"]["unused_rules"] == "not realized at any location"

@@ -136,6 +136,16 @@ S = {
     "loc_cap_crit":    ("location", "An NSX configuration limit of the Local Manager is above its critical threshold", "immediate", "metric", "capacity_items_critical", ">", 0),
     "loc_cap_builtin": ("location", "The built-in NSX integration raises the capacity alarms of this Local Manager", "info",
                         "property", "capacity_alerts_by", "=", "the built-in NSX integration"),
+    # password of the collection account, and review of the rules of global security policies
+    "gm_pw_30":        ("global_manager", "The password of the collection account expires in less than 30 days", "warning", "metric", "password_days_left", "<", 30),
+    "gm_pw_7":         ("global_manager", "The password of the collection account expires in less than 7 days", "critical", "metric", "password_days_left", "<", 7),
+    "gm_pw_0":         ("global_manager", "The password of the collection account expires today or has expired", "immediate", "metric", "password_days_left", "<", 1),
+    "loc_pw_30":       ("location", "The password of the collection account expires in less than 30 days", "warning", "metric", "password_days_left", "<", 30),
+    "loc_pw_7":        ("location", "The password of the collection account expires in less than 7 days", "critical", "metric", "password_days_left", "<", 7),
+    "loc_pw_0":        ("location", "The password of the collection account expires today or has expired", "immediate", "metric", "password_days_left", "<", 1),
+    "pol_unused":      ("global_policy", "Rules of the policy had no hit for the unused-rule period", "info", "metric", "rules_unused", ">", 0),
+    "pol_shadow":      ("global_policy", "Rules of the policy are shadowed by an earlier rule", "info", "metric", "rules_shadowed", ">", 0),
+    "pol_any":         ("global_policy", "A rule of the policy allows any source, destination and service", "warning", "metric", "rules_any_allow", ">", 0),
     # dynamic threshold: VCF Operations learns the usual range of the metric
     "tun_rx_dt":       ("rtep_tunnel", "RTEP tunnel receive rate is above its usual range", "warning", "dt", "rx_bytes_per_s", "above", None),
     "tun_tx_dt":       ("rtep_tunnel", "RTEP tunnel send rate is above its usual range", "warning", "dt", "tx_bytes_per_s", "above", None),
@@ -234,7 +244,7 @@ WAIT["chan_gm_outage"] = (1, 3)
 
 # ---- alerts that affect the Risk badge (a condition that will hurt later) instead of Health (broken now)
 RISK = {"gm_version", "gm_upgrade", "loc_newer", "loc_upgrade", "fed_no_standby", "fed_budget", "fed_gaps", "fed_load", "gm_backup", "gm_cert", "loc_cert_trust", "loc_version", "loc_backup", "loc_cert", "edge_disk",
-        "loc_override", "loc_capacity"}
+        "loc_override", "loc_capacity", "gm_password", "loc_password", "pol_review", "pol_any"}
 
 # ---- recommendations
 R = {
@@ -369,6 +379,21 @@ R = {
                 "configuration limits above a threshold', and Plan & Troubleshoot, Capacity in the NSX UI). Global "
                 "objects count at every location of their span. Remove unused objects, review the scope of global "
                 "groups and policies, or use a larger manager form factor where the limit depends on it.",
+    "password": "The NSX password of the account this adapter instance uses expires soon (property 'Password expiry of "
+                "the collection account'). Once it expires, the collection from this manager stops. Change the password "
+                "on the manager (System, User Management, Local Users), then update the credential of the adapter "
+                "instance in VCF Operations. For an account kept only for monitoring, the expiry can be set longer "
+                "on the NSX CLI of the manager: set user <name> password-expiration <days>.",
+    "rule_review": "The properties 'Shadowed rules' and 'Rules with no hit for the unused-rule period' name the rules. A "
+                   "shadowed rule follows a rule that matches all its traffic (the same or wider sources, destinations, "
+                   "services, profiles and Applied To), so NSX never reaches it: remove it, or move it above the rule "
+                   "named in brackets. An unused rule can protect rare traffic (disaster recovery, yearly jobs): check "
+                   "with its owner before removing it. Group membership is not expanded, so a rule covered through "
+                   "nested groups is not reported.",
+    "any_allow": "A rule of this policy allows any source to reach any destination on any service, and the policy and "
+                 "the rule apply everywhere. The rules below it in the policy and the policies after it in the "
+                 "category only see traffic that this rule does not match. Replace it with rules that name the groups "
+                 "and services needed, or narrow its Applied To.",
     "realization": "Open the object in the Global Manager and read the realization status for this location. Check the "
                    "location alarms and the connection between the Global Manager and the location, then save the object again if needed.",
 }
@@ -519,6 +544,18 @@ A = [
      "NSX rates a configuration limit of the Local Manager above its warning threshold (immediate above the critical one, "
      "or once the limit is reached).",
      NET, CONF, [["loc_cap_warn", "!loc_cap_builtin"], ["loc_cap_crit", "!loc_cap_builtin"]], "capacity"),
+    ("gm_password", "global_manager", "Password of the collection account expires soon",
+     "The NSX password of the account the adapter instance uses on this Global Manager expires in less than 30 days "
+     "(warning) or 7 days (critical), or expires today or has expired (immediate).", NET, CONF, [["gm_pw_30"], ["gm_pw_7"], ["gm_pw_0"]], "password"),
+    ("loc_password", "location", "Password of the collection account expires soon",
+     "The NSX password of the account the adapter instance uses on this Local Manager expires in less than 30 days "
+     "(warning) or 7 days (critical), or expires today or has expired (immediate).", NET, CONF, [["loc_pw_30"], ["loc_pw_7"], ["loc_pw_0"]], "password"),
+    ("pol_review", "global_policy", "Global security policy has rules that are never hit",
+     "At least one rule of the policy is shadowed by an earlier rule, or had no hit at any location of its span for "
+     "the unused-rule period of the adapter instance.", NET, COMPL, [["pol_shadow"], ["pol_unused"]], "rule_review"),
+    ("pol_any", "global_policy", "Global security policy allows any traffic",
+     "A rule allows any source, destination and service, and the rule and the policy apply everywhere.", NET, COMPL,
+     [["pol_any"]], "any_allow"),
     ("tun_traffic", "rtep_tunnel", "RTEP tunnel traffic is above its usual range",
      "The receive or send rate of the tunnel is above the dynamic threshold VCF Operations learned for it.", NET, PERF,
      [["tun_rx_dt"], ["tun_tx_dt"]], "traffic"),

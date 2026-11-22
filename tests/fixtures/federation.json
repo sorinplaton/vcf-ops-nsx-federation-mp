@@ -3595,6 +3595,42 @@
 "/policy/api/v1/search/query?page_size=500&query=overridden:true": {
 "results": [],
 "result_count": 0
+},
+"/api/v1/node/users": {
+"_schema": "NodeUserPropertiesListResult",
+"result_count": 3,
+"results": [
+{
+"username": "root",
+"userid": 0,
+"status": "ACTIVE",
+"last_password_change": 55,
+"password_change_frequency": 90,
+"password_change_warning": 7,
+"password_reset_required": false,
+"locked": []
+},
+{
+"username": "admin",
+"userid": 10000,
+"status": "ACTIVE",
+"last_password_change": 55,
+"password_change_frequency": 90,
+"password_change_warning": 7,
+"password_reset_required": false,
+"locked": []
+},
+{
+"username": "audit",
+"userid": 10002,
+"status": "ACTIVE",
+"last_password_change": 55,
+"password_change_frequency": 90,
+"password_change_warning": 7,
+"password_reset_required": false,
+"locked": []
+}
+]
 }
 },
 "192.0.2.4": {
@@ -5482,6 +5518,42 @@
 7382
 ],
 "runtime_state": "running"
+},
+"/api/v1/node/users": {
+"_schema": "NodeUserPropertiesListResult",
+"result_count": 3,
+"results": [
+{
+"username": "root",
+"userid": 0,
+"status": "ACTIVE",
+"last_password_change": 5,
+"password_change_frequency": 90,
+"password_change_warning": 7,
+"password_reset_required": false,
+"locked": []
+},
+{
+"username": "admin",
+"userid": 10000,
+"status": "ACTIVE",
+"last_password_change": 5,
+"password_change_frequency": 90,
+"password_change_warning": 7,
+"password_reset_required": false,
+"locked": []
+},
+{
+"username": "audit",
+"userid": 10002,
+"status": "ACTIVE",
+"last_password_change": 5,
+"password_change_frequency": 90,
+"password_change_warning": 7,
+"password_reset_required": false,
+"locked": []
+}
+]
 }
 },
 "192.0.2.5": {
@@ -6132,6 +6204,42 @@
 7382
 ],
 "runtime_state": "running"
+},
+"/api/v1/node/users": {
+"_schema": "NodeUserPropertiesListResult",
+"result_count": 3,
+"results": [
+{
+"username": "root",
+"userid": 0,
+"status": "ACTIVE",
+"last_password_change": 5,
+"password_change_frequency": 90,
+"password_change_warning": 7,
+"password_reset_required": false,
+"locked": []
+},
+{
+"username": "admin",
+"userid": 10000,
+"status": "ACTIVE",
+"last_password_change": 5,
+"password_change_frequency": 90,
+"password_change_warning": 7,
+"password_reset_required": false,
+"locked": []
+},
+{
+"username": "audit",
+"userid": 10002,
+"status": "ACTIVE",
+"last_password_change": 5,
+"password_change_frequency": 90,
+"password_change_warning": 7,
+"password_reset_required": false,
+"locked": []
+}
+]
 }
 },
 "192.0.2.6": {
@@ -9450,6 +9558,42 @@
 "/policy/api/v1/search/query?page_size=500&query=overridden:true": {
 "results": [],
 "result_count": 0
+},
+"/api/v1/node/users": {
+"_schema": "NodeUserPropertiesListResult",
+"result_count": 3,
+"results": [
+{
+"username": "root",
+"userid": 0,
+"status": "ACTIVE",
+"last_password_change": 55,
+"password_change_frequency": 90,
+"password_change_warning": 7,
+"password_reset_required": false,
+"locked": []
+},
+{
+"username": "admin",
+"userid": 10000,
+"status": "ACTIVE",
+"last_password_change": 55,
+"password_change_frequency": 90,
+"password_change_warning": 7,
+"password_reset_required": false,
+"locked": []
+},
+{
+"username": "audit",
+"userid": 10002,
+"status": "ACTIVE",
+"last_password_change": 55,
+"password_change_frequency": 90,
+"password_change_warning": 7,
+"password_reset_required": false,
+"locked": []
+}
+]
 }
 }
 }

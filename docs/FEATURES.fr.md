@@ -1,4 +1,4 @@
-# Fonctionnalités et alertes du pack NSX Federation, version 1.11.0
+# Fonctionnalités et alertes du pack NSX Federation, version 1.12.0
 
 Généré par `tools/gen_features.py` à partir du modèle d'objets et des tables d'alertes du pack. Ne pas modifier à la main. Version anglaise : [FEATURES.md](FEATURES.md).
 
@@ -6,9 +6,9 @@ Les noms des métriques, des propriétés, des alertes et des symptômes, ainsi 
 
 ## Résumé
 
-- 16 types d'objet, 164 métriques dans 23 groupes, 148 propriétés, 26 indicateurs clés.
-- 83 définitions d'alerte, 144 symptômes, 50 recommandations. 17 alertes pèsent sur le badge Risk, les autres sur Health.
-- 4 groupes personnalisés, 5 tableaux de bord, 8 vues en liste, 1 rapport, 1 arborescence d'inventaire, 1 icône par type d'objet.
+- 16 types d'objet, 175 métriques dans 25 groupes, 153 propriétés, 26 indicateurs clés.
+- 87 définitions d'alerte, 153 symptômes, 53 recommandations. 21 alertes pèsent sur le badge Risk, les autres sur Health.
+- 4 groupes personnalisés, 5 tableaux de bord, 13 vues en liste, 2 rapports, 1 politique, 1 arborescence d'inventaire, 1 icône par type d'objet.
 - Collecte en lecture seule depuis NSX. Les réglages du compte, l'approbation des certificats, le dimensionnement et la mise à niveau sont dans [OPERATIONS.md](OPERATIONS.md) (en anglais).
 
 ## Ce que fait la collecte
@@ -31,25 +31,28 @@ Les noms des métriques, des propriétés, des alertes et des symptômes, ainsi 
 - Compare l'horloge de chaque manager à celle du Global Manager actif (à partir de l'heure système que renvoie NSX, corrigée de la durée de l'appel) et lit les serveurs et le service NTP de chacun.
 - Lit les limites de configuration de chaque Local Manager telles que NSX les évalue, puisque les objets globaux comptent à chaque emplacement de leur étendue, et liste les objets globaux surchargés localement à un emplacement.
 - Dit si un Global Manager standby peut prendre le relais : prêt, pas prêt avec les raisons (synchronisation avec l'actif, état du cluster, version, certificat expiré, mise à niveau en cours ou en pause) ou inconnu quand une valeur n'a pas pu être lue. La métrique vaut 1 seulement quand c'est confirmé.
+- Lit sur chaque manager la date d'expiration du mot de passe du compte de collecte, pour que la collecte ne s'arrête pas sur un mot de passe expiré.
+- Passe en revue les règles des politiques de sécurité globales : règles masquées par une règle précédente de la politique, règles sans aucun hit à tous les emplacements de leur étendue pendant une période (30 jours par défaut), et règles qui autorisent tout le trafic partout.
+- Envoie à chaque cycle une valeur de disponibilité (100 ou 0) pour la fédération, chaque Global Manager, chaque emplacement et chaque Tier-0 étendu ; le rapport de disponibilité en fait la moyenne sur 30 jours.
 - Supprime en option les objets qui ont quitté NSX (option désactivée par défaut).
 
 ## Types d'objet
 
 | Type d'objet | Clé | Métriques | Propriétés | Définitions d'alerte |
 | --- | --- | --- | --- | --- |
-| NSX Federation | `federation` | 33 | 14 | 9 |
-| Global Manager | `global_manager` | 16 | 19 | 23 |
+| NSX Federation | `federation` | 36 | 14 | 9 |
+| Global Manager | `global_manager` | 18 | 20 | 24 |
 | Manager Node | `manager_node` | 1 | 2 | 0 |
-| Location | `location` | 29 | 29 | 27 |
+| Location | `location` | 31 | 30 | 28 |
 | Sync Channel | `sync_channel` | 1 | 5 | 1 |
 | Federation Edge Cluster | `edge_cluster` | 4 | 5 | 1 |
 | Federation Edge Node | `edge_node` | 11 | 7 | 6 |
 | Tier-0 Service Router | `tier0_sr` | 4 | 9 | 1 |
 | RTEP Tunnel | `rtep_tunnel` | 21 | 5 | 5 |
-| Stretched Tier-0 Gateway | `tier0` | 9 | 10 | 3 |
+| Stretched Tier-0 Gateway | `tier0` | 10 | 10 | 3 |
 | Stretched Tier-1 Gateway | `tier1` | 4 | 8 | 1 |
 | Stretched Segment | `segment` | 4 | 9 | 1 |
-| Global Security Policy | `global_policy` | 8 | 9 | 1 |
+| Global Security Policy | `global_policy` | 11 | 12 | 3 |
 | Stretched Object at Location | `realization` | 6 | 5 | 1 |
 | Tier-0 BGP Neighbor | `bgp_neighbor` | 8 | 8 | 3 |
 | Global Firewall Rule | `rule` | 5 | 4 | 0 |
@@ -91,6 +94,10 @@ Les symptômes ci-dessous comparent une métrique à un nombre ou à la plage ha
 | Location | Clock difference with the active Global Manager (`time\|clock_skew_to_gm_s`) | supérieur à 60 s | Immediate | 2 / 2 | Local Manager clock is not in step with the Global Manager |
 | Global Manager | Clock difference with the active Global Manager (`time\|clock_skew_to_active_s`) | supérieur à 5 s | Warning | 2 / 2 | Global Manager clock is not in step with the active Global Manager |
 | Global Manager | Clock difference with the active Global Manager (`time\|clock_skew_to_active_s`) | supérieur à 60 s | Immediate | 2 / 2 | Global Manager clock is not in step with the active Global Manager |
+| Global Manager | Days until the password of the collection account expires (`account\|password_days_left`) | inférieur à 30 | Warning | 1 / 1 | Password of the collection account expires soon |
+| Global Manager | Days until the password of the collection account expires (`account\|password_days_left`) | inférieur à 7 | Critical | 1 / 1 | Password of the collection account expires soon |
+| Location | Days until the password of the collection account expires (`account\|password_days_left`) | inférieur à 30 | Warning | 1 / 1 | Password of the collection account expires soon |
+| Location | Days until the password of the collection account expires (`account\|password_days_left`) | inférieur à 7 | Critical | 1 / 1 | Password of the collection account expires soon |
 | RTEP Tunnel | Received bytes per second (`rates\|rx_bytes_per_s`) | appris par VCF Operations (seuil dynamique) | Warning | 3 / 3 | RTEP tunnel traffic is above its usual range |
 | RTEP Tunnel | Sent bytes per second (`rates\|tx_bytes_per_s`) | appris par VCF Operations (seuil dynamique) | Warning | 3 / 3 | RTEP tunnel traffic is above its usual range |
 | Location | Round-trip time to the Global Manager (`connectivity\|gm_rtt_ms`) | appris par VCF Operations (seuil dynamique) | Warning | 3 / 2 | Round-trip time to the Global Manager is high |
@@ -128,6 +135,7 @@ La criticité indiquée est la plus haute parmi celles des symptômes qui décle
 | Global Manager backup is missing, old or failed | Immediate | Risk | Backup is not configured on the Global Manager ("Backup enabled" vaut False) ; ou Last successful Global Manager backup is older than 24 hours ("Hours since last successful backup" supérieur à 24) ; ou Last Global Manager backup failed ("Last backup result" vaut FAILED) ; ou No backup of the Global Manager has run ("Last backup result" vaut NONE) et "Backup enabled" différent de False | Configure a backup target and a schedule under System, Backup and Restore on the manager, then run a backup and confirm that it succeeds. A manager can only be restored from its own backup. |
 | Global Manager certificate is about to expire | Critical | Risk | A Global Manager certificate expires in less than 30 days ("Days until the first certificate expires" inférieur à 30) ; ou A Global Manager certificate expires in less than 7 days ("Days until the first certificate expires" inférieur à 7) | Replace the certificate before it expires (System, Certificates). An expired manager certificate breaks the connection between the Global Manager and the Local Managers. See https://knowledge.broadcom.com/external/article/429189 |
 | Global Manager clock is not in step with the active Global Manager | Immediate | Health | Global Manager clock differs from the active Global Manager by more than 5 seconds ("Clock difference with the active Global Manager" supérieur à 5) ; ou Global Manager clock differs from the active Global Manager by more than 60 seconds ("Clock difference with the active Global Manager" supérieur à 60) ; ou NTP service of the Global Manager is not running ("NTP service" différent de running). Se déclenche après 1 à 2 cycles selon la condition, s'efface après 1 à 2 | Read 'Clock offset to the active Global Manager' and 'NTP servers' on the manager. On each node of both managers, run get clock and get ntp-server on the NSX CLI. Point every manager of the federation to the same reachable NTP servers (System, Fabric, Profiles, Node Profiles in the UI), and check that the NTP service runs (start service ntp on the CLI). |
+| Password of the collection account expires soon | Critical | Risk | The password of the collection account expires in less than 30 days ("Days until the password of the collection account expires" inférieur à 30) ; ou The password of the collection account expires in less than 7 days ("Days until the password of the collection account expires" inférieur à 7) ; ou The password of the collection account expires today or has expired ("Days until the password of the collection account expires" inférieur à 1) | The NSX password of the account this adapter instance uses expires soon (property 'Password expiry of the collection account'). Once it expires, the collection from this manager stops. Change the password on the manager (System, User Management, Local Users), then update the credential of the adapter instance in VCF Operations. For an account kept only for monitoring, the expiry can be set longer on the NSX CLI of the manager: set user <name> password-expiration <days>. |
 | NSX alarm: Global Manager split-brain | Critical | Health | Global Manager raised NSX alarm gm_to_gm_split_brain | Two Global Managers claim the active role. Do not change global configuration. Decide which Global Manager holds the valid configuration and force the other one to standby, as described in the NSX Federation recovery documentation. See https://knowledge.broadcom.com/external/article/324244 |
 | NSX alarm: active to standby Global Manager sync error | Immediate | Health | Global Manager raised NSX alarm gm_to_gm_synchronization_error | Check the connectivity between the active and the standby Global Manager (ping, then TCP 443 and 1236) and the state of both Global Manager clusters. See https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vcf-9-0-and-later/9-0/advanced-network-management/administration-guide/managing-nsx-t-in-multiple-locations/nsx-t-federation/using-the-gm-and-lm-ui/monitoring-nsx-federation-locations.html |
 | NSX alarm: active to standby Global Manager sync warning | Warning | Health | Global Manager raised NSX alarm gm_to_gm_synchronization_warning | Check the connectivity between the active and the standby Global Manager (ping, then TCP 443 and 1236) and the state of both Global Manager clusters. See https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vcf-9-0-and-later/9-0/advanced-network-management/administration-guide/managing-nsx-t-in-multiple-locations/nsx-t-federation/using-the-gm-and-lm-ui/monitoring-nsx-federation-locations.html |
@@ -164,6 +172,7 @@ La criticité indiquée est la plus haute parmi celles des symptômes qui décle
 | Local Manager clock is not in step with the Global Manager | Immediate | Health | Local Manager clock differs from the active Global Manager by more than 5 seconds ("Clock difference with the active Global Manager" supérieur à 5) ; ou Local Manager clock differs from the active Global Manager by more than 60 seconds ("Clock difference with the active Global Manager" supérieur à 60) ; ou NTP service of the Local Manager is not running ("NTP service" différent de running). Se déclenche après 1 à 2 cycles selon la condition, s'efface après 1 à 2 ; silencieuse tant qu'un emplacement dont elle dépend est en panne | Read 'Clock offset to the active Global Manager' and 'NTP servers' on the manager. On each node of both managers, run get clock and get ntp-server on the NSX CLI. Point every manager of the federation to the same reachable NTP servers (System, Fabric, Profiles, Node Profiles in the UI), and check that the NTP service runs (start service ntp on the CLI). |
 | Global objects are overridden at the location | Warning | Risk | Global objects are overridden at the location ("Global objects overridden at this location" supérieur à 0) | A global object was changed on the Local Manager of this location, so the location runs a configuration that differs from the Global Manager. The property 'Global objects overridden at this location' lists them. Check with the team of the location whether the override is intended; if not, remove it on the Local Manager, or make the change on the Global Manager for every location. |
 | NSX configuration limit of the location is close to its maximum | Immediate | Risk | An NSX configuration limit of the Local Manager is above its warning threshold ("NSX configuration limits above the warning threshold" supérieur à 0) et "Configuration limit alerts raised by" différent de the built-in NSX integration ; ou An NSX configuration limit of the Local Manager is above its critical threshold ("NSX configuration limits above the critical threshold" supérieur à 0) et "Configuration limit alerts raised by" différent de the built-in NSX integration | NSX rates at least one configuration limit of this Local Manager above its threshold (property 'NSX configuration limits above a threshold', and Plan & Troubleshoot, Capacity in the NSX UI). Global objects count at every location of their span. Remove unused objects, review the scope of global groups and policies, or use a larger manager form factor where the limit depends on it. |
+| Password of the collection account expires soon | Critical | Risk | The password of the collection account expires in less than 30 days ("Days until the password of the collection account expires" inférieur à 30) ; ou The password of the collection account expires in less than 7 days ("Days until the password of the collection account expires" inférieur à 7) ; ou The password of the collection account expires today or has expired ("Days until the password of the collection account expires" inférieur à 1) | The NSX password of the account this adapter instance uses expires soon (property 'Password expiry of the collection account'). Once it expires, the collection from this manager stops. Change the password on the manager (System, User Management, Local Users), then update the credential of the adapter instance in VCF Operations. For an account kept only for monitoring, the expiry can be set longer on the NSX CLI of the manager: set user <name> password-expiration <days>. |
 | NSX alarm: Global Manager to Local Manager sync error | Immediate | Health | Local Manager raised NSX alarm gm_to_lm_synchronization_error. Silencieuse tant qu'un emplacement dont elle dépend est en panne | Check the connectivity between the Global Manager and the location (ping, TCP 1236 in both directions) and that the async-replicator service runs on both sides (get service async_replicator). Its log is /var/log/async-replicator/ar.log. See https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vcf-9-0-and-later/9-0/advanced-network-management/administration-guide/managing-nsx-t-in-multiple-locations/nsx-t-federation/using-the-gm-and-lm-ui/monitoring-nsx-federation-locations.html |
 | NSX alarm: Global Manager to Local Manager sync warning | Warning | Health | Local Manager raised NSX alarm gm_to_lm_synchronization_warning. Silencieuse tant qu'un emplacement dont elle dépend est en panne | Check the connectivity between the Global Manager and the location (ping, TCP 1236 in both directions) and that the async-replicator service runs on both sides (get service async_replicator). Its log is /var/log/async-replicator/ar.log. See https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vcf-9-0-and-later/9-0/advanced-network-management/administration-guide/managing-nsx-t-in-multiple-locations/nsx-t-federation/using-the-gm-and-lm-ui/monitoring-nsx-federation-locations.html |
 | NSX alarm: latency between Global Manager and Local Manager is high | Warning | Health | Local Manager raised NSX alarm gm_to_lm_latency_warning. Silencieuse tant qu'un emplacement dont elle dépend est en panne | Measure the round-trip time between the two managers named in the alarm. Broadcom documents 150 ms as the limit between locations that share stretched networks (500 ms otherwise); look for WAN congestion or a path change. See https://knowledge.broadcom.com/external/article/345822 |
@@ -240,6 +249,8 @@ La criticité indiquée est la plus haute parmi celles des symptômes qui décle
 | Alerte | Criticité maximale | Badge | Se déclenche quand | Recommandation |
 | --- | --- | --- | --- | --- |
 | Global security policy is in error at a location | Immediate | Health | Global security policy is in error at a location ("Locations in error" supérieur à 0). Silencieuse tant qu'un emplacement dont elle dépend est en panne | Open the object in the Global Manager and read the error for each location of its span. Fix the cause (a missing edge cluster, an address conflict, a location that is not reachable), then save the object again. |
+| Global security policy has rules that are never hit | Info | Risk | Rules of the policy are shadowed by an earlier rule ("Rules that an earlier rule of the policy always matches first" supérieur à 0) ; ou Rules of the policy had no hit for the unused-rule period ("Rules with no hit for the unused-rule period" supérieur à 0) | The properties 'Shadowed rules' and 'Rules with no hit for the unused-rule period' name the rules. A shadowed rule follows a rule that matches all its traffic (the same or wider sources, destinations, services, profiles and Applied To), so NSX never reaches it: remove it, or move it above the rule named in brackets. An unused rule can protect rare traffic (disaster recovery, yearly jobs): check with its owner before removing it. Group membership is not expanded, so a rule covered through nested groups is not reported. |
+| Global security policy allows any traffic | Warning | Risk | A rule of the policy allows any source, destination and service ("Rules that allow any source, destination and service" supérieur à 0) | A rule of this policy allows any source to reach any destination on any service, and the policy and the rule apply everywhere. The rules below it in the policy and the policies after it in the category only see traffic that this rule does not match. Replace it with rules that name the groups and services needed, or narrow its Applied To. |
 
 ### Stretched Object at Location
 
@@ -294,6 +305,9 @@ La criticité indiquée est la plus haute parmi celles des symptômes qui décle
 | Time | Largest clock difference with the active Global Manager | `time\|clock_max_skew_s` |  |
 | Configuration limits | NSX configuration limit most used, all locations | `limits\|capacity_max_pct` |  |
 | Configuration | Global objects overridden at a location, all locations | `configuration\|overridden_objects` |  |
+| Availability | Availability: one active Global Manager answers (100 = yes) | `availability\|availability_pct` |  |
+| Collection account | Days until the first password of the collection accounts expires | `account\|password_min_days_left` |  |
+| Rules | Global firewall rules to review (unused, shadowed or allowing any traffic) | `rules\|rules_to_review` |  |
 
 Propriétés : Federation ID (`federation_id`) ; Active Global Manager (`active_global_manager`) ; Standby Global Manager configured (`standby_configured`) ; Collection mode (`collection_mode`) ; NSX API calls without an answer (`failed_calls`) ; Global Managers not collected (`global_manager_errors`) ; Locations in outage (`location_outage`) ; Federation configuration version (`config_version`) ; Global Manager addresses of the account (`global_manager_addresses`) ; VCF Operations API from the adapter (`vcf_operations_api`) ; Objects deleted because they no longer exist in NSX (`stale_objects`) ; Switchover readiness (`switchover_readiness`) ; Last change (`last_change`) ; Recent changes (`recent_changes`).
 
@@ -317,8 +331,10 @@ Propriétés : Federation ID (`federation_id`) ; Active Global Manager (`activ
 | Sync | Time since the last full sync to the standby | `sync\|standby_full_sync_age_hours` |  |
 |  | Ready to take over as the active Global Manager (1 = yes) | `switchover_ready` |  |
 | Time | Clock difference with the active Global Manager | `time\|clock_skew_to_active_s` |  |
+| Availability | Availability: reachable with no node offline (100 = yes) | `availability\|availability_pct` |  |
+| Collection account | Days until the password of the collection account expires | `account\|password_days_left` |  |
 
-Propriétés : Mode (`mode`) ; Cluster status (`cluster_status`) ; Version (`version`) ; Address used by the collector (`address`) ; Backup enabled (`backup_enabled`) ; Last backup result (`backup_last_result`) ; First certificate to expire (`cert_first_to_expire`) ; Switchover status (`switchover_status`) ; Standby sync status (`standby_sync_status`) ; Standby data consistent (as NSX reports it) (`standby_data_consistent`) ; Same version as the active Global Manager (`version_matches_active_gm`) ; Upgrade status (`upgrade_status`) ; Upgrade target version (`upgrade_target_version`) ; Switchover readiness (`switchover_readiness`) ; Certificate trust (`certificate_trust`) ; Clock offset to the active Global Manager (`clock_offset_to_active`) ; NTP servers (`ntp_servers`) ; NTP service (`ntp_service`) ; Locations in outage (`location_outage`).
+Propriétés : Mode (`mode`) ; Cluster status (`cluster_status`) ; Version (`version`) ; Address used by the collector (`address`) ; Backup enabled (`backup_enabled`) ; Last backup result (`backup_last_result`) ; First certificate to expire (`cert_first_to_expire`) ; Switchover status (`switchover_status`) ; Standby sync status (`standby_sync_status`) ; Standby data consistent (as NSX reports it) (`standby_data_consistent`) ; Same version as the active Global Manager (`version_matches_active_gm`) ; Upgrade status (`upgrade_status`) ; Upgrade target version (`upgrade_target_version`) ; Switchover readiness (`switchover_readiness`) ; Certificate trust (`certificate_trust`) ; Clock offset to the active Global Manager (`clock_offset_to_active`) ; NTP servers (`ntp_servers`) ; NTP service (`ntp_service`) ; Password expiry of the collection account (`password_expiry`) ; Locations in outage (`location_outage`).
 
 ### Manager Node
 
@@ -361,8 +377,10 @@ Propriétés : Address (`address`) ; Node UUID (`uuid`).
 | Configuration limits | NSX configuration limits above the warning threshold | `limits\|capacity_items_warning` |  |
 | Configuration limits | NSX configuration limits above the critical threshold | `limits\|capacity_items_critical` |  |
 | Configuration | Global objects overridden at this location | `configuration\|overridden_objects` |  |
+| Availability | Availability: location healthy (100 = yes) | `availability\|availability_pct` |  |
+| Collection account | Days until the password of the collection account expires | `account\|password_days_left` |  |
 
-Propriétés : Site ID (`site_id`) ; Version (`version`) ; Same version as the Global Manager (`version_matches_gm`) ; Local Manager address (`local_manager_address`) ; RTEP addresses (`rtep_ips`) ; Maximum RTT setting (ms) (`maximum_rtt_ms`) ; Local Manager cluster status (`cluster_status`) ; Last full sync stage (`full_sync_stage`) ; Backup enabled (`backup_enabled`) ; Last backup result (`backup_last_result`) ; First certificate to expire (`cert_first_to_expire`) ; Certificate trust (`certificate_trust`) ; Collector error (`collector_error`) ; NSX release newer than the Global Manager (`release_newer_than_gm`) ; Upgrade status (`upgrade_status`) ; Upgrade target version (`upgrade_target_version`) ; Federation alarm alerts raised by (`alarm_alerts_by`) ; Replication flows (`replication_state`) ; Onboarding status (`onboarding_status`) ; Site path (`site_path`) ; Local Manager certificate thumbprint (from the Global Manager) (`lm_thumbprint`) ; Clock offset to the active Global Manager (`clock_offset_to_gm`) ; NTP servers (`ntp_servers`) ; NTP service (`ntp_service`) ; NSX configuration limit most used (`capacity_fullest`) ; NSX configuration limits above a threshold (`capacity_over_threshold`) ; Global objects overridden at this location (`overridden_list`) ; Configuration limit alerts raised by (`capacity_alerts_by`) ; Locations in outage (`location_outage`).
+Propriétés : Site ID (`site_id`) ; Version (`version`) ; Same version as the Global Manager (`version_matches_gm`) ; Local Manager address (`local_manager_address`) ; RTEP addresses (`rtep_ips`) ; Maximum RTT setting (ms) (`maximum_rtt_ms`) ; Local Manager cluster status (`cluster_status`) ; Last full sync stage (`full_sync_stage`) ; Backup enabled (`backup_enabled`) ; Last backup result (`backup_last_result`) ; First certificate to expire (`cert_first_to_expire`) ; Certificate trust (`certificate_trust`) ; Collector error (`collector_error`) ; NSX release newer than the Global Manager (`release_newer_than_gm`) ; Upgrade status (`upgrade_status`) ; Upgrade target version (`upgrade_target_version`) ; Federation alarm alerts raised by (`alarm_alerts_by`) ; Replication flows (`replication_state`) ; Onboarding status (`onboarding_status`) ; Site path (`site_path`) ; Local Manager certificate thumbprint (from the Global Manager) (`lm_thumbprint`) ; Clock offset to the active Global Manager (`clock_offset_to_gm`) ; NTP servers (`ntp_servers`) ; NTP service (`ntp_service`) ; NSX configuration limit most used (`capacity_fullest`) ; NSX configuration limits above a threshold (`capacity_over_threshold`) ; Global objects overridden at this location (`overridden_list`) ; Configuration limit alerts raised by (`capacity_alerts_by`) ; Password expiry of the collection account (`password_expiry`) ; Locations in outage (`location_outage`).
 
 ### Sync Channel
 
@@ -449,6 +467,7 @@ Propriétés : Local RTEP (`local_rtep`) ; Remote RTEP (`remote_rtep`) ; Remo
 | Service routers | Service routers with routing down | `service_routers\|sr_down` |  |
 | Service routers | Locations without an active service router | `service_routers\|locations_without_active_sr` | oui |
 | Service routers | Service router HA state changes in this cycle | `service_routers\|sr_ha_changes` |  |
+| Availability | Availability: an active service router where the HA mode needs one (100 = yes) | `availability\|availability_pct` |  |
 | Realization | Locations in span | `realization\|span_locations` |  |
 | Realization | Locations realized | `realization\|realized_locations` |  |
 | Realization | Locations not realized | `realization\|unrealized_locations` |  |
@@ -486,12 +505,15 @@ Propriétés : Subnets (`subnets`) ; Connected gateway (`gateway`) ; Type (`s
 | Rules | Rules disabled | `rules\|rules_disabled` |  |
 | Traffic | Rule hits (all locations) | `traffic\|hit_count` |  |
 | Traffic | Rule hits per minute (all locations) | `traffic\|hit_count_per_min` |  |
+| Rules | Rules with no hit for the unused-rule period | `rules\|rules_unused` |  |
+| Rules | Rules that an earlier rule of the policy always matches first | `rules\|rules_shadowed` |  |
+| Rules | Rules that allow any source, destination and service | `rules\|rules_any_allow` |  |
 | Realization | Locations in span | `realization\|span_locations` |  |
 | Realization | Locations realized | `realization\|realized_locations` |  |
 | Realization | Locations not realized | `realization\|unrealized_locations` |  |
 | Realization | Locations in error | `realization\|error_locations` | oui |
 
-Propriétés : Category (`category`) ; Domain (`domain`) ; Applied to (`scope`) ; Consolidated status (`status`) ; Policy path (`path`) ; Revision (`revision`) ; Last modified by (`last_modified_user`) ; Last modified (`last_modified_time`) ; Locations in outage (`location_outage`).
+Propriétés : Category (`category`) ; Domain (`domain`) ; Applied to (`scope`) ; Rules with no hit for the unused-rule period (`unused_rules`) ; Shadowed rules (and the rule that matches first) (`shadowed_rules`) ; Rules that allow any traffic (`any_allow_rules`) ; Consolidated status (`status`) ; Policy path (`path`) ; Revision (`revision`) ; Last modified by (`last_modified_user`) ; Last modified (`last_modified_time`) ; Locations in outage (`location_outage`).
 
 ### Stretched Object at Location
 
@@ -536,7 +558,8 @@ Propriétés : Action (`action`) ; Disabled (`disabled`) ; Sources (`sources`
 ## Tableaux de bord, vues, rapport et groupes
 
 - Tableaux de bord (dossier « NSX Federation ») : Federation Overview, Location Matrix, Switchover Readiness, Inter-site Connectivity, Stretched Objects.
-- Vues en liste : NSX Federation - Locations ; NSX Federation - Sync channels ; NSX Federation - RTEP tunnels ; NSX Federation - Tier-0 BGP neighbors ; NSX Federation - Edge capacity ; NSX Federation - Tier-0 service routers ; NSX Federation - Recent changes ; NSX Federation - Realization per location.
-- Rapport : NSX Federation - Health report.
+- Vues en liste : NSX Federation - Locations ; NSX Federation - Sync channels ; NSX Federation - RTEP tunnels ; NSX Federation - Tier-0 BGP neighbors ; NSX Federation - Edge capacity ; NSX Federation - Tier-0 service routers ; NSX Federation - Recent changes ; NSX Federation - Firewall rule review ; NSX Federation - Realization per location ; NSX Federation - Availability of the federation ; NSX Federation - Availability of the Global Managers ; NSX Federation - Availability of the locations ; NSX Federation - Availability of the Tier-0 gateways.
+- Rapports : NSX Federation - Health report ; NSX Federation - Availability report.
+- Politique livrée avec le pack : NSX Federation - Non-production, à affecter à un groupe qui regroupe les objets d'une fédération de lab ou de test (elle désactive les alertes de sauvegarde, de standby, de revue des règles de pare-feu, de surcharges, de limites de configuration et de capacité des edges).
 - Groupes personnalisés : NSX Federation - All objects ; NSX Federation - Managers and locations ; NSX Federation - Inter-site connectivity ; NSX Federation - Stretched objects.
 - Arborescence d'inventaire : NSX Federation (Inventory, Detailed View, dernier onglet).

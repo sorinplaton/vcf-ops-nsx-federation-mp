@@ -14,6 +14,7 @@
 | Change events | `on` (default): each change the collection sees is an information event on its object. `off`: the changes are only listed on the federation. See "Change timeline" |
 | Delete objects that left NSX after (days) | `0` (default): never. See "Objects that no longer exist" |
 | Policies collected rule by rule | Empty by default. Rules become objects only for the listed policies |
+| Unused firewall rule period (days) | `30` (default): a rule of a global security policy with no new hit at any location of its span for that long is reported as unused. `0`: off. See "Password expiry, firewall rule review and availability" |
 | API call budget per manager and cycle | 2000 by default, see Sizing |
 
 ## Certificate trust
@@ -67,7 +68,18 @@ The alert "NSX Federation collection is slow or throttled" fires above 4 minutes
 NSX limits each client to 100 requests per second by default.
 
 Only a two-location federation was measured on real managers. Larger sizes were run against the mock NSX of the
-test suite.
+test suite (`test_scale_sizing`). With 1,000 more segments, 200 more Tier-1 gateways and 100 more global security
+policies of 50 rules each (1,310 stretched objects):
+
+| Cycle | Active Global Manager | Busiest Local Manager | Realization states read |
+| --- | --- | --- | --- |
+| First after a start (empty cache) | 1,440 calls | 126 calls | 1,310 |
+| Following cycles | 233 calls | 115 calls | 218 |
+
+The time of a cycle depends on how fast the managers answer: in the lab a call took 0.2 to 0.5 seconds, and the
+adapter reads up to 8 managers in parallel ("Managers collected in parallel"). The calls of the active Global
+Manager are the ones to watch: at about 1,800 stretched objects the first cycle after a start reaches the budget of
+2000. That cycle is then partial (alert "NSX Federation collection is partial"), and the next ones complete it.
 
 ## Alerts during a location outage
 
@@ -199,6 +211,54 @@ so a gap in the data does not show up as a change.
   were changed locally. Each one counts on the location and is listed; a new override, or one removed, is a change
   of the timeline.
 
+## Password expiry, firewall rule review and availability
+
+- Password expiry: once an hour the adapter reads `GET /api/v1/node/users` on each manager (the `audit` account can)
+  and finds the account it collects with. NSX gives the days since the last change and the days a password is
+  valid (90 by default); the difference is "Days until the password of the collection account expires". The alert
+  fires below 30 days (warning), 7 days (critical) and on the last day or once expired (immediate). An account
+  whose password never expires reads 9999, so an alert raised before the expiry was turned off clears. An account that NSX does not hold
+  locally (LDAP or VIDM) gets a property saying its directory sets the expiry, and no value. When the password
+  expires, NSX refuses the logins and the collection of that manager stops, so the alert comes first.
+- Firewall rule review: for every global security policy the adapter checks three things.
+  - Shadowed rules: an enabled rule placed after an enabled rule of the same policy that matches all its traffic:
+    the same or wider sources, destinations, services, context profiles and Applied To, the same or both
+    directions and IP versions. Group membership is not expanded, and negated source or destination lists must be
+    identical, so the check reports only rules that can never be hit.
+  - Rules that allow any traffic: an enabled ALLOW rule with any source, destination, service and profile, in a
+    rule and a policy that apply everywhere.
+  - Unused rules: the hit counts of each rule, summed over the locations of its span, are compared between cycles.
+    A rule whose count has not grown for the unused-rule period (30 days by default) is unused. A rule that never
+    had a hit counts from the day the adapter first saw it, so after an install nothing is unused for 30 days. A
+    counter reset (a smaller count) starts the period again. When a location does not answer, the number is not
+    sent for that cycle, and the period is kept. The dates are kept in the adapter cache, so a new adapter
+    container (an upgrade of the pack) starts the period again.
+  The system policies of NSX (`default-` IDs) are left out, as for the rest of the collection. The alert "Global
+  security policy has rules that are never hit" is information; "Global security policy allows any traffic" is a
+  warning. Both count against the Risk badge.
+- Availability: in every cycle, a 0 or 100 value for the federation (exactly one Global Manager answers in the
+  active role), each Global Manager (reachable, no node offline), each location (healthy) and each stretched Tier-0
+  (an active service router where its HA mode needs one). Its average over a period is the share of that period
+  the object was available. The report "NSX Federation - Availability report" shows it for the last 30 days with
+  the lowest values, the inter-site BGP and RTT figures and the number of Tier-0 HA changes; schedule it monthly on
+  the federation object (Visualize, Reports). Cycles in which the adapter did not run send no value, so they do not
+  count either way.
+
+## Policy for non-production federations
+
+`policies/NSX_Federation_Non-production.xml` is a VCF Operations policy, "NSX Federation - Non-production". It turns
+off 11 alerts that a lab or test federation often raises on purpose: missing backups, no standby Global Manager,
+firewall rule review, overrides, NSX configuration limits and edge capacity. The alerts for outages, sync,
+failover and realization stay on. To use it:
+
+1. Import it: Operations, Configurations, Policies, Import, or `install/import_policy.py` (it reads `OPS_HOST` and
+   `OPS_PW` like the other install scripts). Importing again updates the same policy.
+2. Create a custom group with the objects of that federation (membership: descendants of its federation object,
+   and the federation object itself), and assign the policy to the group.
+
+The other federations keep the default policy, with every alert on. (The policy is a separate file because a policy
+inside the PAK needs a describe fragment, and the SDK drops a required attribute of it when it builds the PAK.)
+
 ## Changing a threshold
 
 The thresholds of the pack are listed in [FEATURES.md](FEATURES.md#thresholds). They are part of the symptom
@@ -308,5 +368,6 @@ with two Global Managers and two locations. They cover a normal cycle, failed ca
 Manager of another federation, the cached location list and the one from VCF Operations, the call budget,
 certificate trust, versions and upgrades, tiered realization on 600 more segments, stale-object deletion, edge
 capacity, Tier-0 service routers in both HA modes, the change timeline (first cycle, failover, partial reads),
-clock differences, configuration limits and overrides, and the consistency of the alert content with the object
-model.
+clock differences, configuration limits and overrides, password expiry, the firewall rule review (shadowed,
+any-allow and unused rules, partial reads, counter resets), availability, a federation of 1,310 stretched objects,
+and the consistency of the alert content and the shipped policy with the object model.

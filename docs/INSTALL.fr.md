@@ -25,7 +25,7 @@ Les valeurs à remplacer dans la suite :
 | `<repository>` | `nsxfederation` |
 | `<ops>` | `ops.example.com` |
 | `<gm1>`, `<gm2>` | adresse de cluster du Global Manager actif et du standby |
-| `<version>` | `1.11.0` |
+| `<version>` | `1.12.0` |
 
 ## Liste de contrôle
 
@@ -37,6 +37,7 @@ Les valeurs à remplacer dans la suite :
 - [ ] 6. Pack non signé installé, option à nouveau désactivée
 - [ ] 7. Compte créé, certificats acceptés
 - [ ] 8. Compte à l'état « Collecting », métriques présentes après trois cycles
+- [ ] 9. Facultatif : politique pour une fédération de lab ou de test importée et affectée
 
 ## 1. Prérequis
 
@@ -219,6 +220,21 @@ compte de type NSX Federation.
       relations, puis les propriétés et les événements, puis les métriques après une dizaine de minutes. Les
       taux demandent un cycle de plus.
 - [ ] L'objet fédération ne liste aucun appel en échec.
+
+## 9. Facultatif : politique pour une fédération de lab ou de test
+
+*À exécuter sur : le jumphost, à la racine du dépôt (ou importer le fichier dans l'interface : Operations, Configurations,
+Policies, Import).*
+
+```bash
+export OPS_HOST=<fqdn-de-vcf-operations> OPS_PW='<mot de passe admin>'
+python3 install/import_policy.py        # policies/NSX_Federation_Non-production.xml ; --insecure en lab seulement
+```
+
+- [ ] La politique « NSX Federation - Non-production » apparaît sous Policies. Une nouvelle importation la met à jour.
+- [ ] L'affecter à un groupe personnalisé qui regroupe les objets de la fédération de lab ou de test. Elle désactive
+      11 alertes (sauvegardes, standby, revue des règles de pare-feu, surcharges, limites de configuration, capacité
+      des edges) ; voir OPERATIONS.md.
 
 ## Mise à niveau
 
