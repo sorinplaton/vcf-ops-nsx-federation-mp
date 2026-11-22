@@ -14,7 +14,7 @@ from aria.ops.object import Identifier, Object
 from aria.ops.result import CollectResult, EndpointResult, TestResult
 from aria.ops.timer import Timer
 from constants import ADAPTER_KIND, ADAPTER_NAME
-from nsxclient import BudgetExceeded, Cache, CertificateNotTrusted, NsxClient, pem_sha256, NsxError
+from nsxclient import BudgetExceeded, Cache, CertificateNotTrusted, NsxClient, pem_sha256, NsxError, split_pem
 
 logger = logging.getLogger(__name__)
 
@@ -138,6 +138,7 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("version_matches_active_gm", "Same version as the active Global Manager"),
         ("upgrade_status", "Upgrade status"), ("upgrade_target_version", "Upgrade target version"),
         ("switchover_readiness", "Switchover readiness"),
+        ("certificate_trust", "Certificate trust"),
     ]),
     "manager_node": ("Manager Node", [("online", "Online")],
                      [("address", "Address"), ("uuid", "Node UUID")]),
@@ -347,12 +348,19 @@ def get_adapter_definition() -> AdapterDefinition:
                         "first characters of the federation ID. Useful with several federations.",
             required=False, advanced=True)
         d.define_enum_parameter(
-            "certificate_trust", values=["enforce", "report"], label="Certificate trust",
+            "certificate_trust", values=["enforce", "ca", "report"], label="Certificate trust",
             description="enforce: a manager is collected only when its certificate is a trusted one (accepted on the "
                         "account for a Global Manager, known by the Global Manager for a Local Manager). A manager with "
                         "no trusted certificate on record is not collected. "
+                        "ca: the same, and a certificate is also trusted when it chains to a trusted CA (the CA "
+                        "certificates below, or the system store of the cloud proxy) and is valid for the address. "
                         "report: it is collected and the mismatch is reported.",
             default="enforce", advanced=True)
+        d.define_string_parameter(
+            "ca_certificates", label="Trusted CA certificates (PEM)",
+            description="Optional, for certificate trust 'ca'. The PEM text of the root or issuing CA certificates of "
+                        "the managers, one after the other. Pasting it on one line is fine.",
+            required=False, advanced=True)
         d.define_enum_parameter(
             "link_nsx_objects", values=["auto", "on", "off"], label="Link to the objects of the NSX integration",
             description="Each federation edge node and edge cluster gets a relationship to the transport node and "
@@ -420,7 +428,10 @@ class Config:
                 self.lm_overrides[name.strip()] = addr.strip()
         rp = str(val("rule_policies", "")).strip()
         self.rule_policies = {p.strip() for p in rp.split(",") if p.strip()}
-        self.enforce_trust = str(val("certificate_trust", "enforce")) == "enforce"
+        self.trust_mode = str(val("certificate_trust", "enforce"))
+        self.enforce_trust = self.trust_mode == "enforce"
+        self.ca_mode = self.trust_mode == "ca"
+        ca_pems, self.ca_invalid = split_pem(str(val("ca_certificates", "")))
         self.federation_name = str(val("federation_name", "")).strip()
         self.link_mode = str(val("link_nsx_objects", "auto"))
         self.lm_alarm_mode = str(val("lm_alarm_alerts", "auto"))
@@ -447,20 +458,34 @@ class Config:
         self.trusted = set()
         for cert in ai.get_certificates() or []:
             try:
-                self.trusted.add(pem_sha256(cert.get_certificate_string()))
+                pem = cert.get_certificate_string()
+                self.trusted.add(pem_sha256(pem))
+                ca_pems.extend(split_pem(pem)[0])  # an accepted CA certificate also anchors chains in CA mode
             except Exception:
                 pass
+        self.cadata = "".join(ca_pems)
 
     def gm_client(self, host: str) -> NsxClient:
         return NsxClient(host, self.user, self.password, self.timeout, self.call_budget,
-                         self.trusted, self.enforce_trust)
+                         self.trusted, self.enforce_trust, self.ca_mode, self.cadata)
 
     def lm_client(self, host: str, gm_thumbprint: Optional[str]) -> NsxClient:
         trusted = set(self.trusted)
         if gm_thumbprint:  # the Global Manager pins each Local Manager by SHA-256 thumbprint
             trusted.add(gm_thumbprint.lower().replace(":", ""))
         return NsxClient(host, self.lm_user, self.lm_password, self.timeout, self.call_budget,
-                         trusted, self.enforce_trust)
+                         trusted, self.enforce_trust, self.ca_mode, self.cadata)
+
+
+def trust_text(client: NsxClient) -> str:
+    """The certificate_trust property of a manager that was collected."""
+    if client.trust == "pinned":
+        return "trusted"
+    if client.trust == "ca":
+        return "trusted (CA chain)"
+    if not client.trusted and not client.ca_mode:
+        return "not checked (no trusted certificate on record)"
+    return "NOT TRUSTED (reported only)"
 
 
 def consolidated(status: Any) -> str:
@@ -670,6 +695,9 @@ class Collector:
         self.sync_read = False  # the active Global Manager answered the sync status call in this cycle
         self.gm_state: Dict[str, Dict[str, Any]] = {}  # Global Manager name -> what decides if it can take over
         self.gm_answered: Set[str] = set()  # Global Managers that answered in this cycle (their data may be partial)
+        # name -> site ID of every Global Manager and location seen, kept across cycles: the sync channels are keyed
+        # by site ID, and NSX names the far end of a channel only by its site name
+        self.site_ids: Dict[str, str] = dict(self.cache.get_any_age("site_ids") or {})
         # counter values of the previous cycle, for rates: object id -> {"t": epoch, counter: value}
         self.prev_counters: Dict[str, Dict[str, float]] = self.cache.get_any_age("counters") or {}
         self.new_counters: Dict[str, Dict[str, float]] = {}
@@ -793,6 +821,8 @@ class Collector:
             known = self.gm_sites_from_inventory()
         known.update({g["host"]: (g["site"].get("name"), g["site"].get("id")) for g in reachable if g["site"].get("id")})
         self.cache.put("gm_sites", known)
+        for name, site_id in known.values():
+            self.remember_site(name, site_id)
         live_sites = {g["site"].get("id") for g in reachable}
         for g in gms:
             if g in reachable or g["host"] not in known or known[g["host"]][1] in live_sites:
@@ -862,6 +892,8 @@ class Collector:
 
         # -- step 2: Local Managers, in parallel, each with its own budget
         lm_sites = sites_doc.get("locations", [])
+        for loc in lm_sites:  # before the workers start: a channel to a location is keyed by its site ID
+            self.remember_site(loc.get("name"), loc.get("site_id"))
         with ThreadPoolExecutor(max_workers=max(1, min(cfg.max_parallel, len(lm_sites) or 1))) as pool:
             lm_results = list(pool.map(self.collect_location, lm_sites))
         collected = sum(1 for r in lm_results if r)
@@ -1032,6 +1064,11 @@ class Collector:
         """Record the locations (site paths) an object depends on, for the outage property."""
         self.sites_of.setdefault(id(o), set()).update(p for p in site_paths if p)
 
+    def remember_site(self, name: Any, site_id: Any, overwrite: bool = True) -> None:
+        if name and site_id and self.site_ids.get(name) != site_id and (overwrite or name not in self.site_ids):
+            self.site_ids[name] = str(site_id)
+            self.cache.put("site_ids", self.site_ids)
+
     def path_of(self, location_name: Any) -> Optional[str]:
         return next((p for p, n in self.location_names.items() if n == location_name), None)
 
@@ -1142,6 +1179,8 @@ class Collector:
     def collect_active_gm(self, gm: Dict[str, Any]) -> Dict[str, Any]:
         client: NsxClient = gm["client"]
         fed_sites = client.get("/api/v1/sites").get("sites", [])
+        for s in fed_sites:  # every Global Manager and location, also a standby that the account does not list
+            self.remember_site(s.get("name"), s.get("id"), overwrite=False)
         self.split_brain_reported = int(any(s.get("split_brain") for s in fed_sites))
         self.config_version = next((s.get("config_version") for s in fed_sites if s.get("is_local")), None)
         status = client.try_get("/api/v1/sites/status", default={}) or {}
@@ -1187,6 +1226,7 @@ class Collector:
             self.at(lo, loc["path"])
             self.locations[loc["path"]] = lo
             self.location_names[loc["path"]] = loc["name"]
+            self.remember_site(loc["name"], loc["site_id"])
             lo.add_parent(self.fed)
             self.metrics(lo, {"gm_connection_up": None if loc["gm_connection_up"] is None else int(loc["gm_connection_up"])})
             self.props(lo, {
@@ -1395,6 +1435,7 @@ class Collector:
         self.props(go, {
             "mode": mode, "cluster_status": mcs.get("status"), "version": site.get("site_version"), "address": g["host"],
             "backup_enabled": b_enabled, "backup_last_result": b_result, "cert_first_to_expire": c_name,
+            "certificate_trust": trust_text(client),
         })
         up = self.upgrade_state(client)
         self.props(go, {"upgrade_status": up.get("upgrade_status"), "upgrade_target_version": up.get("target_version") or "none"})
@@ -1560,7 +1601,9 @@ class Collector:
         target = rc.get("site_name") or "?"
         stubs = rc.get("stubs") or []
         up = any(s.get("connection_up") for s in stubs) if stubs else None  # no stub listed: unknown
-        co = self.obj("sync_channel", f"{source_name} -> {target}", f"chan:{source_name}>{target}")
+        # keyed by the site IDs of both ends, so a renamed location or Global Manager keeps its channels
+        ends = f"{self.site_ids.get(source_name, source_name)}>{self.site_ids.get(target, target)}"
+        co = self.obj("sync_channel", f"{source_name} -> {target}", f"channel:{ends}")
         self.at(co, self.path_of(source_name), self.path_of(target))
         co.add_parent(source_obj)
         self.metrics(co, {"connection_up": None if up is None else int(up)})
@@ -1575,6 +1618,7 @@ class Collector:
         if loc["path"] not in self.locations:  # degraded mode: list came from the cache
             self.locations[loc["path"]] = lo
             self.location_names[loc["path"]] = loc["name"]
+            self.remember_site(loc["name"], loc["site_id"])
             lo.add_parent(self.fed)
         address = self.cfg.lm_overrides.get(loc["name"]) or loc.get("address")
         if not address:
@@ -1592,10 +1636,8 @@ class Collector:
             loc["_reached"] = True
             self.cache.put(f"collected:{loc['path']}", time.time())
             self.metrics(lo, {"collector_reachable": 1, "api_calls": client.calls, "minutes_since_collection": 0})
-            self.props(lo, {"collector_error": "", "certificate_trust": "not checked (no trusted certificate on record)"
-                            if not client.trusted else "trusted" if client.fingerprint in client.trusted
-                            else "NOT TRUSTED (reported only)"})
-            if client.trusted and client.fingerprint not in client.trusted:
+            self.props(lo, {"collector_error": "", "certificate_trust": trust_text(client)})
+            if client.trusted and not client.trust:
                 self.event(lo, f"The certificate of Local Manager {address} is not the one that is trusted "
                            "(changed or replaced?)", Criticality.WARNING, "certificate_trust")
             return True
@@ -1712,10 +1754,10 @@ class Collector:
                 if not tn_id:
                     continue
                 tn_name = inv["edge_names"].get(tn_id) or (m.get("transport_node") or {}).get("target_display_name") or tn_id
-                # The object is identified by location and node name, not by the NSX node ID: an edge node that is
-                # redeployed under the same name stays the same object and keeps its history.
-                edge_key = f"{loc['site_id']}:{tn_name}"
-                no = self.obj("edge_node", f"{tn_name} ({name})", f"edge:{edge_key}")
+                # The object is identified by the NSX transport node ID, which a rename or a redeploy of the edge
+                # keeps; only a node deleted and created again becomes a new object.
+                edge_key = tn_id
+                no = self.obj("edge_node", f"{tn_name} ({name})", f"edgenode:{edge_key}")
                 self.at(no, loc["path"])
                 no.add_parent(eo)
                 if link and lm_cluster_id:
@@ -1814,11 +1856,11 @@ class Collector:
 
     def tunnel(self, node: Object, tn_id: str, tn_name: str, src: Any, dst: Any, remote: str, t: dict, bgp_state: Optional[str],
                bgp_drops: Optional[int]) -> None:
-        to = self.obj("rtep_tunnel", f"{tn_name}: {src} -> {dst}", f"rtep:{tn_id}:{src}>{dst}")
+        to = self.obj("rtep_tunnel", f"{tn_name}: {src} -> {dst}", f"tunnel:{tn_id}:{src}>{dst}")
         self.at(to, *self.sites_of.get(id(node), ()), self.path_of(remote))
         to.add_parent(node)
         rx, tx = t.get("rx") or {}, t.get("tx") or {}
-        self.counters(to, f"rtep:{tn_id}:{src}>{dst}", {
+        self.counters(to, f"tunnel:{tn_id}:{src}>{dst}", {
             "rx_bytes": rx.get("total_bytes"), "tx_bytes": tx.get("total_bytes"),
             "rx_packets": rx.get("total_packets"), "tx_packets": tx.get("total_packets"),
             "rx_dropped": rx.get("dropped_packets"), "tx_dropped": tx.get("dropped_packets"),
@@ -1886,6 +1928,9 @@ def test(adapter_instance: AdapterInstance) -> TestResult:
             cfg = Config(adapter_instance)
             if not cfg.gm_hosts:
                 result.with_error("Enter at least one Global Manager address")
+                return result
+            if cfg.ca_invalid:
+                result.with_error(f"{cfg.ca_invalid} of the blocks in 'Trusted CA certificates' are not valid certificates")
                 return result
             ok, active, errors = 0, 0, []
             for host in cfg.gm_hosts:

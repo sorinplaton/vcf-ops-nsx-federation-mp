@@ -4,7 +4,9 @@
 # logs in again first. However it ends (success, failure, Ctrl-C, a dropped terminal), it switches the setting
 # back off and stops the headless Chrome it used. Exit code: 0 only when the install completed AND the setting
 # is off.
-# Needs OPS_HOST and OPS_PW (admin password) in the environment, and python3 with "requests".
+# After the install it deletes the alert and symptom definitions an older version left behind (cleanup_content.py).
+# Needs OPS_HOST and OPS_PW (admin password) in the environment, and python3 with "requests". OPS_INSECURE=1 skips
+# the certificate check of the suite API for that step (lab only); OPS_CA can name a CA file instead.
 # usage: install_unsigned.sh <pak>
 D="$(cd "$(dirname "$0")" && pwd)"
 W="${WORK_DIR:-$HOME/.fedmp-install}"; mkdir -p "$W" && chmod 700 "$W" || exit 1
@@ -32,6 +34,11 @@ got=1; for i in 1 2 3 4 5 6; do  # the token frame can take a while to load afte
 done
 if [ $got = 0 ]; then
   timeout 2100 python3 "$D/install_pak.py" "$W/uisess.json" "$1"; rc=$?
+  # an upgrade keeps the definitions the new version no longer ships: delete those orphans (pack IDs only)
+  if [ $rc = 0 ]; then
+    python3 "$D/cleanup_content.py" "$1" --delete $([ "${OPS_INSECURE:-0}" = 1 ] && echo --insecure) \
+      || echo "WARNING: orphan definitions were not all removed; run cleanup_content.py again" >&2
+  fi
 else
   echo "no UI session" >&2
 fi

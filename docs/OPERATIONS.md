@@ -6,7 +6,8 @@
 | --- | --- |
 | Global Manager addresses | The cluster address of every Global Manager cluster of one federation, active and standby. One account monitors one federation; a second federation needs a second account |
 | Credential | A read-only NSX account. The built-in `audit` account was tested. A separate account for the Local Managers is optional |
-| Certificate trust | `enforce` (default) or `report`, see below |
+| Certificate trust | `enforce` (default), `ca` or `report`, see below |
+| Trusted CA certificates (PEM) | Optional, for `ca`: the root or issuing CA certificates of the managers |
 | Federation name | Optional name of the federation object. Set it when VCF Operations monitors several federations |
 | Link to the objects of the NSX integration | `auto` (default): edge nodes and edge clusters are linked to the objects of the built-in NSX integration for a Local Manager that integration monitors. `on`: always. `off`: never |
 | Alerts for the federation alarms of a Local Manager | `auto` (default): raised by this pack only for a Local Manager the built-in NSX integration does not monitor. `always`, `never` |
@@ -24,12 +25,26 @@ presents another certificate.
 - A Local Manager is trusted by the thumbprint the Global Manager holds for it.
 - `enforce`: a manager whose certificate is not a trusted one, or that has no trusted certificate on record, is
   not collected. The alert names the manager.
+- `ca`: as `enforce`, and a certificate is also trusted when it chains to a trusted CA and is valid for the
+  address the adapter uses (a DNS name or an IP address in its subject alternative names). The trusted CAs are
+  the certificates in "Trusted CA certificates (PEM)", any CA certificate accepted on the account, and the
+  OpenSSL store of the adapter container image. CAs imported into the cloud proxy or into VCF Operations are not
+  part of that store: paste them in the setting. A manager address must then match its certificate: use the FQDN of the Global Manager
+  cluster, and an override for a Local Manager that the Global Manager knows by an address that is not in the
+  certificate. The connection test reports a block of the PEM setting that is not a certificate, and text with no
+  PEM block at all.
 - `report`: the manager is collected and the mismatch raises an alert on the location.
 
-An account created through the API has no accepted certificate. It collects in `report` mode only, until the
-certificates are accepted in the UI (edit the account, validate the connection, accept).
+The property "Certificate trust" of each Global Manager and location that is collected says how its certificate
+was trusted: `trusted` (pinned) or `trusted (CA chain)`. In `report` mode it reads `NOT TRUSTED (reported only)`
+for a certificate that is not trusted. A location that is not collected because of its certificate reads
+`NOT TRUSTED`. When the chain check fails, the reason OpenSSL gives (an unknown issuer, a name mismatch) is in the
+property "Collector error" of the location, or for a Global Manager in "Global Managers not collected" of the
+federation.
 
-There is no mode that validates a certificate chain and a host name.
+An account created through the API has no accepted certificate. With `enforce` it collects nothing until the
+certificates are accepted in the UI (edit the account, validate the connection, accept). With `ca` it collects
+as soon as the managers present certificates signed by a trusted CA.
 
 ## Sizing
 
@@ -153,9 +168,34 @@ container and is lost when the container restarts.
 2. Stop and start the account. Check that it reaches "Collecting"; start it a second time if it stays stopped.
 3. Metrics appear after three cycles, rates after four.
 
-An upgrade replaces the alert content of the pack. A symptom definition that a new version no longer ships can
-stay in VCF Operations, unused by any alert; delete it under Operate, Administration, Configurations, Symptom Definitions, or
-with `DELETE /api/symptomdefinitions/{id}`.
+An upgrade replaces the alert content of the pack but keeps the alert, symptom and recommendation definitions that
+the new version no longer ships. `install/cleanup_content.py` compares what VCF Operations holds with what the PAK
+ships and deletes those orphans. It only touches the IDs the pack generates (`AlertDefinition-NSXFederation-*`,
+`SymptomDefinition-NSXFederation-*`, `Recommendation-df-NSXFederation-*`), never a definition made in the UI.
+`install/install_unsigned.sh` runs it after every install. By hand:
+
+```bash
+export OPS_HOST=<vcf-operations-fqdn> OPS_PW=<admin password>
+python3 install/cleanup_content.py pack/build/NSXFederation_<version>.pak            # report only
+python3 install/cleanup_content.py pack/build/NSXFederation_<version>.pak --delete   # delete the orphans
+```
+
+### Upgrade from a version before 1.9.0
+
+Edge nodes and RTEP tunnels are keyed by the NSX transport node ID, and sync channels by the site IDs of both
+ends. Before 1.9.0 they were keyed by name: a renamed edge node became a new object, and so did the sync
+channels of a renamed location or Global Manager. Locations and Global Managers themselves were always keyed by
+site ID. After the
+upgrade, every edge node, RTEP tunnel and sync channel is created again under its new key, and the old objects
+stop receiving data. Their history stays on the old objects. Delete the old objects once their history is no
+longer needed:
+
+```bash
+python3 install/cleanup_content.py pack/build/NSXFederation_<version>.pak --legacy-objects            # list them
+python3 install/cleanup_content.py pack/build/NSXFederation_<version>.pak --legacy-objects --delete   # delete them
+```
+
+"Delete objects that left NSX after (days)" also deletes them, after that many days.
 
 ## Objects that no longer exist
 

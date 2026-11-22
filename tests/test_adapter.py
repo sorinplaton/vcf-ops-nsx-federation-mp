@@ -1236,3 +1236,228 @@ def test_a_former_standby_does_not_keep_ready(nsx):
     r = run()
     gm = next(g for g in r["global_manager"].values() if g["p"]["address"] == standby)
     assert gm["m"]["switchover_ready"] == 0 and gm["p"]["switchover_readiness"] == "not applicable (mode NONE)"
+
+
+# ---- 1.9.0: CA-chain trust, identity by NSX ID -------------------------------------------------------------------
+def _openssl(*args, cwd):
+    import subprocess
+    subprocess.run(["openssl", *args], cwd=cwd, check=True, capture_output=True)
+
+
+def _pki(d):
+    """Two CAs and two server certificates in `d`: good.pem (CA one, valid for 127.0.0.1) and badname.pem (CA one,
+    valid only for other.example.test)."""
+    for ca in ("ca1", "ca2"):
+        _openssl("req", "-x509", "-newkey", "rsa:2048", "-nodes", "-days", "2", "-subj", f"/CN={ca}",
+                 "-keyout", f"{ca}.key", "-out", f"{ca}.pem", cwd=d)
+    for name, san in (("good", "IP:127.0.0.1"), ("badname", "DNS:other.example.test")):
+        _openssl("req", "-newkey", "rsa:2048", "-nodes", "-subj", f"/CN={name}", "-keyout", f"{name}.key",
+                 "-out", f"{name}.csr", cwd=d)
+        with open(os.path.join(d, f"{name}.ext"), "w") as fd:
+            fd.write(f"subjectAltName={san}\n")
+        _openssl("x509", "-req", "-in", f"{name}.csr", "-CA", "ca1.pem", "-CAkey", "ca1.key", "-CAcreateserial",
+                 "-days", "2", "-extfile", f"{name}.ext", "-out", f"{name}.pem", cwd=d)
+
+
+def _serve(d, name):
+    """A TLS server on 127.0.0.1 presenting `name`.pem; returns its port."""
+    import socket
+    import ssl
+    import threading
+    ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    ctx.load_cert_chain(os.path.join(d, f"{name}.pem"), os.path.join(d, f"{name}.key"))
+    srv = socket.socket()
+    srv.bind(("127.0.0.1", 0))
+    srv.listen(8)
+
+    def loop():
+        while True:
+            conn, _ = srv.accept()
+            try:
+                with ctx.wrap_socket(conn, server_side=True) as tls:
+                    tls.recv(1)
+            except Exception:
+                pass
+    threading.Thread(target=loop, daemon=True).start()
+    return srv.getsockname()[1]
+
+
+def test_ca_mode_trusts_a_certificate_signed_by_a_trusted_ca_for_this_address(tmp_path):
+    d = str(tmp_path)
+    _pki(d)
+    ca1, ca2 = (open(os.path.join(d, f"{c}.pem")).read() for c in ("ca1", "ca2"))
+    good, badname = _serve(d, "good"), _serve(d, "badname")
+    ok = nsxclient.NsxClient(f"127.0.0.1:{good}", "u", "p", ca_mode=True, cadata=ca1)
+    ok.check_trust()
+    assert ok.trust == "ca" and isinstance(ok._session.get_adapter("https://x/"), nsxclient._PinnedAdapter)
+    with pytest.raises(nsxclient.CertificateNotTrusted, match="does not chain to a trusted CA"):
+        nsxclient.NsxClient(f"127.0.0.1:{good}", "u", "p", ca_mode=True, cadata=ca2).check_trust()
+    with pytest.raises(nsxclient.CertificateNotTrusted, match="mismatch"):
+        nsxclient.NsxClient(f"127.0.0.1:{badname}", "u", "p", ca_mode=True, cadata=ca1).check_trust()
+    # a pinned certificate is trusted in CA mode too, whatever its issuer
+    pin = nsxclient.server_cert_sha256("127.0.0.1", badname)
+    pinned = nsxclient.NsxClient(f"127.0.0.1:{badname}", "u", "p", trusted_fingerprints=[pin], ca_mode=True)
+    pinned.check_trust()
+    assert pinned.trust == "pinned"
+
+
+def test_a_pem_pasted_on_one_line_is_read(tmp_path):
+    d = str(tmp_path)
+    _openssl("req", "-x509", "-newkey", "rsa:2048", "-nodes", "-days", "2", "-subj", "/CN=ca",
+             "-keyout", "ca.key", "-out", "ca.pem", cwd=d)
+    pem = open(os.path.join(d, "ca.pem")).read()
+    good, bad = nsxclient.split_pem(" ".join(pem.split("\n")) + " -----BEGIN CERTIFICATE----- bm90IGEgY2VydA== -----END CERTIFICATE-----")
+    assert bad == 1 and len(good) == 1 and nsxclient.pem_sha256(good[0]) == nsxclient.pem_sha256(pem)
+
+
+def test_ca_mode_reports_how_each_manager_is_trusted(nsx, monkeypatch):
+    monkeypatch.setattr(nsxclient, "chain_check", lambda host, port, cadata, timeout=10.0: ("f" * 64, ""))
+    r = run(trust="ca")
+    assert all(o["p"]["certificate_trust"] == "trusted (CA chain)" for o in r["global_manager"].values())
+    assert all(o["p"]["certificate_trust"] == "trusted (CA chain)" for o in r["location"].values())
+    monkeypatch.setattr(nsxclient, "chain_check", lambda host, port, cadata, timeout=10.0: (None, "unable to get local issuer certificate"))
+    r = run(trust="ca")  # no manager is collected; the federation says why
+    assert fed(r)["m"]["global_managers|global_managers_unreachable"] == 2
+    assert all(o["m"]["connectivity|reachable"] == 0 for o in r["global_manager"].values())
+    assert "unable to get local issuer" in fed(r)["p"]["global_manager_errors"]
+
+
+def test_a_certificate_that_changes_between_the_two_checks_is_not_trusted(monkeypatch):
+    monkeypatch.setattr(nsxclient, "server_cert_sha256", lambda host, port=443, timeout=10.0: "a" * 64)
+    monkeypatch.setattr(nsxclient, "chain_check", lambda host, port, cadata, timeout=10.0: ("b" * 64, ""))
+    with pytest.raises(nsxclient.CertificateNotTrusted, match="changed between two connections"):
+        nsxclient.NsxClient("gm.example.test", "u", "p", ca_mode=True).check_trust()
+
+
+def test_a_bad_ca_setting_does_not_stop_the_collection(nsx):
+    # a zero-width space in the pasted PEM, and text without any PEM block
+    for junk in ("-----BEGIN CERTIFICATE----- MII\u200bB -----END CERTIFICATE-----", "MIIBkTCB+wIJAK"):
+        r = run(ca_certificates=junk)
+        assert r["_error"] is None and r["global_manager"]
+        assert nsxclient.split_pem(junk) == ([], 1)
+
+
+def test_addresses_with_a_port_or_ipv6():
+    assert nsxclient.split_hostport("gm.example.test") == ("gm.example.test", 443, "gm.example.test")
+    assert nsxclient.split_hostport("gm.example.test:8443") == ("gm.example.test", 8443, "gm.example.test:8443")
+    assert nsxclient.split_hostport("[fd00::1]:8443") == ("fd00::1", 8443, "[fd00::1]:8443")
+    assert nsxclient.split_hostport("fd00::1") == ("fd00::1", 443, "[fd00::1]")
+    assert nsxclient.split_hostport("gm:x")[1] == 0
+
+
+def test_the_connection_test_refuses_a_ca_setting_that_is_not_a_certificate():
+    import adapter
+    from aria.ops.adapter_instance import AdapterInstance
+    ids = {"gm_hosts": "gm.example.test", "certificate_trust": "ca",
+           "ca_certificates": "-----BEGIN CERTIFICATE----- bm9wZQ== -----END CERTIFICATE-----"}
+    ai = AdapterInstance({
+        "adapter_key": {"adapter_kind": "NSXFederation", "object_kind": "NSXFederation_adapter_instance", "name": "test",
+                        "identifiers": [{"key": k, "value": v, "is_part_of_uniqueness": True} for k, v in ids.items()]},
+        "credential_config": {"credential_key": "nsx_credential", "credential_fields": [
+            {"key": "username", "value": "audit"}, {"key": "password", "value": "x"}]}})
+    assert "not valid certificates" in (adapter.test(ai).get_json().get("errorMessage") or "")
+
+
+def test_edge_nodes_and_tunnels_keep_their_identity_when_renamed(nsx):
+    before = run()
+    host = next(h for h, calls in nsx.data.items() if "/api/v1/transport-nodes?node_types=EdgeNode&page_size=500" in calls)
+    nodes = nsx.data[host]["/api/v1/transport-nodes?node_types=EdgeNode&page_size=500"]["results"]
+    old = nodes[0]["display_name"]
+    nodes[0]["display_name"] = "renamed-edge"
+    for f in os.listdir(nsxclient.CACHE_DIR):  # the inventory is cached for 30 minutes
+        os.remove(os.path.join(nsxclient.CACHE_DIR, f))
+    after = run()
+    ids = lambda r, kind: {o["id"] for o in r[kind].values()}
+    assert ids(before, "edge_node") == ids(after, "edge_node")
+    assert ids(before, "rtep_tunnel") == ids(after, "rtep_tunnel")
+    assert any(n.startswith("renamed-edge") for n in after["edge_node"]) and not any(n.startswith(old + " ") for n in after["edge_node"])
+    assert any(o["id"].endswith(":edgenode:" + nodes[0]["id"]) for n, o in after["edge_node"].items() if n.startswith("renamed-edge"))
+
+
+def _channel_ids(r):
+    return {o["id"] for o in r["sync_channel"].values()}
+
+
+def test_sync_channels_are_keyed_by_site_id(nsx):
+    r = run()
+    site_ids = {s["id"] for s in nsx.data[GM_HOSTS[0]]["/api/v1/sites"]["sites"]}
+    for o in r["sync_channel"].values():
+        ends = o["id"].split(":channel:", 1)[1].split(">")
+        assert set(ends) <= site_ids, o["id"]
+
+
+def test_a_standby_the_account_does_not_list_gets_channels_keyed_by_id(nsx):
+    # only the active Global Manager is listed: the standby is known from the site list of the active one
+    first = run(gm_hosts=GM_HOSTS[:1])
+    site_ids = {s["id"] for s in nsx.data[GM_HOSTS[0]]["/api/v1/sites"]["sites"]}
+    assert all(set(i.split(":channel:", 1)[1].split(">")) <= site_ids for i in _channel_ids(first))
+    assert _channel_ids(run()) == _channel_ids(first)  # adding the standby address changes no key
+
+
+def test_channel_keys_do_not_change_in_degraded_mode_after_a_restart(nsx):
+    normal = _channel_ids(run())
+    site_ids = nsx.data[GM_HOSTS[0]]["/api/v1/sites"]
+    for f in os.listdir(nsxclient.CACHE_DIR):  # a container restart: the name -> ID map is gone
+        if f.endswith(".json"):
+            data = json.load(open(os.path.join(nsxclient.CACHE_DIR, f)))
+            data.pop("site_ids", None)
+            json.dump(data, open(os.path.join(nsxclient.CACHE_DIR, f), "w"))
+    for h in GM_HOSTS:  # no Global Manager answers: the locations come from the cached list
+        nsx.data[h] = {}
+    degraded = _channel_ids(run())
+    assert degraded and degraded <= normal, degraded - normal
+    assert site_ids
+
+
+def _cleanup():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("cleanup_content", os.path.join(ROOT, "install", "cleanup_content.py"))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_the_cleanup_deletes_only_unused_pack_orphans():
+    c = _cleanup()
+    S, A, R = c.PREFIXES["symptom"], c.PREFIXES["alert"], c.PREFIXES["recommendation"]
+    ship = {"alert": {A + f"a{i}" for i in range(20)}, "symptom": {S + f"s{i}" for i in range(20)},
+            "recommendation": {R + f"r{i}" for i in range(20)}}
+    have = {k: set(v) for k, v in ship.items()}
+    have["alert"] |= {A + "old"}
+    have["symptom"] |= {S + "gone", S + "used", S + "by_old_alert", "SymptomDefinition-1234-made-in-ui"}
+    have["recommendation"] |= {R + "gone", R + "used"}
+    alerts = [
+        {"id": A + "old", "adapterKindKey": "NSXFederation", "states": [{"base-symptom-set": {
+            "symptomDefinitionIds": [S + "by_old_alert"]}}]},
+        {"id": "AlertDefinition-made-in-ui", "adapterKindKey": "NSXFederation", "states": [{
+            "base-symptom-set": {"symptomSets": [{"symptomDefinitionIds": ["!" + S + "used"]}]},
+            "recommendationPriorityMap": {R + "used": 1}}]},
+    ]
+    todo = c.plan(ship, have, alerts)
+    assert todo["alert"][1] == [A + "old"]
+    assert todo["symptom"][1] == sorted([S + "gone", S + "by_old_alert"]) and todo["symptom"][2] == [S + "used"]
+    assert todo["recommendation"][1] == [R + "gone"] and todo["recommendation"][2] == [R + "used"]
+    assert not any(t[3] for t in todo.values())
+
+
+def test_the_cleanup_refuses_when_the_installed_ids_do_not_look_like_the_pak():
+    c = _cleanup()
+    R = c.PREFIXES["recommendation"]
+    ship = {"alert": set(), "symptom": set(), "recommendation": {R + f"r{i}" for i in range(20)}}
+    have = {"alert": set(), "symptom": set(), "recommendation": {R + f"x{i}" for i in range(20)}}  # stored otherwise
+    assert c.plan(ship, have, [])["recommendation"][3]
+    have["recommendation"] = {R + f"r{i}" for i in range(4)} | {R + f"x{i}" for i in range(16)}
+    assert c.plan(ship, have, [])["recommendation"][3]
+
+
+def test_the_cleanup_reads_every_definition_the_pack_ships():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("cleanup_content", os.path.join(ROOT, "install", "cleanup_content.py"))
+    cleanup = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cleanup)
+    xml = os.path.join(ROOT, "pack", "content", "alertdefs", "nsxfederation_alerts.xml")
+    ids = cleanup.shipped(xml)
+    text = open(xml).read()
+    assert len(ids["alert"]) == text.count("<AlertDefinition ") and len(ids["symptom"]) == text.count("<SymptomDefinition ")
+    assert ids["recommendation"] and all(i.startswith(cleanup.PREFIXES["recommendation"]) for i in ids["recommendation"])
+    assert all(i.startswith(cleanup.PREFIXES[k]) for k in ("alert", "symptom") for i in ids[k])

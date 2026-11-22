@@ -25,7 +25,7 @@ Les valeurs à remplacer dans la suite :
 | `<repository>` | `nsxfederation` |
 | `<ops>` | `ops.example.com` |
 | `<gm1>`, `<gm2>` | adresse de cluster du Global Manager actif et du standby |
-| `<version>` | `1.8.0` |
+| `<version>` | `1.9.0` |
 
 ## Liste de contrôle
 
@@ -199,10 +199,12 @@ compte de type NSX Federation.
 - [ ] Identifiant : le compte NSX en lecture seule. N'ajouter l'identifiant des Local Managers que s'il est
       différent.
 - [ ] Collecteur : le proxy cloud qui fait confiance au registre (étape 3).
-- [ ] Confiance des certificats : garder `enforce`.
+- [ ] Confiance des certificats : garder `enforce`, ou choisir `ca` quand les managers ont des certificats signés
+      par une autorité de certification interne. Avec `ca`, coller les certificats de l'autorité dans « Trusted CA
+      certificates (PEM) » et utiliser des adresses que les certificats nomment.
 - [ ] Valider la connexion et accepter les certificats des Global Managers. Sans certificat accepté, `enforce`
       ne collecte rien. Un compte créé via l'API n'a aucun certificat accepté ; le modifier dans
-      l'interface, puis valider et accepter.
+      l'interface, puis valider et accepter, ou utiliser `ca`.
 - [ ] Les autres réglages peuvent garder leur valeur par défaut. [OPERATIONS.md](OPERATIONS.md) (en anglais)
       décrit chacun d'eux.
 
@@ -225,5 +227,11 @@ compte de type NSX Federation.
    reste arrêté.
 3. Les métriques reviennent après trois cycles, les taux après quatre.
 
-Une définition de symptôme que la nouvelle version ne fournit plus reste inutilisée dans VCF Operations. La
-supprimer sous Operate, Administration, Configurations, Symptom Definitions.
+`install_unsigned.sh` supprime les définitions d'alertes, de symptômes et de recommandations que la nouvelle
+version ne fournit plus.
+Après une installation manuelle, lancer `install/cleanup_content.py <pak> --delete` (voir
+[OPERATIONS.md](OPERATIONS.md), Upgrade, en anglais).
+
+Depuis une version antérieure à 1.9.0, les edge nodes, les tunnels RTEP et les canaux de synchronisation sont
+recréés sous une clé fondée sur leur ID NSX, et les anciens objets ne reçoivent plus de données.
+`cleanup_content.py <pak> --legacy-objects --delete` les supprime, avec leur historique.

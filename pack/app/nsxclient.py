@@ -4,8 +4,9 @@ Design points (from the enterprise review):
   * a call budget per manager and per cycle, so one large site cannot starve the cycle
   * back-off on HTTP 429/503 (NSX throttles each client: 100 req/s, 40 concurrent by default)
   * cursor paging for every list call
-  * certificate trust by pinned certificate (VCF Operations trust store) or by the SHA-256
-    thumbprint the Global Manager holds for a Local Manager; a changed certificate is
+  * certificate trust by pinned certificate (VCF Operations trust store), by the SHA-256
+    thumbprint the Global Manager holds for a Local Manager, or by a CA chain with a name check
+    (trust mode "ca": the CA certificates of the account and the system store); a changed certificate is
     reported as its own condition, not as a plain connection failure. Every connection of the
     session is bound to the fingerprint that was checked (urllib3 assert_fingerprint), so the
     credentials never travel to a server that presents another certificate
@@ -14,11 +15,12 @@ Design points (from the enterprise review):
 import hashlib
 import json
 import os
+import re
 import socket
 import ssl
 import threading
 import time
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import requests
 import urllib3
@@ -70,6 +72,63 @@ def pem_sha256(pem: str) -> str:
     return hashlib.sha256(ssl.PEM_cert_to_DER_cert(pem.strip() + "\n")).hexdigest()
 
 
+_PEM = re.compile(r"-----BEGIN CERTIFICATE-----(.*?)-----END CERTIFICATE-----", re.S)
+
+
+def split_pem(text: str) -> Tuple[List[str], int]:
+    """(valid PEM certificates, number of blocks that are not certificates) found in `text`. A setting field
+    keeps one line, so a pasted PEM arrives with spaces for line breaks: the base64 body is rewrapped."""
+    good: List[str] = []
+    bad = 0
+    if (text or "").strip() and not _PEM.search(text):  # text without a PEM block (bare base64, PKCS#7...)
+        bad += 1
+    for body in _PEM.findall(text or ""):
+        b64 = "".join(body.split())
+        if not b64.isascii():  # a pasted zero-width space or typographic dash is not base64
+            bad += 1
+            continue
+        pem = "-----BEGIN CERTIFICATE-----\n" + "\n".join(b64[i:i + 64] for i in range(0, len(b64), 64)) \
+              + "\n-----END CERTIFICATE-----\n"
+        try:
+            ssl.create_default_context().load_verify_locations(cadata=pem)  # parses the certificate itself
+            good.append(pem)
+        except (ValueError, TypeError, ssl.SSLError):
+            bad += 1
+    return good, bad
+
+
+def split_hostport(address: str) -> Tuple[str, int, str]:
+    """(host, port, netloc for a URL) of "fqdn", "fqdn:port", "1.2.3.4", "[v6]", "[v6]:port" or a bare IPv6."""
+    a = address.strip()
+    if a.startswith("["):
+        host, _, rest = a[1:].partition("]")
+        port = rest[1:] if rest.startswith(":") else ""
+    elif a.count(":") > 1:  # a bare IPv6 address has no port
+        host, port = a, ""
+    else:
+        host, _, port = a.partition(":")
+    try:
+        port_n = int(port) if port else 443
+    except ValueError:
+        port_n = 0  # not a port: the connection fails and the error names the address
+    netloc = (f"[{host}]" if ":" in host else host) + (f":{port_n}" if port else "")
+    return host, port_n, netloc
+
+
+def chain_check(host: str, port: int, cadata: str, timeout: float = 10.0) -> Tuple[Optional[str], str]:
+    """(SHA-256 fingerprint of the certificate, "") when the server certificate chains to a CA of `cadata` or of
+    the system store and is valid for `host` (DNS name or IP address in the SAN); (None, reason) otherwise."""
+    ctx = ssl.create_default_context()
+    if cadata.strip():
+        ctx.load_verify_locations(cadata=cadata)
+    try:
+        with socket.create_connection((host, port), timeout=timeout) as sock:
+            with ctx.wrap_socket(sock, server_hostname=host) as tls:
+                return hashlib.sha256(tls.getpeercert(binary_form=True) or b"").hexdigest(), ""
+    except ssl.SSLCertVerificationError as e:
+        return None, str(getattr(e, "verify_message", "") or e)
+
+
 class NsxClient:
     def __init__(
         self,
@@ -80,8 +139,11 @@ class NsxClient:
         call_budget: int = 2000,
         trusted_fingerprints: Optional[Iterable[str]] = None,
         enforce_trust: bool = False,
+        ca_mode: bool = False,
+        cadata: str = "",
     ) -> None:
         self.host = host.strip()
+        self._addr, self._port, self._netloc = split_hostport(self.host)
         self.timeout = timeout
         self.call_budget = call_budget
         self.calls = 0  # HTTP requests sent, retries included: what the budget counts
@@ -93,7 +155,11 @@ class NsxClient:
         self.transport_failures = 0  # consecutive timeouts or dropped connections
         self.failed: Dict[str, str] = {}  # optional calls that failed in this cycle: path -> reason
         self.trusted = {f.lower().replace(":", "") for f in (trusted_fingerprints or [])}
-        self.enforce_trust = enforce_trust
+        self.enforce_trust = enforce_trust or ca_mode
+        self.ca_mode = ca_mode  # trusted: a pinned fingerprint, or a CA chain with a matching name
+        self.cadata = cadata
+        self.trust = ""  # how the certificate was trusted: "pinned", "ca", or "" (not trusted, or not checked)
+        self.chain_error = ""
         self.fingerprint: Optional[str] = None
         self._lock = threading.Lock()
         self._session = requests.Session()
@@ -104,18 +170,30 @@ class NsxClient:
 
     # ---- trust -------------------------------------------------------------------
     def check_trust(self) -> None:
-        """Raise CertificateNotTrusted if trust is enforced and the server certificate
-        is not one of the pinned fingerprints."""
+        """Raise CertificateNotTrusted if trust is enforced and the server certificate is not trusted: one of the
+        pinned fingerprints, or (CA mode) a certificate that chains to a trusted CA and is valid for the address."""
         if self._trust_checked:
             return
-        host, _, port = self.host.partition(":")
-        self.fingerprint = server_cert_sha256(host, int(port or 443), min(self.timeout, 10))
-        if self.enforce_trust and not self.trusted:
-            raise CertificateNotTrusted(
-                f"{self.host}: no trusted certificate is recorded for this manager (accept its certificate "
-                "on the account, or set certificate trust to 'report')"
-            )
-        if self.enforce_trust and self.fingerprint not in self.trusted:
+        host, port_n = self._addr, self._port
+        self.fingerprint = server_cert_sha256(host, port_n, min(self.timeout, 10))
+        if self.fingerprint in self.trusted:
+            self.trust = "pinned"
+        elif self.ca_mode:
+            chained, self.chain_error = chain_check(host, port_n, self.cadata, min(self.timeout, 10))
+            if chained and chained == self.fingerprint:
+                self.trust = "ca"
+            elif not self.chain_error:
+                self.chain_error = "the certificate changed between two connections"
+        if self.enforce_trust and not self.trust:
+            if self.ca_mode:
+                raise CertificateNotTrusted(
+                    f"{self.host}: certificate {self.fingerprint[:16]}... is not pinned and does not chain to a trusted "
+                    f"CA for this address ({self.chain_error})")
+            if not self.trusted:
+                raise CertificateNotTrusted(
+                    f"{self.host}: no trusted certificate is recorded for this manager (accept its certificate "
+                    "on the account, or set certificate trust to 'ca' or 'report')"
+                )
             raise CertificateNotTrusted(
                 f"{self.host}: certificate {self.fingerprint[:16]}... is not a trusted certificate"
             )
@@ -141,7 +219,7 @@ class NsxClient:
                 raise requests.ConnectionError(f"{self.host}: skipped after repeated timeouts in this cycle")
             try:
                 resp = self._session.get(
-                    f"https://{self.host}{path}", params=params, timeout=self.timeout
+                    f"https://{self._netloc}{path}", params=params, timeout=self.timeout
                 )
                 if resp.status_code not in (429, 503):
                     self.transport_failures = 0

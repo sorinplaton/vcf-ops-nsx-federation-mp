@@ -2,7 +2,7 @@
 
 A management pack that monitors NSX Federation (NSX 9.1) in VCF Operations 9.1.1. It is built with the
 [VCF Operations Integration SDK](https://vmware.github.io/vmware-vcf-operations-integration-sdk/introduction)
-in Python. Current version: 1.8.0.
+in Python. Current version: 1.9.0.
 
 This is a lab project, not a Broadcom product. The pack is unsigned and comes with no support. It only reads
 from NSX.
@@ -47,7 +47,8 @@ alert, is in [docs/FEATURES.md](docs/FEATURES.md) (French: [docs/FEATURES.fr.md]
 - Optional links from edge nodes and edge clusters to the objects of the built-in NSX integration.
 
 The account takes one or two Global Manager addresses and one credential. The Local Managers are discovered
-from the Global Manager and checked against the certificate thumbprint it holds for them. A read-only NSX
+from the Global Manager and checked against the certificate thumbprint it holds for them. With certificate trust
+`ca`, a certificate signed by a trusted CA and valid for the address is trusted too. A read-only NSX
 account is enough: the built-in `audit` account was tested.
 
 ## Layout
@@ -112,7 +113,8 @@ install/install_unsigned.sh pack/build/NSXFederation_<version>.pak   # turns the
 The scripted route uses calls that are internal to the VCF Operations UI. They are unsupported and can
 change with any release.
 
-After an upgrade of the pack, stop and start the account.
+After an upgrade of the pack, stop and start the account. `install_unsigned.sh` also deletes the alert,
+symptom and recommendation definitions the new version no longer ships (`install/cleanup_content.py`).
 
 ## Tested with
 

@@ -183,7 +183,10 @@ def document():
                "- Trouve le Global Manager actif à chaque cycle et suit un basculement quand le compte liste les deux "
                "Global Managers.",
                "- Découvre les Local Managers depuis le Global Manager et compare chaque certificat à l'empreinte que "
-               "détient le Global Manager ; chaque connexion est liée au certificat vérifié.",
+               "détient le Global Manager, ou (confiance des certificats ca) à une autorité de certification de confiance "
+               "et à l'adresse ; chaque connexion est liée au certificat vérifié.",
+               "- Identifie les edge nodes et les tunnels RTEP par l'ID NSX du transport node, et les canaux de "
+               "synchronisation par l'ID de site : un renommage garde l'objet et son historique.",
                "- Continue de collecter les Local Managers quand aucun Global Manager ne répond, à partir de la liste des "
                "emplacements des cycles précédents (cache de l'adaptateur, puis VCF Operations).",
                "- Signale un appel NSX en échec comme une donnée inconnue : rien n'est envoyé pour les valeurs concernées, "
@@ -221,7 +224,10 @@ def document():
                "- Finds the active Global Manager in every cycle and follows a switchover when the account lists both "
                "Global Managers.",
                "- Discovers the Local Managers from the Global Manager and checks each certificate against the thumbprint "
-               "the Global Manager holds; every connection is bound to the certificate that was checked.",
+               "the Global Manager holds, or (certificate trust ca) against a trusted CA and the address; every "
+               "connection is bound to the certificate that was checked.",
+               "- Keys edge nodes and RTEP tunnels by NSX transport node ID and sync channels by site ID, so a rename "
+               "keeps the object and its history.",
                "- Keeps collecting the Local Managers when no Global Manager answers, from the location list of earlier "
                "cycles (adapter cache, then VCF Operations).",
                "- Reports a failed NSX call as unknown data: nothing is sent for the values behind it, and the call is "

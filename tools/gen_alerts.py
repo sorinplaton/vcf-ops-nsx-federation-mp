@@ -195,7 +195,8 @@ R = {
     "split_brain": "Two Global Managers claim the active role. Do not change global configuration. Decide which Global Manager "
                    "holds the valid configuration and force the other one to standby, as described in the NSX Federation recovery documentation. See https://knowledge.broadcom.com/external/article/324244",
     "gm_reach": "Check that the Global Manager appliance is powered on and that the cloud proxy can reach it on TCP 443. If its "
-                "certificate was replaced, update the trusted certificate of the adapter instance.",
+                "certificate was replaced, update the trusted certificate of the adapter instance, or switch certificate trust "
+                "to 'ca' and add the issuing CA.",
     "standby": "Deploy a standby Global Manager in another site and add it under System, Location Manager, Add Standby Global "
                "Manager. Without a standby the global configuration cannot be changed if the active Global Manager is lost. See https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vcf-9-0-and-later/9-0/advanced-network-management/administration-guide/managing-nsx-t-in-multiple-locations/nsx-t-federation/disaster-recovery-using-federation.html",
     "gaps": "Some NSX API calls of the collection failed, so part of the data is unknown and the alerts that depend on it are "
@@ -232,7 +233,9 @@ R = {
     "collector": "Check that the cloud proxy can reach the Local Manager on TCP 443 and that the account of the adapter instance "
                  "is valid on this Local Manager. This is the monitoring path only.",
     "cert_trust": "The Local Manager presents a certificate that is not the one the Global Manager holds for it. Confirm the "
-                  "certificate change is expected, then update the location in the Global Manager so the thumbprint matches.",
+                  "certificate change is expected, then update the location in the Global Manager so the thumbprint matches. "
+                  "With certificate trust 'ca', also check that the certificate chains to a CA of the adapter instance and "
+                  "that its subject alternative names include the address used (see the Collector error property).",
     "full_sync": "Open the location in System, Location Manager and read the sync status details. Start a full sync again from "
                  "the Global Manager once the cause (connectivity, version, disk space) is fixed.",
     "intersite": "Check the RTEP network between the edge clusters of the locations: RTEP VLAN, MTU (1700 recommended), routing "

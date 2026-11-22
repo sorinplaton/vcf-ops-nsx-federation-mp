@@ -24,7 +24,7 @@ The placeholders used below:
 | `<repository>` | `nsxfederation` |
 | `<ops>` | `ops.example.com` |
 | `<gm1>`, `<gm2>` | cluster address of the active and of the standby Global Manager |
-| `<version>` | `1.8.0` |
+| `<version>` | `1.9.0` |
 
 ## Checklist
 
@@ -191,10 +191,12 @@ Federation.
       account per federation.
 - [ ] Credential: the read-only NSX account. Add the Local Manager credential only if it differs.
 - [ ] Collector: the cloud proxy that trusts the registry (step 3).
-- [ ] Certificate trust: keep `enforce`.
+- [ ] Certificate trust: keep `enforce`, or choose `ca` when the managers have certificates signed by an
+      internal CA. With `ca`, paste the CA certificates in "Trusted CA certificates (PEM)" and use addresses
+      that the certificates name.
 - [ ] Validate the connection and accept the Global Manager certificates. Without an accepted certificate,
       `enforce` collects nothing. An account created through the API has no accepted certificate; edit it in
-      the UI, validate and accept.
+      the UI, validate and accept, or use `ca`.
 - [ ] Other settings can stay at their defaults. [OPERATIONS.md](OPERATIONS.md) describes each one.
 
 ## 8. Check the collection
@@ -214,5 +216,10 @@ Federation.
 2. Stop and start the account. Check that it reaches "Collecting"; start it a second time if it stays stopped.
 3. Metrics return after three cycles, rates after four.
 
-A symptom definition the new version no longer ships stays in VCF Operations unused. Delete it under
-Operate, Administration, Configurations, Symptom Definitions.
+`install_unsigned.sh` deletes the alert, symptom and recommendation definitions that the new version no longer
+ships. After a
+manual install, run `install/cleanup_content.py <pak> --delete` (see [OPERATIONS.md](OPERATIONS.md), Upgrade).
+
+From a version before 1.9.0, the edge nodes, RTEP tunnels and sync channels are created again under a key based
+on their NSX ID, and the old objects stop receiving data. `cleanup_content.py <pak> --legacy-objects --delete`
+deletes them, with their history.
