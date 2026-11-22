@@ -38,7 +38,7 @@ jobs:
         run: pip-audit --no-deps --disable-pip -r pack/image-requirements.txt --progress-spinner off
       - name: SBOM of the adapter image (CycloneDX)
         run: cyclonedx-py requirements pack/image-requirements.txt --of JSON -o sbom.cdx.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: sbom
           path: sbom.cdx.json
