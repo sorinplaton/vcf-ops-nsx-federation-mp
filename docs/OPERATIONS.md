@@ -54,9 +54,11 @@ Calls per collection cycle, as measured with the test suite:
 - Active Global Manager: about 20, plus one per location and one per stretched object (Tier-0, Tier-1, segment,
   global security policy). Above 200 stretched objects the realization of an object is read again only when the
   object is new, changed in NSX, was not fully realized, or once in six cycles; the last state is used otherwise.
-- Standby Global Manager: 5.
-- Each Local Manager: about 10, plus one per edge cluster, three per edge node, one per Tier-0 locale and one per
+- Standby Global Manager: 7.
+- Each Local Manager: about 12, plus one per edge cluster, three per edge node, one per Tier-0 locale and one per
   collected policy.
+- Every 30 minutes, two more per Local Manager (configuration limits, overrides); every hour, one more per manager
+  (NTP servers).
 
 The first cycle after a start reads every object, so the budget of 2000 calls per manager covers about 1,900
   stretched objects in that cycle; the following cycles need about a sixth. Above that, raise the budget and check
@@ -171,6 +173,32 @@ timeline. The first cycle after an empty cache (new container, new account) only
 which a call failed reports no removal, and an object is reported as added only against a complete earlier read,
 so a gap in the data does not show up as a change.
 
+## Clocks, configuration limits and overrides
+
+- Clocks: in every cycle the adapter reads the system time of each manager (`GET /api/v1/node/status`) and takes off
+  the middle of the call, which gives the offset of the manager against the cloud proxy. The calls are timed on a
+  monotonic clock from one reading of the clock of the cloud proxy per cycle, so the difference of two managers read
+  in the same cycle does not depend on that clock, even when it steps during the cycle. Each Global Manager and location
+  gets its difference with the active Global Manager ("Clock difference with the active Global Manager"), and a
+  property says ahead or behind, and within how much the reading is (half the duration of the two calls). A call
+  that takes more than 3 seconds gives no reading. The alert fires above 5 seconds (60 seconds immediate) for two
+  cycles, or when the NTP service of the manager is not running. The NTP servers come from
+  `GET /api/v1/node/services/ntp` once an hour, the state of the service from its status call in every cycle. The node that answers behind the cluster address is
+  the one read.
+- Configuration limits: `GET /policy/api/v1/infra/capacity/dashboard/usage` on each Local Manager, the data of the
+  Capacity page of NSX, every 30 minutes. NSX rates each limit with its own thresholds (70% and 100% by default, set
+  in NSX): its WARNING counts as warning, its CRITICAL or ERROR, or a limit reached (100% or more), as critical. A
+  limit whose maximum is 1, such as the one compute manager of a Local Manager, is full by design and left out.
+  The location gets the most used limit, the number of limits at warning and at critical, and a list of the
+  limits above a threshold. The Global Manager has no such call; global objects count at every location of their
+  span, so the locations show it. The alert is left to the built-in NSX integration for a Local Manager it
+  monitors, as NSX raises capacity alarms of its own and that integration forwards them (property "Configuration
+  limit alerts raised by"); the setting for the federation alarms does not change this. The values are sent only
+  when the Local Manager answers in the cycle, so a cached value never stands for a manager that is down.
+- Overrides: a search for `overridden:true` on each Local Manager, every 30 minutes, lists the global objects that
+  were changed locally. Each one counts on the location and is listed; a new override, or one removed, is a change
+  of the timeline.
+
 ## Changing a threshold
 
 The thresholds of the pack are listed in [FEATURES.md](FEATURES.md#thresholds). They are part of the symptom
@@ -279,5 +307,6 @@ The tests answer the adapter's calls from `tests/fixtures/federation.json`, an a
 with two Global Managers and two locations. They cover a normal cycle, failed calls, a location outage, a Global
 Manager of another federation, the cached location list and the one from VCF Operations, the call budget,
 certificate trust, versions and upgrades, tiered realization on 600 more segments, stale-object deletion, edge
-capacity, Tier-0 service routers in both HA modes, the change timeline (first cycle, failover, partial reads), and
-the consistency of the alert content with the object model.
+capacity, Tier-0 service routers in both HA modes, the change timeline (first cycle, failover, partial reads),
+clock differences, configuration limits and overrides, and the consistency of the alert content with the object
+model.

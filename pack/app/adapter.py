@@ -56,6 +56,9 @@ UNITS = {
 for _k in ("datapath_cpu_pct", "datapath_cpu_peak_pct", "services_cpu_pct", "memory_used_pct", "datapath_memory_pct",
            "datapath_pool_peak_pct", "disk_fullest_pct"):
     UNITS[_k] = Units.RATIO.PERCENT
+UNITS.update({"capacity_max_pct": Units.RATIO.PERCENT, "clock_skew_to_gm_s": Units.TIME.SECONDS,
+              "clock_skew_to_active_s": Units.TIME.SECONDS, "clock_max_skew_s": Units.TIME.SECONDS})
+CLOCK_MAX_RTT_S = 3.0  # a clock reading whose call took longer than this is too imprecise to use
 # counters that also get a rate: key -> (rate key, seconds the rate is expressed in)
 RATES = {
     "rx_packets": ("rx_packets_per_min", 60), "tx_packets": ("tx_packets_per_min", 60),
@@ -102,6 +105,9 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("alarms_open_critical", "Open critical alarms, all managers"),
         ("switchover_ready", "A standby Global Manager is ready to take over (1 = yes)"),
         ("changes_detected", "Changes detected in this cycle"),
+        ("clock_max_skew_s", "Largest clock difference with the active Global Manager"),
+        ("capacity_max_pct", "NSX configuration limit most used, all locations"),
+        ("overridden_objects", "Global objects overridden at a location, all locations"),
     ], [
         ("federation_id", "Federation ID"),
         ("active_global_manager", "Active Global Manager"),
@@ -133,6 +139,7 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("standby_out_of_sync_minutes", "Standby out of sync for"),
         ("standby_full_sync_age_hours", "Time since the last full sync to the standby"),
         ("switchover_ready", "Ready to take over as the active Global Manager (1 = yes)"),
+        ("clock_skew_to_active_s", "Clock difference with the active Global Manager"),
     ], [
         ("mode", "Mode"), ("cluster_status", "Cluster status"), ("version", "Version"),
         ("address", "Address used by the collector"),
@@ -145,6 +152,8 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("upgrade_status", "Upgrade status"), ("upgrade_target_version", "Upgrade target version"),
         ("switchover_readiness", "Switchover readiness"),
         ("certificate_trust", "Certificate trust"),
+        ("clock_offset_to_active", "Clock offset to the active Global Manager"),
+        ("ntp_servers", "NTP servers"), ("ntp_service", "NTP service"),
     ]),
     "manager_node": ("Manager Node", [("online", "Online")],
                      [("address", "Address"), ("uuid", "Node UUID")]),
@@ -173,6 +182,11 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("gm_rtt_pct_of_max", "Round-trip time to the Global Manager, % of the maximum RTT setting"),
         ("sync_queue_used_pct", "Sync queue used, fullest queue with the Global Manager"),
         ("gm_last_seen_minutes", "Time since the Global Manager last saw the location"),
+        ("clock_skew_to_gm_s", "Clock difference with the active Global Manager"),
+        ("capacity_max_pct", "NSX configuration limit most used"),
+        ("capacity_items_warning", "NSX configuration limits above the warning threshold"),
+        ("capacity_items_critical", "NSX configuration limits above the critical threshold"),
+        ("overridden_objects", "Global objects overridden at this location"),
     ], [
         ("site_id", "Site ID"), ("version", "Version"), ("version_matches_gm", "Same version as the Global Manager"),
         ("local_manager_address", "Local Manager address"), ("rtep_ips", "RTEP addresses"),
@@ -186,6 +200,12 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("alarm_alerts_by", "Federation alarm alerts raised by"),
         ("replication_state", "Replication flows"), ("onboarding_status", "Onboarding status"),
         ("site_path", "Site path"), ("lm_thumbprint", "Local Manager certificate thumbprint (from the Global Manager)"),
+        ("clock_offset_to_gm", "Clock offset to the active Global Manager"),
+        ("ntp_servers", "NTP servers"), ("ntp_service", "NTP service"),
+        ("capacity_fullest", "NSX configuration limit most used"),
+        ("capacity_over_threshold", "NSX configuration limits above a threshold"),
+        ("overridden_list", "Global objects overridden at this location"),
+        ("capacity_alerts_by", "Configuration limit alerts raised by"),
     ]),
     "sync_channel": ("Sync Channel", [("connection_up", "Connection up")],
                      [("source", "Source"), ("target", "Target"), ("target_address", "Target address")]),
@@ -284,7 +304,8 @@ _G = {
     "global_managers": "Global Managers", "locations": "Locations", "stretched": "Stretched objects",
     "totals": "Counters since start", "rates": "Rates", "realization": "Realization", "rules": "Rules",
     "traffic": "Traffic", "prefixes": "Prefixes and messages", "capacity": "Capacity",
-    "service_routers": "Service routers", "changes": "Changes",
+    "service_routers": "Service routers", "changes": "Changes", "time": "Time", "limits": "Configuration limits",
+    "configuration": "Configuration",
 }
 _GROUP_BY_KEY = {
     "alarms_open_critical": "alarms", "alarms_open_high": "alarms", "alarms_open_other": "alarms",
@@ -319,6 +340,9 @@ _GROUP_BY_KEY = {
     "sr_total": "service_routers", "sr_active": "service_routers", "sr_down": "service_routers",
     "locations_without_active_sr": "service_routers", "sr_ha_changes": "service_routers",
     "changes_detected": "changes",
+    "clock_skew_to_gm_s": "time", "clock_skew_to_active_s": "time", "clock_max_skew_s": "time",
+    "capacity_max_pct": "limits", "capacity_items_warning": "limits", "capacity_items_critical": "limits",
+    "overridden_objects": "configuration",
 }
 for _k in ("rx_bytes", "tx_bytes", "rx_packets", "tx_packets", "rx_dropped", "tx_dropped", "rx_blocked", "tx_blocked"):
     _GROUP_BY_KEY[_k] = "totals"
@@ -760,6 +784,12 @@ class Collector:
         self.partial: Set[str] = set()  # cached_clean keys whose value of this cycle is not complete
         self.edge_answered: Dict[str, Set[str]] = {}  # site path -> transport node IDs whose status call answered
         self.edge_objects: Dict[str, Object] = {}  # transport node ID -> edge node object
+        # clock of each manager against the collector: name or site path -> (offset ms, call duration s, object)
+        self.clocks: Dict[str, Tuple[float, float, Object]] = {}
+        # one wall-clock reading per cycle; calls are timed on the monotonic clock, so a step of the clock of the
+        # cloud proxy during the cycle changes no difference between two managers
+        self.wall0, self.mono0 = time.time(), time.monotonic()
+        self.overrides: Dict[str, Tuple[Dict[str, str], bool]] = {}  # site path -> ({path: label}, read complete)
 
     # -- object helpers
     def obj(self, kind: str, name: str, ident: str) -> Object:
@@ -822,6 +852,112 @@ class Collector:
         # as events and surface as notification alerts.
         if alert_key is None:
             o.with_event(message=message, criticality=criticality)
+
+    def read_clock(self, client: NsxClient, key: str, o: Object) -> None:
+        """The clock of the manager against the clock of the collector: the system time NSX returns, minus the
+        middle of the call. Two managers read in the same cycle give their difference; the collector clock cancels
+        out. A call slower than CLOCK_MAX_RTT_S gives no reading."""
+        m0 = time.monotonic()
+        st = client.try_get("/api/v1/node/status", default={}) or {}
+        m1 = time.monotonic()
+        rtt = m1 - m0
+        if client.ok("/api/v1/node/status") and isinstance(st, dict) and 0 <= rtt <= CLOCK_MAX_RTT_S:
+            try:
+                middle_ms = (self.wall0 + (m0 + m1) / 2.0 - self.mono0) * 1000.0
+                self.clocks[key] = (float(st["system_time"]) - middle_ms, rtt, o)
+            except (KeyError, TypeError, ValueError):
+                pass
+        # the server list changes rarely (once an hour); the state of the service is read in every cycle
+        servers = self.cache.cached(f"ntp:{client.host}", SLOW_TTL, lambda: self.load_ntp_servers(client))
+        state = client.try_get("/api/v1/node/services/ntp/status", default={}) or {}
+        self.props(o, {"ntp_servers": (", ".join(str(x) for x in servers) or "none configured") if servers is not None else None,
+                       "ntp_service": state.get("runtime_state") if isinstance(state, dict)
+                       and client.ok("/api/v1/node/services/ntp/status") else None})
+
+    @staticmethod
+    def load_ntp_servers(client: NsxClient) -> Optional[List[str]]:
+        conf = client.try_get("/api/v1/node/services/ntp", default={}) or {}
+        if not client.ok("/api/v1/node/services/ntp") or not isinstance(conf, dict):
+            return None  # not cached: read again next cycle
+        return list((conf.get("service_properties") or {}).get("servers") or [])
+
+    def finish_clocks(self, gm: Optional[Dict[str, Any]]) -> None:
+        """Clock difference of each Global Manager and location with the active Global Manager."""
+        ref = self.clocks.get("gm:" + (gm["site"].get("name") or gm["host"])) if gm else None
+        if not ref:
+            return  # no active Global Manager, or its clock was not read: no difference is sent
+        for key, (offset, rtt, o) in self.clocks.items():
+            if o is ref[2]:
+                continue
+            diff_s = (offset - ref[0]) / 1000.0
+            margin = (rtt + ref[1]) / 2.0
+            kind = o.object_type()
+            text = (f"{'ahead' if diff_s >= 0 else 'behind'} by {abs(diff_s):.2f} s (reading within {margin:.2f} s)")
+            if kind == "location":
+                self.metrics(o, {"clock_skew_to_gm_s": round(abs(diff_s), 2)})
+                self.props(o, {"clock_offset_to_gm": text})
+            else:
+                self.metrics(o, {"clock_skew_to_active_s": round(abs(diff_s), 2)})
+                self.props(o, {"clock_offset_to_active": text})
+        # the reference reads 0, so a value it carried as a standby does not stay after a switchover
+        self.metrics(ref[2], {"clock_skew_to_active_s": 0})
+        self.props(ref[2], {"clock_offset_to_active": "reference (active Global Manager)"})
+
+    def limits_and_overrides(self, client: NsxClient, lo: Object, loc: Dict[str, Any]) -> None:
+        cap_path = "/policy/api/v1/infra/capacity/dashboard/usage"
+
+        def load_capacity() -> Optional[Dict[str, Any]]:
+            doc = client.try_get(cap_path, default={}) or {}
+            return self.capacity_summary(doc) if client.ok(cap_path) else None  # a failed read is not cached
+        cap = self.cache.cached(f"capacity:{client.host}", INVENTORY_TTL, load_capacity)
+        if cap:
+            self.metrics(lo, {k: cap[k] for k in ("capacity_max_pct", "capacity_items_warning", "capacity_items_critical")})
+            self.props(lo, {k: cap[k] for k in ("capacity_fullest", "capacity_over_threshold")})
+        search = "/policy/api/v1/search/query"
+
+        def load_overrides() -> Optional[List[Dict[str, Any]]]:
+            found = client.try_list(search, {"query": "overridden:true"})
+            if not client.ok(search):
+                return None
+            return [{"path": o.get("path"), "type": o.get("resource_type"), "name": o.get("display_name") or o.get("id")}
+                    for o in found if isinstance(o, dict) and str(o.get("path") or "").startswith("/global-infra/")]
+        ov = self.cache.cached(f"overrides:{client.host}", INVENTORY_TTL, load_overrides)
+        if ov is not None:
+            self.overrides[loc["path"]] = ({o["path"]: f"{o['type']} {o['name']}" for o in ov}, True)
+            self.metrics(lo, {"overridden_objects": len(ov)})
+            self.props(lo, {"overridden_list": "; ".join(f"{o['type']} {o['name']} ({o['path']})" for o in ov[:10])
+                            + (f"; and {len(ov) - 10} more" if len(ov) > 10 else "") if ov else "none"})
+
+    @staticmethod
+    def capacity_summary(doc: Any) -> Optional[Dict[str, Any]]:
+        """The configuration limits of a Local Manager. NSX rates each one with its own thresholds (70% and 100% by
+        default): its WARNING counts as warning, and its CRITICAL or ERROR, or a limit reached (100% or more), as
+        critical. A limit whose maximum is 1 (one compute manager) is left out: it is full by design. An item of
+        another shape is skipped. None when nothing usable came back."""
+        items = []
+        for u in (doc.get("capacity_usage") if isinstance(doc, dict) else None) or []:
+            if not isinstance(u, dict):
+                continue
+            try:
+                pct, top = float(u.get("current_usage_percentage")), float(u.get("max_supported_count"))
+            except (TypeError, ValueError):
+                continue
+            if top > 1:
+                items.append((pct, str(u.get("severity") or "").upper(), u))
+        if not items:
+            return None
+        name = lambda u: u.get("display_name") or u.get("usage_type")
+        critical = lambda pct, sev: sev in ("CRITICAL", "ERROR") or pct >= 100.0
+        pct, _sev, top = max(items, key=lambda x: x[0])
+        over = sorted((x for x in items if x[1] not in ("", "INFO") or x[0] >= 100.0), key=lambda x: x[0], reverse=True)
+        return {
+            "capacity_max_pct": round(pct, 2),
+            "capacity_items_warning": sum(1 for p, sev, _u in items if sev == "WARNING" and not critical(p, sev)),
+            "capacity_items_critical": sum(1 for p, sev, _u in items if critical(p, sev)),
+            "capacity_fullest": f"{name(top)}: {top.get('current_usage_count')} of {top.get('max_supported_count')} ({pct:.1f}%)",
+            "capacity_over_threshold": "; ".join(f"{name(u)} {p:.1f}% ({'CRITICAL' if critical(p, sev) else sev})"
+                                                 for p, sev, u in over[:10]) or "none",
+        }
 
     # -- step 1: Global Managers
     def probe_gm(self, host: str) -> Dict[str, Any]:
@@ -958,6 +1094,7 @@ class Collector:
         collected = sum(1 for r in lm_results if r)
         self.finish_policies(lm_sites)
         self.finish_tier0(lm_sites)
+        self.finish_clocks(gm)
 
         # -- root cause for alert storms: while a location is cut off from the Global Manager, the objects that
         # depend on it carry its name, and their alerts stay quiet behind the alert of the location
@@ -1115,6 +1252,15 @@ class Collector:
                 self.note(lo, f"Edge node {old[k]} removed from the RTEP edge clusters of location {loc_name}")
             for k in changed:
                 self.note(lo, f"Edge node renamed at location {loc_name}: {old[k]} -> {edges[k]}")
+        # global objects overridden at a location (local changes to global intent)
+        for path, (found, complete) in self.overrides.items():
+            loc_name = self.location_names.get(path, tail(path))
+            added, removed, _c, old = self.diff(f"overrides@{site_of.get(path) or path}", found, complete)
+            lo = self.locations.get(path) or fed
+            for k in added:
+                self.note(lo, f"{found[k]} overridden at location {loc_name} ({k})")
+            for k in removed:
+                self.note(lo, f"Override of {old[k]} at location {loc_name} removed ({k})")
         # stretched objects: created, changed (a new revision) or deleted on the Global Manager. The list is the
         # inventory of the Global Manager, read again every INVENTORY_TTL seconds.
         inventory = getattr(self, "inventory", None)
@@ -1142,7 +1288,8 @@ class Collector:
         # the state of a location that left the federation is not kept
         if from_gm:
             live = {f"{prefix}@{sid}" for sid in by_site for prefix in ("edges", "service_routers")}
-            for cat in [c for c in self.change_next if c.startswith(("edges@", "service_routers@")) and c not in live]:
+            live |= {f"overrides@{sid}" for sid in by_site}
+            for cat in [c for c in self.change_next if c.startswith(("edges@", "service_routers@", "overrides@")) and c not in live]:
                 del self.change_next[cat]
 
     def publish_changes(self) -> None:
@@ -1421,7 +1568,16 @@ class Collector:
         certs = [val(o, "cert_min_days_to_expiry") for o in get("global_manager") + locs]
         certs = [c for c in certs if c is not None]
         crit = [val(o, "alarms_open_critical") for o in get("global_manager") + locs]
+        skews = [val(o, "clock_skew_to_gm_s") for o in locs] + [val(o, "clock_skew_to_active_s") for o in get("global_manager")]
+        skews = [x for x in skews if x is not None]
+        caps = [val(o, "capacity_max_pct") for o in locs]
+        caps = [x for x in caps if x is not None]
+        overridden = [val(o, "overridden_objects") for o in locs]
         return {
+            "clock_max_skew_s": max(skews) if skews else None,
+            "capacity_max_pct": max(caps) if caps else None,
+            # a sum over the locations; unknown when the Local Manager of one did not answer in this cycle
+            "overridden_objects": sum(overridden) if overridden and None not in overridden else None,
             "locations_healthy": len(healthy),
             "locations_healthy_pct": round(100.0 * len(healthy) / len(locs), 1) if locs else None,
             "rtep_tunnels_total": len(tunnels),
@@ -1695,6 +1851,7 @@ class Collector:
         })
         up = self.upgrade_state(client)
         self.props(go, {"upgrade_status": up.get("upgrade_status"), "upgrade_target_version": up.get("target_version") or "none"})
+        self.read_clock(client, "gm:" + name, go)
         self.gm_state[name] = {
             "mode": mode, "version": site.get("site_version"), "cert_days": c_days, "upgrade": up.get("upgrade_status"),
             "cluster": mcs.get("status") if cs_ok else None,
@@ -1954,7 +2111,10 @@ class Collector:
                               "full_sync_age_hours": round(max(0.0, time.time() * 1000 - end) / 3600000.0, 1)})
         up = self.upgrade_state(client)
         self.props(lo, {"upgrade_status": up.get("upgrade_status"), "upgrade_target_version": up.get("target_version") or "none",
-                        "alarm_alerts_by": "this pack" if own_alarms else "the built-in NSX integration"})
+                        "alarm_alerts_by": "this pack" if own_alarms else "the built-in NSX integration",
+                        # NSX raises capacity alarms of its own; the built-in integration forwards them when it
+                        # monitors this Local Manager, whatever the setting for the federation alarms says
+                        "capacity_alerts_by": "the built-in NSX integration" if builtin is True else "this pack"})
         self.metrics(lo, {
             "nodes_online": len(mcs.get("online_nodes") or []) if cs_ok else None,
             "nodes_offline": len(mcs.get("offline_nodes") or []) if cs_ok else None,
@@ -1962,6 +2122,17 @@ class Collector:
             "backup_age_hours": b_age, "cert_min_days_to_expiry": c_days,
             "full_sync_failed": len(not_done) if client.ok("/policy/api/v1/infra/full-sync-states") else None,
         })
+        self.read_clock(client, "loc:" + loc["path"], lo)
+        # configuration limits and overrides change slowly: read with the inventory, every INVENTORY_TTL seconds.
+        # Only when the Local Manager answered in this cycle: cached values must not stand for a manager that is down.
+        # A fault here leaves the values unknown and never stops the rest of the location.
+        if cs_ok:
+            try:
+                self.limits_and_overrides(client, lo, loc)
+            except BudgetExceeded:
+                raise
+            except Exception as e:
+                logger.exception(e)
         self.props(lo, {"cluster_status": mcs.get("status"), "backup_enabled": b_enabled, "cert_first_to_expire": c_name,
                         "full_sync_stage": "; ".join(f"{s.get('id')}: {s.get('last_completed_stage')}" for s in sync_states) or "none recorded"})
         if not_done and not site_down:
@@ -2058,7 +2229,7 @@ class Collector:
                 self.edge_objects[tn_id] = no
                 if client.ok(status_path):
                     try:
-                        sr_records += self.edge_status(no, tn_id, tn_name, loc, node_status, own_alarms)
+                        sr_records += self.edge_status(no, tn_id, tn_name, loc, node_status, builtin is True)
                         answered.add(tn_id)
                     except (TypeError, ValueError) as e:  # an answer of another shape: unknown, not a failed location
                         client._failed(status_path, type(e).__name__)
@@ -2132,7 +2303,7 @@ class Collector:
             loc.setdefault("_policy_hits", {})[pol["path"]] = (totals, per_rule)
 
     def edge_status(self, no: Object, tn_id: str, tn_name: str, loc: Dict[str, Any], st: Dict[str, Any],
-                    own_alarms: bool) -> List[Dict[str, Any]]:
+                    builtin: bool) -> List[Dict[str, Any]]:
         """Capacity of a federation edge node, and the service routers of the stretched Tier-0 gateways it runs,
         from one call (GET /api/v1/transport-nodes/<id>/status). Returns one record per service router."""
         ns = st.get("node_status") or {}
@@ -2155,8 +2326,9 @@ class Collector:
         self.props(no, {
             "edge_status": st.get("status"), "maintenance_mode": maintenance, "software_version": ns.get("software_version"),
             "datapath_pool_fullest": ", ".join(dp.get("highest_datapath_mem_pool_usage_names") or []) or None,
-            # the built-in NSX integration raises the NSX alarms of the edges it monitors (CPU, memory, disk, status)
-            "capacity_alerts_by": "this pack" if own_alarms else "the built-in NSX integration",
+            # the built-in NSX integration raises the NSX alarms of the edges it monitors (CPU, memory, disk, status),
+            # whatever the setting for the federation alarms of the Local Manager says
+            "capacity_alerts_by": "the built-in NSX integration" if builtin else "this pack",
         })
         ha_modes = {o.get("path"): o.get("ha_mode") for o in getattr(self, "inventory", {}).get("tier0", [])}
         records = []

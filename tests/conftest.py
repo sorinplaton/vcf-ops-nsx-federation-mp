@@ -26,6 +26,7 @@ class FakeNsx:
         self.data = copy.deepcopy(FIXTURE)
         self.fail = []
         self.calls = 0
+        self.clock_ms = {}  # host -> clock offset in milliseconds
 
     def get(self, client, path, params=None):
         client.check_trust()
@@ -49,7 +50,11 @@ class FakeNsx:
             with client._lock:
                 client.errors += 1
             raise nsxclient.NsxError(404, path, "not in the fixture")
-        return copy.deepcopy(answers[key])
+        answer = copy.deepcopy(answers[key])
+        if key == "/api/v1/node/status":  # the clock of the manager: now, plus the offset a test gives it
+            import time
+            answer["system_time"] = int(time.time() * 1000 + self.clock_ms.get(client.host, 0))
+        return answer
 
 
 @pytest.fixture

@@ -2,7 +2,7 @@
 
 A management pack that monitors NSX Federation (NSX 9.1) in VCF Operations 9.1.1. It is built with the
 [VCF Operations Integration SDK](https://vmware.github.io/vmware-vcf-operations-integration-sdk/introduction)
-in Python. Current version: 1.10.0.
+in Python. Current version: 1.11.0.
 
 This is a lab project, not a Broadcom product. The pack is unsigned and comes with no support. It only reads
 from NSX.
@@ -21,8 +21,8 @@ alert, is in [docs/FEATURES.md](docs/FEATURES.md) (French: [docs/FEATURES.fr.md]
   edge nodes, RTEP tunnels, Tier-0 service routers, Tier-0 BGP neighbors, stretched Tier-0 and Tier-1 gateways, segments, global
   security policies, and the realization of each stretched object at each location. Global firewall rules
   are opt-in per policy.
-- Metrics in 20 groups, with rates computed from the NSX counters, federation rollups and 26 key indicators.
-- 79 alert definitions, 134 symptoms and 47 recommendations, including the 15 federation alarm types of
+- Metrics in 23 groups, with rates computed from the NSX counters, federation rollups and 26 key indicators.
+- 83 alert definitions, 144 symptoms and 50 recommendations, including the 15 federation alarm types of
   NSX 9.1.1 as named alerts, the sync state of a standby Global Manager and alerts on the collection itself.
 - Latency and packet loss: round-trip time to the Global Manager against the maximum RTT set in NSX and against
   its usual range, drops of each RTEP tunnel as a share of its packets, blocked packets, and flaps of the Tier-0 and
@@ -48,6 +48,9 @@ alert, is in [docs/FEATURES.md](docs/FEATURES.md) (French: [docs/FEATURES.fr.md]
 - Change timeline: the active Global Manager, Global Manager roles and versions, locations, edge nodes, service
   router HA state and stretched objects are compared between cycles. Each change is an information event on its
   object, and the last ten are listed on the federation.
+- Clocks: the clock of each manager against the active Global Manager, and the NTP servers and service of each.
+- Configuration limits: each Local Manager's usage of the NSX limits, as NSX rates it, and the global objects
+  overridden at a location.
 - Replication flows, last-seen time and onboarding status of each location, as on the Location Manager page of NSX.
 - No double alerts: the federation alarms of a Local Manager that the built-in NSX integration monitors are left
   to that integration.

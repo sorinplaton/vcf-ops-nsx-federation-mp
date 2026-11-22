@@ -570,6 +570,60 @@
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-t0_failover"/></Recommendations>
             </State>
         </AlertDefinition>
+        <AlertDefinition adapterKind="NSXFederation" description="The clock of the Local Manager differs from the active Global Manager by more than 5 seconds (immediate above 60), or its NTP service is not running." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-loc_clock" name="Local Manager clock is not in step with the Global Manager" resourceKind="location" subType="22" type="19" waitCycle="1" cancelCycle="1">
+            <State severity="automatic">
+                <SymptomSets operator="or">
+                    <SymptomSet applyOn="self" operator="and">
+                        <Symptom ref="SymptomDefinition-NSXFederation-loc_clock_5"/>
+                        <Symptom ref="SymptomDefinition-NSXFederation-outage_location" negateCondition="true"/>
+                    </SymptomSet>
+                    <SymptomSet applyOn="self" operator="and">
+                        <Symptom ref="SymptomDefinition-NSXFederation-loc_clock_60"/>
+                        <Symptom ref="SymptomDefinition-NSXFederation-outage_location" negateCondition="true"/>
+                    </SymptomSet>
+                    <SymptomSet applyOn="self" operator="and">
+                        <Symptom ref="SymptomDefinition-NSXFederation-loc_ntp"/>
+                        <Symptom ref="SymptomDefinition-NSXFederation-outage_location" negateCondition="true"/>
+                    </SymptomSet>
+                </SymptomSets>
+                <Impact key="health" type="badge"/>
+                <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-clock"/></Recommendations>
+            </State>
+        </AlertDefinition>
+        <AlertDefinition adapterKind="NSXFederation" description="The clock of this Global Manager differs from the active one by more than 5 seconds (immediate above 60), or its NTP service is not running." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-gm_clock" name="Global Manager clock is not in step with the active Global Manager" resourceKind="global_manager" subType="22" type="19" waitCycle="1" cancelCycle="1">
+            <State severity="automatic">
+                <SymptomSets operator="or">
+                    <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-gm_clock_5"/>
+                    <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-gm_clock_60"/>
+                    <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-gm_ntp"/>
+                </SymptomSets>
+                <Impact key="health" type="badge"/>
+                <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-clock"/></Recommendations>
+            </State>
+        </AlertDefinition>
+        <AlertDefinition adapterKind="NSXFederation" description="At least one global object was changed on the Local Manager of this location." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-loc_override" name="Global objects are overridden at the location" resourceKind="location" subType="22" type="19" waitCycle="1" cancelCycle="1">
+            <State severity="automatic">
+                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-loc_override"/>
+                <Impact key="risk" type="badge"/>
+                <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-overrides"/></Recommendations>
+            </State>
+        </AlertDefinition>
+        <AlertDefinition adapterKind="NSXFederation" description="NSX rates a configuration limit of the Local Manager above its warning threshold (immediate above the critical one, or once the limit is reached)." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-loc_capacity" name="NSX configuration limit of the location is close to its maximum" resourceKind="location" subType="22" type="19" waitCycle="1" cancelCycle="1">
+            <State severity="automatic">
+                <SymptomSets operator="or">
+                    <SymptomSet applyOn="self" operator="and">
+                        <Symptom ref="SymptomDefinition-NSXFederation-loc_cap_warn"/>
+                        <Symptom ref="SymptomDefinition-NSXFederation-loc_cap_builtin" negateCondition="true"/>
+                    </SymptomSet>
+                    <SymptomSet applyOn="self" operator="and">
+                        <Symptom ref="SymptomDefinition-NSXFederation-loc_cap_crit"/>
+                        <Symptom ref="SymptomDefinition-NSXFederation-loc_cap_builtin" negateCondition="true"/>
+                    </SymptomSet>
+                </SymptomSets>
+                <Impact key="risk" type="badge"/>
+                <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-capacity"/></Recommendations>
+            </State>
+        </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="The receive or send rate of the tunnel is above the dynamic threshold VCF Operations learned for it." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-tun_traffic" name="RTEP tunnel traffic is above its usual range" resourceKind="rtep_tunnel" subType="19" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
                 <SymptomSets operator="or">
@@ -1285,6 +1339,56 @@
                 <Condition key="service_routers|sr_ha_changes" operator="&gt;" thresholdType="static" type="metric" value="0" valueType="numeric"/>
             </State>
         </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-loc_clock_5" name="Local Manager clock differs from the active Global Manager by more than 5 seconds" resourceKind="location" waitCycle="2" cancelCycle="2">
+            <State severity="warning">
+                <Condition key="time|clock_skew_to_gm_s" operator="&gt;" thresholdType="static" type="metric" value="5" valueType="numeric"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-loc_clock_60" name="Local Manager clock differs from the active Global Manager by more than 60 seconds" resourceKind="location" waitCycle="2" cancelCycle="2">
+            <State severity="immediate">
+                <Condition key="time|clock_skew_to_gm_s" operator="&gt;" thresholdType="static" type="metric" value="60" valueType="numeric"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-loc_ntp" name="NTP service of the Local Manager is not running" resourceKind="location" waitCycle="1" cancelCycle="1">
+            <State severity="warning">
+                <Condition key="ntp_service" operator="!=" thresholdType="static" type="property" value="running" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-gm_clock_5" name="Global Manager clock differs from the active Global Manager by more than 5 seconds" resourceKind="global_manager" waitCycle="2" cancelCycle="2">
+            <State severity="warning">
+                <Condition key="time|clock_skew_to_active_s" operator="&gt;" thresholdType="static" type="metric" value="5" valueType="numeric"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-gm_clock_60" name="Global Manager clock differs from the active Global Manager by more than 60 seconds" resourceKind="global_manager" waitCycle="2" cancelCycle="2">
+            <State severity="immediate">
+                <Condition key="time|clock_skew_to_active_s" operator="&gt;" thresholdType="static" type="metric" value="60" valueType="numeric"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-gm_ntp" name="NTP service of the Global Manager is not running" resourceKind="global_manager" waitCycle="1" cancelCycle="1">
+            <State severity="warning">
+                <Condition key="ntp_service" operator="!=" thresholdType="static" type="property" value="running" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-loc_override" name="Global objects are overridden at the location" resourceKind="location" waitCycle="1" cancelCycle="1">
+            <State severity="warning">
+                <Condition key="configuration|overridden_objects" operator="&gt;" thresholdType="static" type="metric" value="0" valueType="numeric"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-loc_cap_warn" name="An NSX configuration limit of the Local Manager is above its warning threshold" resourceKind="location" waitCycle="1" cancelCycle="1">
+            <State severity="warning">
+                <Condition key="limits|capacity_items_warning" operator="&gt;" thresholdType="static" type="metric" value="0" valueType="numeric"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-loc_cap_crit" name="An NSX configuration limit of the Local Manager is above its critical threshold" resourceKind="location" waitCycle="1" cancelCycle="1">
+            <State severity="immediate">
+                <Condition key="limits|capacity_items_critical" operator="&gt;" thresholdType="static" type="metric" value="0" valueType="numeric"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-loc_cap_builtin" name="The built-in NSX integration raises the capacity alarms of this Local Manager" resourceKind="location" waitCycle="1" cancelCycle="3">
+            <State severity="info">
+                <Condition key="capacity_alerts_by" operator="=" thresholdType="static" type="property" value="the built-in NSX integration" valueType="string"/>
+            </State>
+        </SymptomDefinition>
         <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-tun_rx_dt" name="RTEP tunnel receive rate is above its usual range" resourceKind="rtep_tunnel" waitCycle="3" cancelCycle="3">
             <State severity="warning">
                 <Condition key="rates|rx_bytes_per_s" operator="above" type="dtmetric"/>
@@ -1548,6 +1652,9 @@
         <Recommendation key="Recommendation-df-NSXFederation-sr_down"><Description>Check the uplinks and the BGP or static routes of the Tier-0 on this edge node (Networking, Tier-0 Gateways, Routing), and the edge itself. A service router that is down does not forward north-south traffic at this location.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-t0_active"><Description>Read 'Active service routers' and 'Locations without an active service router' on the Tier-0. Check the edge nodes of the location named there: their status, maintenance mode, uplinks and BGP sessions. Without an active service router the location has no north-south path through this gateway.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-t0_failover"><Description>A service router of this Tier-0 changed HA state. Read the 'Recent changes' property of the federation and the 'Last HA state change' of the service routers to see which edge took over. Look for an edge reboot, an uplink or BFD failure, or a maintenance action at that time.</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-clock"><Description>Read 'Clock offset to the active Global Manager' and 'NTP servers' on the manager. On each node of both managers, run get clock and get ntp-server on the NSX CLI. Point every manager of the federation to the same reachable NTP servers (System, Fabric, Profiles, Node Profiles in the UI), and check that the NTP service runs (start service ntp on the CLI).</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-overrides"><Description>A global object was changed on the Local Manager of this location, so the location runs a configuration that differs from the Global Manager. The property 'Global objects overridden at this location' lists them. Check with the team of the location whether the override is intended; if not, remove it on the Local Manager, or make the change on the Global Manager for every location.</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-capacity"><Description>NSX rates at least one configuration limit of this Local Manager above its threshold (property 'NSX configuration limits above a threshold', and Plan &amp; Troubleshoot, Capacity in the NSX UI). Global objects count at every location of their span. Remove unused objects, review the scope of global groups and policies, or use a larger manager form factor where the limit depends on it.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-realization"><Description>Open the object in the Global Manager and read the realization status for this location. Check the location alarms and the connection between the Global Manager and the location, then save the object again if needed.</Description></Recommendation>
     </Recommendations>
 </alertContent>

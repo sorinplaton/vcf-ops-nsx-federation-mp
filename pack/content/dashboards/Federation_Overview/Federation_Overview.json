@@ -998,6 +998,57 @@
          "redBound": 9,
          "colorMethod": 0,
          "id": "extModel1042-1"
+        },
+        {
+         "metricKey": "time|clock_skew_to_gm_s",
+         "metricName": "Clock difference with the active Global Manager",
+         "resourceKindId": "resourceKind:id:3_::_",
+         "resourceKindName": "Location",
+         "isStringMetric": false,
+         "label": "Clock difference with the active Global Manager",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 1,
+         "orangeBound": 5,
+         "redBound": 60,
+         "colorMethod": 0,
+         "id": "extModel1043-1"
+        },
+        {
+         "metricKey": "limits|capacity_max_pct",
+         "metricName": "NSX configuration limit most used",
+         "resourceKindId": "resourceKind:id:3_::_",
+         "resourceKindName": "Location",
+         "isStringMetric": false,
+         "label": "NSX configuration limit most used",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 60,
+         "orangeBound": 70,
+         "redBound": 100,
+         "colorMethod": 0,
+         "id": "extModel1044-1"
+        },
+        {
+         "metricKey": "configuration|overridden_objects",
+         "metricName": "Global objects overridden at this location",
+         "resourceKindId": "resourceKind:id:3_::_",
+         "resourceKindName": "Location",
+         "isStringMetric": false,
+         "label": "Global objects overridden at this location",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 0.1,
+         "orangeBound": 0.5,
+         "redBound": 0.9,
+         "colorMethod": 0,
+         "id": "extModel1045-1"
         }
        ],
        "subMode": "resourceKindAll"
@@ -1109,7 +1160,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1043-1"
+         "id": "extModel1046-1"
         },
         {
          "metricKey": "standby_configured",
@@ -1126,7 +1177,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1044-1"
+         "id": "extModel1047-1"
         },
         {
          "metricKey": "collection_mode",
@@ -1143,7 +1194,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1045-1"
+         "id": "extModel1048-1"
         },
         {
          "metricKey": "federation_id",
@@ -1160,7 +1211,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1046-1"
+         "id": "extModel1049-1"
         },
         {
          "metricKey": "last_change",
@@ -1177,7 +1228,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1047-1"
+         "id": "extModel1050-1"
         },
         {
          "metricKey": "mode",
@@ -1194,7 +1245,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1048-1"
+         "id": "extModel1051-1"
         },
         {
          "metricKey": "version",
@@ -1211,7 +1262,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1049-1"
+         "id": "extModel1052-1"
         },
         {
          "metricKey": "cluster_status",
@@ -1228,7 +1279,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1050-1"
+         "id": "extModel1053-1"
         },
         {
          "metricKey": "backup_enabled",
@@ -1245,7 +1296,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1051-1"
+         "id": "extModel1054-1"
         },
         {
          "metricKey": "backup_last_result",
@@ -1262,7 +1313,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1052-1"
+         "id": "extModel1055-1"
         },
         {
          "metricKey": "standby_sync_status",
@@ -1279,7 +1330,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1053-1"
+         "id": "extModel1056-1"
         },
         {
          "metricKey": "switchover_status",
@@ -1296,7 +1347,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1054-1"
+         "id": "extModel1057-1"
         },
         {
          "metricKey": "cert_first_to_expire",
@@ -1313,7 +1364,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1055-1"
+         "id": "extModel1058-1"
         },
         {
          "metricKey": "version",
@@ -1330,7 +1381,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1056-1"
+         "id": "extModel1059-1"
         },
         {
          "metricKey": "version_matches_gm",
@@ -1347,7 +1398,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1057-1"
+         "id": "extModel1060-1"
         },
         {
          "metricKey": "local_manager_address",
@@ -1364,7 +1415,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1058-1"
+         "id": "extModel1061-1"
         },
         {
          "metricKey": "cluster_status",
@@ -1381,7 +1432,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1059-1"
+         "id": "extModel1062-1"
         },
         {
          "metricKey": "full_sync_stage",
@@ -1398,7 +1449,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1060-1"
+         "id": "extModel1063-1"
         },
         {
          "metricKey": "rtep_ips",
@@ -1415,7 +1466,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1061-1"
+         "id": "extModel1064-1"
         },
         {
          "metricKey": "backup_enabled",
@@ -1432,7 +1483,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1062-1"
+         "id": "extModel1065-1"
         },
         {
          "metricKey": "certificate_trust",
@@ -1449,7 +1500,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1063-1"
+         "id": "extModel1066-1"
         },
         {
          "metricKey": "collector_error",
@@ -1466,7 +1517,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1064-1"
+         "id": "extModel1067-1"
         }
        ]
       },

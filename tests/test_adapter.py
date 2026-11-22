@@ -1479,7 +1479,7 @@ def _expire_inventory():
         path = os.path.join(nsxclient.CACHE_DIR, f)
         data = json.load(open(path))
         for k in data:
-            if k.startswith(("gm_inventory", "lm_inventory:")):
+            if k.startswith(("gm_inventory", "lm_inventory:", "capacity:", "overrides:")):
                 data[k]["t"] = 0
         json.dump(data, open(path, "w"))
 
@@ -1700,3 +1700,176 @@ def test_a_failover_through_a_missing_service_router_is_seen(nsx):
     r = run()
     sr = next(o for o in r["tier0_sr"].values() if o["id"].endswith(tn))
     assert any("ABSENT -> STANDBY" in m for m in sr["e"]) and sr["p"]["ha_status"] == "STANDBY"
+
+
+# ---- 1.11.0: clocks, configuration limits, overrides
+OVERRIDES = "/policy/api/v1/search/query?page_size=500&query=overridden:true"
+LM_HOSTS = ["192.0.2.2", "192.0.2.6"]
+
+
+def _loc_of(r, nsx, host):
+    """The location object collected from Local Manager `host`."""
+    addr = {o["p"].get("local_manager_address"): o for o in r["location"].values()}
+    return addr.get(host) or next(o for o in r["location"].values() if host in str(o["p"]))
+
+
+def test_clocks_capacity_and_overrides_in_a_normal_cycle(nsx):
+    r = run()
+    for loc in r["location"].values():
+        assert loc["m"]["time|clock_skew_to_gm_s"] < 1 and "reading within" in loc["p"]["clock_offset_to_gm"]
+        assert loc["p"]["ntp_servers"] == "192.0.2.1" and loc["p"]["ntp_service"] == "running"
+        assert loc["m"]["limits|capacity_max_pct"] == 97.64 and loc["m"]["limits|capacity_items_warning"] == 1
+        assert loc["m"]["limits|capacity_items_critical"] == 0  # the one compute manager (maximum 1) is left out
+        assert "830 of 850 (97.6%)" in loc["p"]["capacity_fullest"] and "(WARNING)" in loc["p"]["capacity_over_threshold"]
+        assert loc["p"]["capacity_alerts_by"] == "this pack"
+        assert loc["m"]["configuration|overridden_objects"] == 0 and loc["p"]["overridden_list"] == "none"
+    standby = next(g for g in r["global_manager"].values() if g["p"]["mode"] == "STANDBY")
+    active = next(g for g in r["global_manager"].values() if g["p"]["mode"] == "ACTIVE")
+    assert standby["m"]["time|clock_skew_to_active_s"] < 1 and active["p"]["clock_offset_to_active"].startswith("reference")
+    f = fed(r)
+    assert f["m"]["time|clock_max_skew_s"] < 1 and f["m"]["limits|capacity_max_pct"] == 97.64
+    assert active["m"]["time|clock_skew_to_active_s"] == 0
+    assert f["m"]["configuration|overridden_objects"] == 0 and f["m"]["collection|data_gaps"] == 0
+
+
+def test_a_manager_whose_clock_drifts(nsx):
+    nsx.clock_ms[LM_HOSTS[0]] = 20000
+    standby_host = GM_HOSTS[1]
+    nsx.clock_ms[standby_host] = -70000
+    r = run()
+    skews = sorted(o["m"]["time|clock_skew_to_gm_s"] for o in r["location"].values())
+    assert skews[0] < 1 and 19 < skews[1] < 21
+    drifted = next(o for o in r["location"].values() if o["m"]["time|clock_skew_to_gm_s"] > 19)
+    assert drifted["p"]["clock_offset_to_gm"].startswith("ahead by 20.")
+    standby = next(g for g in r["global_manager"].values() if g["p"]["mode"] == "STANDBY")
+    assert 69 < standby["m"]["time|clock_skew_to_active_s"] < 71 and standby["p"]["clock_offset_to_active"].startswith("behind")
+    assert 69 < fed(r)["m"]["time|clock_max_skew_s"] < 71
+
+
+def test_no_clock_difference_without_the_clock_of_the_active_global_manager(nsx):
+    nsx.data[GM_HOSTS[0]].pop("/api/v1/node/status")
+    r = run()
+    assert all("time|clock_skew_to_gm_s" not in o["m"] for o in r["location"].values())
+    assert "time|clock_max_skew_s" not in fed(r)["m"]
+
+
+def test_an_override_is_counted_and_is_a_change(nsx):
+    run()
+    nsx.data[LM_HOSTS[0]][OVERRIDES] = {"result_count": 2, "results": [
+        {"path": "/global-infra/segments/fed-stretched", "resource_type": "Segment", "display_name": "fed-stretched",
+         "overridden": True},
+        {"path": "/infra/segments/local-only", "resource_type": "Segment", "display_name": "local-only", "overridden": True}]}
+    _expire_inventory()
+    r = run()
+    loc = next(o for o in r["location"].values() if o["m"]["configuration|overridden_objects"] == 1)  # the local one is left out
+    assert "Segment fed-stretched (/global-infra/segments/fed-stretched)" == loc["p"]["overridden_list"]
+    assert any("Segment fed-stretched overridden at location" in m for m in loc["e"]), loc["e"]
+    assert fed(r)["m"]["configuration|overridden_objects"] == 1
+    nsx.data[LM_HOSTS[0]][OVERRIDES] = {"result_count": 0, "results": []}
+    _expire_inventory()
+    r = run()
+    assert any("Override of Segment fed-stretched" in m and "removed" in m for m in _all_events(r))
+
+
+def test_failed_reads_of_limits_and_overrides_are_unknown_and_not_cached(nsx):
+    nsx.fail = ["/capacity/dashboard/usage", "/search/query"]
+    r = run()
+    for loc in r["location"].values():
+        assert "limits|capacity_max_pct" not in loc["m"] and "configuration|overridden_objects" not in loc["m"]
+    assert "configuration|overridden_objects" not in fed(r)["m"]
+    nsx.fail = []
+    r = run()  # no cached failure: read again in the next cycle
+    assert all(loc["m"]["limits|capacity_max_pct"] == 97.64 for loc in r["location"].values())
+    assert all(loc["m"]["configuration|overridden_objects"] == 0 for loc in r["location"].values())
+
+
+def test_capacity_alert_is_left_to_the_builtin_integration():
+    xml = open(os.path.join(ROOT, "pack/content/alertdefs/nsxfederation_alerts.xml")).read()
+    block = xml[xml.index('id="AlertDefinition-NSXFederation-loc_capacity"'):]
+    block = block[:block.index("</AlertDefinition>")]
+    assert block.count('loc_cap_builtin" negateCondition="true"') == block.count("<SymptomSet ") == 2
+
+
+def test_the_clock_of_the_collector_cancels_out(nsx):
+    for host in nsx.data:  # every manager 5 minutes ahead of the cloud proxy: they agree with each other
+        nsx.clock_ms[host] = 300000
+    r = run()
+    assert all(o["m"]["time|clock_skew_to_gm_s"] < 1 for o in r["location"].values())
+    assert fed(r)["m"]["time|clock_max_skew_s"] < 1
+
+
+def test_bad_capacity_data_does_not_stop_the_location(nsx):
+    doc = nsx.data[LM_HOSTS[0]]["/policy/api/v1/infra/capacity/dashboard/usage"]
+    doc["capacity_usage"][0]["current_usage_percentage"] = "N/A"
+    doc["capacity_usage"].append("not an item")
+    r = run()
+    assert all(o["m"]["connectivity|collector_reachable"] == 1 for o in r["location"].values())
+    assert all(o["m"]["limits|capacity_max_pct"] == 97.64 for o in r["location"].values())  # the bad item is skipped
+    doc["capacity_usage"] = "garbage"
+    _expire_inventory()
+    r = run()
+    assert all(o["m"]["connectivity|collector_reachable"] == 1 for o in r["location"].values())
+
+
+def test_a_limit_reached_counts_as_critical(nsx):
+    doc = nsx.data[LM_HOSTS[0]]["/policy/api/v1/infra/capacity/dashboard/usage"]
+    item = next(u for u in doc["capacity_usage"] if u["usage_type"] == "NUMBER_OF_SERVICES")
+    item.update(current_usage_count=850, current_usage_percentage=100.0, severity="WARNING")
+    r = run()
+    crit = sorted(o["m"]["limits|capacity_items_critical"] for o in r["location"].values())
+    assert crit == [0, 1]
+
+
+def test_a_step_of_the_collector_clock_during_the_cycle_changes_no_difference(nsx, monkeypatch):
+    import adapter
+    import time as real
+
+    class Clock:  # the wall clock of the cloud proxy steps 60 s back once the first Local Manager is read
+        step = 0.0
+
+        def __getattr__(self, name):
+            return getattr(real, name)
+
+        def time(self):
+            return real.time() + self.step
+    clock = Clock()
+    monkeypatch.setattr(adapter, "time", clock)
+    original = nsx.get
+
+    def get(client, path, params=None):
+        if path == "/api/v1/node/status" and client.host in LM_HOSTS:
+            clock.step = -60.0
+        return original(client, path, params)
+    nsx.get = get
+    import nsxclient as nc
+    monkeypatch.setattr(nc.NsxClient, "get", lambda self, path, params=None: nsx.get(self, path, params))
+    r = run()
+    assert all(o["m"]["time|clock_skew_to_gm_s"] < 1 for o in r["location"].values())
+
+
+def test_ntp_service_not_running(nsx):
+    nsx.data[LM_HOSTS[0]]["/api/v1/node/services/ntp/status"]["runtime_state"] = "stopped"
+    r = run()
+    assert sorted(o["p"]["ntp_service"] for o in r["location"].values()) == ["running", "stopped"]
+
+
+def test_cached_limits_are_not_sent_for_a_local_manager_that_does_not_answer(nsx):
+    run()
+    nsx.data[LM_HOSTS[0]].pop("/api/v1/cluster/status")  # the Local Manager stops answering this call
+    r = run()
+    sent = [o for o in r["location"].values() if "limits|capacity_max_pct" in o["m"]]
+    assert len(sent) == 1
+
+
+def test_capacity_alerts_follow_the_builtin_integration_not_the_alarm_setting(nsx, ops):
+    ids = lm_cluster_ids(nsx)
+    ops.nsx_clusters = [next(iter(ids.values()))]
+    r = run(lm_alarm_alerts="always")
+    by = sorted((o["p"]["alarm_alerts_by"], o["p"]["capacity_alerts_by"]) for o in r["location"].values())
+    assert by == [("this pack", "the built-in NSX integration"), ("this pack", "this pack")]
+
+
+def test_edge_alerts_follow_the_builtin_integration_not_the_alarm_setting(nsx, ops):
+    ops.nsx_clusters = []  # the built-in integration monitors no Local Manager
+    r = run(lm_alarm_alerts="never")
+    assert {e["p"]["capacity_alerts_by"] for e in r["edge_node"].values()} == {"this pack"}

@@ -185,6 +185,8 @@ def overview():
         ("location", "gm_last_seen_minutes", (5, 15, 60)), ("location", "minutes_since_collection", (6, 15, 60)), ("location", "nodes_offline", (0.1, 0.5, 0.9)),
         ("location", "backup_age_hours", (24, 48, 72)), ("location", "cert_min_days_to_expiry", (60, 30, 7)),
         ("location", "alarms_open_critical", (0.1, 0.5, 0.9)), ("location", "alarms_open_high", (0.9, 4, 9)),
+        ("location", "clock_skew_to_gm_s", (1, 5, 60)), ("location", "capacity_max_pct", (60, 70, 100)),
+        ("location", "overridden_objects", (0.1, 0.5, 0.9)),
     ], columns=3)
     rel = d.relationship("Selected object: related objects", (1, 14, 7, 9))
     pl = d.property_list("Selected object: properties", (8, 14, 5, 9), [

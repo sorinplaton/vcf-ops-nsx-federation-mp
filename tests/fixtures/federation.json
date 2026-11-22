@@ -3069,6 +3069,532 @@
 "ospf_neighbors_down_count": 0
 }
 ]
+},
+"/api/v1/node/status": {
+"cpu_cores": 6,
+"form_factor": "MEDIUM",
+"system_time": 0,
+"uptime": 74443530
+},
+"/api/v1/node/services/ntp": {
+"service_name": "ntp",
+"service_properties": {
+"servers": [
+"192.0.2.1"
+],
+"start_on_boot": true
+}
+},
+"/api/v1/node/services/ntp/status": {
+"pids": [
+7382
+],
+"runtime_state": "running"
+},
+"/policy/api/v1/infra/capacity/dashboard/usage": {
+"capacity_usage": [
+{
+"usage_type": "NUMBER_OF_GROUPS_BASED_ON_IP_SETS",
+"display_name": "Groups Based on IP Sets or IP Addresses",
+"current_usage_count": 442,
+"max_supported_count": 3000,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 14.73,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_INTROSPECTION_POLICIES_NS_TIER1",
+"display_name": "Introspection Policies N-S Tier-1",
+"current_usage_count": 0,
+"max_supported_count": 35,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_DHCP_SERVERS",
+"display_name": "DHCP Server Instances",
+"current_usage_count": 0,
+"max_supported_count": 600,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_GATEWAY_IDS_RULES",
+"display_name": "Intrusion Detection and Prevention Gateway rules",
+"current_usage_count": 0,
+"max_supported_count": 1000,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_ACTIVE_DIRECTORY_GROUPS",
+"display_name": "Active Directory Groups (Identity Firewall)",
+"current_usage_count": 0,
+"max_supported_count": 17000,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_INTROSPECTION_RULES_NS_TIER1",
+"display_name": "Introspection Rules N-S Tier-1",
+"current_usage_count": 0,
+"max_supported_count": 350,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_GFW_CONTEXT_PROFILES",
+"display_name": "Gateway firewall context profiles",
+"current_usage_count": 0,
+"max_supported_count": 500,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_INTROSPECTION_POLICIES_NS_TIER0",
+"display_name": "Introspection Policies N-S Tier-0",
+"current_usage_count": 0,
+"max_supported_count": 35,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_TLS_POLICY",
+"display_name": "TLS Policy",
+"current_usage_count": 0,
+"max_supported_count": 250,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_DISTRIBUTED_IDS_RULES",
+"display_name": "Distributed Intrusion Detection and Prevention rules",
+"current_usage_count": 0,
+"max_supported_count": 350,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_SECURITY_POLICY_RULES",
+"display_name": "Security Policy Rules",
+"current_usage_count": 31,
+"max_supported_count": 8500,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.36,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_GEO_IP_GROUPS",
+"display_name": "System-wide Geo IP Groups",
+"current_usage_count": 249,
+"max_supported_count": 1000,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 24.9,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_INTROSPECTION_RULES_NS_TIER0",
+"display_name": "Introspection Rules N-S Tier-0",
+"current_usage_count": 0,
+"max_supported_count": 350,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_DISTRIBUTED_AM_RULES",
+"display_name": "Distributed Antimalware Rules",
+"current_usage_count": 0,
+"max_supported_count": 85,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_SEGMENT",
+"display_name": "Segments",
+"current_usage_count": 4,
+"max_supported_count": 360,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 1.11,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_VSPHERE_CLUSTERS",
+"display_name": "vSphere Clusters Prepared for NSX",
+"current_usage_count": 1,
+"max_supported_count": 4,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 25.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_TLS_RULES",
+"display_name": "TLS Rules",
+"current_usage_count": 0,
+"max_supported_count": 1700,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_DISTRIBUTED_IDS_POLICY",
+"display_name": "Distributed Intrusion Detection and Prevention Policies",
+"current_usage_count": 0,
+"max_supported_count": 85,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_INTROSPECTION_POLICIES_EW",
+"display_name": "Introspection Policies E-W",
+"current_usage_count": 1,
+"max_supported_count": 35,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 2.85,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_GATEWAY_AM_RULES",
+"display_name": "Antimalware Gateway Rules",
+"current_usage_count": 0,
+"max_supported_count": 85,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_GATEWAY_IDS_POLICY",
+"display_name": "Intrusion Detection and Prevention Gateway Policies",
+"current_usage_count": 0,
+"max_supported_count": 250,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_GROUPS",
+"display_name": "Groups",
+"current_usage_count": 478,
+"max_supported_count": 3000,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 15.93,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_PREPARED_HOSTS",
+"display_name": "Hypervisor Hosts",
+"current_usage_count": 3,
+"max_supported_count": 64,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 4.68,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_DVPG_FOR_DFW",
+"display_name": "Distributed Port Groups",
+"current_usage_count": 5,
+"max_supported_count": 250,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 2.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_SERVICES",
+"display_name": "Services",
+"current_usage_count": 830,
+"max_supported_count": 850,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 97.64,
+"severity": "WARNING"
+},
+{
+"usage_type": "NUMBER_OF_INTROSPECTION_RULES_EW",
+"display_name": "Introspection Rules E-W",
+"current_usage_count": 1,
+"max_supported_count": 350,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.28,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_SAVED_FIREWALL_RULES_CONFIG",
+"display_name": "Saved Firewall Rules Configuration",
+"current_usage_count": 0,
+"max_supported_count": 100,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_SECURITY_POLICY",
+"display_name": "Security Policies",
+"current_usage_count": 11,
+"max_supported_count": 1700,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.64,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_SI_SERVICE_CHAINS",
+"display_name": "Service Chains",
+"current_usage_count": 0,
+"max_supported_count": 2,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_COMPUTE_MANAGER",
+"display_name": "Compute Managers",
+"current_usage_count": 1,
+"max_supported_count": 1,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 100.0,
+"severity": "WARNING"
+},
+{
+"usage_type": "NUMBER_OF_TIER1_ROUTERS",
+"display_name": "Tier-1 Gateways",
+"current_usage_count": 2,
+"max_supported_count": 120,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 1.66,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_IDS_PROFILES",
+"display_name": "IDS profiles",
+"current_usage_count": 1,
+"max_supported_count": 25,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 4.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_PROTECTION_ENABLED_VIRTUAL_MACHINES",
+"display_name": "System-wide Endpoint Protection Enabled Virtual Machines",
+"current_usage_count": 0,
+"max_supported_count": 5000,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_EDGES_AND_VNAS",
+"display_name": "System-wide Edge(s)/VNA(s)",
+"current_usage_count": 4,
+"max_supported_count": 16,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 25.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_TIER0_ROUTERS",
+"display_name": "Tier-0 Gateways",
+"current_usage_count": 1,
+"max_supported_count": 8,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 12.5,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_SI_SERVICE_PATHS",
+"display_name": "Introspection Service Paths",
+"current_usage_count": 0,
+"max_supported_count": 45,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_EDGE_AND_VNA_CLUSTERS",
+"display_name": "Edge/VNA Clusters",
+"current_usage_count": 2,
+"max_supported_count": 8,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 25.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_NAT_RULES",
+"display_name": "System-wide NAT Rules",
+"current_usage_count": 0,
+"max_supported_count": 1350,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_DHCP_V6_IP_POOLS",
+"display_name": "System-wide DHCPv6 Pools",
+"current_usage_count": 0,
+"max_supported_count": 600,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_TIER1_WITH_NAT_RULE",
+"display_name": "Tier-1 Gateways with NAT Enabled",
+"current_usage_count": 0,
+"max_supported_count": 120,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_FIREWALL_SECTIONS",
+"display_name": "System-wide Firewall Policies",
+"current_usage_count": 14,
+"max_supported_count": 1700,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.82,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_DHCP_IP_POOLS",
+"display_name": "System-wide DHCPv4 Pools",
+"current_usage_count": 0,
+"max_supported_count": 600,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_ACTIVE_DIRECTORY_DOMAINS",
+"display_name": "Active Directory Domains (Identity Firewall)",
+"current_usage_count": 0,
+"max_supported_count": 2,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_PROTECTION_ENABLED_HOST",
+"display_name": "System-wide Endpoint Protection Enabled Hosts",
+"current_usage_count": 0,
+"max_supported_count": 64,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_FIREWALL_RULES",
+"display_name": "System-wide Firewall Rules",
+"current_usage_count": 34,
+"max_supported_count": 8500,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.4,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_GFW_L7_ACCESS_PROFILES",
+"display_name": "Gateway firewall L7 access profiles",
+"current_usage_count": 1,
+"max_supported_count": 500,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.2,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_GATEWAY_POLICY",
+"display_name": "System-wide Gateway and Bridge Firewall Rules",
+"current_usage_count": 3,
+"max_supported_count": 10000,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.03,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_GEO_IP_RULES",
+"display_name": "System-wide Geo IP Rules",
+"current_usage_count": 0,
+"max_supported_count": 1000,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_SEGMENT_PORT",
+"display_name": "Segment Ports",
+"current_usage_count": 27,
+"max_supported_count": 1500,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 1.8,
+"severity": "INFO"
+}
+],
+"meta_info": {
+"last_updated_timestamp": 1795312221181,
+"min_global_threshold_percentage": 70.0,
+"max_global_threshold_percentage": 100.0
+},
+"unreported_usage_types": [],
+"_protection": "NOT_PROTECTED"
+},
+"/policy/api/v1/search/query?page_size=500&query=overridden:true": {
+"results": [],
+"result_count": 0
 }
 },
 "192.0.2.4": {
@@ -4935,6 +5461,27 @@
 ],
 "sort_ascending": true,
 "sort_by": "display_name"
+},
+"/api/v1/node/status": {
+"cpu_cores": 6,
+"form_factor": "MEDIUM",
+"system_time": 0,
+"uptime": 74443530
+},
+"/api/v1/node/services/ntp": {
+"service_name": "ntp",
+"service_properties": {
+"servers": [
+"192.0.2.1"
+],
+"start_on_boot": true
+}
+},
+"/api/v1/node/services/ntp/status": {
+"pids": [
+7382
+],
+"runtime_state": "running"
 }
 },
 "192.0.2.5": {
@@ -5564,6 +6111,27 @@
 "upgrade_coordinator_updated": false,
 "upgrade_coordinator_version": "9.1.1.0100.25762948",
 "upgrade_status": "NOT_STARTED"
+},
+"/api/v1/node/status": {
+"cpu_cores": 6,
+"form_factor": "MEDIUM",
+"system_time": 0,
+"uptime": 74443530
+},
+"/api/v1/node/services/ntp": {
+"service_name": "ntp",
+"service_properties": {
+"servers": [
+"192.0.2.1"
+],
+"start_on_boot": true
+}
+},
+"/api/v1/node/services/ntp/status": {
+"pids": [
+7382
+],
+"runtime_state": "running"
 }
 },
 "192.0.2.6": {
@@ -8356,6 +8924,532 @@
 "ospf_neighbors_down_count": 0
 }
 ]
+},
+"/api/v1/node/status": {
+"cpu_cores": 6,
+"form_factor": "MEDIUM",
+"system_time": 0,
+"uptime": 74443530
+},
+"/api/v1/node/services/ntp": {
+"service_name": "ntp",
+"service_properties": {
+"servers": [
+"192.0.2.1"
+],
+"start_on_boot": true
+}
+},
+"/api/v1/node/services/ntp/status": {
+"pids": [
+7382
+],
+"runtime_state": "running"
+},
+"/policy/api/v1/infra/capacity/dashboard/usage": {
+"capacity_usage": [
+{
+"usage_type": "NUMBER_OF_SERVICES",
+"display_name": "Services",
+"current_usage_count": 830,
+"max_supported_count": 850,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 97.64,
+"severity": "WARNING"
+},
+{
+"usage_type": "NUMBER_OF_INTROSPECTION_RULES_EW",
+"display_name": "Introspection Rules E-W",
+"current_usage_count": 1,
+"max_supported_count": 350,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.28,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_SAVED_FIREWALL_RULES_CONFIG",
+"display_name": "Saved Firewall Rules Configuration",
+"current_usage_count": 0,
+"max_supported_count": 100,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_SECURITY_POLICY",
+"display_name": "Security Policies",
+"current_usage_count": 4,
+"max_supported_count": 1700,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.23,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_SI_SERVICE_CHAINS",
+"display_name": "Service Chains",
+"current_usage_count": 0,
+"max_supported_count": 2,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_COMPUTE_MANAGER",
+"display_name": "Compute Managers",
+"current_usage_count": 1,
+"max_supported_count": 1,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 100.0,
+"severity": "WARNING"
+},
+{
+"usage_type": "NUMBER_OF_TIER1_ROUTERS",
+"display_name": "Tier-1 Gateways",
+"current_usage_count": 2,
+"max_supported_count": 120,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 1.66,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_IDS_PROFILES",
+"display_name": "IDS profiles",
+"current_usage_count": 1,
+"max_supported_count": 25,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 4.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_PROTECTION_ENABLED_VIRTUAL_MACHINES",
+"display_name": "System-wide Endpoint Protection Enabled Virtual Machines",
+"current_usage_count": 0,
+"max_supported_count": 5000,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_EDGES_AND_VNAS",
+"display_name": "System-wide Edge(s)/VNA(s)",
+"current_usage_count": 2,
+"max_supported_count": 16,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 12.5,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_TIER0_ROUTERS",
+"display_name": "Tier-0 Gateways",
+"current_usage_count": 1,
+"max_supported_count": 8,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 12.5,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_SI_SERVICE_PATHS",
+"display_name": "Introspection Service Paths",
+"current_usage_count": 0,
+"max_supported_count": 45,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_EDGE_AND_VNA_CLUSTERS",
+"display_name": "Edge/VNA Clusters",
+"current_usage_count": 1,
+"max_supported_count": 8,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 12.5,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_NAT_RULES",
+"display_name": "System-wide NAT Rules",
+"current_usage_count": 0,
+"max_supported_count": 1350,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_DHCP_V6_IP_POOLS",
+"display_name": "System-wide DHCPv6 Pools",
+"current_usage_count": 0,
+"max_supported_count": 600,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_TIER1_WITH_NAT_RULE",
+"display_name": "Tier-1 Gateways with NAT Enabled",
+"current_usage_count": 0,
+"max_supported_count": 120,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_FIREWALL_SECTIONS",
+"display_name": "System-wide Firewall Policies",
+"current_usage_count": 7,
+"max_supported_count": 1700,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.41,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_DHCP_IP_POOLS",
+"display_name": "System-wide DHCPv4 Pools",
+"current_usage_count": 0,
+"max_supported_count": 600,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_ACTIVE_DIRECTORY_DOMAINS",
+"display_name": "Active Directory Domains (Identity Firewall)",
+"current_usage_count": 0,
+"max_supported_count": 2,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_PROTECTION_ENABLED_HOST",
+"display_name": "System-wide Endpoint Protection Enabled Hosts",
+"current_usage_count": 0,
+"max_supported_count": 64,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_FIREWALL_RULES",
+"display_name": "System-wide Firewall Rules",
+"current_usage_count": 10,
+"max_supported_count": 8500,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.11,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_GFW_L7_ACCESS_PROFILES",
+"display_name": "Gateway firewall L7 access profiles",
+"current_usage_count": 1,
+"max_supported_count": 500,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.2,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_GATEWAY_POLICY",
+"display_name": "System-wide Gateway and Bridge Firewall Rules",
+"current_usage_count": 3,
+"max_supported_count": 10000,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.03,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_GEO_IP_RULES",
+"display_name": "System-wide Geo IP Rules",
+"current_usage_count": 0,
+"max_supported_count": 1000,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_SEGMENT_PORT",
+"display_name": "Segment Ports",
+"current_usage_count": 2,
+"max_supported_count": 1500,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.13,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_GROUPS_BASED_ON_IP_SETS",
+"display_name": "Groups Based on IP Sets or IP Addresses",
+"current_usage_count": 253,
+"max_supported_count": 3000,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 8.43,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_INTROSPECTION_POLICIES_NS_TIER1",
+"display_name": "Introspection Policies N-S Tier-1",
+"current_usage_count": 0,
+"max_supported_count": 35,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_DHCP_SERVERS",
+"display_name": "DHCP Server Instances",
+"current_usage_count": 0,
+"max_supported_count": 600,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_GATEWAY_IDS_RULES",
+"display_name": "Intrusion Detection and Prevention Gateway rules",
+"current_usage_count": 0,
+"max_supported_count": 1000,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_ACTIVE_DIRECTORY_GROUPS",
+"display_name": "Active Directory Groups (Identity Firewall)",
+"current_usage_count": 0,
+"max_supported_count": 17000,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_INTROSPECTION_RULES_NS_TIER1",
+"display_name": "Introspection Rules N-S Tier-1",
+"current_usage_count": 0,
+"max_supported_count": 350,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_GFW_CONTEXT_PROFILES",
+"display_name": "Gateway firewall context profiles",
+"current_usage_count": 0,
+"max_supported_count": 500,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_INTROSPECTION_POLICIES_NS_TIER0",
+"display_name": "Introspection Policies N-S Tier-0",
+"current_usage_count": 0,
+"max_supported_count": 35,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_TLS_POLICY",
+"display_name": "TLS Policy",
+"current_usage_count": 0,
+"max_supported_count": 250,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_DISTRIBUTED_IDS_RULES",
+"display_name": "Distributed Intrusion Detection and Prevention rules",
+"current_usage_count": 0,
+"max_supported_count": 350,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_SECURITY_POLICY_RULES",
+"display_name": "Security Policy Rules",
+"current_usage_count": 7,
+"max_supported_count": 8500,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.08,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_GEO_IP_GROUPS",
+"display_name": "System-wide Geo IP Groups",
+"current_usage_count": 249,
+"max_supported_count": 1000,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 24.9,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_INTROSPECTION_RULES_NS_TIER0",
+"display_name": "Introspection Rules N-S Tier-0",
+"current_usage_count": 0,
+"max_supported_count": 350,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_DISTRIBUTED_AM_RULES",
+"display_name": "Distributed Antimalware Rules",
+"current_usage_count": 0,
+"max_supported_count": 85,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_SEGMENT",
+"display_name": "Segments",
+"current_usage_count": 3,
+"max_supported_count": 360,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.83,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_VSPHERE_CLUSTERS",
+"display_name": "vSphere Clusters Prepared for NSX",
+"current_usage_count": 1,
+"max_supported_count": 4,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 25.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_TLS_RULES",
+"display_name": "TLS Rules",
+"current_usage_count": 0,
+"max_supported_count": 1700,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_DISTRIBUTED_IDS_POLICY",
+"display_name": "Distributed Intrusion Detection and Prevention Policies",
+"current_usage_count": 0,
+"max_supported_count": 85,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_INTROSPECTION_POLICIES_EW",
+"display_name": "Introspection Policies E-W",
+"current_usage_count": 1,
+"max_supported_count": 35,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 2.85,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_GATEWAY_AM_RULES",
+"display_name": "Antimalware Gateway Rules",
+"current_usage_count": 0,
+"max_supported_count": 85,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_GROUPS",
+"display_name": "Groups",
+"current_usage_count": 260,
+"max_supported_count": 3000,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 8.66,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_GATEWAY_IDS_POLICY",
+"display_name": "Intrusion Detection and Prevention Gateway Policies",
+"current_usage_count": 0,
+"max_supported_count": 250,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_DVPG_FOR_DFW",
+"display_name": "Distributed Port Groups",
+"current_usage_count": 0,
+"max_supported_count": 250,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 0.0,
+"severity": "INFO"
+},
+{
+"usage_type": "NUMBER_OF_PREPARED_HOSTS",
+"display_name": "Hypervisor Hosts",
+"current_usage_count": 3,
+"max_supported_count": 64,
+"min_threshold_percentage": 70.0,
+"max_threshold_percentage": 100.0,
+"current_usage_percentage": 4.68,
+"severity": "INFO"
+}
+],
+"meta_info": {
+"last_updated_timestamp": 1795312223376,
+"min_global_threshold_percentage": 70.0,
+"max_global_threshold_percentage": 100.0
+},
+"unreported_usage_types": [],
+"_protection": "NOT_PROTECTED"
+},
+"/policy/api/v1/search/query?page_size=500&query=overridden:true": {
+"results": [],
+"result_count": 0
 }
 }
 }

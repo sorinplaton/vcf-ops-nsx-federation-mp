@@ -124,6 +124,18 @@ S = {
     "t0_no_active":    ("tier0", "Stretched Tier-0 gateway has no active service router", "critical", "metric", "sr_active", "<", 1),
     "t0_loc_no_active": ("tier0", "A location of the active-active Tier-0 gateway has no active service router", "immediate", "metric", "locations_without_active_sr", ">", 0),
     "t0_failover":     ("tier0", "A service router of the Tier-0 gateway changed HA state since the previous cycle", "warning", "metric", "sr_ha_changes", ">", 0),
+    # clocks, configuration limits, local overrides
+    "loc_clock_5":     ("location", "Local Manager clock differs from the active Global Manager by more than 5 seconds", "warning", "metric", "clock_skew_to_gm_s", ">", 5),
+    "loc_clock_60":    ("location", "Local Manager clock differs from the active Global Manager by more than 60 seconds", "immediate", "metric", "clock_skew_to_gm_s", ">", 60),
+    "loc_ntp":         ("location", "NTP service of the Local Manager is not running", "warning", "property", "ntp_service", "!=", "running"),
+    "gm_clock_5":      ("global_manager", "Global Manager clock differs from the active Global Manager by more than 5 seconds", "warning", "metric", "clock_skew_to_active_s", ">", 5),
+    "gm_clock_60":     ("global_manager", "Global Manager clock differs from the active Global Manager by more than 60 seconds", "immediate", "metric", "clock_skew_to_active_s", ">", 60),
+    "gm_ntp":          ("global_manager", "NTP service of the Global Manager is not running", "warning", "property", "ntp_service", "!=", "running"),
+    "loc_override":    ("location", "Global objects are overridden at the location", "warning", "metric", "overridden_objects", ">", 0),
+    "loc_cap_warn":    ("location", "An NSX configuration limit of the Local Manager is above its warning threshold", "warning", "metric", "capacity_items_warning", ">", 0),
+    "loc_cap_crit":    ("location", "An NSX configuration limit of the Local Manager is above its critical threshold", "immediate", "metric", "capacity_items_critical", ">", 0),
+    "loc_cap_builtin": ("location", "The built-in NSX integration raises the capacity alarms of this Local Manager", "info",
+                        "property", "capacity_alerts_by", "=", "the built-in NSX integration"),
     # dynamic threshold: VCF Operations learns the usual range of the metric
     "tun_rx_dt":       ("rtep_tunnel", "RTEP tunnel receive rate is above its usual range", "warning", "dt", "rx_bytes_per_s", "above", None),
     "tun_tx_dt":       ("rtep_tunnel", "RTEP tunnel send rate is above its usual range", "warning", "dt", "tx_bytes_per_s", "above", None),
@@ -187,7 +199,8 @@ for _k in OUTAGE_KINDS:
     S["outage_" + _k] = (_k, "A location of the federation is cut off from the Global Manager", "info", "property",
                          "location_outage", "!=", "none")
 QUIET = {"loc_intersite", "chan_down", "edge_bgp_down", "ec_status", "tun_bgp_down", "tun_drops", "tun_blocked", "tun_flap", "bgp_flap", "loc_rtt", "t0_error", "t1_error",
-         "seg_error", "pol_error", "bgp_down", "real_missing", "edge_status", "sr_down", "t0_no_active", "t0_failover"}
+         "seg_error", "pol_error", "bgp_down", "real_missing", "edge_status", "sr_down", "t0_no_active", "t0_failover",
+         "loc_clock"}
 
 # ---- wait and cancel cycles: conditions that can flap need two cycles (10 minutes) to raise and to clear
 WAIT = {k: (2, 2) for k in ("chan_down", "loc_bgp_down", "loc_bgp_none", "edge_bgp_none", "tun_bgp_down",
@@ -208,7 +221,9 @@ WAIT.update({"tun_rx_dt": (3, 3), "tun_tx_dt": (3, 3), "gm_standby_sync": (3, 2)
              "edge_disk_80": (3, 2), "edge_disk_90": (3, 2),
              # a symptom that keeps alerts quiet clears after them, as the outage symptoms do: leaving maintenance
              # mode, or a short gap in the list of the built-in integration, raises nothing
-             "edge_maint": (1, 3), "sr_maint": (1, 3), "edge_builtin": (1, 3),
+             "edge_maint": (1, 3), "sr_maint": (1, 3), "edge_builtin": (1, 3), "loc_cap_builtin": (1, 3),
+             # a clock reading can be off by the duration of the call: two cycles before an alert
+             "loc_clock_5": (2, 2), "loc_clock_60": (2, 2), "gm_clock_5": (2, 2), "gm_clock_60": (2, 2),
              "sr_routing": (2, 2), "sr_ha_down": (2, 2), "t0_no_active": (2, 2), "t0_loc_no_active": (2, 2),
              # one change is enough; the alert stays two cycles so that it is seen
              "t0_failover": (1, 2)})
@@ -218,7 +233,8 @@ WAIT.update({"outage_" + k: (1, 3) for k in OUTAGE_KINDS})
 WAIT["chan_gm_outage"] = (1, 3)
 
 # ---- alerts that affect the Risk badge (a condition that will hurt later) instead of Health (broken now)
-RISK = {"gm_version", "gm_upgrade", "loc_newer", "loc_upgrade", "fed_no_standby", "fed_budget", "fed_gaps", "fed_load", "gm_backup", "gm_cert", "loc_cert_trust", "loc_version", "loc_backup", "loc_cert", "edge_disk"}
+RISK = {"gm_version", "gm_upgrade", "loc_newer", "loc_upgrade", "fed_no_standby", "fed_budget", "fed_gaps", "fed_load", "gm_backup", "gm_cert", "loc_cert_trust", "loc_version", "loc_backup", "loc_cert", "edge_disk",
+        "loc_override", "loc_capacity"}
 
 # ---- recommendations
 R = {
@@ -341,6 +357,18 @@ R = {
     "t0_failover": "A service router of this Tier-0 changed HA state. Read the 'Recent changes' property of the federation "
                    "and the 'Last HA state change' of the service routers to see which edge took over. Look for an edge "
                    "reboot, an uplink or BFD failure, or a maintenance action at that time.",
+    "clock": "Read 'Clock offset to the active Global Manager' and 'NTP servers' on the manager. On each node of both "
+             "managers, run get clock and get ntp-server on the NSX CLI. Point every manager of the federation to the "
+             "same reachable NTP servers (System, Fabric, Profiles, Node Profiles in the UI), and check that the NTP "
+             "service runs (start service ntp on the CLI).",
+    "overrides": "A global object was changed on the Local Manager of this location, so the location runs a "
+                 "configuration that differs from the Global Manager. The property 'Global objects overridden at this "
+                 "location' lists them. Check with the team of the location whether the override is intended; if not, "
+                 "remove it on the Local Manager, or make the change on the Global Manager for every location.",
+    "capacity": "NSX rates at least one configuration limit of this Local Manager above its threshold (property 'NSX "
+                "configuration limits above a threshold', and Plan & Troubleshoot, Capacity in the NSX UI). Global "
+                "objects count at every location of their span. Remove unused objects, review the scope of global "
+                "groups and policies, or use a larger manager form factor where the limit depends on it.",
     "realization": "Open the object in the Global Manager and read the realization status for this location. Check the "
                    "location alarms and the connection between the Global Manager and the location, then save the object again if needed.",
 }
@@ -479,6 +507,18 @@ A = [
     ("t0_failover", "tier0", "Stretched Tier-0 gateway service router changed HA state",
      "A service router of this gateway changed HA state since the previous cycle, for example a failover to the standby edge.",
      NET, AVAIL, [["t0_failover"]], "t0_failover"),
+    ("loc_clock", "location", "Local Manager clock is not in step with the Global Manager",
+     "The clock of the Local Manager differs from the active Global Manager by more than 5 seconds (immediate above 60), "
+     "or its NTP service is not running.", NET, CONF, [["loc_clock_5"], ["loc_clock_60"], ["loc_ntp"]], "clock"),
+    ("gm_clock", "global_manager", "Global Manager clock is not in step with the active Global Manager",
+     "The clock of this Global Manager differs from the active one by more than 5 seconds (immediate above 60), or its "
+     "NTP service is not running.", NET, CONF, [["gm_clock_5"], ["gm_clock_60"], ["gm_ntp"]], "clock"),
+    ("loc_override", "location", "Global objects are overridden at the location",
+     "At least one global object was changed on the Local Manager of this location.", NET, CONF, [["loc_override"]], "overrides"),
+    ("loc_capacity", "location", "NSX configuration limit of the location is close to its maximum",
+     "NSX rates a configuration limit of the Local Manager above its warning threshold (immediate above the critical one, "
+     "or once the limit is reached).",
+     NET, CONF, [["loc_cap_warn", "!loc_cap_builtin"], ["loc_cap_crit", "!loc_cap_builtin"]], "capacity"),
     ("tun_traffic", "rtep_tunnel", "RTEP tunnel traffic is above its usual range",
      "The receive or send rate of the tunnel is above the dynamic threshold VCF Operations learned for it.", NET, PERF,
      [["tun_rx_dt"], ["tun_tx_dt"]], "traffic"),

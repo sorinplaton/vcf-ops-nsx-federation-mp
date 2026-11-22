@@ -213,6 +213,11 @@ def document():
                "chaque Global Manager, les emplacements ajoutés, retirés ou mis à niveau, les edge nodes ajoutés ou "
                "retirés, l'état HA des service routers de Tier-0, et les objets étendus créés, modifiés ou supprimés. "
                "Chaque changement est un événement d'information sur son objet et apparaît dans la liste de la fédération.",
+               "- Compare l'horloge de chaque manager à celle du Global Manager actif (à partir de l'heure système que "
+               "renvoie NSX, corrigée de la durée de l'appel) et lit les serveurs et le service NTP de chacun.",
+               "- Lit les limites de configuration de chaque Local Manager telles que NSX les évalue, puisque les objets "
+               "globaux comptent à chaque emplacement de leur étendue, et liste les objets globaux surchargés "
+               "localement à un emplacement.",
                "- Dit si un Global Manager standby peut prendre le relais\u00a0: prêt, pas prêt avec les raisons (synchronisation avec l'actif, état du cluster, version, certificat expiré, mise à niveau en cours ou en pause) ou inconnu quand une valeur n'a pas pu être lue. La métrique vaut 1 seulement quand c'est confirmé.",
                "- Supprime en option les objets qui ont quitté NSX (option désactivée par défaut).", "",
                "## Types d'objet", "",
@@ -263,6 +268,10 @@ def document():
                "Manager, locations added, removed or upgraded, edge nodes added or removed, Tier-0 service router HA "
                "state, and stretched objects created, changed or deleted. Each change is an information event on its "
                "object and is listed on the federation.",
+               "- Compares the clock of every manager with the active Global Manager (from the system time NSX returns, "
+               "corrected for the duration of the call) and reads the NTP servers and service of each.",
+               "- Reads the configuration limits of each Local Manager as NSX rates them, since global objects count at "
+               "every location of their span, and lists the global objects overridden at a location.",
                "- Tells whether a standby Global Manager can take over: ready, not ready with the reasons (sync with the active, cluster health, version, expired certificate, upgrade in progress or paused), or unknown when a value could not be read. The metric is 1 only when that is confirmed.",
                "- Optionally deletes the objects that left NSX (off by default).", "",
                "## Object types", "",
