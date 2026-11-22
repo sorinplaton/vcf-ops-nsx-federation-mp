@@ -13,11 +13,11 @@ AK = "NSXFederation"
 GROUPS = [
     ("NSX Federation - All objects", "Every object of the NSX Federation pack. Scope for policies and notifications.",
      ["federation", "global_manager", "manager_node", "location", "sync_channel", "edge_cluster", "edge_node",
-      "rtep_tunnel", "bgp_neighbor", "tier0", "tier1", "segment", "global_policy", "realization", "rule"]),
+      "rtep_tunnel", "bgp_neighbor", "tier0_sr", "tier0", "tier1", "segment", "global_policy", "realization", "rule"]),
     ("NSX Federation - Managers and locations", "The federation, its Global Managers and nodes, and its locations.",
      ["federation", "global_manager", "manager_node", "location"]),
-    ("NSX Federation - Inter-site connectivity", "Sync channels, edge clusters, edge nodes, RTEP tunnels and Tier-0 BGP neighbors.",
-     ["sync_channel", "edge_cluster", "edge_node", "rtep_tunnel", "bgp_neighbor"]),
+    ("NSX Federation - Inter-site connectivity", "Sync channels, edge clusters, edge nodes, RTEP tunnels, Tier-0 service routers and Tier-0 BGP neighbors.",
+     ["sync_channel", "edge_cluster", "edge_node", "rtep_tunnel", "tier0_sr", "bgp_neighbor"]),
     ("NSX Federation - Stretched objects", "Stretched gateways, segments, global security policies, rules and their realization per location.",
      ["tier0", "tier1", "segment", "global_policy", "realization", "rule"]),
 ]

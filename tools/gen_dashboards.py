@@ -189,7 +189,7 @@ def overview():
     rel = d.relationship("Selected object: related objects", (1, 14, 7, 9))
     pl = d.property_list("Selected object: properties", (8, 14, 5, 9), [
         ("federation", "active_global_manager"), ("federation", "standby_configured"), ("federation", "collection_mode"),
-        ("federation", "federation_id"),
+        ("federation", "federation_id"), ("federation", "last_change"),
         ("global_manager", "mode"), ("global_manager", "version"), ("global_manager", "cluster_status"),
         ("global_manager", "backup_enabled"), ("global_manager", "backup_last_result"), ("global_manager", "standby_sync_status"),
         ("global_manager", "switchover_status"), ("global_manager", "cert_first_to_expire"),
@@ -206,11 +206,15 @@ def overview():
 
 def connectivity():
     d = Dash("NSX Federation" + SALT + "/Inter-site Connectivity",
-             "Sync channels between managers, inter-site BGP per edge node, RTEP tunnels and the BGP neighbors of stretched "
-             "Tier-0 gateways. Select a row to see its values, click a value to chart it.")
-    a = d.object_list("Sync channels and edge nodes", (1, 1, 6, 7), ["sync_channel", "edge_cluster", "edge_node"], [
+             "Sync channels between managers, inter-site BGP and capacity per edge node, Tier-0 service routers, RTEP "
+             "tunnels and the BGP neighbors of stretched Tier-0 gateways. Select a row to see its values, click a value "
+             "to chart it.")
+    a = d.object_list("Sync channels, edge nodes and Tier-0 service routers", (1, 1, 6, 7),
+                      ["sync_channel", "edge_cluster", "edge_node", "tier0_sr"], [
         ("sync_channel", "connection_up", "Channel up"), ("edge_node", "intersite_bgp_established", "BGP established"),
-        ("edge_node", "intersite_bgp_down", "BGP down"), ("edge_cluster", "intersite_bgp_down", "BGP down (cluster)")])
+        ("edge_node", "intersite_bgp_down", "BGP down"), ("edge_cluster", "intersite_bgp_down", "BGP down (cluster)"),
+        ("edge_node", "datapath_cpu_pct", "Datapath CPU (%)"), ("edge_node", "memory_used_pct", "Memory (%)"),
+        ("tier0_sr", "active", "SR active"), ("tier0_sr", "routing_up", "SR routing up")])
     b = d.object_list("RTEP tunnels", (7, 1, 6, 7), ["rtep_tunnel"], [
         ("rtep_tunnel", "bgp_established", "BGP established"), ("rtep_tunnel", "rx_dropped_per_min", "Rx drops/min"),
         ("rtep_tunnel", "tx_dropped_per_min", "Tx drops/min"), ("rtep_tunnel", "rx_drop_pct", "Rx dropped (%)"),
@@ -223,6 +227,11 @@ def connectivity():
         ("sync_channel", "connection_up", (0.9, 0.6, 0.5)),
         ("edge_cluster", "members"), ("edge_cluster", "intersite_bgp_established"), ("edge_cluster", "intersite_bgp_down", (0.1, 0.5, 0.9)),
         ("edge_node", "rtep_tunnels"), ("edge_node", "intersite_bgp_established"), ("edge_node", "intersite_bgp_down", (0.1, 0.5, 0.9)),
+        ("edge_node", "datapath_cpu_pct", (60, 75, 85)), ("edge_node", "datapath_cpu_peak_pct", (60, 75, 85)),
+        ("edge_node", "services_cpu_pct", (60, 75, 85)), ("edge_node", "memory_used_pct", (70, 80, 90)),
+        ("edge_node", "datapath_pool_peak_pct", (60, 75, 85)), ("edge_node", "disk_fullest_pct", (70, 80, 90)),
+        ("tier0_sr", "active"), ("tier0_sr", "routing_up", (0.9, 0.6, 0.5)), ("tier0_sr", "bgp_neighbors_up"),
+        ("tier0_sr", "bgp_neighbors_down", (0.1, 0.5, 0.9)),
         ("rtep_tunnel", "bgp_established", (0.9, 0.6, 0.5)), ("rtep_tunnel", "rx_bytes_per_s"), ("rtep_tunnel", "tx_bytes_per_s"),
         ("rtep_tunnel", "rx_packets_per_min"), ("rtep_tunnel", "tx_packets_per_min"),
         ("rtep_tunnel", "rx_dropped_per_min", (1, 10, 60)), ("rtep_tunnel", "tx_dropped_per_min", (1, 10, 60)),
@@ -256,9 +265,10 @@ def stretched():
         sbm += [(k, "span_locations"), (k, "realized_locations"), (k, "unrealized_locations", (0.1, 0.5, 0.9)),
                 (k, "error_locations", (0.1, 0.5, 0.9))]
         plm += [(k, "status"), (k, "path"), (k, "last_modified_user"), (k, "revision")]
-    sbm += [("global_policy", "rules_total"), ("global_policy", "rules_disabled"), ("global_policy", "hit_count"), ("global_policy", "hit_count_per_min"),
+    sbm += [("tier0", "sr_total"), ("tier0", "sr_active", (0.9, 0.6, 0.5)), ("tier0", "sr_down", (0.1, 0.5, 0.9)),
+            ("tier0", "locations_without_active_sr", (0.1, 0.5, 0.9)), ("global_policy", "rules_total"), ("global_policy", "rules_disabled"), ("global_policy", "hit_count"), ("global_policy", "hit_count_per_min"),
             ("realization", "realized", (0.9, 0.6, 0.5))]
-    plm += [("tier0", "ha_mode"), ("tier0", "primary_location"), ("tier1", "tier0"), ("tier1", "primary_location"),
+    plm += [("tier0", "ha_mode"), ("tier0", "primary_location"), ("tier0", "active_service_routers"), ("tier0", "no_active_sr_at"), ("tier1", "tier0"), ("tier1", "primary_location"),
             ("segment", "subnets"), ("segment", "gateway"), ("segment", "segment_type"),
             ("global_policy", "category"), ("global_policy", "scope"),
             ("realization", "status"), ("realization", "location"), ("realization", "object_type"), ("realization", "object_path")]

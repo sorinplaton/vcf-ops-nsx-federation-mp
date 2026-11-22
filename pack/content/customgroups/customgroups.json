@@ -55,6 +55,11 @@
             "rules": []
           },
           {
+            "resourceKind": "tier0_sr",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
             "resourceKind": "tier0",
             "adapterKind": "NSXFederation",
             "rules": []
@@ -125,7 +130,7 @@
       "autoResolveMembership": true,
       "started": true,
       "name": "NSX Federation - Inter-site connectivity",
-      "description": "Sync channels, edge clusters, edge nodes, RTEP tunnels and Tier-0 BGP neighbors.",
+      "description": "Sync channels, edge clusters, edge nodes, RTEP tunnels, Tier-0 service routers and Tier-0 BGP neighbors.",
       "membershipDefinition": {
         "ruleGroups": [
           {
@@ -145,6 +150,11 @@
           },
           {
             "resourceKind": "rtep_tunnel",
+            "adapterKind": "NSXFederation",
+            "rules": []
+          },
+          {
+            "resourceKind": "tier0_sr",
             "adapterKind": "NSXFederation",
             "rules": []
           },

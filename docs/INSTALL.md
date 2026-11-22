@@ -24,7 +24,7 @@ The placeholders used below:
 | `<repository>` | `nsxfederation` |
 | `<ops>` | `ops.example.com` |
 | `<gm1>`, `<gm2>` | cluster address of the active and of the standby Global Manager |
-| `<version>` | `1.9.0` |
+| `<version>` | `1.10.0` |
 
 ## Checklist
 

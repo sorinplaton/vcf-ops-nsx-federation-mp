@@ -455,6 +455,121 @@
                 <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-realization"/></Recommendations>
             </State>
         </AlertDefinition>
+        <AlertDefinition adapterKind="NSXFederation" description="NSX reports a status other than UP for this edge node (outside maintenance mode)." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-edge_status" name="Federation edge node status is not UP" resourceKind="edge_node" subType="18" type="19" waitCycle="1" cancelCycle="1">
+            <State severity="automatic">
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-edge_status"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-edge_maint" negateCondition="true"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-edge_builtin" negateCondition="true"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_edge_node" negateCondition="true"/>
+                </SymptomSet>
+                <Impact key="health" type="badge"/>
+                <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-edge_status"/></Recommendations>
+            </State>
+        </AlertDefinition>
+        <AlertDefinition adapterKind="NSXFederation" description="The average usage of the datapath cores is above 75% (immediate above 85%) for 15 minutes." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-edge_cpu" name="Federation edge node datapath CPU usage is high" resourceKind="edge_node" subType="19" type="19" waitCycle="1" cancelCycle="1">
+            <State severity="automatic">
+                <SymptomSets operator="or">
+                    <SymptomSet applyOn="self" operator="and">
+                        <Symptom ref="SymptomDefinition-NSXFederation-edge_cpu_75"/>
+                        <Symptom ref="SymptomDefinition-NSXFederation-edge_builtin" negateCondition="true"/>
+                    </SymptomSet>
+                    <SymptomSet applyOn="self" operator="and">
+                        <Symptom ref="SymptomDefinition-NSXFederation-edge_cpu_85"/>
+                        <Symptom ref="SymptomDefinition-NSXFederation-edge_builtin" negateCondition="true"/>
+                    </SymptomSet>
+                </SymptomSets>
+                <Impact key="health" type="badge"/>
+                <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-edge_cpu"/></Recommendations>
+            </State>
+        </AlertDefinition>
+        <AlertDefinition adapterKind="NSXFederation" description="The datapath CPU usage is above the dynamic threshold VCF Operations learned for this edge." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-edge_cpu_trend" name="Federation edge node datapath CPU usage is above its usual range" resourceKind="edge_node" subType="19" type="19" waitCycle="1" cancelCycle="1">
+            <State severity="automatic">
+                <SymptomSet applyOn="self" operator="and" ref="SymptomDefinition-NSXFederation-edge_cpu_dt"/>
+                <Impact key="health" type="badge"/>
+                <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-edge_cpu"/></Recommendations>
+            </State>
+        </AlertDefinition>
+        <AlertDefinition adapterKind="NSXFederation" description="System memory is above 80% (immediate above 90%), or a datapath memory pool is more than 85% used, for 15 minutes." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-edge_memory" name="Federation edge node memory usage is high" resourceKind="edge_node" subType="19" type="19" waitCycle="1" cancelCycle="1">
+            <State severity="automatic">
+                <SymptomSets operator="or">
+                    <SymptomSet applyOn="self" operator="and">
+                        <Symptom ref="SymptomDefinition-NSXFederation-edge_mem_80"/>
+                        <Symptom ref="SymptomDefinition-NSXFederation-edge_builtin" negateCondition="true"/>
+                    </SymptomSet>
+                    <SymptomSet applyOn="self" operator="and">
+                        <Symptom ref="SymptomDefinition-NSXFederation-edge_mem_90"/>
+                        <Symptom ref="SymptomDefinition-NSXFederation-edge_builtin" negateCondition="true"/>
+                    </SymptomSet>
+                    <SymptomSet applyOn="self" operator="and">
+                        <Symptom ref="SymptomDefinition-NSXFederation-edge_pool_85"/>
+                        <Symptom ref="SymptomDefinition-NSXFederation-edge_builtin" negateCondition="true"/>
+                    </SymptomSet>
+                </SymptomSets>
+                <Impact key="health" type="badge"/>
+                <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-edge_memory"/></Recommendations>
+            </State>
+        </AlertDefinition>
+        <AlertDefinition adapterKind="NSXFederation" description="A file system of the edge is more than 80% used (immediate above 90%)." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-edge_disk" name="Federation edge node file system is filling up" resourceKind="edge_node" subType="22" type="19" waitCycle="1" cancelCycle="1">
+            <State severity="automatic">
+                <SymptomSets operator="or">
+                    <SymptomSet applyOn="self" operator="and">
+                        <Symptom ref="SymptomDefinition-NSXFederation-edge_disk_80"/>
+                        <Symptom ref="SymptomDefinition-NSXFederation-edge_builtin" negateCondition="true"/>
+                    </SymptomSet>
+                    <SymptomSet applyOn="self" operator="and">
+                        <Symptom ref="SymptomDefinition-NSXFederation-edge_disk_90"/>
+                        <Symptom ref="SymptomDefinition-NSXFederation-edge_builtin" negateCondition="true"/>
+                    </SymptomSet>
+                </SymptomSets>
+                <Impact key="risk" type="badge"/>
+                <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-edge_disk"/></Recommendations>
+            </State>
+        </AlertDefinition>
+        <AlertDefinition adapterKind="NSXFederation" description="The routing of this Tier-0 service router is down, or its HA state is DOWN (outside maintenance mode of the edge)." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-sr_down" name="Tier-0 service router is down" resourceKind="tier0_sr" subType="18" type="19" waitCycle="1" cancelCycle="1">
+            <State severity="automatic">
+                <SymptomSets operator="or">
+                    <SymptomSet applyOn="self" operator="and">
+                        <Symptom ref="SymptomDefinition-NSXFederation-sr_routing"/>
+                        <Symptom ref="SymptomDefinition-NSXFederation-sr_maint" negateCondition="true"/>
+                        <Symptom ref="SymptomDefinition-NSXFederation-outage_tier0_sr" negateCondition="true"/>
+                    </SymptomSet>
+                    <SymptomSet applyOn="self" operator="and">
+                        <Symptom ref="SymptomDefinition-NSXFederation-sr_ha_down"/>
+                        <Symptom ref="SymptomDefinition-NSXFederation-sr_maint" negateCondition="true"/>
+                        <Symptom ref="SymptomDefinition-NSXFederation-outage_tier0_sr" negateCondition="true"/>
+                    </SymptomSet>
+                </SymptomSets>
+                <Impact key="health" type="badge"/>
+                <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-sr_down"/></Recommendations>
+            </State>
+        </AlertDefinition>
+        <AlertDefinition adapterKind="NSXFederation" description="No service router of the gateway is active, or, for an active-active gateway, a location of its span has none." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-t0_no_active" name="Stretched Tier-0 gateway has no active service router" resourceKind="tier0" subType="18" type="19" waitCycle="1" cancelCycle="1">
+            <State severity="automatic">
+                <SymptomSets operator="or">
+                    <SymptomSet applyOn="self" operator="and">
+                        <Symptom ref="SymptomDefinition-NSXFederation-t0_no_active"/>
+                        <Symptom ref="SymptomDefinition-NSXFederation-outage_tier0" negateCondition="true"/>
+                    </SymptomSet>
+                    <SymptomSet applyOn="self" operator="and">
+                        <Symptom ref="SymptomDefinition-NSXFederation-t0_loc_no_active"/>
+                        <Symptom ref="SymptomDefinition-NSXFederation-outage_tier0" negateCondition="true"/>
+                    </SymptomSet>
+                </SymptomSets>
+                <Impact key="health" type="badge"/>
+                <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-t0_active"/></Recommendations>
+            </State>
+        </AlertDefinition>
+        <AlertDefinition adapterKind="NSXFederation" description="A service router of this gateway changed HA state since the previous cycle, for example a failover to the standby edge." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-t0_failover" name="Stretched Tier-0 gateway service router changed HA state" resourceKind="tier0" subType="18" type="19" waitCycle="1" cancelCycle="1">
+            <State severity="automatic">
+                <SymptomSet applyOn="self" operator="and">
+                    <Symptom ref="SymptomDefinition-NSXFederation-t0_failover"/>
+                    <Symptom ref="SymptomDefinition-NSXFederation-outage_tier0" negateCondition="true"/>
+                </SymptomSet>
+                <Impact key="health" type="badge"/>
+                <Recommendations><Recommendation priority="1" ref="Recommendation-df-NSXFederation-t0_failover"/></Recommendations>
+            </State>
+        </AlertDefinition>
         <AlertDefinition adapterKind="NSXFederation" description="The receive or send rate of the tunnel is above the dynamic threshold VCF Operations learned for it." disableInBasePolicy="false" id="AlertDefinition-NSXFederation-tun_traffic" name="RTEP tunnel traffic is above its usual range" resourceKind="rtep_tunnel" subType="19" type="19" waitCycle="1" cancelCycle="1">
             <State severity="automatic">
                 <SymptomSets operator="or">
@@ -1090,6 +1205,86 @@
                 <Condition key="realized" operator="&lt;" thresholdType="static" type="metric" value="1" valueType="numeric"/>
             </State>
         </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-edge_status" name="Edge node status is not UP" resourceKind="edge_node" waitCycle="2" cancelCycle="2">
+            <State severity="immediate">
+                <Condition key="edge_status" operator="!=" thresholdType="static" type="property" value="UP" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-edge_maint" name="Edge node is in or entering maintenance mode" resourceKind="edge_node" waitCycle="1" cancelCycle="3">
+            <State severity="info">
+                <Condition key="maintenance_mode" operator="!=" thresholdType="static" type="property" value="DISABLED" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-edge_builtin" name="The built-in NSX integration raises the alarms of this edge node" resourceKind="edge_node" waitCycle="1" cancelCycle="3">
+            <State severity="info">
+                <Condition key="capacity_alerts_by" operator="=" thresholdType="static" type="property" value="the built-in NSX integration" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-edge_cpu_75" name="Edge datapath CPU usage is above 75%" resourceKind="edge_node" waitCycle="3" cancelCycle="2">
+            <State severity="warning">
+                <Condition key="capacity|datapath_cpu_pct" operator="&gt;" thresholdType="static" type="metric" value="75" valueType="numeric"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-edge_cpu_85" name="Edge datapath CPU usage is above 85%" resourceKind="edge_node" waitCycle="3" cancelCycle="2">
+            <State severity="immediate">
+                <Condition key="capacity|datapath_cpu_pct" operator="&gt;" thresholdType="static" type="metric" value="85" valueType="numeric"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-edge_mem_80" name="Edge system memory usage is above 80%" resourceKind="edge_node" waitCycle="3" cancelCycle="2">
+            <State severity="warning">
+                <Condition key="capacity|memory_used_pct" operator="&gt;" thresholdType="static" type="metric" value="80" valueType="numeric"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-edge_mem_90" name="Edge system memory usage is above 90%" resourceKind="edge_node" waitCycle="3" cancelCycle="2">
+            <State severity="immediate">
+                <Condition key="capacity|memory_used_pct" operator="&gt;" thresholdType="static" type="metric" value="90" valueType="numeric"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-edge_pool_85" name="An edge datapath memory pool is more than 85% used" resourceKind="edge_node" waitCycle="3" cancelCycle="2">
+            <State severity="warning">
+                <Condition key="capacity|datapath_pool_peak_pct" operator="&gt;" thresholdType="static" type="metric" value="85" valueType="numeric"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-edge_disk_80" name="An edge file system is more than 80% used" resourceKind="edge_node" waitCycle="3" cancelCycle="2">
+            <State severity="warning">
+                <Condition key="capacity|disk_fullest_pct" operator="&gt;" thresholdType="static" type="metric" value="80" valueType="numeric"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-edge_disk_90" name="An edge file system is more than 90% used" resourceKind="edge_node" waitCycle="3" cancelCycle="2">
+            <State severity="immediate">
+                <Condition key="capacity|disk_fullest_pct" operator="&gt;" thresholdType="static" type="metric" value="90" valueType="numeric"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-sr_routing" name="Routing of the Tier-0 service router is down" resourceKind="tier0_sr" waitCycle="2" cancelCycle="2">
+            <State severity="immediate">
+                <Condition key="routing_up" operator="&lt;" thresholdType="static" type="metric" value="1" valueType="numeric"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-sr_ha_down" name="Tier-0 service router HA state is DOWN" resourceKind="tier0_sr" waitCycle="2" cancelCycle="2">
+            <State severity="immediate">
+                <Condition key="ha_status" operator="=" thresholdType="static" type="property" value="DOWN" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-sr_maint" name="The edge of the Tier-0 service router is in or entering maintenance mode" resourceKind="tier0_sr" waitCycle="1" cancelCycle="3">
+            <State severity="info">
+                <Condition key="edge_maintenance" operator="!=" thresholdType="static" type="property" value="DISABLED" valueType="string"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-t0_no_active" name="Stretched Tier-0 gateway has no active service router" resourceKind="tier0" waitCycle="2" cancelCycle="2">
+            <State severity="critical">
+                <Condition key="service_routers|sr_active" operator="&lt;" thresholdType="static" type="metric" value="1" valueType="numeric"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-t0_loc_no_active" name="A location of the active-active Tier-0 gateway has no active service router" resourceKind="tier0" waitCycle="2" cancelCycle="2">
+            <State severity="immediate">
+                <Condition key="service_routers|locations_without_active_sr" operator="&gt;" thresholdType="static" type="metric" value="0" valueType="numeric"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-t0_failover" name="A service router of the Tier-0 gateway changed HA state since the previous cycle" resourceKind="tier0" waitCycle="1" cancelCycle="2">
+            <State severity="warning">
+                <Condition key="service_routers|sr_ha_changes" operator="&gt;" thresholdType="static" type="metric" value="0" valueType="numeric"/>
+            </State>
+        </SymptomDefinition>
         <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-tun_rx_dt" name="RTEP tunnel receive rate is above its usual range" resourceKind="rtep_tunnel" waitCycle="3" cancelCycle="3">
             <State severity="warning">
                 <Condition key="rates|rx_bytes_per_s" operator="above" type="dtmetric"/>
@@ -1103,6 +1298,11 @@
         <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-loc_rtt_dt" name="Round-trip time to the Global Manager is above its usual range" resourceKind="location" waitCycle="3" cancelCycle="2">
             <State severity="warning">
                 <Condition key="connectivity|gm_rtt_ms" operator="above" type="dtmetric"/>
+            </State>
+        </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-edge_cpu_dt" name="Edge datapath CPU usage is above its usual range" resourceKind="edge_node" waitCycle="3" cancelCycle="2">
+            <State severity="warning">
+                <Condition key="capacity|datapath_cpu_pct" operator="above" type="dtmetric"/>
             </State>
         </SymptomDefinition>
         <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-alarm_gm_to_gm_split_brain" name="Global Manager raised NSX alarm gm_to_gm_split_brain" resourceKind="global_manager" waitCycle="1" cancelCycle="1">
@@ -1295,6 +1495,11 @@
                 <Condition key="location_outage" operator="!=" thresholdType="static" type="property" value="none" valueType="string"/>
             </State>
         </SymptomDefinition>
+        <SymptomDefinition adapterKind="NSXFederation" disableInBasePolicy="false" id="SymptomDefinition-NSXFederation-outage_tier0_sr" name="A location of the federation is cut off from the Global Manager" resourceKind="tier0_sr" waitCycle="1" cancelCycle="3">
+            <State severity="info">
+                <Condition key="location_outage" operator="!=" thresholdType="static" type="property" value="none" valueType="string"/>
+            </State>
+        </SymptomDefinition>
     </SymptomDefinitions>
     <Recommendations>
         <Recommendation key="Recommendation-df-NSXFederation-active_gm"><Description>Open the Global Manager UI (System, Location Manager) and check which Global Manager is active. If the active Global Manager is lost, follow the NSX Federation disaster recovery procedure and make the standby active. See https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vcf-9-0-and-later/9-0/advanced-network-management/administration-guide/managing-nsx-t-in-multiple-locations/nsx-t-federation/disaster-recovery-using-federation.html</Description></Recommendation>
@@ -1336,6 +1541,13 @@
         <Recommendation key="Recommendation-df-NSXFederation-queue"><Description>The sync queue grows when the remote location cannot keep up or cannot be reached. Check the connectivity to the remote location and /var/log/async-replicator/ar.log. See https://knowledge.broadcom.com/external/article/414606</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-onboarding"><Description>The location is in an inconsistent state. Delete the onboarding status of the location on the Global Manager, as the NSX alarm describes, then start the configuration import again.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-traffic"><Description>Inter-site traffic on this tunnel is above the range VCF Operations learned for it. Check whether a migration, a backup or a replication job explains it before looking for a loop or a misrouted flow.</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-edge_status"><Description>Open the edge node in System, Fabric, Nodes, Edge Transport Nodes of the Local Manager and read the status details: management and controller connections, tunnels, the datapath and the services. Check the edge VM in vCenter (powered on, resources, network adapters).</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-edge_cpu"><Description>The datapath cores of the edge are busy. Check which traffic grew (the RTEP tunnels and Tier-0 BGP neighbors of this edge show the inter-site part), and whether services such as NAT, VPN or the gateway firewall run on it. Spread the load over more edge nodes or use a larger edge form factor.</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-edge_memory"><Description>Read the fullest memory pool on the edge node (property 'Fullest datapath memory pool'). A full pool drops packets or sessions. Look for a growth in sessions or flows, and use a larger edge form factor if the usage stays high.</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-edge_disk"><Description>Log in to the edge as admin and check which file system is full (get filesystem-stats). Old support bundles, core dumps and logs are the usual cause; delete them, or contact Broadcom support before deleting anything else.</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-sr_down"><Description>Check the uplinks and the BGP or static routes of the Tier-0 on this edge node (Networking, Tier-0 Gateways, Routing), and the edge itself. A service router that is down does not forward north-south traffic at this location.</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-t0_active"><Description>Read 'Active service routers' and 'Locations without an active service router' on the Tier-0. Check the edge nodes of the location named there: their status, maintenance mode, uplinks and BGP sessions. Without an active service router the location has no north-south path through this gateway.</Description></Recommendation>
+        <Recommendation key="Recommendation-df-NSXFederation-t0_failover"><Description>A service router of this Tier-0 changed HA state. Read the 'Recent changes' property of the federation and the 'Last HA state change' of the service routers to see which edge took over. Look for an edge reboot, an uplink or BFD failure, or a maintenance action at that time.</Description></Recommendation>
         <Recommendation key="Recommendation-df-NSXFederation-realization"><Description>Open the object in the Global Manager and read the realization status for this location. Check the location alarms and the connection between the Global Manager and the location, then save the object again if needed.</Description></Recommendation>
     </Recommendations>
 </alertContent>

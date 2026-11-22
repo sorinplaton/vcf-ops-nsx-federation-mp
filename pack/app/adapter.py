@@ -52,6 +52,10 @@ UNITS = {
     "rx_drop_pct": Units.RATIO.PERCENT, "tx_drop_pct": Units.RATIO.PERCENT, "gm_rtt_pct_of_max": Units.RATIO.PERCENT,
     "connection_drops_per_hour": Units.RATE.PER_HOUR, "sync_queue_used_pct": Units.RATIO.PERCENT,
 }
+# edge capacity: every value is a share in percent
+for _k in ("datapath_cpu_pct", "datapath_cpu_peak_pct", "services_cpu_pct", "memory_used_pct", "datapath_memory_pct",
+           "datapath_pool_peak_pct", "disk_fullest_pct"):
+    UNITS[_k] = Units.RATIO.PERCENT
 # counters that also get a rate: key -> (rate key, seconds the rate is expressed in)
 RATES = {
     "rx_packets": ("rx_packets_per_min", 60), "tx_packets": ("tx_packets_per_min", 60),
@@ -97,6 +101,7 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("cert_min_days_to_expiry", "Days until the first manager certificate expires"),
         ("alarms_open_critical", "Open critical alarms, all managers"),
         ("switchover_ready", "A standby Global Manager is ready to take over (1 = yes)"),
+        ("changes_detected", "Changes detected in this cycle"),
     ], [
         ("federation_id", "Federation ID"),
         ("active_global_manager", "Active Global Manager"),
@@ -110,6 +115,7 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("vcf_operations_api", "VCF Operations API from the adapter"),
         ("stale_objects", "Objects deleted because they no longer exist in NSX"),
         ("switchover_readiness", "Switchover readiness"),
+        ("last_change", "Last change"), ("recent_changes", "Recent changes"),
     ]),
     "global_manager": ("Global Manager", [
         ("reachable", "Reachable by the collector"),
@@ -195,7 +201,22 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("intersite_bgp_established", "Inter-site BGP sessions established"),
         ("intersite_bgp_down", "Inter-site BGP sessions not established"),
         ("rtep_tunnels", "RTEP tunnels"),
-    ], [("location", "Location")]),
+        ("datapath_cpu_pct", "Datapath CPU usage, average of the datapath cores"),
+        ("datapath_cpu_peak_pct", "Datapath CPU usage, busiest datapath core"),
+        ("services_cpu_pct", "Services CPU usage, average of the other cores"),
+        ("memory_used_pct", "System memory used"),
+        ("datapath_memory_pct", "Datapath memory used"),
+        ("datapath_pool_peak_pct", "Datapath memory pool used, fullest pool"),
+        ("disk_fullest_pct", "Disk used, fullest file system"),
+    ], [("location", "Location"), ("edge_status", "Edge status"), ("maintenance_mode", "Maintenance mode"),
+        ("software_version", "Software version"), ("datapath_pool_fullest", "Fullest datapath memory pool"),
+        ("capacity_alerts_by", "Edge status and capacity alerts raised by")]),
+    "tier0_sr": ("Tier-0 Service Router", [
+        ("active", "HA state active (1 = yes)"), ("routing_up", "Routing up (1 = yes)"),
+        ("bgp_neighbors_up", "BGP neighbors up"), ("bgp_neighbors_down", "BGP neighbors down"),
+    ], [("ha_status", "HA state"), ("routing_status", "Routing status"), ("tier0", "Tier-0 gateway"),
+        ("ha_mode", "HA mode of the Tier-0"), ("edge", "Edge node"), ("location", "Location"),
+        ("edge_maintenance", "Edge maintenance mode"), ("last_ha_change", "Last HA state change")]),
     "rtep_tunnel": ("RTEP Tunnel", [
         ("rx_bytes", "Received bytes"), ("tx_bytes", "Sent bytes"),
         ("rx_packets", "Received packets"), ("tx_packets", "Sent packets"),
@@ -210,7 +231,14 @@ MODEL: Dict[str, Tuple[str, List[Tuple[str, str]], List[Tuple[str, str]]]] = {
         ("connection_drops", "Inter-site BGP connection drops"), ("connection_drops_per_hour", "Inter-site BGP connection drops per hour"),
     ], [("local_rtep", "Local RTEP"), ("remote_rtep", "Remote RTEP"), ("remote_location", "Remote location"),
         ("bgp_state", "Inter-site BGP state")]),
-    "tier0": ("Stretched Tier-0 Gateway", [], [("ha_mode", "HA mode"), ("primary_location", "Primary location")]),
+    "tier0": ("Stretched Tier-0 Gateway", [
+        ("sr_total", "Service routers"), ("sr_active", "Service routers active"),
+        ("sr_down", "Service routers with routing down"),
+        ("locations_without_active_sr", "Locations without an active service router"),
+        ("sr_ha_changes", "Service router HA state changes in this cycle"),
+    ], [("ha_mode", "HA mode"), ("primary_location", "Primary location"),
+        ("active_service_routers", "Active service routers"),
+        ("no_active_sr_at", "Locations without an active service router")]),
     "tier1": ("Stretched Tier-1 Gateway", [], [("tier0", "Connected Tier-0"), ("primary_location", "Primary location")]),
     "segment": ("Stretched Segment", [], [("subnets", "Subnets"), ("gateway", "Connected gateway"), ("segment_type", "Type")]),
     "global_policy": ("Global Security Policy", [
@@ -255,7 +283,8 @@ _G = {
     "connectivity": "Connectivity", "sync": "Sync", "intersite": "Inter-site", "collection": "Collection",
     "global_managers": "Global Managers", "locations": "Locations", "stretched": "Stretched objects",
     "totals": "Counters since start", "rates": "Rates", "realization": "Realization", "rules": "Rules",
-    "traffic": "Traffic", "prefixes": "Prefixes and messages",
+    "traffic": "Traffic", "prefixes": "Prefixes and messages", "capacity": "Capacity",
+    "service_routers": "Service routers", "changes": "Changes",
 }
 _GROUP_BY_KEY = {
     "alarms_open_critical": "alarms", "alarms_open_high": "alarms", "alarms_open_other": "alarms",
@@ -284,15 +313,21 @@ _GROUP_BY_KEY = {
     "hit_count": "traffic", "hit_count_per_min": "traffic", "packet_count": "traffic", "byte_count": "traffic",
     "session_count": "traffic",
     "prefixes_in": "prefixes", "prefixes_out": "prefixes", "messages_in": "prefixes", "messages_out": "prefixes",
+    "datapath_cpu_pct": "capacity", "datapath_cpu_peak_pct": "capacity", "services_cpu_pct": "capacity",
+    "memory_used_pct": "capacity", "datapath_memory_pct": "capacity", "datapath_pool_peak_pct": "capacity",
+    "disk_fullest_pct": "capacity",
+    "sr_total": "service_routers", "sr_active": "service_routers", "sr_down": "service_routers",
+    "locations_without_active_sr": "service_routers", "sr_ha_changes": "service_routers",
+    "changes_detected": "changes",
 }
 for _k in ("rx_bytes", "tx_bytes", "rx_packets", "tx_packets", "rx_dropped", "tx_dropped", "rx_blocked", "tx_blocked"):
     _GROUP_BY_KEY[_k] = "totals"
     _GROUP_BY_KEY[RATES[_k][0]] = "rates"
 # a type with only one or two metrics keeps them at the top
-_FLAT_KINDS = {"manager_node", "sync_channel"}
+_FLAT_KINDS = {"manager_node", "sync_channel", "tier0_sr"}
 # kinds whose alerts stay quiet while a location is cut off from the Global Manager (see "location_outage")
 OUTAGE_KINDS = {"global_manager", "location", "sync_channel", "edge_cluster", "edge_node", "rtep_tunnel", "bgp_neighbor",
-                "tier0", "tier1", "segment", "global_policy", "realization"}
+                "tier0", "tier1", "segment", "global_policy", "realization", "tier0_sr"}
 
 
 def metric_group(kind: str, key: str) -> Optional[str]:
@@ -317,10 +352,12 @@ KPI = {
     ("bgp_neighbor", "established"), ("realization", "realized"),
     ("tier0", "error_locations"), ("tier1", "error_locations"), ("segment", "error_locations"),
     ("global_policy", "error_locations"),
+    ("edge_node", "datapath_cpu_pct"), ("tier0_sr", "routing_up"), ("tier0", "sr_active"),
+    ("tier0", "locations_without_active_sr"),
 }
 # state metrics that are 0 or 1
 DISCRETE = {"switchover_ready", "healthy", "standby_in_sync", "reachable", "online", "gm_connection_up", "collector_reachable", "connection_up", "bgp_established",
-            "established", "realized"}
+            "established", "realized", "active", "routing_up"}
 RATE_KEYS = {v[0] for v in RATES.values()}
 
 
@@ -353,7 +390,7 @@ def get_adapter_definition() -> AdapterDefinition:
                         "account for a Global Manager, known by the Global Manager for a Local Manager). A manager with "
                         "no trusted certificate on record is not collected. "
                         "ca: the same, and a certificate is also trusted when it chains to a trusted CA (the CA "
-                        "certificates below, or the system store of the cloud proxy) and is valid for the address. "
+                        "certificates below, or the system store of the adapter container) and is valid for the address. "
                         "report: it is collected and the mismatch is reported.",
             default="enforce", advanced=True)
         d.define_string_parameter(
@@ -373,6 +410,13 @@ def get_adapter_definition() -> AdapterDefinition:
                         "not monitor, because that integration raises the same alarms. always: this pack raises them "
                         "for every Local Manager. never: it leaves them to the built-in integration.",
             default="auto", advanced=True)
+        d.define_enum_parameter(
+            "change_events", values=["on", "off"], label="Change events",
+            description="on: each change the collection sees (Global Manager role or version, locations added or "
+                        "removed, edges, Tier-0 service router HA state, stretched objects created, changed or deleted) "
+                        "is sent as an information event on the object, and listed in 'Recent changes' on the "
+                        "federation. off: only the list.",
+            default="on", advanced=True)
         d.define_string_parameter(
             "delete_stale_after_days", label="Delete objects that left NSX after (days)",
             description="0: never (default). Above 0: an object of this account that NSX no longer returns and that "
@@ -435,6 +479,7 @@ class Config:
         self.federation_name = str(val("federation_name", "")).strip()
         self.link_mode = str(val("link_nsx_objects", "auto"))
         self.lm_alarm_mode = str(val("lm_alarm_alerts", "auto"))
+        self.change_events = str(val("change_events", "on")) != "off"
         try:
             days = float(str(val("delete_stale_after_days", "0")).replace(",", "."))
             self.delete_stale_days = 0.0 if days <= 0 else max(1.0, days)  # never less than one day
@@ -689,6 +734,8 @@ class Collector:
         self.stale_deleted: List[str] = []
         # NSX cluster IDs the built-in NSX integration monitors (None = unknown), asked once an hour
         self.builtin_clusters: Optional[List[str]] = self.cache.cached("builtin_nsx_clusters", SLOW_TTL, self.ops.nsx_cluster_ids)
+        if self.builtin_clusters is None:  # VCF Operations did not answer: the last known list, so alerts do not flip
+            self.builtin_clusters = self.cache.get_any_age("builtin_nsx_clusters")
         self.standby_sync: List[Tuple[Optional[str], int, int, Optional[float]]] = []  # (name, in sync, entries left, full sync age h)
         self.standby_since: Dict[str, float] = {}  # standby name -> minutes out of sync
         self.active_name: Optional[str] = None
@@ -701,6 +748,18 @@ class Collector:
         # counter values of the previous cycle, for rates: object id -> {"t": epoch, counter: value}
         self.prev_counters: Dict[str, Dict[str, float]] = self.cache.get_any_age("counters") or {}
         self.new_counters: Dict[str, Dict[str, float]] = {}
+        # Tier-0 service routers and RTEP edges per location, filled by the location workers (one key each):
+        # site path -> records, and site path -> True when every edge of the location answered
+        self.sr_records: Dict[str, List[Dict[str, Any]]] = {}
+        self.sr_complete: Dict[str, bool] = {}
+        self.edge_seen: Dict[str, Tuple[Dict[str, str], bool]] = {}
+        # change timeline: what the previous cycles saw, per category, and the changes of this cycle
+        self.change_prev: Dict[str, Dict[str, Any]] = dict(self.cache.get_any_age("change_state") or {})
+        self.change_next: Dict[str, Dict[str, Any]] = dict(self.change_prev)
+        self.changes: List[Tuple[Optional[Object], str]] = []
+        self.partial: Set[str] = set()  # cached_clean keys whose value of this cycle is not complete
+        self.edge_answered: Dict[str, Set[str]] = {}  # site path -> transport node IDs whose status call answered
+        self.edge_objects: Dict[str, Object] = {}  # transport node ID -> edge node object
 
     # -- object helpers
     def obj(self, kind: str, name: str, ident: str) -> Object:
@@ -898,6 +957,7 @@ class Collector:
             lm_results = list(pool.map(self.collect_location, lm_sites))
         collected = sum(1 for r in lm_results if r)
         self.finish_policies(lm_sites)
+        self.finish_tier0(lm_sites)
 
         # -- root cause for alert storms: while a location is cut off from the Global Manager, the objects that
         # depend on it carry its name, and their alerts stay quiet behind the alert of the location
@@ -931,6 +991,7 @@ class Collector:
             if go is not None and active_version and g["site"].get("site_version"):
                 self.props(go, {"version_matches_active_gm": g["site"].get("site_version") == active_version})
         ready, readiness = self.switchover_readiness(standby_known, active_version)
+        self.track_changes(gm, lm_sites, from_gm=gm is not None and mode == "normal")
         clean = (mode == "normal" and not self.over_budget and len(answered) == len(cfg.gm_hosts) and not foreign
                  and collected == len(lm_sites) and not any(c.failed for c in self.clients))
         if clean:
@@ -980,6 +1041,7 @@ class Collector:
             "collection_mode": mode,
             "switchover_readiness": readiness,
         })
+        self.publish_changes()
         if self.over_budget:
             self.event(fed, f"{self.over_budget} manager(s) used the whole API call budget; the data of this cycle is partial. "
                        "Raise the budget or narrow the collection.", Criticality.WARNING, "managers_over_budget")
@@ -987,6 +1049,197 @@ class Collector:
         self.cache.save()
         for c in self.clients:
             c.close()
+
+    # -- change timeline
+    def diff(self, cat: str, cur: Dict[str, Any], complete: bool,
+             same: Any = None) -> Tuple[List[str], List[str], List[str], Dict[str, Any]]:
+        """What changed in one category since the previous cycles: (added, removed, changed keys, earlier values).
+        The first read of a category is the baseline and reports nothing. A read that is not complete (a call
+        failed) reports no removal and keeps the earlier value of each key it did not see; a key is reported as
+        added only against a complete earlier read."""
+        cur = {k: v for k, v in cur.items() if v is not None}
+        prev = self.change_prev.get(cat) or {}
+        old = prev.get("v") or {}
+        if not prev:
+            self.change_next[cat] = {"c": complete, "v": cur}
+            return [], [], [], {}
+        self.change_next[cat] = {"c": complete or prev.get("c", False), "v": cur if complete else dict(old, **cur)}
+        same = same or (lambda a, b: a == b)
+        added = sorted(k for k in cur if k not in old) if prev.get("c") else []
+        removed = sorted(k for k in old if k not in cur) if complete else []
+        changed = sorted(k for k in cur if k in old and not same(old[k], cur[k]))
+        return added, removed, changed, old
+
+    def note(self, o: Optional[Object], message: str) -> None:
+        self.changes.append((o, message))
+
+    def track_changes(self, gm: Optional[Dict[str, Any]], lm_sites: List[Dict[str, Any]], from_gm: bool) -> None:
+        """Compare what this cycle sees with the earlier cycles and note each change (see publish_changes)."""
+        fed = self.fed
+        # Global Managers: which one is active, the role and the version of each
+        if gm:
+            name = gm["site"].get("name") or gm["host"]
+            _a, _r, changed, old = self.diff("active_gm", {"active": name}, True)
+            if changed:
+                self.note(fed, f"Active Global Manager changed: {old['active']} -> {name}")
+        for cat, field, what in (("gm_mode", "mode", "role"), ("gm_version", "version", "version")):
+            cur = {n: st.get(field) for n, st in self.gm_state.items()}
+            _a, _r, changed, old = self.diff(cat, cur, False)
+            for n in changed:
+                self.note(self.gm_objects.get(n) or fed, f"Global Manager {n} {what} changed: {old[n]} -> {cur[n]}")
+        # locations, as the active Global Manager lists them
+        by_site = {loc.get("site_id"): loc for loc in lm_sites if loc.get("site_id")}
+        loc_obj = lambda site_id: self.locations.get((by_site.get(site_id) or {}).get("path")) or fed
+        if from_gm:
+            cur = {k: v.get("name") for k, v in by_site.items()}
+            added, removed, changed, old = self.diff("locations", cur, True)
+            for k in added:
+                self.note(loc_obj(k), f"Location {cur[k]} added to the federation")
+            for k in removed:
+                self.note(fed, f"Location {old[k]} removed from the federation")
+            for k in changed:
+                self.note(loc_obj(k), f"Location renamed: {old[k]} -> {cur[k]}")
+            cur = {k: v.get("version") for k, v in by_site.items()}
+            _a, _r, changed, old = self.diff("location_version", cur, False)
+            for k in changed:
+                self.note(loc_obj(k), f"Location {by_site[k].get('name')} version changed: {old[k]} -> {cur[k]}")
+        # edge nodes of the RTEP edge clusters, per location
+        site_of = {loc.get("path"): loc.get("site_id") for loc in lm_sites}
+        for path, (edges, complete) in self.edge_seen.items():
+            loc_name = self.location_names.get(path, tail(path))
+            added, removed, changed, old = self.diff(f"edges@{site_of.get(path) or path}", edges, complete)
+            lo = self.locations.get(path) or fed
+            for k in added:
+                self.note(lo, f"Edge node {edges[k]} added to the RTEP edge clusters of location {loc_name}")
+            for k in removed:
+                self.note(lo, f"Edge node {old[k]} removed from the RTEP edge clusters of location {loc_name}")
+            for k in changed:
+                self.note(lo, f"Edge node renamed at location {loc_name}: {old[k]} -> {edges[k]}")
+        # stretched objects: created, changed (a new revision) or deleted on the Global Manager. The list is the
+        # inventory of the Global Manager, read again every INVENTORY_TTL seconds.
+        inventory = getattr(self, "inventory", None)
+        if gm and inventory is not None:
+            by_path = getattr(self, "stretched_by_path", {})
+            cur = {o["path"]: [kind, o.get("display_name") or o.get("id"), o.get("_revision"), o.get("_last_modified_user")]
+                   for kind in STRETCHED for o in inventory.get(kind, []) if o.get("path")}
+            # primary location first: an object whose primary location changed gets that message, not a second
+            # one for the revision the change made
+            prim = {o["path"]: tail((o.get("intersite_config") or {}).get("primary_site_path"))
+                    for kind in ("tier0", "tier1") for o in inventory.get(kind, []) if o.get("path")}
+            _a, _r, moved, old_prim = self.diff("primary_location", {k: v for k, v in prim.items() if v}, False)
+            for k in moved:
+                self.note(by_path.get(k) or fed, f"Primary location of {tail(k)} changed: {old_prim[k]} -> {prim[k]}")
+            added, removed, changed, old = self.diff("stretched", cur, "gm_inventory" not in self.partial,
+                                                     same=lambda a, b: a[2] == b[2])
+            changed = [k for k in changed if k not in moved]
+            notes = [(by_path.get(k), f"{MODEL[cur[k][0]][0]} {cur[k][1]} created" + (f" by {cur[k][3]}" if cur[k][3] else ""))
+                     for k in added]
+            notes += [(fed, f"{MODEL[old[k][0]][0]} {old[k][1]} deleted") for k in removed]
+            notes += [(by_path.get(k), f"{MODEL[cur[k][0]][0]} {cur[k][1]} changed" + (f" by {cur[k][3]}" if cur[k][3] else "")
+                       + f" (revision {old[k][2]} -> {cur[k][2]})") for k in changed]
+            for o, message in notes:
+                self.note(o or fed, message)
+        # the state of a location that left the federation is not kept
+        if from_gm:
+            live = {f"{prefix}@{sid}" for sid in by_site for prefix in ("edges", "service_routers")}
+            for cat in [c for c in self.change_next if c.startswith(("edges@", "service_routers@")) and c not in live]:
+                del self.change_next[cat]
+
+    def publish_changes(self) -> None:
+        """Each change is an information event on the object it concerns (unless change events are off), and the
+        latest ones are listed on the federation, whose property history is then the change timeline."""
+        fed = self.fed
+        stamp = time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime())
+        recent = list(self.cache.get_any_age("recent_changes") or [])
+        recent = [f"{stamp}: {m}" for _o, m in reversed(self.changes)] + recent
+        recent = recent[:10]
+        self.cache.put("recent_changes", recent)
+        self.cache.put("change_state", self.change_next)
+        self.metrics(fed, {"changes_detected": len(self.changes)})
+        if recent:  # with an empty cache VCF Operations keeps the list it has
+            self.props(fed, {"last_change": recent[0], "recent_changes": " | ".join(recent)})
+        if not self.cfg.change_events:
+            return
+        cap = 25
+        for o, message in self.changes[:cap]:
+            (o or fed).with_event(message=message, criticality=Criticality.INFO, cancel_wait_cycle=1)
+        if len(self.changes) > cap:
+            fed.with_event(message=f"{len(self.changes) - cap} more changes in this cycle; see 'Recent changes'",
+                           criticality=Criticality.INFO, cancel_wait_cycle=1)
+
+    def finish_tier0(self, lm_sites: List[Dict[str, Any]]) -> None:
+        """Service routers of each stretched Tier-0 gateway, summed over its span, and their HA state changes."""
+        by_path = getattr(self, "stretched_by_path", {})
+        ha_modes = {o.get("path"): str(o.get("ha_mode") or "").upper() for o in getattr(self, "inventory", {}).get("tier0", [])}
+        site_of = {loc.get("path"): loc.get("site_id") for loc in lm_sites}
+        now = time.time()
+        stamp = time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime(now))
+        absent_since: Dict[str, float] = dict(self.cache.get_any_age("sr_absent_since") or {})
+        ha_changes: Dict[str, int] = {}
+        for site_path, recs in self.sr_records.items():
+            cat = f"service_routers@{site_of.get(site_path) or site_path}"
+            # A service router seen before on an edge that answered, but missing from its answer now (edge rebooting,
+            # datapath down), is ABSENT, so ACTIVE -> missing -> STANDBY is still seen as a change. Only while its
+            # Tier-0 exists, and for a day at most (the Tier-0 may have moved to other edges).
+            seen = {r["key"] for r in recs}
+            answered = self.edge_answered.get(site_path, set())
+            for key, ha in ((self.change_prev.get(cat) or {}).get("v") or {}).items():
+                path, _, tn_id = key[3:].rpartition(":")
+                if key in seen or tn_id not in answered or path not in ha_modes:
+                    continue
+                first = absent_since.setdefault(key, now)
+                if now - first > 86400:
+                    continue
+                no = self.edge_objects.get(tn_id)
+                edge = no.get_key().name.rsplit(" (", 1)[0] if no is not None else tn_id
+                loc_name = self.location_names.get(site_path, tail(site_path))
+                so = self.obj("tier0_sr", f"{tail(path)} on {edge} ({loc_name})", key)
+                self.at(so, site_path)
+                if no is not None:
+                    so.add_parent(no)
+                if path in by_path:
+                    so.add_parent(by_path[path])
+                self.metrics(so, {"active": 0, "routing_up": 0})
+                self.props(so, {"ha_status": "ABSENT", "routing_status": "not reported by the edge"})
+                recs.append({"path": path, "key": key, "ha": "ABSENT", "routing": "ABSENT", "edge": edge,
+                             "location": loc_name, "obj": so})
+            for r in recs:
+                if r["ha"] != "ABSENT":
+                    absent_since.pop(r["key"], None)
+            _a, _r, changed, old = self.diff(cat, {r["key"]: r["ha"] for r in recs}, self.sr_complete.get(site_path, False))
+            for r in recs:
+                if r["key"] in changed:
+                    self.note(r["obj"], f"Tier-0 {tail(r['path'])} service router on {r['edge']} at {r['location']}: "
+                                        f"HA state {old[r['key']]} -> {r['ha']}")
+                    self.props(r["obj"], {"last_ha_change": f"{stamp}: {old[r['key']]} -> {r['ha']}"})
+                    ha_changes[r["path"]] = ha_changes.get(r["path"], 0) + 1
+        self.cache.put("sr_absent_since", {k: v for k, v in absent_since.items() if now - v <= 2 * 86400})
+        for path, t0 in by_path.items():
+            if path not in ha_modes:
+                continue  # Tier-1 gateways, segments, policies
+            # the changes seen are sent in every cycle, also when an edge did not answer: that is when a failover happens
+            self.metrics(t0, {"sr_ha_changes": ha_changes.get(path, 0)})
+            # the span NSX reports; when it is unknown, the locations where the gateway has service routers
+            span = self.span_of.get(path) or {p for p, recs in self.sr_records.items() if any(r["path"] == path for r in recs)}
+            complete = all(self.sr_complete.get(p, False) for p in span)
+            mine = [r for p in span for r in self.sr_records.get(p, []) if r["path"] == path]
+            aa = ha_modes[path] == "ACTIVE_ACTIVE"
+            # active-active: each location of the span has its own active service routers. Active-standby: the
+            # federation needs one active service router, at the location NSX chooses. A location counts only once
+            # all its edges answered, so a partial read can show a location without one, never hide it.
+            without = sorted(self.location_names.get(p, tail(p)) for p in span if self.sr_complete.get(p, False)
+                             and not any(r["ha"] == "ACTIVE" for r in self.sr_records.get(p, []) if r["path"] == path))
+            if aa and (complete or without):
+                self.metrics(t0, {"locations_without_active_sr": len(without)})
+                self.props(t0, {"no_active_sr_at": ", ".join(without) or "none"})
+            elif not aa:
+                self.props(t0, {"no_active_sr_at": "not applicable (active-standby)"})
+            if not complete or not mine:
+                continue  # an edge of the span did not answer, or no service router yet: the totals would be wrong
+            active = [r for r in mine if r["ha"] == "ACTIVE"]
+            self.metrics(t0, {"sr_total": len(mine), "sr_active": len(active),
+                              "sr_down": sum(1 for r in mine if r["routing"] and r["routing"] != "UP")})
+            self.props(t0, {"active_service_routers": ", ".join(sorted(f"{r['edge']} ({r['location']})" for r in active)) or "none"})
 
     def switchover_readiness(self, standby_known: Optional[bool], active_version: Optional[str]) -> Tuple[int, str]:
         """Can a standby Global Manager take over now? The metric is 1 only when that is confirmed: nothing
@@ -1082,7 +1335,10 @@ class Collector:
             if len(client.failed) == before:
                 self.cache.put(key, value)
             else:
-                value = self.cache.get_any_age(key) or value
+                older = self.cache.get_any_age(key)
+                if older is None:
+                    self.partial.add(key)  # a partial read, and no complete one to fall back on
+                value = older or value
         return value
 
     def gm_sites_from_inventory(self) -> Dict[str, Tuple[Optional[str], Optional[str]]]:
@@ -1731,6 +1987,10 @@ class Collector:
         inv = self.cached_clean(client, f"lm_inventory:{client.host}", INVENTORY_TTL, lambda: self.load_lm_inventory(client))
         bgp_total = bgp_up = 0
         bgp_known = True
+        edges: Dict[str, str] = {}  # transport node ID -> name, for the change timeline
+        sr_records: List[Dict[str, Any]] = []
+        answered: Set[str] = set()
+        status_known = True
         for ec in inv["edge_clusters"]:
             eo = self.obj("edge_cluster", f"{ec['name']} ({name})", f"ec:{ec['id']}")
             self.at(eo, loc["path"])
@@ -1792,11 +2052,28 @@ class Collector:
                 self.metrics(no, {"intersite_bgp_total": total, "intersite_bgp_established": up,
                                   "rtep_tunnels": tunnels if stats_ok else None})
                 self.props(no, {"location": name})
+                edges[tn_id] = tn_name
+                status_path = f"/api/v1/transport-nodes/{tn_id}/status"
+                node_status = client.try_get(status_path, default={}) or {}
+                self.edge_objects[tn_id] = no
+                if client.ok(status_path):
+                    try:
+                        sr_records += self.edge_status(no, tn_id, tn_name, loc, node_status, own_alarms)
+                        answered.add(tn_id)
+                    except (TypeError, ValueError) as e:  # an answer of another shape: unknown, not a failed location
+                        client._failed(status_path, type(e).__name__)
+                        status_known = False
+                else:
+                    status_known = False
                 if up < total and not site_down:
                     self.event(no, f"Edge node {tn_name} at {name}: {total - up} of {total} inter-site BGP sessions are not established",
                                Criticality.IMMEDIATE, "intersite_bgp_down")
         if bgp_known:
             self.metrics(lo, {"intersite_bgp_total": bgp_total, "intersite_bgp_established": bgp_up})
+        self.edge_seen[loc["path"]] = (edges, bgp_known and client.ok("/policy/api/v1/infra/sites/default/enforcement-points/default/edge-clusters"))
+        self.sr_records[loc["path"]] = sr_records
+        self.sr_complete[loc["path"]] = bgp_known and status_known
+        self.edge_answered[loc["path"]] = answered
 
         # Tier-0 uplink BGP neighbors of the stretched Tier-0 gateways, as realized at this location
         for t0 in inv["tier0_locales"]:
@@ -1853,6 +2130,58 @@ class Collector:
             self.at(ro, loc["path"])
             self.counters(ro, f"real:{pol['path']}@{loc['path']}", totals)
             loc.setdefault("_policy_hits", {})[pol["path"]] = (totals, per_rule)
+
+    def edge_status(self, no: Object, tn_id: str, tn_name: str, loc: Dict[str, Any], st: Dict[str, Any],
+                    own_alarms: bool) -> List[Dict[str, Any]]:
+        """Capacity of a federation edge node, and the service routers of the stretched Tier-0 gateways it runs,
+        from one call (GET /api/v1/transport-nodes/<id>/status). Returns one record per service router."""
+        ns = st.get("node_status") or {}
+        ss = ns.get("system_status") or {}
+        cpu, mem = ss.get("cpu_usage") or {}, ss.get("edge_mem_usage") or {}
+        dp = mem.get("datapath_mem_usage_details") or {}
+        pct = lambda v: None if v is None else round(float(v), 2)
+        fs = [100.0 * float(f["used"]) / float(f["total"]) for f in ss.get("file_systems") or []
+              if f.get("total") and f.get("used") is not None]
+        self.metrics(no, {
+            "datapath_cpu_pct": pct(cpu.get("avg_cpu_core_usage_dpdk")),
+            "datapath_cpu_peak_pct": pct(cpu.get("highest_cpu_core_usage_dpdk")),
+            "services_cpu_pct": pct(cpu.get("avg_cpu_core_usage_non_dpdk")),
+            "memory_used_pct": pct(mem.get("system_mem_usage")),
+            "datapath_memory_pct": pct(mem.get("datapath_total_usage")),
+            "datapath_pool_peak_pct": pct(dp.get("highest_datapath_mem_pool_usage")),
+            "disk_fullest_pct": round(max(fs), 1) if fs else None,
+        })
+        maintenance = ns.get("maintenance_mode")
+        self.props(no, {
+            "edge_status": st.get("status"), "maintenance_mode": maintenance, "software_version": ns.get("software_version"),
+            "datapath_pool_fullest": ", ".join(dp.get("highest_datapath_mem_pool_usage_names") or []) or None,
+            # the built-in NSX integration raises the NSX alarms of the edges it monitors (CPU, memory, disk, status)
+            "capacity_alerts_by": "this pack" if own_alarms else "the built-in NSX integration",
+        })
+        ha_modes = {o.get("path"): o.get("ha_mode") for o in getattr(self, "inventory", {}).get("tier0", [])}
+        records = []
+        for t in st.get("tier_0s") or []:
+            path = t.get("path") or ""
+            if not path.startswith("/global-infra/"):
+                continue  # a Tier-0 of this location only: not part of the federation
+            name = t.get("display_name") or tail(path)
+            key = f"sr:{path}:{tn_id}"  # NSX IDs: a rename of the edge or the gateway keeps the object
+            so = self.obj("tier0_sr", f"{name} on {tn_name} ({loc['name']})", key)
+            self.at(so, loc["path"])
+            so.add_parent(no)
+            t0_obj = getattr(self, "stretched_by_path", {}).get(path)
+            if t0_obj is not None:
+                so.add_parent(t0_obj)
+            ha = str(t.get("high_availability_status") or "UNKNOWN").upper()
+            routing = str(t.get("routing_status") or "").upper()
+            self.metrics(so, {"active": 1 if ha == "ACTIVE" else 0, "routing_up": (1 if routing == "UP" else 0) if routing else None,
+                              "bgp_neighbors_up": t.get("bgp_neighbors_up_count"),
+                              "bgp_neighbors_down": t.get("bgp_neighbors_down_count")})
+            self.props(so, {"ha_status": ha, "routing_status": routing or None, "tier0": name, "ha_mode": ha_modes.get(path),
+                            "edge": tn_name, "location": loc["name"], "edge_maintenance": maintenance})
+            records.append({"path": path, "key": key, "ha": ha, "routing": routing, "edge": tn_name,
+                            "location": loc["name"], "obj": so})
+        return records
 
     def tunnel(self, node: Object, tn_id: str, tn_name: str, src: Any, dst: Any, remote: str, t: dict, bgp_state: Optional[str],
                bgp_drops: Optional[int]) -> None:

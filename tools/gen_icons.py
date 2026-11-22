@@ -159,7 +159,7 @@ ICONS = {
     "federation": (g_federation, MANAGERS), "global_manager": (g_global_manager, MANAGERS),
     "manager_node": (g_manager_node, MANAGERS), "location": (g_location, MANAGERS),
     "sync_channel": (g_sync_channel, LINKS), "edge_cluster": (g_edge_cluster, LINKS), "edge_node": (g_edge_node, LINKS),
-    "rtep_tunnel": (g_rtep_tunnel, LINKS), "bgp_neighbor": (g_bgp_neighbor, LINKS),
+    "rtep_tunnel": (g_rtep_tunnel, LINKS), "bgp_neighbor": (g_bgp_neighbor, LINKS), "tier0_sr": (text_glyph("SR"), LINKS),
     "tier0": (text_glyph("T0"), STRETCHED), "tier1": (text_glyph("T1"), STRETCHED), "segment": (g_segment, STRETCHED),
     "global_policy": (g_global_policy, STRETCHED), "realization": (g_realization, STRETCHED), "rule": (g_rule, STRETCHED),
 }

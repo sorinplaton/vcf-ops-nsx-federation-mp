@@ -1,4 +1,4 @@
-# Fonctionnalités et alertes du pack NSX Federation, version 1.9.0
+# Fonctionnalités et alertes du pack NSX Federation, version 1.10.0
 
 Généré par `tools/gen_features.py` à partir du modèle d'objets et des tables d'alertes du pack. Ne pas modifier à la main. Version anglaise : [FEATURES.md](FEATURES.md).
 
@@ -6,9 +6,9 @@ Les noms des métriques, des propriétés, des alertes et des symptômes, ainsi 
 
 ## Résumé
 
-- 15 types d'objet, 138 métriques dans 17 groupes, 120 propriétés, 22 indicateurs clés.
-- 71 définitions d'alerte, 116 symptômes, 40 recommandations. 14 alertes pèsent sur le badge Risk, les autres sur Health.
-- 4 groupes personnalisés, 5 tableaux de bord, 5 vues en liste, 1 rapport, 1 arborescence d'inventaire, 1 icône par type d'objet.
+- 16 types d'objet, 155 métriques dans 20 groupes, 138 propriétés, 26 indicateurs clés.
+- 79 définitions d'alerte, 134 symptômes, 47 recommandations. 15 alertes pèsent sur le badge Risk, les autres sur Health.
+- 4 groupes personnalisés, 5 tableaux de bord, 8 vues en liste, 1 rapport, 1 arborescence d'inventaire, 1 icône par type d'objet.
 - Collecte en lecture seule depuis NSX. Les réglages du compte, l'approbation des certificats, le dimensionnement et la mise à niveau sont dans [OPERATIONS.md](OPERATIONS.md) (en anglais).
 
 ## Ce que fait la collecte
@@ -25,6 +25,9 @@ Les noms des métriques, des propriétés, des alertes et des symptômes, ainsi 
 - Lit la réalisation de chaque objet étendu à chaque cycle jusqu'à 200 objets, et par balayage sur six cycles au-delà.
 - Laisse les alarmes de fédération d'un Local Manager à l'intégration NSX native quand celle-ci le supervise, et relie ses nœuds Edge et ses clusters Edge aux objets natifs.
 - Garde silencieuses les alertes des objets dépendants tant qu'un emplacement est coupé du Global Manager.
+- Lit l'usage CPU, mémoire et disque de chaque edge node de la fédération, et l'état HA et le routage de chaque service router de Tier-0 étendu qu'il porte, en un appel par edge. Les alertes d'état et de seuil d'un edge restent silencieuses pour un edge que l'intégration NSX native supervise, car elle remonte les mêmes alarmes NSX.
+- Signale un Tier-0 étendu sans service router actif, dans la fédération ou, pour un Tier-0 actif-actif, à un emplacement, et un service router qui change d'état HA.
+- Enregistre les changements d'un cycle à l'autre : le Global Manager actif, le rôle et la version de chaque Global Manager, les emplacements ajoutés, retirés ou mis à niveau, les edge nodes ajoutés ou retirés, l'état HA des service routers de Tier-0, et les objets étendus créés, modifiés ou supprimés. Chaque changement est un événement d'information sur son objet et apparaît dans la liste de la fédération.
 - Dit si un Global Manager standby peut prendre le relais : prêt, pas prêt avec les raisons (synchronisation avec l'actif, état du cluster, version, certificat expiré, mise à niveau en cours ou en pause) ou inconnu quand une valeur n'a pas pu être lue. La métrique vaut 1 seulement quand c'est confirmé.
 - Supprime en option les objets qui ont quitté NSX (option désactivée par défaut).
 
@@ -32,15 +35,16 @@ Les noms des métriques, des propriétés, des alertes et des symptômes, ainsi 
 
 | Type d'objet | Clé | Métriques | Propriétés | Définitions d'alerte |
 | --- | --- | --- | --- | --- |
-| NSX Federation | `federation` | 29 | 12 | 9 |
+| NSX Federation | `federation` | 30 | 14 | 9 |
 | Global Manager | `global_manager` | 15 | 16 | 22 |
 | Manager Node | `manager_node` | 1 | 2 | 0 |
 | Location | `location` | 24 | 22 | 24 |
 | Sync Channel | `sync_channel` | 1 | 5 | 1 |
 | Federation Edge Cluster | `edge_cluster` | 4 | 5 | 1 |
-| Federation Edge Node | `edge_node` | 4 | 2 | 1 |
+| Federation Edge Node | `edge_node` | 11 | 7 | 6 |
+| Tier-0 Service Router | `tier0_sr` | 4 | 9 | 1 |
 | RTEP Tunnel | `rtep_tunnel` | 21 | 5 | 5 |
-| Stretched Tier-0 Gateway | `tier0` | 4 | 8 | 1 |
+| Stretched Tier-0 Gateway | `tier0` | 9 | 10 | 3 |
 | Stretched Tier-1 Gateway | `tier1` | 4 | 8 | 1 |
 | Stretched Segment | `segment` | 4 | 9 | 1 |
 | Global Security Policy | `global_policy` | 8 | 9 | 1 |
@@ -74,9 +78,17 @@ Les symptômes ci-dessous comparent une métrique à un nombre ou à la plage ha
 | Location | Round-trip time to the Global Manager (`connectivity\|gm_rtt_ms`) | supérieur à 150 ms | Warning | 2 / 2 | Round-trip time to the Global Manager is high |
 | Location | Round-trip time to the Global Manager, % of the maximum RTT setting (`connectivity\|gm_rtt_pct_of_max`) | supérieur à 80 % | Warning | 2 / 2 | Round-trip time to the Global Manager is high |
 | Location | Round-trip time to the Global Manager, % of the maximum RTT setting (`connectivity\|gm_rtt_pct_of_max`) | supérieur à 100 % | Immediate | 2 / 2 | Round-trip time to the Global Manager is high |
+| Federation Edge Node | Datapath CPU usage, average of the datapath cores (`capacity\|datapath_cpu_pct`) | supérieur à 75 % | Warning | 3 / 2 | Federation edge node datapath CPU usage is high |
+| Federation Edge Node | Datapath CPU usage, average of the datapath cores (`capacity\|datapath_cpu_pct`) | supérieur à 85 % | Immediate | 3 / 2 | Federation edge node datapath CPU usage is high |
+| Federation Edge Node | System memory used (`capacity\|memory_used_pct`) | supérieur à 80 % | Warning | 3 / 2 | Federation edge node memory usage is high |
+| Federation Edge Node | System memory used (`capacity\|memory_used_pct`) | supérieur à 90 % | Immediate | 3 / 2 | Federation edge node memory usage is high |
+| Federation Edge Node | Datapath memory pool used, fullest pool (`capacity\|datapath_pool_peak_pct`) | supérieur à 85 % | Warning | 3 / 2 | Federation edge node memory usage is high |
+| Federation Edge Node | Disk used, fullest file system (`capacity\|disk_fullest_pct`) | supérieur à 80 % | Warning | 3 / 2 | Federation edge node file system is filling up |
+| Federation Edge Node | Disk used, fullest file system (`capacity\|disk_fullest_pct`) | supérieur à 90 % | Immediate | 3 / 2 | Federation edge node file system is filling up |
 | RTEP Tunnel | Received bytes per second (`rates\|rx_bytes_per_s`) | appris par VCF Operations (seuil dynamique) | Warning | 3 / 3 | RTEP tunnel traffic is above its usual range |
 | RTEP Tunnel | Sent bytes per second (`rates\|tx_bytes_per_s`) | appris par VCF Operations (seuil dynamique) | Warning | 3 / 3 | RTEP tunnel traffic is above its usual range |
 | Location | Round-trip time to the Global Manager (`connectivity\|gm_rtt_ms`) | appris par VCF Operations (seuil dynamique) | Warning | 3 / 2 | Round-trip time to the Global Manager is high |
+| Federation Edge Node | Datapath CPU usage, average of the datapath cores (`capacity\|datapath_cpu_pct`) | appris par VCF Operations (seuil dynamique) | Warning | 3 / 2 | Federation edge node datapath CPU usage is above its usual range |
 
 Les alertes issues des alarmes de fédération de NSX utilisent les seuils de NSX lui-même, par exemple une latence au-dessus de la limite de NSX pendant plus de 2 minutes, ou une synchronisation entre emplacements en échec depuis 3 minutes (Warning) ou 15 minutes (Immediate). La façon de changer un seuil du pack est décrite dans [OPERATIONS.md](OPERATIONS.md#changing-a-threshold) (en anglais).
 
@@ -171,6 +183,17 @@ La criticité indiquée est la plus haute parmi celles des symptômes qui décle
 | Alerte | Criticité maximale | Badge | Se déclenche quand | Recommandation |
 | --- | --- | --- | --- | --- |
 | Edge node has lost all inter-site BGP sessions | Immediate | Health | No inter-site BGP session of the edge node is established ("Inter-site BGP sessions established" inférieur à 1) et "Inter-site BGP sessions" au moins 1. Se déclenche après 2 cycles, s'efface après 2 ; silencieuse tant qu'un emplacement dont elle dépend est en panne | Check the RTEP network between the edge clusters of the locations: RTEP VLAN, MTU (1700 recommended), routing between RTEP subnets and the state of the edge nodes. Stretched segments and gateways depend on these sessions. |
+| Federation edge node status is not UP | Immediate | Health | Edge node status is not UP ("Edge status" différent de UP) et "Maintenance mode" vaut DISABLED et "Edge status and capacity alerts raised by" différent de the built-in NSX integration. Se déclenche après 2 cycles, s'efface après 2 ; silencieuse tant qu'un emplacement dont elle dépend est en panne | Open the edge node in System, Fabric, Nodes, Edge Transport Nodes of the Local Manager and read the status details: management and controller connections, tunnels, the datapath and the services. Check the edge VM in vCenter (powered on, resources, network adapters). |
+| Federation edge node datapath CPU usage is high | Immediate | Health | Edge datapath CPU usage is above 75% ("Datapath CPU usage, average of the datapath cores" supérieur à 75) et "Edge status and capacity alerts raised by" différent de the built-in NSX integration ; ou Edge datapath CPU usage is above 85% ("Datapath CPU usage, average of the datapath cores" supérieur à 85) et "Edge status and capacity alerts raised by" différent de the built-in NSX integration. Se déclenche après 3 cycles, s'efface après 2 | The datapath cores of the edge are busy. Check which traffic grew (the RTEP tunnels and Tier-0 BGP neighbors of this edge show the inter-site part), and whether services such as NAT, VPN or the gateway firewall run on it. Spread the load over more edge nodes or use a larger edge form factor. |
+| Federation edge node datapath CPU usage is above its usual range | Warning | Health | Edge datapath CPU usage is above its usual range (seuil dynamique). Se déclenche après 3 cycles, s'efface après 2 | The datapath cores of the edge are busy. Check which traffic grew (the RTEP tunnels and Tier-0 BGP neighbors of this edge show the inter-site part), and whether services such as NAT, VPN or the gateway firewall run on it. Spread the load over more edge nodes or use a larger edge form factor. |
+| Federation edge node memory usage is high | Immediate | Health | Edge system memory usage is above 80% ("System memory used" supérieur à 80) et "Edge status and capacity alerts raised by" différent de the built-in NSX integration ; ou Edge system memory usage is above 90% ("System memory used" supérieur à 90) et "Edge status and capacity alerts raised by" différent de the built-in NSX integration ; ou An edge datapath memory pool is more than 85% used ("Datapath memory pool used, fullest pool" supérieur à 85) et "Edge status and capacity alerts raised by" différent de the built-in NSX integration. Se déclenche après 3 cycles, s'efface après 2 | Read the fullest memory pool on the edge node (property 'Fullest datapath memory pool'). A full pool drops packets or sessions. Look for a growth in sessions or flows, and use a larger edge form factor if the usage stays high. |
+| Federation edge node file system is filling up | Immediate | Risk | An edge file system is more than 80% used ("Disk used, fullest file system" supérieur à 80) et "Edge status and capacity alerts raised by" différent de the built-in NSX integration ; ou An edge file system is more than 90% used ("Disk used, fullest file system" supérieur à 90) et "Edge status and capacity alerts raised by" différent de the built-in NSX integration. Se déclenche après 3 cycles, s'efface après 2 | Log in to the edge as admin and check which file system is full (get filesystem-stats). Old support bundles, core dumps and logs are the usual cause; delete them, or contact Broadcom support before deleting anything else. |
+
+### Tier-0 Service Router
+
+| Alerte | Criticité maximale | Badge | Se déclenche quand | Recommandation |
+| --- | --- | --- | --- | --- |
+| Tier-0 service router is down | Immediate | Health | Routing of the Tier-0 service router is down ("Routing up (1 = yes)" inférieur à 1) et "Edge maintenance mode" vaut DISABLED ; ou Tier-0 service router HA state is DOWN ("HA state" vaut DOWN) et "Edge maintenance mode" vaut DISABLED. Se déclenche après 2 cycles, s'efface après 2 ; silencieuse tant qu'un emplacement dont elle dépend est en panne | Check the uplinks and the BGP or static routes of the Tier-0 on this edge node (Networking, Tier-0 Gateways, Routing), and the edge itself. A service router that is down does not forward north-south traffic at this location. |
 
 ### RTEP Tunnel
 
@@ -187,6 +210,8 @@ La criticité indiquée est la plus haute parmi celles des symptômes qui décle
 | Alerte | Criticité maximale | Badge | Se déclenche quand | Recommandation |
 | --- | --- | --- | --- | --- |
 | Stretched Tier-0 gateway is in error at a location | Immediate | Health | Stretched Tier-0 gateway is in error at a location ("Locations in error" supérieur à 0). Silencieuse tant qu'un emplacement dont elle dépend est en panne | Open the object in the Global Manager and read the error for each location of its span. Fix the cause (a missing edge cluster, an address conflict, a location that is not reachable), then save the object again. |
+| Stretched Tier-0 gateway has no active service router | Critical | Health | Stretched Tier-0 gateway has no active service router ("Service routers active" inférieur à 1) ; ou A location of the active-active Tier-0 gateway has no active service router ("Locations without an active service router" supérieur à 0). Se déclenche après 2 cycles, s'efface après 2 ; silencieuse tant qu'un emplacement dont elle dépend est en panne | Read 'Active service routers' and 'Locations without an active service router' on the Tier-0. Check the edge nodes of the location named there: their status, maintenance mode, uplinks and BGP sessions. Without an active service router the location has no north-south path through this gateway. |
+| Stretched Tier-0 gateway service router changed HA state | Warning | Health | A service router of the Tier-0 gateway changed HA state since the previous cycle ("Service router HA state changes in this cycle" supérieur à 0). Se déclenche après 1 cycle, s'efface après 2 ; silencieuse tant qu'un emplacement dont elle dépend est en panne | A service router of this Tier-0 changed HA state. Read the 'Recent changes' property of the federation and the 'Last HA state change' of the service routers to see which edge took over. Look for an edge reboot, an uplink or BFD failure, or a maintenance action at that time. |
 
 ### Stretched Tier-1 Gateway
 
@@ -255,8 +280,9 @@ La criticité indiquée est la plus haute parmi celles des symptômes qui décle
 | Certificates | Days until the first manager certificate expires | `certificates\|cert_min_days_to_expiry` |  |
 | Alarms | Open critical alarms, all managers | `alarms\|alarms_open_critical` |  |
 |  | A standby Global Manager is ready to take over (1 = yes) | `switchover_ready` | oui |
+| Changes | Changes detected in this cycle | `changes\|changes_detected` |  |
 
-Propriétés : Federation ID (`federation_id`) ; Active Global Manager (`active_global_manager`) ; Standby Global Manager configured (`standby_configured`) ; Collection mode (`collection_mode`) ; NSX API calls without an answer (`failed_calls`) ; Global Managers not collected (`global_manager_errors`) ; Locations in outage (`location_outage`) ; Federation configuration version (`config_version`) ; Global Manager addresses of the account (`global_manager_addresses`) ; VCF Operations API from the adapter (`vcf_operations_api`) ; Objects deleted because they no longer exist in NSX (`stale_objects`) ; Switchover readiness (`switchover_readiness`).
+Propriétés : Federation ID (`federation_id`) ; Active Global Manager (`active_global_manager`) ; Standby Global Manager configured (`standby_configured`) ; Collection mode (`collection_mode`) ; NSX API calls without an answer (`failed_calls`) ; Global Managers not collected (`global_manager_errors`) ; Locations in outage (`location_outage`) ; Federation configuration version (`config_version`) ; Global Manager addresses of the account (`global_manager_addresses`) ; VCF Operations API from the adapter (`vcf_operations_api`) ; Objects deleted because they no longer exist in NSX (`stale_objects`) ; Switchover readiness (`switchover_readiness`) ; Last change (`last_change`) ; Recent changes (`recent_changes`).
 
 ### Global Manager
 
@@ -346,8 +372,26 @@ Propriétés : Inter-site status (`intersite_status`) ; RTEP addresses (`rtep_
 | Inter-site | Inter-site BGP sessions established | `intersite\|intersite_bgp_established` | oui |
 | Inter-site | Inter-site BGP sessions not established | `intersite\|intersite_bgp_down` |  |
 |  | RTEP tunnels | `rtep_tunnels` |  |
+| Capacity | Datapath CPU usage, average of the datapath cores | `capacity\|datapath_cpu_pct` | oui |
+| Capacity | Datapath CPU usage, busiest datapath core | `capacity\|datapath_cpu_peak_pct` |  |
+| Capacity | Services CPU usage, average of the other cores | `capacity\|services_cpu_pct` |  |
+| Capacity | System memory used | `capacity\|memory_used_pct` |  |
+| Capacity | Datapath memory used | `capacity\|datapath_memory_pct` |  |
+| Capacity | Datapath memory pool used, fullest pool | `capacity\|datapath_pool_peak_pct` |  |
+| Capacity | Disk used, fullest file system | `capacity\|disk_fullest_pct` |  |
 
-Propriétés : Location (`location`) ; Locations in outage (`location_outage`).
+Propriétés : Location (`location`) ; Edge status (`edge_status`) ; Maintenance mode (`maintenance_mode`) ; Software version (`software_version`) ; Fullest datapath memory pool (`datapath_pool_fullest`) ; Edge status and capacity alerts raised by (`capacity_alerts_by`) ; Locations in outage (`location_outage`).
+
+### Tier-0 Service Router
+
+| Groupe | Métrique | Clé | Indicateur clé |
+| --- | --- | --- | --- |
+|  | HA state active (1 = yes) | `active` |  |
+|  | Routing up (1 = yes) | `routing_up` | oui |
+|  | BGP neighbors up | `bgp_neighbors_up` |  |
+|  | BGP neighbors down | `bgp_neighbors_down` |  |
+
+Propriétés : HA state (`ha_status`) ; Routing status (`routing_status`) ; Tier-0 gateway (`tier0`) ; HA mode of the Tier-0 (`ha_mode`) ; Edge node (`edge`) ; Location (`location`) ; Edge maintenance mode (`edge_maintenance`) ; Last HA state change (`last_ha_change`) ; Locations in outage (`location_outage`).
 
 ### RTEP Tunnel
 
@@ -381,12 +425,17 @@ Propriétés : Local RTEP (`local_rtep`) ; Remote RTEP (`remote_rtep`) ; Remo
 
 | Groupe | Métrique | Clé | Indicateur clé |
 | --- | --- | --- | --- |
+| Service routers | Service routers | `service_routers\|sr_total` |  |
+| Service routers | Service routers active | `service_routers\|sr_active` | oui |
+| Service routers | Service routers with routing down | `service_routers\|sr_down` |  |
+| Service routers | Locations without an active service router | `service_routers\|locations_without_active_sr` | oui |
+| Service routers | Service router HA state changes in this cycle | `service_routers\|sr_ha_changes` |  |
 | Realization | Locations in span | `realization\|span_locations` |  |
 | Realization | Locations realized | `realization\|realized_locations` |  |
 | Realization | Locations not realized | `realization\|unrealized_locations` |  |
 | Realization | Locations in error | `realization\|error_locations` | oui |
 
-Propriétés : HA mode (`ha_mode`) ; Primary location (`primary_location`) ; Consolidated status (`status`) ; Policy path (`path`) ; Revision (`revision`) ; Last modified by (`last_modified_user`) ; Last modified (`last_modified_time`) ; Locations in outage (`location_outage`).
+Propriétés : HA mode (`ha_mode`) ; Primary location (`primary_location`) ; Active service routers (`active_service_routers`) ; Locations without an active service router (`no_active_sr_at`) ; Consolidated status (`status`) ; Policy path (`path`) ; Revision (`revision`) ; Last modified by (`last_modified_user`) ; Last modified (`last_modified_time`) ; Locations in outage (`location_outage`).
 
 ### Stretched Tier-1 Gateway
 
@@ -468,7 +517,7 @@ Propriétés : Action (`action`) ; Disabled (`disabled`) ; Sources (`sources`
 ## Tableaux de bord, vues, rapport et groupes
 
 - Tableaux de bord (dossier « NSX Federation ») : Federation Overview, Location Matrix, Switchover Readiness, Inter-site Connectivity, Stretched Objects.
-- Vues en liste : NSX Federation - Locations ; NSX Federation - Sync channels ; NSX Federation - RTEP tunnels ; NSX Federation - Tier-0 BGP neighbors ; NSX Federation - Realization per location.
+- Vues en liste : NSX Federation - Locations ; NSX Federation - Sync channels ; NSX Federation - RTEP tunnels ; NSX Federation - Tier-0 BGP neighbors ; NSX Federation - Edge capacity ; NSX Federation - Tier-0 service routers ; NSX Federation - Recent changes ; NSX Federation - Realization per location.
 - Rapport : NSX Federation - Health report.
 - Groupes personnalisés : NSX Federation - All objects ; NSX Federation - Managers and locations ; NSX Federation - Inter-site connectivity ; NSX Federation - Stretched objects.
 - Arborescence d'inventaire : NSX Federation (Inventory, Detailed View, dernier onglet).

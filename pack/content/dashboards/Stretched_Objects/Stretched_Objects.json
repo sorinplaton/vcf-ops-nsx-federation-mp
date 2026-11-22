@@ -37,43 +37,48 @@
     "adapterKindKey": "NSXFederation"
    },
    {
-    "resourceKindKey": "rtep_tunnel",
+    "resourceKindKey": "tier0_sr",
     "internalId": "resourceKind:id:7_::_",
     "adapterKindKey": "NSXFederation"
    },
    {
-    "resourceKindKey": "tier0",
+    "resourceKindKey": "rtep_tunnel",
     "internalId": "resourceKind:id:8_::_",
     "adapterKindKey": "NSXFederation"
    },
    {
-    "resourceKindKey": "tier1",
+    "resourceKindKey": "tier0",
     "internalId": "resourceKind:id:9_::_",
     "adapterKindKey": "NSXFederation"
    },
    {
-    "resourceKindKey": "segment",
+    "resourceKindKey": "tier1",
     "internalId": "resourceKind:id:10_::_",
     "adapterKindKey": "NSXFederation"
    },
    {
-    "resourceKindKey": "global_policy",
+    "resourceKindKey": "segment",
     "internalId": "resourceKind:id:11_::_",
     "adapterKindKey": "NSXFederation"
    },
    {
-    "resourceKindKey": "realization",
+    "resourceKindKey": "global_policy",
     "internalId": "resourceKind:id:12_::_",
     "adapterKindKey": "NSXFederation"
    },
    {
-    "resourceKindKey": "bgp_neighbor",
+    "resourceKindKey": "realization",
     "internalId": "resourceKind:id:13_::_",
     "adapterKindKey": "NSXFederation"
    },
    {
-    "resourceKindKey": "rule",
+    "resourceKindKey": "bgp_neighbor",
     "internalId": "resourceKind:id:14_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "rule",
+    "internalId": "resourceKind:id:15_::_",
     "adapterKindKey": "NSXFederation"
    }
   ],
@@ -119,24 +124,6 @@
         "boxLabel": "Span",
         "metricName": "Locations in span",
         "metricKey": "realization|span_locations",
-        "resourceKindId": "resourceKind:id:8_::_"
-       },
-       {
-        "boxLabel": "Realized",
-        "metricName": "Locations realized",
-        "metricKey": "realization|realized_locations",
-        "resourceKindId": "resourceKind:id:8_::_"
-       },
-       {
-        "boxLabel": "In error",
-        "metricName": "Locations in error",
-        "metricKey": "realization|error_locations",
-        "resourceKindId": "resourceKind:id:8_::_"
-       },
-       {
-        "boxLabel": "Span",
-        "metricName": "Locations in span",
-        "metricKey": "realization|span_locations",
         "resourceKindId": "resourceKind:id:9_::_"
        },
        {
@@ -186,25 +173,43 @@
         "metricName": "Locations in error",
         "metricKey": "realization|error_locations",
         "resourceKindId": "resourceKind:id:11_::_"
+       },
+       {
+        "boxLabel": "Span",
+        "metricName": "Locations in span",
+        "metricKey": "realization|span_locations",
+        "resourceKindId": "resourceKind:id:12_::_"
+       },
+       {
+        "boxLabel": "Realized",
+        "metricName": "Locations realized",
+        "metricKey": "realization|realized_locations",
+        "resourceKindId": "resourceKind:id:12_::_"
+       },
+       {
+        "boxLabel": "In error",
+        "metricName": "Locations in error",
+        "metricKey": "realization|error_locations",
+        "resourceKindId": "resourceKind:id:12_::_"
        }
       ],
       "mode": "all",
       "filterMode": "tagPicker",
       "tagFilter": {
        "path": [
-        "/source/kind/kind:resourceKind:id:8_::_",
         "/source/kind/kind:resourceKind:id:9_::_",
         "/source/kind/kind:resourceKind:id:10_::_",
-        "/source/kind/kind:resourceKind:id:11_::_"
+        "/source/kind/kind:resourceKind:id:11_::_",
+        "/source/kind/kind:resourceKind:id:12_::_"
        ],
        "value": {
         "bus": [],
         "adapterKind": [],
         "kind": [
-         "resourceKind:id:8_::_",
          "resourceKind:id:9_::_",
          "resourceKind:id:10_::_",
-         "resourceKind:id:11_::_"
+         "resourceKind:id:11_::_",
+         "resourceKind:id:12_::_"
         ],
         "exclaim": false,
         "healthRange": [],
@@ -262,20 +267,20 @@
         "boxLabel": "Realized",
         "metricName": "Realized",
         "metricKey": "realized",
-        "resourceKindId": "resourceKind:id:12_::_"
+        "resourceKindId": "resourceKind:id:13_::_"
        }
       ],
       "mode": "all",
       "filterMode": "tagPicker",
       "tagFilter": {
        "path": [
-        "/source/kind/kind:resourceKind:id:12_::_"
+        "/source/kind/kind:resourceKind:id:13_::_"
        ],
        "value": {
         "bus": [],
         "adapterKind": [],
         "kind": [
-         "resourceKind:id:12_::_"
+         "resourceKind:id:13_::_"
         ],
         "exclaim": false,
         "healthRange": [],
@@ -350,7 +355,7 @@
         {
          "metricKey": "realization|span_locations",
          "metricName": "Locations in span",
-         "resourceKindId": "resourceKind:id:8_::_",
+         "resourceKindId": "resourceKind:id:9_::_",
          "resourceKindName": "Stretched Tier-0 Gateway",
          "isStringMetric": false,
          "label": "Span",
@@ -367,7 +372,7 @@
         {
          "metricKey": "realization|realized_locations",
          "metricName": "Locations realized",
-         "resourceKindId": "resourceKind:id:8_::_",
+         "resourceKindId": "resourceKind:id:9_::_",
          "resourceKindName": "Stretched Tier-0 Gateway",
          "isStringMetric": false,
          "label": "Realized",
@@ -384,7 +389,7 @@
         {
          "metricKey": "realization|unrealized_locations",
          "metricName": "Locations not realized",
-         "resourceKindId": "resourceKind:id:8_::_",
+         "resourceKindId": "resourceKind:id:9_::_",
          "resourceKindName": "Stretched Tier-0 Gateway",
          "isStringMetric": false,
          "label": "Not realized",
@@ -401,7 +406,7 @@
         {
          "metricKey": "realization|error_locations",
          "metricName": "Locations in error",
-         "resourceKindId": "resourceKind:id:8_::_",
+         "resourceKindId": "resourceKind:id:9_::_",
          "resourceKindName": "Stretched Tier-0 Gateway",
          "isStringMetric": false,
          "label": "In error",
@@ -418,7 +423,7 @@
         {
          "metricKey": "realization|span_locations",
          "metricName": "Locations in span",
-         "resourceKindId": "resourceKind:id:9_::_",
+         "resourceKindId": "resourceKind:id:10_::_",
          "resourceKindName": "Stretched Tier-1 Gateway",
          "isStringMetric": false,
          "label": "Span",
@@ -435,7 +440,7 @@
         {
          "metricKey": "realization|realized_locations",
          "metricName": "Locations realized",
-         "resourceKindId": "resourceKind:id:9_::_",
+         "resourceKindId": "resourceKind:id:10_::_",
          "resourceKindName": "Stretched Tier-1 Gateway",
          "isStringMetric": false,
          "label": "Realized",
@@ -452,7 +457,7 @@
         {
          "metricKey": "realization|unrealized_locations",
          "metricName": "Locations not realized",
-         "resourceKindId": "resourceKind:id:9_::_",
+         "resourceKindId": "resourceKind:id:10_::_",
          "resourceKindName": "Stretched Tier-1 Gateway",
          "isStringMetric": false,
          "label": "Not realized",
@@ -469,7 +474,7 @@
         {
          "metricKey": "realization|error_locations",
          "metricName": "Locations in error",
-         "resourceKindId": "resourceKind:id:9_::_",
+         "resourceKindId": "resourceKind:id:10_::_",
          "resourceKindName": "Stretched Tier-1 Gateway",
          "isStringMetric": false,
          "label": "In error",
@@ -486,7 +491,7 @@
         {
          "metricKey": "realization|span_locations",
          "metricName": "Locations in span",
-         "resourceKindId": "resourceKind:id:10_::_",
+         "resourceKindId": "resourceKind:id:11_::_",
          "resourceKindName": "Stretched Segment",
          "isStringMetric": false,
          "label": "Span",
@@ -503,7 +508,7 @@
         {
          "metricKey": "realization|realized_locations",
          "metricName": "Locations realized",
-         "resourceKindId": "resourceKind:id:10_::_",
+         "resourceKindId": "resourceKind:id:11_::_",
          "resourceKindName": "Stretched Segment",
          "isStringMetric": false,
          "label": "Realized",
@@ -520,7 +525,7 @@
         {
          "metricKey": "realization|unrealized_locations",
          "metricName": "Locations not realized",
-         "resourceKindId": "resourceKind:id:10_::_",
+         "resourceKindId": "resourceKind:id:11_::_",
          "resourceKindName": "Stretched Segment",
          "isStringMetric": false,
          "label": "Not realized",
@@ -537,7 +542,7 @@
         {
          "metricKey": "realization|error_locations",
          "metricName": "Locations in error",
-         "resourceKindId": "resourceKind:id:10_::_",
+         "resourceKindId": "resourceKind:id:11_::_",
          "resourceKindName": "Stretched Segment",
          "isStringMetric": false,
          "label": "In error",
@@ -554,7 +559,7 @@
         {
          "metricKey": "realization|span_locations",
          "metricName": "Locations in span",
-         "resourceKindId": "resourceKind:id:11_::_",
+         "resourceKindId": "resourceKind:id:12_::_",
          "resourceKindName": "Global Security Policy",
          "isStringMetric": false,
          "label": "Span",
@@ -571,7 +576,7 @@
         {
          "metricKey": "realization|realized_locations",
          "metricName": "Locations realized",
-         "resourceKindId": "resourceKind:id:11_::_",
+         "resourceKindId": "resourceKind:id:12_::_",
          "resourceKindName": "Global Security Policy",
          "isStringMetric": false,
          "label": "Realized",
@@ -588,7 +593,7 @@
         {
          "metricKey": "realization|unrealized_locations",
          "metricName": "Locations not realized",
-         "resourceKindId": "resourceKind:id:11_::_",
+         "resourceKindId": "resourceKind:id:12_::_",
          "resourceKindName": "Global Security Policy",
          "isStringMetric": false,
          "label": "Not realized",
@@ -605,7 +610,7 @@
         {
          "metricKey": "realization|error_locations",
          "metricName": "Locations in error",
-         "resourceKindId": "resourceKind:id:11_::_",
+         "resourceKindId": "resourceKind:id:12_::_",
          "resourceKindName": "Global Security Policy",
          "isStringMetric": false,
          "label": "In error",
@@ -620,12 +625,12 @@
          "id": "extModel1016-1"
         },
         {
-         "metricKey": "rules|rules_total",
-         "metricName": "Rules",
-         "resourceKindId": "resourceKind:id:11_::_",
-         "resourceKindName": "Global Security Policy",
+         "metricKey": "service_routers|sr_total",
+         "metricName": "Service routers",
+         "resourceKindId": "resourceKind:id:9_::_",
+         "resourceKindName": "Stretched Tier-0 Gateway",
          "isStringMetric": false,
-         "label": "Rules",
+         "label": "Service routers",
          "unit": "",
          "metricUnitId": null,
          "link": "",
@@ -637,9 +642,77 @@
          "id": "extModel1017-1"
         },
         {
+         "metricKey": "service_routers|sr_active",
+         "metricName": "Service routers active",
+         "resourceKindId": "resourceKind:id:9_::_",
+         "resourceKindName": "Stretched Tier-0 Gateway",
+         "isStringMetric": false,
+         "label": "Service routers active",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 0.9,
+         "orangeBound": 0.6,
+         "redBound": 0.5,
+         "colorMethod": 0,
+         "id": "extModel1018-1"
+        },
+        {
+         "metricKey": "service_routers|sr_down",
+         "metricName": "Service routers with routing down",
+         "resourceKindId": "resourceKind:id:9_::_",
+         "resourceKindName": "Stretched Tier-0 Gateway",
+         "isStringMetric": false,
+         "label": "Service routers with routing down",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 0.1,
+         "orangeBound": 0.5,
+         "redBound": 0.9,
+         "colorMethod": 0,
+         "id": "extModel1019-1"
+        },
+        {
+         "metricKey": "service_routers|locations_without_active_sr",
+         "metricName": "Locations without an active service router",
+         "resourceKindId": "resourceKind:id:9_::_",
+         "resourceKindName": "Stretched Tier-0 Gateway",
+         "isStringMetric": false,
+         "label": "Locations without an active service router",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 0.1,
+         "orangeBound": 0.5,
+         "redBound": 0.9,
+         "colorMethod": 0,
+         "id": "extModel1020-1"
+        },
+        {
+         "metricKey": "rules|rules_total",
+         "metricName": "Rules",
+         "resourceKindId": "resourceKind:id:12_::_",
+         "resourceKindName": "Global Security Policy",
+         "isStringMetric": false,
+         "label": "Rules",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1021-1"
+        },
+        {
          "metricKey": "rules|rules_disabled",
          "metricName": "Rules disabled",
-         "resourceKindId": "resourceKind:id:11_::_",
+         "resourceKindId": "resourceKind:id:12_::_",
          "resourceKindName": "Global Security Policy",
          "isStringMetric": false,
          "label": "Rules disabled",
@@ -651,12 +724,12 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1018-1"
+         "id": "extModel1022-1"
         },
         {
          "metricKey": "traffic|hit_count",
          "metricName": "Rule hits (all locations)",
-         "resourceKindId": "resourceKind:id:11_::_",
+         "resourceKindId": "resourceKind:id:12_::_",
          "resourceKindName": "Global Security Policy",
          "isStringMetric": false,
          "label": "Rule hits",
@@ -668,12 +741,12 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1019-1"
+         "id": "extModel1023-1"
         },
         {
          "metricKey": "traffic|hit_count_per_min",
          "metricName": "Rule hits per minute (all locations)",
-         "resourceKindId": "resourceKind:id:11_::_",
+         "resourceKindId": "resourceKind:id:12_::_",
          "resourceKindName": "Global Security Policy",
          "isStringMetric": false,
          "label": "Rule hits/min",
@@ -685,12 +758,12 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1020-1"
+         "id": "extModel1024-1"
         },
         {
          "metricKey": "realized",
          "metricName": "Realized",
-         "resourceKindId": "resourceKind:id:12_::_",
+         "resourceKindId": "resourceKind:id:13_::_",
          "resourceKindName": "Stretched Object at Location",
          "isStringMetric": false,
          "label": "Realized",
@@ -702,7 +775,7 @@
          "orangeBound": 0.6,
          "redBound": 0.5,
          "colorMethod": 0,
-         "id": "extModel1021-1"
+         "id": "extModel1025-1"
         }
        ],
        "subMode": "resourceKindAll"
@@ -765,76 +838,8 @@
         {
          "metricKey": "status",
          "metricName": "Consolidated status",
-         "resourceKindId": "resourceKind:id:8_::_",
-         "resourceKindName": "Stretched Tier-0 Gateway",
-         "isStringMetric": true,
-         "label": "Consolidated status",
-         "unit": "",
-         "metricUnitId": null,
-         "link": "",
-         "maxValue": "",
-         "yellowBound": null,
-         "orangeBound": null,
-         "redBound": null,
-         "colorMethod": 2,
-         "id": "extModel1022-1"
-        },
-        {
-         "metricKey": "path",
-         "metricName": "Policy path",
-         "resourceKindId": "resourceKind:id:8_::_",
-         "resourceKindName": "Stretched Tier-0 Gateway",
-         "isStringMetric": true,
-         "label": "Policy path",
-         "unit": "",
-         "metricUnitId": null,
-         "link": "",
-         "maxValue": "",
-         "yellowBound": null,
-         "orangeBound": null,
-         "redBound": null,
-         "colorMethod": 2,
-         "id": "extModel1023-1"
-        },
-        {
-         "metricKey": "last_modified_user",
-         "metricName": "Last modified by",
-         "resourceKindId": "resourceKind:id:8_::_",
-         "resourceKindName": "Stretched Tier-0 Gateway",
-         "isStringMetric": true,
-         "label": "Last modified by",
-         "unit": "",
-         "metricUnitId": null,
-         "link": "",
-         "maxValue": "",
-         "yellowBound": null,
-         "orangeBound": null,
-         "redBound": null,
-         "colorMethod": 2,
-         "id": "extModel1024-1"
-        },
-        {
-         "metricKey": "revision",
-         "metricName": "Revision",
-         "resourceKindId": "resourceKind:id:8_::_",
-         "resourceKindName": "Stretched Tier-0 Gateway",
-         "isStringMetric": true,
-         "label": "Revision",
-         "unit": "",
-         "metricUnitId": null,
-         "link": "",
-         "maxValue": "",
-         "yellowBound": null,
-         "orangeBound": null,
-         "redBound": null,
-         "colorMethod": 2,
-         "id": "extModel1025-1"
-        },
-        {
-         "metricKey": "status",
-         "metricName": "Consolidated status",
          "resourceKindId": "resourceKind:id:9_::_",
-         "resourceKindName": "Stretched Tier-1 Gateway",
+         "resourceKindName": "Stretched Tier-0 Gateway",
          "isStringMetric": true,
          "label": "Consolidated status",
          "unit": "",
@@ -851,7 +856,7 @@
          "metricKey": "path",
          "metricName": "Policy path",
          "resourceKindId": "resourceKind:id:9_::_",
-         "resourceKindName": "Stretched Tier-1 Gateway",
+         "resourceKindName": "Stretched Tier-0 Gateway",
          "isStringMetric": true,
          "label": "Policy path",
          "unit": "",
@@ -868,7 +873,7 @@
          "metricKey": "last_modified_user",
          "metricName": "Last modified by",
          "resourceKindId": "resourceKind:id:9_::_",
-         "resourceKindName": "Stretched Tier-1 Gateway",
+         "resourceKindName": "Stretched Tier-0 Gateway",
          "isStringMetric": true,
          "label": "Last modified by",
          "unit": "",
@@ -885,7 +890,7 @@
          "metricKey": "revision",
          "metricName": "Revision",
          "resourceKindId": "resourceKind:id:9_::_",
-         "resourceKindName": "Stretched Tier-1 Gateway",
+         "resourceKindName": "Stretched Tier-0 Gateway",
          "isStringMetric": true,
          "label": "Revision",
          "unit": "",
@@ -902,7 +907,7 @@
          "metricKey": "status",
          "metricName": "Consolidated status",
          "resourceKindId": "resourceKind:id:10_::_",
-         "resourceKindName": "Stretched Segment",
+         "resourceKindName": "Stretched Tier-1 Gateway",
          "isStringMetric": true,
          "label": "Consolidated status",
          "unit": "",
@@ -919,7 +924,7 @@
          "metricKey": "path",
          "metricName": "Policy path",
          "resourceKindId": "resourceKind:id:10_::_",
-         "resourceKindName": "Stretched Segment",
+         "resourceKindName": "Stretched Tier-1 Gateway",
          "isStringMetric": true,
          "label": "Policy path",
          "unit": "",
@@ -936,7 +941,7 @@
          "metricKey": "last_modified_user",
          "metricName": "Last modified by",
          "resourceKindId": "resourceKind:id:10_::_",
-         "resourceKindName": "Stretched Segment",
+         "resourceKindName": "Stretched Tier-1 Gateway",
          "isStringMetric": true,
          "label": "Last modified by",
          "unit": "",
@@ -953,7 +958,7 @@
          "metricKey": "revision",
          "metricName": "Revision",
          "resourceKindId": "resourceKind:id:10_::_",
-         "resourceKindName": "Stretched Segment",
+         "resourceKindName": "Stretched Tier-1 Gateway",
          "isStringMetric": true,
          "label": "Revision",
          "unit": "",
@@ -970,7 +975,7 @@
          "metricKey": "status",
          "metricName": "Consolidated status",
          "resourceKindId": "resourceKind:id:11_::_",
-         "resourceKindName": "Global Security Policy",
+         "resourceKindName": "Stretched Segment",
          "isStringMetric": true,
          "label": "Consolidated status",
          "unit": "",
@@ -987,7 +992,7 @@
          "metricKey": "path",
          "metricName": "Policy path",
          "resourceKindId": "resourceKind:id:11_::_",
-         "resourceKindName": "Global Security Policy",
+         "resourceKindName": "Stretched Segment",
          "isStringMetric": true,
          "label": "Policy path",
          "unit": "",
@@ -1004,7 +1009,7 @@
          "metricKey": "last_modified_user",
          "metricName": "Last modified by",
          "resourceKindId": "resourceKind:id:11_::_",
-         "resourceKindName": "Global Security Policy",
+         "resourceKindName": "Stretched Segment",
          "isStringMetric": true,
          "label": "Last modified by",
          "unit": "",
@@ -1021,7 +1026,7 @@
          "metricKey": "revision",
          "metricName": "Revision",
          "resourceKindId": "resourceKind:id:11_::_",
-         "resourceKindName": "Global Security Policy",
+         "resourceKindName": "Stretched Segment",
          "isStringMetric": true,
          "label": "Revision",
          "unit": "",
@@ -1035,12 +1040,12 @@
          "id": "extModel1037-1"
         },
         {
-         "metricKey": "ha_mode",
-         "metricName": "HA mode",
-         "resourceKindId": "resourceKind:id:8_::_",
-         "resourceKindName": "Stretched Tier-0 Gateway",
+         "metricKey": "status",
+         "metricName": "Consolidated status",
+         "resourceKindId": "resourceKind:id:12_::_",
+         "resourceKindName": "Global Security Policy",
          "isStringMetric": true,
-         "label": "HA mode",
+         "label": "Consolidated status",
          "unit": "",
          "metricUnitId": null,
          "link": "",
@@ -1052,12 +1057,12 @@
          "id": "extModel1038-1"
         },
         {
-         "metricKey": "primary_location",
-         "metricName": "Primary location",
-         "resourceKindId": "resourceKind:id:8_::_",
-         "resourceKindName": "Stretched Tier-0 Gateway",
+         "metricKey": "path",
+         "metricName": "Policy path",
+         "resourceKindId": "resourceKind:id:12_::_",
+         "resourceKindName": "Global Security Policy",
          "isStringMetric": true,
-         "label": "Primary location",
+         "label": "Policy path",
          "unit": "",
          "metricUnitId": null,
          "link": "",
@@ -1069,12 +1074,12 @@
          "id": "extModel1039-1"
         },
         {
-         "metricKey": "tier0",
-         "metricName": "Connected Tier-0",
-         "resourceKindId": "resourceKind:id:9_::_",
-         "resourceKindName": "Stretched Tier-1 Gateway",
+         "metricKey": "last_modified_user",
+         "metricName": "Last modified by",
+         "resourceKindId": "resourceKind:id:12_::_",
+         "resourceKindName": "Global Security Policy",
          "isStringMetric": true,
-         "label": "Connected Tier-0",
+         "label": "Last modified by",
          "unit": "",
          "metricUnitId": null,
          "link": "",
@@ -1086,12 +1091,12 @@
          "id": "extModel1040-1"
         },
         {
-         "metricKey": "primary_location",
-         "metricName": "Primary location",
-         "resourceKindId": "resourceKind:id:9_::_",
-         "resourceKindName": "Stretched Tier-1 Gateway",
+         "metricKey": "revision",
+         "metricName": "Revision",
+         "resourceKindId": "resourceKind:id:12_::_",
+         "resourceKindName": "Global Security Policy",
          "isStringMetric": true,
-         "label": "Primary location",
+         "label": "Revision",
          "unit": "",
          "metricUnitId": null,
          "link": "",
@@ -1103,12 +1108,12 @@
          "id": "extModel1041-1"
         },
         {
-         "metricKey": "subnets",
-         "metricName": "Subnets",
-         "resourceKindId": "resourceKind:id:10_::_",
-         "resourceKindName": "Stretched Segment",
+         "metricKey": "ha_mode",
+         "metricName": "HA mode",
+         "resourceKindId": "resourceKind:id:9_::_",
+         "resourceKindName": "Stretched Tier-0 Gateway",
          "isStringMetric": true,
-         "label": "Subnets",
+         "label": "HA mode",
          "unit": "",
          "metricUnitId": null,
          "link": "",
@@ -1120,12 +1125,12 @@
          "id": "extModel1042-1"
         },
         {
-         "metricKey": "gateway",
-         "metricName": "Connected gateway",
-         "resourceKindId": "resourceKind:id:10_::_",
-         "resourceKindName": "Stretched Segment",
+         "metricKey": "primary_location",
+         "metricName": "Primary location",
+         "resourceKindId": "resourceKind:id:9_::_",
+         "resourceKindName": "Stretched Tier-0 Gateway",
          "isStringMetric": true,
-         "label": "Connected gateway",
+         "label": "Primary location",
          "unit": "",
          "metricUnitId": null,
          "link": "",
@@ -1137,12 +1142,12 @@
          "id": "extModel1043-1"
         },
         {
-         "metricKey": "segment_type",
-         "metricName": "Type",
-         "resourceKindId": "resourceKind:id:10_::_",
-         "resourceKindName": "Stretched Segment",
+         "metricKey": "active_service_routers",
+         "metricName": "Active service routers",
+         "resourceKindId": "resourceKind:id:9_::_",
+         "resourceKindName": "Stretched Tier-0 Gateway",
          "isStringMetric": true,
-         "label": "Type",
+         "label": "Active service routers",
          "unit": "",
          "metricUnitId": null,
          "link": "",
@@ -1154,12 +1159,12 @@
          "id": "extModel1044-1"
         },
         {
-         "metricKey": "category",
-         "metricName": "Category",
-         "resourceKindId": "resourceKind:id:11_::_",
-         "resourceKindName": "Global Security Policy",
+         "metricKey": "no_active_sr_at",
+         "metricName": "Locations without an active service router",
+         "resourceKindId": "resourceKind:id:9_::_",
+         "resourceKindName": "Stretched Tier-0 Gateway",
          "isStringMetric": true,
-         "label": "Category",
+         "label": "Locations without an active service router",
          "unit": "",
          "metricUnitId": null,
          "link": "",
@@ -1171,12 +1176,12 @@
          "id": "extModel1045-1"
         },
         {
-         "metricKey": "scope",
-         "metricName": "Applied to",
-         "resourceKindId": "resourceKind:id:11_::_",
-         "resourceKindName": "Global Security Policy",
+         "metricKey": "tier0",
+         "metricName": "Connected Tier-0",
+         "resourceKindId": "resourceKind:id:10_::_",
+         "resourceKindName": "Stretched Tier-1 Gateway",
          "isStringMetric": true,
-         "label": "Applied to",
+         "label": "Connected Tier-0",
          "unit": "",
          "metricUnitId": null,
          "link": "",
@@ -1188,12 +1193,12 @@
          "id": "extModel1046-1"
         },
         {
-         "metricKey": "status",
-         "metricName": "Realization status",
-         "resourceKindId": "resourceKind:id:12_::_",
-         "resourceKindName": "Stretched Object at Location",
+         "metricKey": "primary_location",
+         "metricName": "Primary location",
+         "resourceKindId": "resourceKind:id:10_::_",
+         "resourceKindName": "Stretched Tier-1 Gateway",
          "isStringMetric": true,
-         "label": "Realization status",
+         "label": "Primary location",
          "unit": "",
          "metricUnitId": null,
          "link": "",
@@ -1205,12 +1210,12 @@
          "id": "extModel1047-1"
         },
         {
-         "metricKey": "location",
-         "metricName": "Location",
-         "resourceKindId": "resourceKind:id:12_::_",
-         "resourceKindName": "Stretched Object at Location",
+         "metricKey": "subnets",
+         "metricName": "Subnets",
+         "resourceKindId": "resourceKind:id:11_::_",
+         "resourceKindName": "Stretched Segment",
          "isStringMetric": true,
-         "label": "Location",
+         "label": "Subnets",
          "unit": "",
          "metricUnitId": null,
          "link": "",
@@ -1222,12 +1227,12 @@
          "id": "extModel1048-1"
         },
         {
-         "metricKey": "object_type",
-         "metricName": "Object type",
-         "resourceKindId": "resourceKind:id:12_::_",
-         "resourceKindName": "Stretched Object at Location",
+         "metricKey": "gateway",
+         "metricName": "Connected gateway",
+         "resourceKindId": "resourceKind:id:11_::_",
+         "resourceKindName": "Stretched Segment",
          "isStringMetric": true,
-         "label": "Object type",
+         "label": "Connected gateway",
          "unit": "",
          "metricUnitId": null,
          "link": "",
@@ -1239,9 +1244,111 @@
          "id": "extModel1049-1"
         },
         {
+         "metricKey": "segment_type",
+         "metricName": "Type",
+         "resourceKindId": "resourceKind:id:11_::_",
+         "resourceKindName": "Stretched Segment",
+         "isStringMetric": true,
+         "label": "Type",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1050-1"
+        },
+        {
+         "metricKey": "category",
+         "metricName": "Category",
+         "resourceKindId": "resourceKind:id:12_::_",
+         "resourceKindName": "Global Security Policy",
+         "isStringMetric": true,
+         "label": "Category",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1051-1"
+        },
+        {
+         "metricKey": "scope",
+         "metricName": "Applied to",
+         "resourceKindId": "resourceKind:id:12_::_",
+         "resourceKindName": "Global Security Policy",
+         "isStringMetric": true,
+         "label": "Applied to",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1052-1"
+        },
+        {
+         "metricKey": "status",
+         "metricName": "Realization status",
+         "resourceKindId": "resourceKind:id:13_::_",
+         "resourceKindName": "Stretched Object at Location",
+         "isStringMetric": true,
+         "label": "Realization status",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1053-1"
+        },
+        {
+         "metricKey": "location",
+         "metricName": "Location",
+         "resourceKindId": "resourceKind:id:13_::_",
+         "resourceKindName": "Stretched Object at Location",
+         "isStringMetric": true,
+         "label": "Location",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1054-1"
+        },
+        {
+         "metricKey": "object_type",
+         "metricName": "Object type",
+         "resourceKindId": "resourceKind:id:13_::_",
+         "resourceKindName": "Stretched Object at Location",
+         "isStringMetric": true,
+         "label": "Object type",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1055-1"
+        },
+        {
          "metricKey": "object_path",
          "metricName": "Object path",
-         "resourceKindId": "resourceKind:id:12_::_",
+         "resourceKindId": "resourceKind:id:13_::_",
          "resourceKindName": "Stretched Object at Location",
          "isStringMetric": true,
          "label": "Object path",
@@ -1253,7 +1360,7 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1050-1"
+         "id": "extModel1056-1"
         }
        ]
       },

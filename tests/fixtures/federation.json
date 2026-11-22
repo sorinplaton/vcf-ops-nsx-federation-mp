@@ -2895,6 +2895,180 @@
 "remote_as_number": "65000"
 }
 ]
+},
+"/api/v1/transport-nodes/0c93aefb-3c4d-45cd-4e06-3a368184f76a/status": {
+"node_uuid": "0c93aefb-3c4d-45cd-4e06-3a368184f76a",
+"node_display_name": "edge-wld01-01a",
+"status": "UP",
+"mgmt_connection_status": "UP",
+"high_availability_status": "UP",
+"vtep_state": "UP",
+"storage_state": "READ_WRITE",
+"node_status": {
+"software_version": "9.1.1.0.25691514",
+"maintenance_mode": "DISABLED",
+"host_node_deployment_status": "NODE_READY",
+"system_status": {
+"cpu_cores": 2,
+"dpdk_cpu_cores": 1,
+"non_dpdk_cpu_cores": 1,
+"disk_space_total": 201206900,
+"disk_space_used": 9629921,
+"file_systems": [
+{
+"file_system": "/dev/sda4",
+"mount": "/",
+"total": 19509484,
+"type": "ext4",
+"used": 5084392
+},
+{
+"file_system": "/dev/mapper/nsx-var+log",
+"mount": "/var/log",
+"total": 40400128,
+"type": "ext4",
+"used": 4532712
+}
+],
+"load_average": [
+1.89,
+2.27,
+2.5
+],
+"cpu_usage": {
+"highest_cpu_core_usage_dpdk": 1.28,
+"avg_cpu_core_usage_dpdk": 1.28,
+"highest_cpu_core_usage_non_dpdk": 48.0,
+"avg_cpu_core_usage_non_dpdk": 48.0
+},
+"edge_mem_usage": {
+"system_mem_usage": 61.75,
+"swap_usage": 0.0,
+"cache_usage": 35.61,
+"datapath_total_usage": 31.37,
+"datapath_mem_usage_details": {
+"datapath_heap_usage": 79.22,
+"highest_datapath_mem_pool_usage": 22.32,
+"highest_datapath_mem_pool_usage_names": [
+"mbuf_pool_socket_0"
+],
+"datapath_mem_pools_usage": [
+{
+"name": "mbuf_pool_socket_0",
+"description": "Packet Buffer Pool for Edge NICs",
+"usage": 22.32
+},
+{
+"name": "jumbo_mbuf_pool",
+"description": "Packet Buffer Pool for Jumbo Frames IPsec Processing",
+"usage": 0.0
+}
+]
+}
+}
+}
+},
+"tier_0s": [
+{
+"id": "fed-t0",
+"display_name": "fed-t0",
+"path": "/global-infra/tier-0s/fed-t0",
+"unique_id": "4a3b3b12-a2ff-47a8-afc2-b36501480f4e",
+"routing_status": "UP",
+"high_availability_status": "ACTIVE",
+"bgp_neighbors_up_count": 1,
+"bgp_neighbors_down_count": 0,
+"ospf_neighbors_up_count": 0,
+"ospf_neighbors_down_count": 0
+}
+]
+},
+"/api/v1/transport-nodes/47ee7a1e-e214-13e8-3cbc-73ab9ed92e23/status": {
+"node_uuid": "47ee7a1e-e214-13e8-3cbc-73ab9ed92e23",
+"node_display_name": "edge-wld01-02a",
+"status": "UP",
+"mgmt_connection_status": "UP",
+"high_availability_status": "UP",
+"vtep_state": "UP",
+"storage_state": "READ_WRITE",
+"node_status": {
+"software_version": "9.1.1.0.25691514",
+"maintenance_mode": "DISABLED",
+"host_node_deployment_status": "NODE_READY",
+"system_status": {
+"cpu_cores": 2,
+"dpdk_cpu_cores": 1,
+"non_dpdk_cpu_cores": 1,
+"disk_space_total": 201206900,
+"disk_space_used": 9629922,
+"file_systems": [
+{
+"file_system": "/dev/sda4",
+"mount": "/",
+"total": 19509484,
+"type": "ext4",
+"used": 5084392
+},
+{
+"file_system": "/dev/mapper/nsx-var+log",
+"mount": "/var/log",
+"total": 40400128,
+"type": "ext4",
+"used": 4532712
+}
+],
+"load_average": [
+1.89,
+2.27,
+2.5
+],
+"cpu_usage": {
+"highest_cpu_core_usage_dpdk": 2.2800000000000002,
+"avg_cpu_core_usage_dpdk": 2.2800000000000002,
+"highest_cpu_core_usage_non_dpdk": 48.0,
+"avg_cpu_core_usage_non_dpdk": 48.0
+},
+"edge_mem_usage": {
+"system_mem_usage": 61.75,
+"swap_usage": 0.0,
+"cache_usage": 35.61,
+"datapath_total_usage": 31.37,
+"datapath_mem_usage_details": {
+"datapath_heap_usage": 79.22,
+"highest_datapath_mem_pool_usage": 22.32,
+"highest_datapath_mem_pool_usage_names": [
+"mbuf_pool_socket_0"
+],
+"datapath_mem_pools_usage": [
+{
+"name": "mbuf_pool_socket_0",
+"description": "Packet Buffer Pool for Edge NICs",
+"usage": 22.32
+},
+{
+"name": "jumbo_mbuf_pool",
+"description": "Packet Buffer Pool for Jumbo Frames IPsec Processing",
+"usage": 0.0
+}
+]
+}
+}
+}
+},
+"tier_0s": [
+{
+"id": "fed-t0",
+"display_name": "fed-t0",
+"path": "/global-infra/tier-0s/fed-t0",
+"unique_id": "4a3b3b12-a2ff-47a8-afc2-b36501480f4e",
+"routing_status": "UP",
+"high_availability_status": "ACTIVE",
+"bgp_neighbors_up_count": 1,
+"bgp_neighbors_down_count": 0,
+"ospf_neighbors_up_count": 0,
+"ospf_neighbors_down_count": 0
+}
+]
 }
 },
 "192.0.2.4": {
@@ -8006,6 +8180,180 @@
 "messages_sent": 1000,
 "time_since_established": 5000,
 "remote_as_number": "65000"
+}
+]
+},
+"/api/v1/transport-nodes/9ef468d8-416e-e3d0-6421-7caf10983154/status": {
+"node_uuid": "9ef468d8-416e-e3d0-6421-7caf10983154",
+"node_display_name": "edge-shared-01a",
+"status": "UP",
+"mgmt_connection_status": "UP",
+"high_availability_status": "UP",
+"vtep_state": "UP",
+"storage_state": "READ_WRITE",
+"node_status": {
+"software_version": "9.1.1.0.25691514",
+"maintenance_mode": "DISABLED",
+"host_node_deployment_status": "NODE_READY",
+"system_status": {
+"cpu_cores": 2,
+"dpdk_cpu_cores": 1,
+"non_dpdk_cpu_cores": 1,
+"disk_space_total": 201206900,
+"disk_space_used": 9629923,
+"file_systems": [
+{
+"file_system": "/dev/sda4",
+"mount": "/",
+"total": 19509484,
+"type": "ext4",
+"used": 5084392
+},
+{
+"file_system": "/dev/mapper/nsx-var+log",
+"mount": "/var/log",
+"total": 40400128,
+"type": "ext4",
+"used": 4532712
+}
+],
+"load_average": [
+1.89,
+2.27,
+2.5
+],
+"cpu_usage": {
+"highest_cpu_core_usage_dpdk": 3.2800000000000002,
+"avg_cpu_core_usage_dpdk": 3.2800000000000002,
+"highest_cpu_core_usage_non_dpdk": 48.0,
+"avg_cpu_core_usage_non_dpdk": 48.0
+},
+"edge_mem_usage": {
+"system_mem_usage": 61.75,
+"swap_usage": 0.0,
+"cache_usage": 35.61,
+"datapath_total_usage": 31.37,
+"datapath_mem_usage_details": {
+"datapath_heap_usage": 79.22,
+"highest_datapath_mem_pool_usage": 22.32,
+"highest_datapath_mem_pool_usage_names": [
+"mbuf_pool_socket_0"
+],
+"datapath_mem_pools_usage": [
+{
+"name": "mbuf_pool_socket_0",
+"description": "Packet Buffer Pool for Edge NICs",
+"usage": 22.32
+},
+{
+"name": "jumbo_mbuf_pool",
+"description": "Packet Buffer Pool for Jumbo Frames IPsec Processing",
+"usage": 0.0
+}
+]
+}
+}
+}
+},
+"tier_0s": [
+{
+"id": "fed-t0",
+"display_name": "fed-t0",
+"path": "/global-infra/tier-0s/fed-t0",
+"unique_id": "4a3b3b12-a2ff-47a8-afc2-b36501480f4e",
+"routing_status": "UP",
+"high_availability_status": "ACTIVE",
+"bgp_neighbors_up_count": 1,
+"bgp_neighbors_down_count": 0,
+"ospf_neighbors_up_count": 0,
+"ospf_neighbors_down_count": 0
+}
+]
+},
+"/api/v1/transport-nodes/acecccf4-0920-e63d-7543-33bad9937189/status": {
+"node_uuid": "acecccf4-0920-e63d-7543-33bad9937189",
+"node_display_name": "edge-shared-02a",
+"status": "UP",
+"mgmt_connection_status": "UP",
+"high_availability_status": "UP",
+"vtep_state": "UP",
+"storage_state": "READ_WRITE",
+"node_status": {
+"software_version": "9.1.1.0.25691514",
+"maintenance_mode": "DISABLED",
+"host_node_deployment_status": "NODE_READY",
+"system_status": {
+"cpu_cores": 2,
+"dpdk_cpu_cores": 1,
+"non_dpdk_cpu_cores": 1,
+"disk_space_total": 201206900,
+"disk_space_used": 9629924,
+"file_systems": [
+{
+"file_system": "/dev/sda4",
+"mount": "/",
+"total": 19509484,
+"type": "ext4",
+"used": 5084392
+},
+{
+"file_system": "/dev/mapper/nsx-var+log",
+"mount": "/var/log",
+"total": 40400128,
+"type": "ext4",
+"used": 4532712
+}
+],
+"load_average": [
+1.89,
+2.27,
+2.5
+],
+"cpu_usage": {
+"highest_cpu_core_usage_dpdk": 4.28,
+"avg_cpu_core_usage_dpdk": 4.28,
+"highest_cpu_core_usage_non_dpdk": 48.0,
+"avg_cpu_core_usage_non_dpdk": 48.0
+},
+"edge_mem_usage": {
+"system_mem_usage": 61.75,
+"swap_usage": 0.0,
+"cache_usage": 35.61,
+"datapath_total_usage": 31.37,
+"datapath_mem_usage_details": {
+"datapath_heap_usage": 79.22,
+"highest_datapath_mem_pool_usage": 22.32,
+"highest_datapath_mem_pool_usage_names": [
+"mbuf_pool_socket_0"
+],
+"datapath_mem_pools_usage": [
+{
+"name": "mbuf_pool_socket_0",
+"description": "Packet Buffer Pool for Edge NICs",
+"usage": 22.32
+},
+{
+"name": "jumbo_mbuf_pool",
+"description": "Packet Buffer Pool for Jumbo Frames IPsec Processing",
+"usage": 0.0
+}
+]
+}
+}
+}
+},
+"tier_0s": [
+{
+"id": "fed-t0",
+"display_name": "fed-t0",
+"path": "/global-infra/tier-0s/fed-t0",
+"unique_id": "4a3b3b12-a2ff-47a8-afc2-b36501480f4e",
+"routing_status": "UP",
+"high_availability_status": "ACTIVE",
+"bgp_neighbors_up_count": 1,
+"bgp_neighbors_down_count": 0,
+"ospf_neighbors_up_count": 0,
+"ospf_neighbors_down_count": 0
 }
 ]
 }

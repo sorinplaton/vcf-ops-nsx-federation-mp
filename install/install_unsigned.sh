@@ -28,9 +28,15 @@ finish() {
 }
 trap finish EXIT
 trap 'rc=130; exit 130' INT TERM HUP
-node "$D/uitoken.mjs" >/dev/null 2>&1; sleep 12
-got=1; for i in 1 2 3 4 5 6; do  # the token frame can take a while to load after the login
-  ( umask 077; node "$D/uisess.mjs" > "$W/uisess.json" 2>/dev/null ) && { got=0; break; }; sleep 10
+# Right after the admin console login of upi.sh the product UI can take a few minutes to accept a login again:
+# up to three logins, each followed by a minute of tries to read the session
+got=1; for round in 1 2 3; do
+  node "$D/uitoken.mjs" >/dev/null 2>&1; sleep 12
+  for i in 1 2 3 4 5 6; do  # the token frame can take a while to load after the login
+    ( umask 077; node "$D/uisess.mjs" > "$W/uisess.json" 2>/dev/null ) && { got=0; break; }; sleep 10
+  done
+  [ $got = 0 ] && break
+  echo "no UI session yet (login $round of 3)" >&2; sleep 30; "$D/chrome.sh" start >/dev/null 2>&1  # fresh browser and login
 done
 if [ $got = 0 ]; then
   timeout 2100 python3 "$D/install_pak.py" "$W/uisess.json" "$1"; rc=$?

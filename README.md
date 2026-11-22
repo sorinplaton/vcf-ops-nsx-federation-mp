@@ -2,7 +2,7 @@
 
 A management pack that monitors NSX Federation (NSX 9.1) in VCF Operations 9.1.1. It is built with the
 [VCF Operations Integration SDK](https://vmware.github.io/vmware-vcf-operations-integration-sdk/introduction)
-in Python. Current version: 1.9.0.
+in Python. Current version: 1.10.0.
 
 This is a lab project, not a Broadcom product. The pack is unsigned and comes with no support. It only reads
 from NSX.
@@ -17,12 +17,12 @@ The design, the install and the tests are described in two blog posts:
 The full list of object types, metrics, properties and alerts, with the condition and the recommendation of each
 alert, is in [docs/FEATURES.md](docs/FEATURES.md) (French: [docs/FEATURES.fr.md](docs/FEATURES.fr.md)). In short:
 
-- 15 object types: the federation, Global Managers and their nodes, locations, sync channels, edge clusters,
-  edge nodes, RTEP tunnels, Tier-0 BGP neighbors, stretched Tier-0 and Tier-1 gateways, segments, global
+- 16 object types: the federation, Global Managers and their nodes, locations, sync channels, edge clusters,
+  edge nodes, RTEP tunnels, Tier-0 service routers, Tier-0 BGP neighbors, stretched Tier-0 and Tier-1 gateways, segments, global
   security policies, and the realization of each stretched object at each location. Global firewall rules
   are opt-in per policy.
-- Metrics in 17 groups, with rates computed from the NSX counters, federation rollups and 22 key indicators.
-- 71 alert definitions, 116 symptoms and 40 recommendations, including the 15 federation alarm types of
+- Metrics in 20 groups, with rates computed from the NSX counters, federation rollups and 26 key indicators.
+- 79 alert definitions, 134 symptoms and 47 recommendations, including the 15 federation alarm types of
   NSX 9.1.1 as named alerts, the sync state of a standby Global Manager and alerts on the collection itself.
 - Latency and packet loss: round-trip time to the Global Manager against the maximum RTT set in NSX and against
   its usual range, drops of each RTEP tunnel as a share of its packets, blocked packets, and flaps of the Tier-0 and
@@ -39,11 +39,20 @@ alert, is in [docs/FEATURES.md](docs/FEATURES.md) (French: [docs/FEATURES.fr.md]
   could not be read. The metric is 1 only when readiness is confirmed. The federation reads ready when one standby
   is.
 - A healthy flag per location, from the same checks as the share of locations healthy.
+- Edge capacity: datapath and services CPU, system and datapath memory, the fullest memory pool and file system of
+  each federation edge node. The status and threshold alerts stay quiet when the built-in NSX integration
+  monitors the edge.
+- Tier-0 failover: the HA state and routing of each stretched Tier-0 service router on each edge, an alert when a
+  Tier-0 has no active service router (in the federation, or at a location for an active-active Tier-0), and one
+  when a service router changes HA state.
+- Change timeline: the active Global Manager, Global Manager roles and versions, locations, edge nodes, service
+  router HA state and stretched objects are compared between cycles. Each change is an information event on its
+  object, and the last ten are listed on the federation.
 - Replication flows, last-seen time and onboarding status of each location, as on the Location Manager page of NSX.
 - No double alerts: the federation alarms of a Local Manager that the built-in NSX integration monitors are left
   to that integration.
 - Four custom groups, five dashboards (Federation Overview, Location Matrix, Switchover Readiness,
-  Inter-site Connectivity, Stretched Objects), five list views, one report and an inventory tree.
+  Inter-site Connectivity, Stretched Objects), eight list views, one report and an inventory tree.
 - Optional links from edge nodes and edge clusters to the objects of the built-in NSX integration.
 
 The account takes one or two Global Manager addresses and one credential. The Local Managers are discovered

@@ -19,7 +19,7 @@ def test_normal_cycle(nsx):
     assert {k: len(v) for k, v in r.items() if not k.startswith("_")} == {
         "federation": 1, "global_manager": 2, "manager_node": 4, "location": 2, "sync_channel": 9, "edge_cluster": 2,
         "edge_node": 4, "rtep_tunnel": 8, "bgp_neighbor": 16, "tier0": 1, "tier1": 3, "segment": 5, "global_policy": 1,
-        "realization": 14}
+        "realization": 14, "tier0_sr": 4}
     f = fed(r)
     assert f["m"]["global_managers|global_managers_active"] == 1
     assert f["m"]["collection|data_gaps"] == 0 and f["p"]["failed_calls"] == "none"
@@ -1461,3 +1461,242 @@ def test_the_cleanup_reads_every_definition_the_pack_ships():
     assert len(ids["alert"]) == text.count("<AlertDefinition ") and len(ids["symptom"]) == text.count("<SymptomDefinition ")
     assert ids["recommendation"] and all(i.startswith(cleanup.PREFIXES["recommendation"]) for i in ids["recommendation"])
     assert all(i.startswith(cleanup.PREFIXES[k]) for k in ("alert", "symptom") for i in ids[k])
+
+
+# ---- 1.10.0: edge capacity, Tier-0 service routers, change timeline
+EDGE_STATUS = "/api/v1/transport-nodes/{}/status"
+
+
+def _edge_statuses(nsx):
+    """(host, transport node ID, status answer) of every federation edge in the fixture."""
+    return [(h, k.split("/")[4], v) for h, calls in nsx.data.items() for k, v in calls.items()
+            if k.startswith("/api/v1/transport-nodes/") and k.endswith("/status")]
+
+
+def _expire_inventory():
+    """Make the cached inventories (30 minutes) stale, and keep the rest of the cache (the change timeline)."""
+    for f in os.listdir(nsxclient.CACHE_DIR):
+        path = os.path.join(nsxclient.CACHE_DIR, f)
+        data = json.load(open(path))
+        for k in data:
+            if k.startswith(("gm_inventory", "lm_inventory:")):
+                data[k]["t"] = 0
+        json.dump(data, open(path, "w"))
+
+
+def _all_events(r):
+    return [m for kind, objs in r.items() if not kind.startswith("_") for o in objs.values() for m in o["e"]]
+
+
+def test_edge_capacity_and_tier0_service_routers(nsx):
+    r = run()
+    for e in r["edge_node"].values():
+        assert e["m"]["capacity|memory_used_pct"] == 61.75 and e["m"]["capacity|datapath_pool_peak_pct"] == 22.32
+        assert 1 < e["m"]["capacity|datapath_cpu_pct"] < 5 and e["m"]["capacity|services_cpu_pct"] == 48.0
+        assert e["m"]["capacity|disk_fullest_pct"] == round(100.0 * 5084392 / 19509484, 1)
+        assert e["p"]["edge_status"] == "UP" and e["p"]["capacity_alerts_by"] == "this pack"
+        assert e["p"]["datapath_pool_fullest"] == "mbuf_pool_socket_0"
+    assert len(r["tier0_sr"]) == 4
+    for sr in r["tier0_sr"].values():
+        assert sr["m"]["active"] == 1 and sr["m"]["routing_up"] == 1 and sr["p"]["ha_mode"] == "ACTIVE_ACTIVE"
+        assert ":sr:/global-infra/tier-0s/fed-t0:" in sr["id"]
+    t0 = next(iter(r["tier0"].values()))
+    assert t0["m"]["service_routers|sr_total"] == 4 and t0["m"]["service_routers|sr_active"] == 4
+    assert t0["m"]["service_routers|locations_without_active_sr"] == 0 and t0["p"]["no_active_sr_at"] == "none"
+    assert t0["m"]["service_routers|sr_ha_changes"] == 0
+
+
+def test_a_location_without_an_active_service_router(nsx):
+    names = {}
+    for h, tn, st in _edge_statuses(nsx):
+        names.setdefault(h, []).append(st)
+    host = sorted(names)[0]
+    for st in names[host]:
+        st["tier_0s"][0]["high_availability_status"] = "STANDBY"
+        st["tier_0s"][0]["routing_status"] = "DOWN"
+    r = run()
+    t0 = next(iter(r["tier0"].values()))
+    assert t0["m"]["service_routers|sr_active"] == 2 and t0["m"]["service_routers|sr_down"] == 2
+    assert t0["m"]["service_routers|locations_without_active_sr"] == 1
+    down = [sr for sr in r["tier0_sr"].values() if sr["m"]["routing_up"] == 0]
+    assert len(down) == 2 and len({sr["p"]["location"] for sr in down}) == 1
+    assert t0["p"]["no_active_sr_at"] == down[0]["p"]["location"]
+
+
+def test_active_standby_tier0_is_counted_for_the_whole_federation(nsx):
+    gm = nsx.data[GM_HOSTS[0]]
+    gm["/global-manager/api/v1/global-infra/tier-0s?page_size=500"]["results"][0]["ha_mode"] = "ACTIVE_STANDBY"
+    statuses = _edge_statuses(nsx)
+    for i, (_h, _tn, st) in enumerate(statuses):
+        st["tier_0s"][0]["high_availability_status"] = "ACTIVE" if i == 0 else "STANDBY"
+    r = run()
+    t0 = next(iter(r["tier0"].values()))
+    assert t0["m"]["service_routers|sr_active"] == 1
+    assert "service_routers|locations_without_active_sr" not in t0["m"]  # one active router is right for active-standby
+    assert t0["p"]["no_active_sr_at"] == "not applicable (active-standby)"
+    for _h, _tn, st in statuses:
+        st["tier_0s"][0]["high_availability_status"] = "STANDBY"
+    assert next(iter(run()["tier0"].values()))["m"]["service_routers|sr_active"] == 0
+
+
+def test_an_edge_status_without_answer_leaves_the_tier0_counts_unknown(nsx):
+    _h, tn, _st = _edge_statuses(nsx)[0]
+    nsx.fail = [EDGE_STATUS.format(tn)]
+    r = run()
+    t0 = next(iter(r["tier0"].values()))
+    # only the HA changes, which count what was seen; no totals, and no location without an active router
+    assert {k for k in t0["m"] if k.startswith("service_routers|")} == {"service_routers|sr_ha_changes"}, t0["m"]
+    assert fed(r)["m"]["collection|data_gaps"] >= 1
+    assert len(r["tier0_sr"]) == 3  # the routers of the edges that answered are still reported
+    edge = next(e for e in r["edge_node"].values() if e["id"].endswith(tn))
+    assert "capacity|memory_used_pct" not in edge["m"]
+
+
+def test_a_failover_is_a_change_once(nsx):
+    first = run()
+    assert fed(first)["m"]["changes|changes_detected"] == 0 and "last_change" not in fed(first)["p"]
+    _h, tn, st = _edge_statuses(nsx)[0]
+    st["tier_0s"][0]["high_availability_status"] = "STANDBY"
+    r = run()
+    t0 = next(iter(r["tier0"].values()))
+    assert t0["m"]["service_routers|sr_ha_changes"] == 1
+    sr = next(o for o in r["tier0_sr"].values() if o["id"].endswith(tn))
+    assert len(sr["e"]) == 1 and "HA state ACTIVE -> STANDBY" in sr["e"][0]
+    assert "ACTIVE -> STANDBY" in sr["p"]["last_ha_change"]
+    f = fed(r)
+    assert f["m"]["changes|changes_detected"] == 1 and "HA state ACTIVE -> STANDBY" in f["p"]["last_change"]
+    again = run()
+    assert next(iter(again["tier0"].values()))["m"]["service_routers|sr_ha_changes"] == 0
+    assert fed(again)["m"]["changes|changes_detected"] == 0 and not any("HA state" in m for m in _all_events(again))
+    assert "HA state ACTIVE -> STANDBY" in fed(again)["p"]["recent_changes"]  # the list keeps it
+
+
+def test_changes_of_locations_managers_edges_and_stretched_objects(nsx):
+    run()
+    gm = nsx.data[GM_HOSTS[0]]
+    site = next(s for s in gm["/api/v1/sites"]["sites"] if not s.get("is_local") and s.get("id") in
+                {p.get("unique_id") for p in gm["/global-manager/api/v1/global-infra/sites?page_size=500"]["results"]})
+    site["site_version"] = "9.9.9.0.1"
+    segs = gm["/global-manager/api/v1/global-infra/segments?page_size=500"]["results"]
+    segs[0]["_revision"] += 1
+    segs[0]["_last_modified_user"] = "netadmin"
+    gone = segs.pop()
+    host = next(h for h, calls in nsx.data.items() if "/api/v1/transport-nodes?node_types=EdgeNode&page_size=500" in calls)
+    nodes = nsx.data[host]["/api/v1/transport-nodes?node_types=EdgeNode&page_size=500"]["results"]
+    old_edge = nodes[0]["display_name"]
+    nodes[0]["display_name"] = "edge-renamed"
+    _expire_inventory()
+    r = run()
+    events = _all_events(r)
+    assert any("version changed:" in m and "-> 9.9.9.0.1" in m for m in events), events
+    assert any(f"{segs[0]['display_name']} changed by netadmin (revision" in m for m in events), events
+    assert any(f"{gone['display_name']} deleted" in m for m in events), events
+    assert any(f"Edge node renamed at location" in m and f"{old_edge} -> edge-renamed" in m for m in events), events
+    assert fed(r)["m"]["changes|changes_detected"] == len(events)
+    assert not any("created" in m or "added" in m for m in events), events
+
+
+def test_a_partial_read_reports_no_removal_and_no_false_addition(nsx):
+    run()
+    nsx.fail = ["/inter-site/status", "/segments"]
+    _expire_inventory()
+    r = run()
+    assert not any("removed" in m or "deleted" in m for m in _all_events(r)), _all_events(r)
+    nsx.fail = []
+    _expire_inventory()
+    r = run()
+    assert not _all_events(r) and fed(r)["m"]["changes|changes_detected"] == 0
+
+
+def test_the_first_cycle_after_an_empty_cache_is_a_baseline(nsx):
+    run()
+    for f in os.listdir(nsxclient.CACHE_DIR):  # a new adapter container
+        os.remove(os.path.join(nsxclient.CACHE_DIR, f))
+    r = run()
+    assert fed(r)["m"]["changes|changes_detected"] == 0 and not _all_events(r)
+
+
+def test_change_events_can_be_turned_off(nsx):
+    run(change_events="off")
+    _h, _tn, st = _edge_statuses(nsx)[0]
+    st["tier_0s"][0]["high_availability_status"] = "STANDBY"
+    r = run(change_events="off")
+    assert not any("HA state" in m for m in _all_events(r))
+    assert fed(r)["m"]["changes|changes_detected"] == 1 and "HA state" in fed(r)["p"]["last_change"]
+
+
+def test_edge_alerts_are_left_to_the_builtin_integration_when_it_monitors_the_edge(nsx, ops):
+    ids = lm_cluster_ids(nsx)
+    covered_host, covered_cluster = next(iter(ids.items()))
+    ops.nsx_clusters = [covered_cluster]
+    r = run()
+    by = sorted(e["p"]["capacity_alerts_by"] for e in r["edge_node"].values())
+    assert by == ["the built-in NSX integration"] * 2 + ["this pack"] * 2
+    xml = open(os.path.join(ROOT, "pack/content/alertdefs/nsxfederation_alerts.xml")).read()
+    for alert in ("edge_status", "edge_cpu", "edge_memory", "edge_disk"):
+        block = xml[xml.index(f'id="AlertDefinition-NSXFederation-{alert}"'):]
+        block = block[:block.index("</AlertDefinition>")]
+        assert block.count("SymptomDefinition-NSXFederation-edge_builtin") == block.count("<SymptomSet "), alert
+
+
+def test_leaving_maintenance_mode_raises_nothing():
+    """A symptom that keeps an alert quiet must clear after the symptoms of that alert (checked like the outage)."""
+    import re
+    xml = open(os.path.join(ROOT, "pack/content/alertdefs/nsxfederation_alerts.xml")).read()
+    cancel = {m.group(1): int(m.group(2)) for m in re.finditer(
+        r'id="SymptomDefinition-NSXFederation-([^"]+)"[^>]*cancelCycle="(\d+)"', xml)}
+    for quiet, faults in (("edge_maint", ["edge_status"]), ("sr_maint", ["sr_routing", "sr_ha_down"]),
+                          ("edge_builtin", ["edge_status", "edge_cpu_75", "edge_mem_80", "edge_disk_80"])):
+        assert all(cancel[quiet] > cancel[f] for f in faults), (quiet, faults)
+
+
+def test_a_failover_is_counted_when_the_failed_edge_does_not_answer(nsx):
+    run()
+    statuses = _edge_statuses(nsx)
+    host = statuses[0][0]
+    same = [x for x in statuses if x[0] == host]
+    (_h1, failed, _s1), (_h2, _tn2, peer) = same[0], same[1]
+    nsx.fail = [EDGE_STATUS.format(failed)]
+    peer["tier_0s"][0]["high_availability_status"] = "STANDBY"
+    r = run()
+    t0 = next(iter(r["tier0"].values()))
+    assert t0["m"]["service_routers|sr_ha_changes"] == 1
+    assert "service_routers|sr_total" not in t0["m"]  # the totals stay unknown
+
+
+def test_a_partial_first_inventory_reports_no_creation_later(nsx):
+    nsx.fail = ["/global-infra/tier-1s?page_size"]
+    run()
+    nsx.fail = []
+    _expire_inventory()
+    r = run()
+    assert not any("created" in m for m in _all_events(r)), _all_events(r)
+
+
+def test_an_unknown_span_counts_only_locations_with_service_routers(nsx):
+    from conftest import REALIZED
+    host = sorted({h for h, _tn, _st in _edge_statuses(nsx)})[1]
+    for h, _tn, st in _edge_statuses(nsx):
+        if h == host:
+            st["tier_0s"] = []
+    t0 = next(iter(run()["tier0"].values()))
+    assert t0["m"]["service_routers|locations_without_active_sr"] == 1  # span known: that location has none
+    nsx.fail = [REALIZED + "/global-infra/tier-0s/"]
+    t0 = next(iter(run()["tier0"].values()))
+    assert t0["m"]["service_routers|locations_without_active_sr"] == 0, t0
+
+
+def test_a_failover_through_a_missing_service_router_is_seen(nsx):
+    run()
+    _h, tn, st = _edge_statuses(nsx)[0]
+    entry = st["tier_0s"][0]
+    st["tier_0s"] = []  # the edge answers, without its service router (rebooting datapath)
+    r = run()
+    sr = next(o for o in r["tier0_sr"].values() if o["id"].endswith(tn))
+    assert sr["p"]["ha_status"] == "ABSENT" and sr["m"]["active"] == 0
+    assert any("ACTIVE -> ABSENT" in m for m in sr["e"])
+    assert next(iter(r["tier0"].values()))["m"]["service_routers|sr_ha_changes"] == 1
+    st["tier_0s"] = [dict(entry, high_availability_status="STANDBY")]
+    r = run()
+    sr = next(o for o in r["tier0_sr"].values() if o["id"].endswith(tn))
+    assert any("ABSENT -> STANDBY" in m for m in sr["e"]) and sr["p"]["ha_status"] == "STANDBY"

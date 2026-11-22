@@ -47,11 +47,22 @@ VIEWS = [
         ("location", "Location"), ("session_type", "Type"), ("state", "State"), ("remote_as", "Remote AS"),
         ("prefixes_in", "Prefixes in"), ("prefixes_out", "Prefixes out"), ("connection_drops", "Drops"),
         ("seconds_established", "Uptime (s)")]),
+    ("NSX Federation - Edge capacity", "edge_node", "CPU, memory and disk of the federation edge nodes.", [
+        ("location", "Location"), ("edge_status", "Status"), ("maintenance_mode", "Maintenance"),
+        ("datapath_cpu_pct", "Datapath CPU (%)"), ("datapath_cpu_peak_pct", "Busiest datapath core (%)"),
+        ("services_cpu_pct", "Services CPU (%)"), ("memory_used_pct", "Memory (%)"),
+        ("datapath_pool_peak_pct", "Fullest datapath pool (%)"), ("disk_fullest_pct", "Fullest file system (%)")]),
+    ("NSX Federation - Tier-0 service routers", "tier0_sr", "HA state and routing of each stretched Tier-0 gateway on each edge.", [
+        ("tier0", "Tier-0"), ("location", "Location"), ("edge", "Edge"), ("ha_status", "HA state"),
+        ("routing_status", "Routing"), ("bgp_neighbors_down", "BGP neighbors down"), ("last_ha_change", "Last HA change")]),
+    ("NSX Federation - Recent changes", "federation", "The changes the collection saw, newest first.", [
+        ("changes_detected", "Changes in the last cycle"), ("last_change", "Last change"), ("recent_changes", "Recent changes")]),
     ("NSX Federation - Realization per location", "realization", "Each stretched object at each location of its span.", [
         ("object_type", "Object type"), ("location", "Location"), ("status", "Status"), ("realized", "Realized")]),
 ]
 REPORT = ("NSX Federation - Health report",
-          "Locations, sync channels, RTEP tunnels, Tier-0 BGP neighbors and the realization of stretched objects.")
+          "Locations, sync channels, RTEP tunnels, Tier-0 BGP neighbors, edge capacity, Tier-0 service routers, "
+          "recent changes and the realization of stretched objects.")
 
 
 def view_xml(title, kind, desc, cols, n):

@@ -104,10 +104,31 @@ S = {
     "loc_rtt_100":     ("location", "Round-trip time to the Global Manager is above the maximum RTT setting", "immediate", "metric", "gm_rtt_pct_of_max", ">", 100),
     "bgp_no_prefix":   ("bgp_neighbor", "No prefixes are received from the BGP neighbor", "warning", "metric", "prefixes_in", "<", 1),
     "real_missing":    ("realization", "Stretched object is not realized at this location", "warning", "metric", "realized", "<", 1),
+    # edge capacity and status. The built-in NSX integration raises the NSX alarms of the edges it monitors; the
+    # adapter then writes "the built-in NSX integration" to capacity_alerts_by and these alerts stay quiet.
+    "edge_status":     ("edge_node", "Edge node status is not UP", "immediate", "property", "edge_status", "!=", "UP"),
+    "edge_maint":      ("edge_node", "Edge node is in or entering maintenance mode", "info", "property", "maintenance_mode", "!=", "DISABLED"),
+    "edge_builtin":    ("edge_node", "The built-in NSX integration raises the alarms of this edge node", "info", "property",
+                        "capacity_alerts_by", "=", "the built-in NSX integration"),
+    "edge_cpu_75":     ("edge_node", "Edge datapath CPU usage is above 75%", "warning", "metric", "datapath_cpu_pct", ">", 75),
+    "edge_cpu_85":     ("edge_node", "Edge datapath CPU usage is above 85%", "immediate", "metric", "datapath_cpu_pct", ">", 85),
+    "edge_mem_80":     ("edge_node", "Edge system memory usage is above 80%", "warning", "metric", "memory_used_pct", ">", 80),
+    "edge_mem_90":     ("edge_node", "Edge system memory usage is above 90%", "immediate", "metric", "memory_used_pct", ">", 90),
+    "edge_pool_85":    ("edge_node", "An edge datapath memory pool is more than 85% used", "warning", "metric", "datapath_pool_peak_pct", ">", 85),
+    "edge_disk_80":    ("edge_node", "An edge file system is more than 80% used", "warning", "metric", "disk_fullest_pct", ">", 80),
+    "edge_disk_90":    ("edge_node", "An edge file system is more than 90% used", "immediate", "metric", "disk_fullest_pct", ">", 90),
+    # Tier-0 service routers
+    "sr_routing":      ("tier0_sr", "Routing of the Tier-0 service router is down", "immediate", "metric", "routing_up", "<", 1),
+    "sr_ha_down":      ("tier0_sr", "Tier-0 service router HA state is DOWN", "immediate", "property", "ha_status", "=", "DOWN"),
+    "sr_maint":        ("tier0_sr", "The edge of the Tier-0 service router is in or entering maintenance mode", "info", "property", "edge_maintenance", "!=", "DISABLED"),
+    "t0_no_active":    ("tier0", "Stretched Tier-0 gateway has no active service router", "critical", "metric", "sr_active", "<", 1),
+    "t0_loc_no_active": ("tier0", "A location of the active-active Tier-0 gateway has no active service router", "immediate", "metric", "locations_without_active_sr", ">", 0),
+    "t0_failover":     ("tier0", "A service router of the Tier-0 gateway changed HA state since the previous cycle", "warning", "metric", "sr_ha_changes", ">", 0),
     # dynamic threshold: VCF Operations learns the usual range of the metric
     "tun_rx_dt":       ("rtep_tunnel", "RTEP tunnel receive rate is above its usual range", "warning", "dt", "rx_bytes_per_s", "above", None),
     "tun_tx_dt":       ("rtep_tunnel", "RTEP tunnel send rate is above its usual range", "warning", "dt", "tx_bytes_per_s", "above", None),
     "loc_rtt_dt":      ("location", "Round-trip time to the Global Manager is above its usual range", "warning", "dt", "gm_rtt_ms", "above", None),
+    "edge_cpu_dt":     ("edge_node", "Edge datapath CPU usage is above its usual range", "warning", "dt", "datapath_cpu_pct", "above", None),
 }
 
 # ---- NSX alarms of the Global Manager, which the adapter forwards as events "NSX alarm <event_type>: <summary>"
@@ -160,12 +181,13 @@ for ev, (sev, name, _d, _r) in GM_ALARMS.items():
 OUTAGE_KINDS = {"global_manager": "Global Manager", "location": "Location", "sync_channel": "Sync channel", "edge_cluster": "Edge cluster",
                 "edge_node": "Edge node", "rtep_tunnel": "RTEP tunnel", "bgp_neighbor": "Tier-0 BGP neighbor",
                 "tier0": "Tier-0 gateway", "tier1": "Tier-1 gateway", "segment": "Segment",
-                "global_policy": "Global security policy", "realization": "Stretched object at a location"}
+                "global_policy": "Global security policy", "realization": "Stretched object at a location",
+                "tier0_sr": "Tier-0 service router"}
 for _k in OUTAGE_KINDS:
     S["outage_" + _k] = (_k, "A location of the federation is cut off from the Global Manager", "info", "property",
                          "location_outage", "!=", "none")
 QUIET = {"loc_intersite", "chan_down", "edge_bgp_down", "ec_status", "tun_bgp_down", "tun_drops", "tun_blocked", "tun_flap", "bgp_flap", "loc_rtt", "t0_error", "t1_error",
-         "seg_error", "pol_error", "bgp_down", "real_missing"}
+         "seg_error", "pol_error", "bgp_down", "real_missing", "edge_status", "sr_down", "t0_no_active", "t0_failover"}
 
 # ---- wait and cancel cycles: conditions that can flap need two cycles (10 minutes) to raise and to clear
 WAIT = {k: (2, 2) for k in ("chan_down", "loc_bgp_down", "loc_bgp_none", "edge_bgp_none", "tun_bgp_down",
@@ -179,14 +201,24 @@ WAIT.update({"tun_rx_dt": (3, 3), "tun_tx_dt": (3, 3), "gm_standby_sync": (3, 2)
              # the usual range of the latency: three cycles to fire, two to clear (below the outage cancel of three)
              "loc_rtt_dt": (3, 2), "fed_throttled": (3, 2), "fed_slow": (2, 2),
              # a full sync or a change in progress is not a fault: these two wait for a second cycle
-             "loc_full_sync": (2, 1), "real_missing": (2, 1)})
+             "loc_full_sync": (2, 1), "real_missing": (2, 1),
+             # capacity: three cycles (15 minutes) above the threshold, two below to clear
+             "edge_cpu_75": (3, 2), "edge_cpu_85": (3, 2), "edge_mem_80": (3, 2), "edge_mem_90": (3, 2),
+             "edge_pool_85": (3, 2), "edge_cpu_dt": (3, 2), "edge_status": (2, 2),
+             "edge_disk_80": (3, 2), "edge_disk_90": (3, 2),
+             # a symptom that keeps alerts quiet clears after them, as the outage symptoms do: leaving maintenance
+             # mode, or a short gap in the list of the built-in integration, raises nothing
+             "edge_maint": (1, 3), "sr_maint": (1, 3), "edge_builtin": (1, 3),
+             "sr_routing": (2, 2), "sr_ha_down": (2, 2), "t0_no_active": (2, 2), "t0_loc_no_active": (2, 2),
+             # one change is enough; the alert stays two cycles so that it is seen
+             "t0_failover": (1, 2)})
 # an outage symptom outlives the symptoms it keeps quiet, so that their alerts do not fire in the cycles in which
 # the outage is over and they are not cancelled yet
 WAIT.update({"outage_" + k: (1, 3) for k in OUTAGE_KINDS})
 WAIT["chan_gm_outage"] = (1, 3)
 
 # ---- alerts that affect the Risk badge (a condition that will hurt later) instead of Health (broken now)
-RISK = {"gm_version", "gm_upgrade", "loc_newer", "loc_upgrade", "fed_no_standby", "fed_budget", "fed_gaps", "fed_load", "gm_backup", "gm_cert", "loc_cert_trust", "loc_version", "loc_backup", "loc_cert"}
+RISK = {"gm_version", "gm_upgrade", "loc_newer", "loc_upgrade", "fed_no_standby", "fed_budget", "fed_gaps", "fed_load", "gm_backup", "gm_cert", "loc_cert_trust", "loc_version", "loc_backup", "loc_cert", "edge_disk"}
 
 # ---- recommendations
 R = {
@@ -288,6 +320,27 @@ R = {
                   "Manager, as the NSX alarm describes, then start the configuration import again.",
     "traffic": "Inter-site traffic on this tunnel is above the range VCF Operations learned for it. Check whether a migration, "
                "a backup or a replication job explains it before looking for a loop or a misrouted flow.",
+    "edge_status": "Open the edge node in System, Fabric, Nodes, Edge Transport Nodes of the Local Manager and read the "
+                   "status details: management and controller connections, tunnels, the datapath and the services. "
+                   "Check the edge VM in vCenter (powered on, resources, network adapters).",
+    "edge_cpu": "The datapath cores of the edge are busy. Check which traffic grew (the RTEP tunnels and Tier-0 BGP "
+                "neighbors of this edge show the inter-site part), and whether services such as NAT, VPN or the gateway "
+                "firewall run on it. Spread the load over more edge nodes or use a larger edge form factor.",
+    "edge_memory": "Read the fullest memory pool on the edge node (property 'Fullest datapath memory pool'). A full pool "
+                   "drops packets or sessions. Look for a growth in sessions or flows, and use a larger edge form factor "
+                   "if the usage stays high.",
+    "edge_disk": "Log in to the edge as admin and check which file system is full (get filesystem-stats). Old support "
+                 "bundles, core dumps and logs are the usual cause; delete them, or contact Broadcom support before "
+                 "deleting anything else.",
+    "sr_down": "Check the uplinks and the BGP or static routes of the Tier-0 on this edge node (Networking, Tier-0 "
+               "Gateways, Routing), and the edge itself. A service router that is down does not forward north-south "
+               "traffic at this location.",
+    "t0_active": "Read 'Active service routers' and 'Locations without an active service router' on the Tier-0. Check the "
+                 "edge nodes of the location named there: their status, maintenance mode, uplinks and BGP sessions. "
+                 "Without an active service router the location has no north-south path through this gateway.",
+    "t0_failover": "A service router of this Tier-0 changed HA state. Read the 'Recent changes' property of the federation "
+                   "and the 'Last HA state change' of the service routers to see which edge took over. Look for an edge "
+                   "reboot, an uplink or BFD failure, or a maintenance action at that time.",
     "realization": "Open the object in the Global Manager and read the realization status for this location. Check the "
                    "location alarms and the connection between the Global Manager and the location, then save the object again if needed.",
 }
@@ -402,6 +455,30 @@ A = [
      "The uplink BGP session is established but no prefix is received.", NET, AVAIL, [["bgp_no_prefix", "!bgp_down", "!bgp_internal"]], "bgp_prefix"),
     ("real_missing", "realization", "Stretched object is not realized at a location",
      "A stretched gateway, segment or security policy is not realized at one location of its span.", NET, AVAIL, [["real_missing"]], "realization"),
+    ("edge_status", "edge_node", "Federation edge node status is not UP",
+     "NSX reports a status other than UP for this edge node (outside maintenance mode).", NET, AVAIL,
+     [["edge_status", "!edge_maint", "!edge_builtin"]], "edge_status"),
+    ("edge_cpu", "edge_node", "Federation edge node datapath CPU usage is high",
+     "The average usage of the datapath cores is above 75% (immediate above 85%) for 15 minutes.", NET, PERF,
+     [["edge_cpu_75", "!edge_builtin"], ["edge_cpu_85", "!edge_builtin"]], "edge_cpu"),
+    ("edge_cpu_trend", "edge_node", "Federation edge node datapath CPU usage is above its usual range",
+     "The datapath CPU usage is above the dynamic threshold VCF Operations learned for this edge.", NET, PERF,
+     [["edge_cpu_dt"]], "edge_cpu"),
+    ("edge_memory", "edge_node", "Federation edge node memory usage is high",
+     "System memory is above 80% (immediate above 90%), or a datapath memory pool is more than 85% used, for 15 minutes.",
+     NET, PERF, [["edge_mem_80", "!edge_builtin"], ["edge_mem_90", "!edge_builtin"], ["edge_pool_85", "!edge_builtin"]], "edge_memory"),
+    ("edge_disk", "edge_node", "Federation edge node file system is filling up",
+     "A file system of the edge is more than 80% used (immediate above 90%).", NET, CONF,
+     [["edge_disk_80", "!edge_builtin"], ["edge_disk_90", "!edge_builtin"]], "edge_disk"),
+    ("sr_down", "tier0_sr", "Tier-0 service router is down",
+     "The routing of this Tier-0 service router is down, or its HA state is DOWN (outside maintenance mode of the edge).",
+     NET, AVAIL, [["sr_routing", "!sr_maint"], ["sr_ha_down", "!sr_maint"]], "sr_down"),
+    ("t0_no_active", "tier0", "Stretched Tier-0 gateway has no active service router",
+     "No service router of the gateway is active, or, for an active-active gateway, a location of its span has none.",
+     NET, AVAIL, [["t0_no_active"], ["t0_loc_no_active"]], "t0_active"),
+    ("t0_failover", "tier0", "Stretched Tier-0 gateway service router changed HA state",
+     "A service router of this gateway changed HA state since the previous cycle, for example a failover to the standby edge.",
+     NET, AVAIL, [["t0_failover"]], "t0_failover"),
     ("tun_traffic", "rtep_tunnel", "RTEP tunnel traffic is above its usual range",
      "The receive or send rate of the tunnel is above the dynamic threshold VCF Operations learned for it.", NET, PERF,
      [["tun_rx_dt"], ["tun_tx_dt"]], "traffic"),
@@ -450,7 +527,7 @@ A = [(k, kind, name, desc, typ, sub, _quiet(k, kind, sets), rec) for k, kind, na
 # raises nothing (tests/test_adapter.py checks the same on the generated XML)
 for _k, _kind, _n, _d, _t, _s, _sets, _r in A:
     for _group in _sets:
-        for _o in [x[1:] for x in _group if x.startswith("!") and "outage" in x]:
+        for _o in [x[1:] for x in _group if x.startswith("!") and any(w in x for w in ("outage", "maint", "builtin"))]:
             assert all(WAIT.get(_o, (1, 1))[1] > WAIT.get(x, (1, 1))[1] for x in _group if not x.startswith("!")), (_k, _o)
 
 

@@ -77,6 +77,7 @@ def run(gm_hosts=None, trust="report", **identifiers):
         out.setdefault(o["key"]["objectKind"], {})[o["key"]["name"]] = {
             "m": {x["key"]: x.get("numberValue") for x in o.get("metrics", [])},
             "p": {x["key"]: x.get("stringValue", x.get("numberValue")) for x in o.get("properties", [])},
-            "id": next((i["value"] for i in o["key"].get("identifiers", []) if i["key"] == "id"), None)}
+            "id": next((i["value"] for i in o["key"].get("identifiers", []) if i["key"] == "id"), None),
+            "e": [e.get("message") for e in o.get("events", [])]}
     out["_error"] = doc.get("errorMessage")
     return out

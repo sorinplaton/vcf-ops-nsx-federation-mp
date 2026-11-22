@@ -11,6 +11,7 @@
 | Federation name | Optional name of the federation object. Set it when VCF Operations monitors several federations |
 | Link to the objects of the NSX integration | `auto` (default): edge nodes and edge clusters are linked to the objects of the built-in NSX integration for a Local Manager that integration monitors. `on`: always. `off`: never |
 | Alerts for the federation alarms of a Local Manager | `auto` (default): raised by this pack only for a Local Manager the built-in NSX integration does not monitor. `always`, `never` |
+| Change events | `on` (default): each change the collection sees is an information event on its object. `off`: the changes are only listed on the federation. See "Change timeline" |
 | Delete objects that left NSX after (days) | `0` (default): never. See "Objects that no longer exist" |
 | Policies collected rule by rule | Empty by default. Rules become objects only for the listed policies |
 | API call budget per manager and cycle | 2000 by default, see Sizing |
@@ -54,7 +55,7 @@ Calls per collection cycle, as measured with the test suite:
   global security policy). Above 200 stretched objects the realization of an object is read again only when the
   object is new, changed in NSX, was not fully realized, or once in six cycles; the last state is used otherwise.
 - Standby Global Manager: 5.
-- Each Local Manager: about 10, plus one per edge cluster, two per edge node, one per Tier-0 locale and one per
+- Each Local Manager: about 10, plus one per edge cluster, three per edge node, one per Tier-0 locale and one per
   collected policy.
 
 The first cycle after a start reads every object, so the budget of 2000 calls per manager covers about 1,900
@@ -119,6 +120,56 @@ For planned work, use a maintenance schedule of VCF Operations on the group "NSX
   the session is established in the current cycle raises a warning that stays for two cycles. A session that is down
   in the current cycle raises no flap alert, and the "not established" alert follows if it stays down. A restart of
   the edge resets the counter, which gives a rate of 0 for that cycle, so a restart is not reported as a flap.
+
+## Edge capacity and Tier-0 service routers
+
+One call per federation edge node, `GET /api/v1/transport-nodes/<id>/status` on its Local Manager, gives both:
+
+- Capacity, on the edge node: the average usage of the datapath (DPDK) cores and of the busiest one, the average
+  usage of the other cores (services), system memory, datapath memory, the fullest datapath memory pool and the
+  fullest file system, all in percent. NSX gives them as a current value; VCF Operations keeps the history, so the
+  trend and the dynamic threshold come from there. The alerts fire after three cycles above 75% datapath CPU (85%
+  immediate), 80% memory (90% immediate), 85% for a memory pool, and 80% for a file system (90% immediate). The
+  status alert is quiet while the edge is in, entering or leaving maintenance mode, and for three cycles after.
+  The status and threshold alerts are quiet for an edge whose Local Manager the built-in NSX
+  integration monitors, since that integration raises the NSX alarms of the edge ("Edge status and capacity alerts
+  raised by" on the edge node says which). The alert on the usual range of the datapath CPU is always raised by
+  this pack.
+- Service routers: one object "Tier-0 Service Router" per stretched Tier-0 gateway and edge node, keyed by the
+  NSX IDs of both, with the HA state, the routing status and the BGP neighbors up and down that NSX reports for it.
+  Tier-0 gateways local to one location are left out. On the stretched Tier-0 gateway, the adapter counts the
+  service routers, the active ones and those with routing down over the locations of its span. For an
+  active-active gateway it also counts the locations of the span without an active service router; for an
+  active-standby gateway one active service router in the federation is the expected state, so only "no active
+  service router" raises an alert. When the span is not known (realization not read), the locations where the
+  gateway has service routers are used. When an edge of the span does not answer, the totals of that gateway are
+  not sent for the cycle; a location whose edges all answered and that has no active service router is still
+  counted, and HA state changes are still counted. A service router that an edge which answers no longer reports
+  reads ABSENT (for a day at most), so a failover through a rebooting edge is seen. The alert on a service router
+  that is down is quiet while its edge is in, entering or leaving maintenance mode. A service router that changes
+  HA state between two cycles (a failover) is a change of the timeline below and raises a warning on the gateway
+  for two cycles.
+
+## Change timeline
+
+The adapter keeps what it saw in its cache and compares each cycle with the previous ones:
+
+- the active Global Manager, and the role and the version of each Global Manager;
+- the locations the active Global Manager lists (added, removed, renamed) and their versions;
+- the edge nodes of the RTEP edge clusters of each location (added, removed, renamed);
+- the HA state of each Tier-0 service router;
+- the stretched gateways, segments and global security policies (created, changed, deleted). A change is a new
+  revision in NSX; the message names the user NSX recorded. The list is the inventory of the Global Manager, which
+  the adapter reads again every 30 minutes, so such a change shows up within 30 minutes. A change of the primary
+  location of a Tier-0 or Tier-1 gateway gets its own message.
+
+Each change is an information event on the object it concerns (on the federation for an object that no longer
+exists), at most 25 per cycle. VCF Operations shows it as a notification on that object, and it clears after a
+cycle. On the federation, "Changes detected in this cycle" counts them, and "Last change" and "Recent changes" (the
+last ten, newest first, with the time in UTC) list them, so the property history of the federation is the
+timeline. The first cycle after an empty cache (new container, new account) only records the state. A cycle in
+which a call failed reports no removal, and an object is reported as added only against a complete earlier read,
+so a gap in the data does not show up as a change.
 
 ## Changing a threshold
 
@@ -213,8 +264,9 @@ what was deleted.
 The adapter uses the connection the collector gives it to VCF Operations for three things: the list of NSX
 clusters the built-in NSX integration monitors (settings `auto` above), the location list of earlier cycles when
 no Global Manager answers and the container cache is empty, and the objects to delete when that setting is on.
-The property "VCF Operations API from the adapter" on the federation object says whether it works. Without it the
-pack raises the alarm alerts itself, links nothing in `auto`, and deletes nothing.
+The same list decides who raises the status and capacity alerts of an edge node. The property "VCF Operations API
+from the adapter" on the federation object says whether it works. Without it the pack raises the alarm alerts and the
+edge alerts itself, links nothing in `auto`, and deletes nothing.
 
 ## Tests
 
@@ -226,5 +278,6 @@ docker run --rm -u $(id -u):$(id -g) -v $PWD:/work -w /work fedmp-tooling python
 The tests answer the adapter's calls from `tests/fixtures/federation.json`, an anonymised recording of a federation
 with two Global Managers and two locations. They cover a normal cycle, failed calls, a location outage, a Global
 Manager of another federation, the cached location list and the one from VCF Operations, the call budget,
-certificate trust, versions and upgrades, tiered realization on 600 more segments, stale-object deletion, and the
-consistency of the alert content with the object model.
+certificate trust, versions and upgrades, tiered realization on 600 more segments, stale-object deletion, edge
+capacity, Tier-0 service routers in both HA modes, the change timeline (first cycle, failover, partial reads), and
+the consistency of the alert content with the object model.

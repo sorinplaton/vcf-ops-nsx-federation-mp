@@ -37,43 +37,48 @@
     "adapterKindKey": "NSXFederation"
    },
    {
-    "resourceKindKey": "rtep_tunnel",
+    "resourceKindKey": "tier0_sr",
     "internalId": "resourceKind:id:7_::_",
     "adapterKindKey": "NSXFederation"
    },
    {
-    "resourceKindKey": "tier0",
+    "resourceKindKey": "rtep_tunnel",
     "internalId": "resourceKind:id:8_::_",
     "adapterKindKey": "NSXFederation"
    },
    {
-    "resourceKindKey": "tier1",
+    "resourceKindKey": "tier0",
     "internalId": "resourceKind:id:9_::_",
     "adapterKindKey": "NSXFederation"
    },
    {
-    "resourceKindKey": "segment",
+    "resourceKindKey": "tier1",
     "internalId": "resourceKind:id:10_::_",
     "adapterKindKey": "NSXFederation"
    },
    {
-    "resourceKindKey": "global_policy",
+    "resourceKindKey": "segment",
     "internalId": "resourceKind:id:11_::_",
     "adapterKindKey": "NSXFederation"
    },
    {
-    "resourceKindKey": "realization",
+    "resourceKindKey": "global_policy",
     "internalId": "resourceKind:id:12_::_",
     "adapterKindKey": "NSXFederation"
    },
    {
-    "resourceKindKey": "bgp_neighbor",
+    "resourceKindKey": "realization",
     "internalId": "resourceKind:id:13_::_",
     "adapterKindKey": "NSXFederation"
    },
    {
-    "resourceKindKey": "rule",
+    "resourceKindKey": "bgp_neighbor",
     "internalId": "resourceKind:id:14_::_",
+    "adapterKindKey": "NSXFederation"
+   },
+   {
+    "resourceKindKey": "rule",
+    "internalId": "resourceKind:id:15_::_",
     "adapterKindKey": "NSXFederation"
    }
   ],
@@ -94,12 +99,12 @@
    "importAttempts": 0,
    "columnProportion": "1",
    "importComplete": true,
-   "description": "Sync channels between managers, inter-site BGP per edge node, RTEP tunnels and the BGP neighbors of stretched Tier-0 gateways. Select a row to see its values, click a value to chart it.",
+   "description": "Sync channels between managers, inter-site BGP and capacity per edge node, Tier-0 service routers, RTEP tunnels and the BGP neighbors of stretched Tier-0 gateways. Select a row to see its values, click a value to chart it.",
    "widgets": [
     {
      "tabId": "7e9f3a04-4fda-536d-b91c-7bf9692cd1c6",
      "collapsed": false,
-     "id": "3d40c6f1-8ff2-5abf-8f7d-bd2aa640d57a",
+     "id": "90919a12-22ea-5453-a92d-e98adbd95dea",
      "gridsterCoords": {
       "w": 6,
       "x": 1,
@@ -108,7 +113,7 @@
      },
      "state": "",
      "type": "ResourceList",
-     "title": "Sync channels and edge nodes",
+     "title": "Sync channels, edge nodes and Tier-0 service routers",
      "config": {
       "resource": [],
       "relationshipMode": {
@@ -138,6 +143,30 @@
         "metricName": "Inter-site BGP sessions not established",
         "metricKey": "intersite|intersite_bgp_down",
         "resourceKindId": "resourceKind:id:5_::_"
+       },
+       {
+        "boxLabel": "Datapath CPU (%)",
+        "metricName": "Datapath CPU usage, average of the datapath cores",
+        "metricKey": "capacity|datapath_cpu_pct",
+        "resourceKindId": "resourceKind:id:6_::_"
+       },
+       {
+        "boxLabel": "Memory (%)",
+        "metricName": "System memory used",
+        "metricKey": "capacity|memory_used_pct",
+        "resourceKindId": "resourceKind:id:6_::_"
+       },
+       {
+        "boxLabel": "SR active",
+        "metricName": "HA state active (1 = yes)",
+        "metricKey": "active",
+        "resourceKindId": "resourceKind:id:7_::_"
+       },
+       {
+        "boxLabel": "SR routing up",
+        "metricName": "Routing up (1 = yes)",
+        "metricKey": "routing_up",
+        "resourceKindId": "resourceKind:id:7_::_"
        }
       ],
       "mode": "all",
@@ -146,7 +175,8 @@
        "path": [
         "/source/kind/kind:resourceKind:id:4_::_",
         "/source/kind/kind:resourceKind:id:5_::_",
-        "/source/kind/kind:resourceKind:id:6_::_"
+        "/source/kind/kind:resourceKind:id:6_::_",
+        "/source/kind/kind:resourceKind:id:7_::_"
        ],
        "value": {
         "bus": [],
@@ -154,7 +184,8 @@
         "kind": [
          "resourceKind:id:4_::_",
          "resourceKind:id:5_::_",
-         "resourceKind:id:6_::_"
+         "resourceKind:id:6_::_",
+         "resourceKind:id:7_::_"
         ],
         "exclaim": false,
         "healthRange": [],
@@ -180,7 +211,7 @@
       "selfProvider": {
        "selfProvider": true
       },
-      "title": "Sync channels and edge nodes",
+      "title": "Sync channels, edge nodes and Tier-0 service routers",
       "refreshInterval": 300,
       "refreshContent": {
        "refreshContent": true
@@ -212,44 +243,44 @@
         "boxLabel": "BGP established",
         "metricName": "Inter-site BGP established",
         "metricKey": "bgp_established",
-        "resourceKindId": "resourceKind:id:7_::_"
+        "resourceKindId": "resourceKind:id:8_::_"
        },
        {
         "boxLabel": "Rx drops/min",
         "metricName": "Received packets dropped per minute",
         "metricKey": "rates|rx_dropped_per_min",
-        "resourceKindId": "resourceKind:id:7_::_"
+        "resourceKindId": "resourceKind:id:8_::_"
        },
        {
         "boxLabel": "Tx drops/min",
         "metricName": "Sent packets dropped per minute",
         "metricKey": "rates|tx_dropped_per_min",
-        "resourceKindId": "resourceKind:id:7_::_"
+        "resourceKindId": "resourceKind:id:8_::_"
        },
        {
         "boxLabel": "Rx dropped (%)",
         "metricName": "Share of received packets dropped",
         "metricKey": "rates|rx_drop_pct",
-        "resourceKindId": "resourceKind:id:7_::_"
+        "resourceKindId": "resourceKind:id:8_::_"
        },
        {
         "boxLabel": "Tx dropped (%)",
         "metricName": "Share of sent packets dropped",
         "metricKey": "rates|tx_drop_pct",
-        "resourceKindId": "resourceKind:id:7_::_"
+        "resourceKindId": "resourceKind:id:8_::_"
        }
       ],
       "mode": "all",
       "filterMode": "tagPicker",
       "tagFilter": {
        "path": [
-        "/source/kind/kind:resourceKind:id:7_::_"
+        "/source/kind/kind:resourceKind:id:8_::_"
        ],
        "value": {
         "bus": [],
         "adapterKind": [],
         "kind": [
-         "resourceKind:id:7_::_"
+         "resourceKind:id:8_::_"
         ],
         "exclaim": false,
         "healthRange": [],
@@ -307,44 +338,44 @@
         "boxLabel": "Established",
         "metricName": "Established",
         "metricKey": "established",
-        "resourceKindId": "resourceKind:id:13_::_"
+        "resourceKindId": "resourceKind:id:14_::_"
        },
        {
         "boxLabel": "Prefixes in",
         "metricName": "Prefixes received",
         "metricKey": "prefixes|prefixes_in",
-        "resourceKindId": "resourceKind:id:13_::_"
+        "resourceKindId": "resourceKind:id:14_::_"
        },
        {
         "boxLabel": "Prefixes out",
         "metricName": "Prefixes advertised",
         "metricKey": "prefixes|prefixes_out",
-        "resourceKindId": "resourceKind:id:13_::_"
+        "resourceKindId": "resourceKind:id:14_::_"
        },
        {
         "boxLabel": "Drops",
         "metricName": "Connection drops",
         "metricKey": "connection_drops",
-        "resourceKindId": "resourceKind:id:13_::_"
+        "resourceKindId": "resourceKind:id:14_::_"
        },
        {
         "boxLabel": "Drops/hour",
         "metricName": "Connection drops per hour",
         "metricKey": "connection_drops_per_hour",
-        "resourceKindId": "resourceKind:id:13_::_"
+        "resourceKindId": "resourceKind:id:14_::_"
        }
       ],
       "mode": "all",
       "filterMode": "tagPicker",
       "tagFilter": {
        "path": [
-        "/source/kind/kind:resourceKind:id:13_::_"
+        "/source/kind/kind:resourceKind:id:14_::_"
        ],
        "value": {
         "bus": [],
         "adapterKind": [],
         "kind": [
-         "resourceKind:id:13_::_"
+         "resourceKind:id:14_::_"
         ],
         "exclaim": false,
         "healthRange": [],
@@ -536,9 +567,179 @@
          "id": "extModel1007-1"
         },
         {
+         "metricKey": "capacity|datapath_cpu_pct",
+         "metricName": "Datapath CPU usage, average of the datapath cores",
+         "resourceKindId": "resourceKind:id:6_::_",
+         "resourceKindName": "Federation Edge Node",
+         "isStringMetric": false,
+         "label": "Datapath CPU usage, average of the datapath cores",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 60,
+         "orangeBound": 75,
+         "redBound": 85,
+         "colorMethod": 0,
+         "id": "extModel1008-1"
+        },
+        {
+         "metricKey": "capacity|datapath_cpu_peak_pct",
+         "metricName": "Datapath CPU usage, busiest datapath core",
+         "resourceKindId": "resourceKind:id:6_::_",
+         "resourceKindName": "Federation Edge Node",
+         "isStringMetric": false,
+         "label": "Datapath CPU usage, busiest datapath core",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 60,
+         "orangeBound": 75,
+         "redBound": 85,
+         "colorMethod": 0,
+         "id": "extModel1009-1"
+        },
+        {
+         "metricKey": "capacity|services_cpu_pct",
+         "metricName": "Services CPU usage, average of the other cores",
+         "resourceKindId": "resourceKind:id:6_::_",
+         "resourceKindName": "Federation Edge Node",
+         "isStringMetric": false,
+         "label": "Services CPU usage, average of the other cores",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 60,
+         "orangeBound": 75,
+         "redBound": 85,
+         "colorMethod": 0,
+         "id": "extModel1010-1"
+        },
+        {
+         "metricKey": "capacity|memory_used_pct",
+         "metricName": "System memory used",
+         "resourceKindId": "resourceKind:id:6_::_",
+         "resourceKindName": "Federation Edge Node",
+         "isStringMetric": false,
+         "label": "System memory used",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 70,
+         "orangeBound": 80,
+         "redBound": 90,
+         "colorMethod": 0,
+         "id": "extModel1011-1"
+        },
+        {
+         "metricKey": "capacity|datapath_pool_peak_pct",
+         "metricName": "Datapath memory pool used, fullest pool",
+         "resourceKindId": "resourceKind:id:6_::_",
+         "resourceKindName": "Federation Edge Node",
+         "isStringMetric": false,
+         "label": "Datapath memory pool used, fullest pool",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 60,
+         "orangeBound": 75,
+         "redBound": 85,
+         "colorMethod": 0,
+         "id": "extModel1012-1"
+        },
+        {
+         "metricKey": "capacity|disk_fullest_pct",
+         "metricName": "Disk used, fullest file system",
+         "resourceKindId": "resourceKind:id:6_::_",
+         "resourceKindName": "Federation Edge Node",
+         "isStringMetric": false,
+         "label": "Disk used, fullest file system",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 70,
+         "orangeBound": 80,
+         "redBound": 90,
+         "colorMethod": 0,
+         "id": "extModel1013-1"
+        },
+        {
+         "metricKey": "active",
+         "metricName": "HA state active (1 = yes)",
+         "resourceKindId": "resourceKind:id:7_::_",
+         "resourceKindName": "Tier-0 Service Router",
+         "isStringMetric": false,
+         "label": "HA state active (1 = yes)",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1014-1"
+        },
+        {
+         "metricKey": "routing_up",
+         "metricName": "Routing up (1 = yes)",
+         "resourceKindId": "resourceKind:id:7_::_",
+         "resourceKindName": "Tier-0 Service Router",
+         "isStringMetric": false,
+         "label": "Routing up (1 = yes)",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 0.9,
+         "orangeBound": 0.6,
+         "redBound": 0.5,
+         "colorMethod": 0,
+         "id": "extModel1015-1"
+        },
+        {
+         "metricKey": "bgp_neighbors_up",
+         "metricName": "BGP neighbors up",
+         "resourceKindId": "resourceKind:id:7_::_",
+         "resourceKindName": "Tier-0 Service Router",
+         "isStringMetric": false,
+         "label": "BGP neighbors up",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": null,
+         "orangeBound": null,
+         "redBound": null,
+         "colorMethod": 2,
+         "id": "extModel1016-1"
+        },
+        {
+         "metricKey": "bgp_neighbors_down",
+         "metricName": "BGP neighbors down",
+         "resourceKindId": "resourceKind:id:7_::_",
+         "resourceKindName": "Tier-0 Service Router",
+         "isStringMetric": false,
+         "label": "BGP neighbors down",
+         "unit": "",
+         "metricUnitId": null,
+         "link": "",
+         "maxValue": "",
+         "yellowBound": 0.1,
+         "orangeBound": 0.5,
+         "redBound": 0.9,
+         "colorMethod": 0,
+         "id": "extModel1017-1"
+        },
+        {
          "metricKey": "bgp_established",
          "metricName": "Inter-site BGP established",
-         "resourceKindId": "resourceKind:id:7_::_",
+         "resourceKindId": "resourceKind:id:8_::_",
          "resourceKindName": "RTEP Tunnel",
          "isStringMetric": false,
          "label": "BGP established",
@@ -550,12 +751,12 @@
          "orangeBound": 0.6,
          "redBound": 0.5,
          "colorMethod": 0,
-         "id": "extModel1008-1"
+         "id": "extModel1018-1"
         },
         {
          "metricKey": "rates|rx_bytes_per_s",
          "metricName": "Received bytes per second",
-         "resourceKindId": "resourceKind:id:7_::_",
+         "resourceKindId": "resourceKind:id:8_::_",
          "resourceKindName": "RTEP Tunnel",
          "isStringMetric": false,
          "label": "Rx bytes/s",
@@ -567,12 +768,12 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1009-1"
+         "id": "extModel1019-1"
         },
         {
          "metricKey": "rates|tx_bytes_per_s",
          "metricName": "Sent bytes per second",
-         "resourceKindId": "resourceKind:id:7_::_",
+         "resourceKindId": "resourceKind:id:8_::_",
          "resourceKindName": "RTEP Tunnel",
          "isStringMetric": false,
          "label": "Tx bytes/s",
@@ -584,12 +785,12 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1010-1"
+         "id": "extModel1020-1"
         },
         {
          "metricKey": "rates|rx_packets_per_min",
          "metricName": "Received packets per minute",
-         "resourceKindId": "resourceKind:id:7_::_",
+         "resourceKindId": "resourceKind:id:8_::_",
          "resourceKindName": "RTEP Tunnel",
          "isStringMetric": false,
          "label": "Rx packets/min",
@@ -601,12 +802,12 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1011-1"
+         "id": "extModel1021-1"
         },
         {
          "metricKey": "rates|tx_packets_per_min",
          "metricName": "Sent packets per minute",
-         "resourceKindId": "resourceKind:id:7_::_",
+         "resourceKindId": "resourceKind:id:8_::_",
          "resourceKindName": "RTEP Tunnel",
          "isStringMetric": false,
          "label": "Tx packets/min",
@@ -618,12 +819,12 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1012-1"
+         "id": "extModel1022-1"
         },
         {
          "metricKey": "rates|rx_dropped_per_min",
          "metricName": "Received packets dropped per minute",
-         "resourceKindId": "resourceKind:id:7_::_",
+         "resourceKindId": "resourceKind:id:8_::_",
          "resourceKindName": "RTEP Tunnel",
          "isStringMetric": false,
          "label": "Rx drops/min",
@@ -635,12 +836,12 @@
          "orangeBound": 10,
          "redBound": 60,
          "colorMethod": 0,
-         "id": "extModel1013-1"
+         "id": "extModel1023-1"
         },
         {
          "metricKey": "rates|tx_dropped_per_min",
          "metricName": "Sent packets dropped per minute",
-         "resourceKindId": "resourceKind:id:7_::_",
+         "resourceKindId": "resourceKind:id:8_::_",
          "resourceKindName": "RTEP Tunnel",
          "isStringMetric": false,
          "label": "Tx drops/min",
@@ -652,12 +853,12 @@
          "orangeBound": 10,
          "redBound": 60,
          "colorMethod": 0,
-         "id": "extModel1014-1"
+         "id": "extModel1024-1"
         },
         {
          "metricKey": "rates|rx_drop_pct",
          "metricName": "Share of received packets dropped",
-         "resourceKindId": "resourceKind:id:7_::_",
+         "resourceKindId": "resourceKind:id:8_::_",
          "resourceKindName": "RTEP Tunnel",
          "isStringMetric": false,
          "label": "Rx dropped (%)",
@@ -669,12 +870,12 @@
          "orangeBound": 1,
          "redBound": 5,
          "colorMethod": 0,
-         "id": "extModel1015-1"
+         "id": "extModel1025-1"
         },
         {
          "metricKey": "rates|tx_drop_pct",
          "metricName": "Share of sent packets dropped",
-         "resourceKindId": "resourceKind:id:7_::_",
+         "resourceKindId": "resourceKind:id:8_::_",
          "resourceKindName": "RTEP Tunnel",
          "isStringMetric": false,
          "label": "Tx dropped (%)",
@@ -686,12 +887,12 @@
          "orangeBound": 1,
          "redBound": 5,
          "colorMethod": 0,
-         "id": "extModel1016-1"
+         "id": "extModel1026-1"
         },
         {
          "metricKey": "rates|rx_blocked_per_min",
          "metricName": "Received packets blocked per minute",
-         "resourceKindId": "resourceKind:id:7_::_",
+         "resourceKindId": "resourceKind:id:8_::_",
          "resourceKindName": "RTEP Tunnel",
          "isStringMetric": false,
          "label": "Rx blocked/min",
@@ -703,12 +904,12 @@
          "orangeBound": 10,
          "redBound": 60,
          "colorMethod": 0,
-         "id": "extModel1017-1"
+         "id": "extModel1027-1"
         },
         {
          "metricKey": "rates|tx_blocked_per_min",
          "metricName": "Sent packets blocked per minute",
-         "resourceKindId": "resourceKind:id:7_::_",
+         "resourceKindId": "resourceKind:id:8_::_",
          "resourceKindName": "RTEP Tunnel",
          "isStringMetric": false,
          "label": "Tx blocked/min",
@@ -720,12 +921,12 @@
          "orangeBound": 10,
          "redBound": 60,
          "colorMethod": 0,
-         "id": "extModel1018-1"
+         "id": "extModel1028-1"
         },
         {
          "metricKey": "connection_drops_per_hour",
          "metricName": "Inter-site BGP connection drops per hour",
-         "resourceKindId": "resourceKind:id:7_::_",
+         "resourceKindId": "resourceKind:id:8_::_",
          "resourceKindName": "RTEP Tunnel",
          "isStringMetric": false,
          "label": "Drops/hour",
@@ -737,12 +938,12 @@
          "orangeBound": 12,
          "redBound": 36,
          "colorMethod": 0,
-         "id": "extModel1019-1"
+         "id": "extModel1029-1"
         },
         {
          "metricKey": "established",
          "metricName": "Established",
-         "resourceKindId": "resourceKind:id:13_::_",
+         "resourceKindId": "resourceKind:id:14_::_",
          "resourceKindName": "Tier-0 BGP Neighbor",
          "isStringMetric": false,
          "label": "Established",
@@ -754,12 +955,12 @@
          "orangeBound": 0.6,
          "redBound": 0.5,
          "colorMethod": 0,
-         "id": "extModel1020-1"
+         "id": "extModel1030-1"
         },
         {
          "metricKey": "prefixes|prefixes_in",
          "metricName": "Prefixes received",
-         "resourceKindId": "resourceKind:id:13_::_",
+         "resourceKindId": "resourceKind:id:14_::_",
          "resourceKindName": "Tier-0 BGP Neighbor",
          "isStringMetric": false,
          "label": "Prefixes in",
@@ -771,12 +972,12 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1021-1"
+         "id": "extModel1031-1"
         },
         {
          "metricKey": "prefixes|prefixes_out",
          "metricName": "Prefixes advertised",
-         "resourceKindId": "resourceKind:id:13_::_",
+         "resourceKindId": "resourceKind:id:14_::_",
          "resourceKindName": "Tier-0 BGP Neighbor",
          "isStringMetric": false,
          "label": "Prefixes out",
@@ -788,12 +989,12 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1022-1"
+         "id": "extModel1032-1"
         },
         {
          "metricKey": "seconds_established",
          "metricName": "Seconds established",
-         "resourceKindId": "resourceKind:id:13_::_",
+         "resourceKindId": "resourceKind:id:14_::_",
          "resourceKindName": "Tier-0 BGP Neighbor",
          "isStringMetric": false,
          "label": "Uptime (s)",
@@ -805,12 +1006,12 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1023-1"
+         "id": "extModel1033-1"
         },
         {
          "metricKey": "connection_drops",
          "metricName": "Connection drops",
-         "resourceKindId": "resourceKind:id:13_::_",
+         "resourceKindId": "resourceKind:id:14_::_",
          "resourceKindName": "Tier-0 BGP Neighbor",
          "isStringMetric": false,
          "label": "Drops",
@@ -822,12 +1023,12 @@
          "orangeBound": null,
          "redBound": null,
          "colorMethod": 2,
-         "id": "extModel1024-1"
+         "id": "extModel1034-1"
         },
         {
          "metricKey": "connection_drops_per_hour",
          "metricName": "Connection drops per hour",
-         "resourceKindId": "resourceKind:id:13_::_",
+         "resourceKindId": "resourceKind:id:14_::_",
          "resourceKindName": "Tier-0 BGP Neighbor",
          "isStringMetric": false,
          "label": "Drops/hour",
@@ -839,7 +1040,7 @@
          "orangeBound": 12,
          "redBound": 36,
          "colorMethod": 0,
-         "id": "extModel1025-1"
+         "id": "extModel1035-1"
         }
        ],
        "subMode": "resourceKindAll"
@@ -903,7 +1104,7 @@
    "dashboardNavigations": {},
    "widgetInteractions": [
     {
-     "widgetIdProvider": "3d40c6f1-8ff2-5abf-8f7d-bd2aa640d57a",
+     "widgetIdProvider": "90919a12-22ea-5453-a92d-e98adbd95dea",
      "type": "resourceId",
      "widgetIdReceiver": "12755997-9a56-5325-9910-b23bd79b29db"
     },

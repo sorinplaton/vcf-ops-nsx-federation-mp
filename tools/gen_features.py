@@ -203,6 +203,16 @@ def document():
                "- Laisse les alarmes de fédération d'un Local Manager à l'intégration NSX native quand celle-ci le "
                "supervise, et relie ses nœuds Edge et ses clusters Edge aux objets natifs.",
                "- Garde silencieuses les alertes des objets dépendants tant qu'un emplacement est coupé du Global Manager.",
+               "- Lit l'usage CPU, mémoire et disque de chaque edge node de la fédération, et l'état HA et le routage de "
+               "chaque service router de Tier-0 étendu qu'il porte, en un appel par edge. Les alertes d'état et de seuil "
+               "d'un edge restent silencieuses pour un edge que l'intégration NSX native supervise, car elle remonte les "
+               "mêmes alarmes NSX.",
+               "- Signale un Tier-0 étendu sans service router actif, dans la fédération ou, pour un Tier-0 "
+               "actif-actif, à un emplacement, et un service router qui change d'état HA.",
+               "- Enregistre les changements d'un cycle à l'autre\u00a0: le Global Manager actif, le rôle et la version de "
+               "chaque Global Manager, les emplacements ajoutés, retirés ou mis à niveau, les edge nodes ajoutés ou "
+               "retirés, l'état HA des service routers de Tier-0, et les objets étendus créés, modifiés ou supprimés. "
+               "Chaque changement est un événement d'information sur son objet et apparaît dans la liste de la fédération.",
                "- Dit si un Global Manager standby peut prendre le relais\u00a0: prêt, pas prêt avec les raisons (synchronisation avec l'actif, état du cluster, version, certificat expiré, mise à niveau en cours ou en pause) ou inconnu quand une valeur n'a pas pu être lue. La métrique vaut 1 seulement quand c'est confirmé.",
                "- Supprime en option les objets qui ont quitté NSX (option désactivée par défaut).", "",
                "## Types d'objet", "",
@@ -244,6 +254,15 @@ def document():
                "- Leaves the federation alarms of a Local Manager to the built-in NSX integration when that integration "
                "monitors it, and links its edge nodes and edge clusters to the built-in objects.",
                "- Keeps the alerts of dependent objects quiet while a location is cut off from the Global Manager.",
+               "- Reads the CPU, memory and disk use of each federation edge node, and the HA state and routing of each "
+               "stretched Tier-0 service router on it, from one call per edge. The status and threshold alerts of an "
+               "edge stay quiet for an edge the built-in NSX integration monitors, as it raises the same NSX alarms.",
+               "- Tells when a stretched Tier-0 gateway has no active service router, in the federation or, for an "
+               "active-active gateway, at one location, and when a service router changes HA state.",
+               "- Records changes between cycles: the active Global Manager, the role and version of each Global "
+               "Manager, locations added, removed or upgraded, edge nodes added or removed, Tier-0 service router HA "
+               "state, and stretched objects created, changed or deleted. Each change is an information event on its "
+               "object and is listed on the federation.",
                "- Tells whether a standby Global Manager can take over: ready, not ready with the reasons (sync with the active, cluster health, version, expired certificate, upgrade in progress or paused), or unknown when a value could not be read. The metric is 1 only when that is confirmed.",
                "- Optionally deletes the objects that left NSX (off by default).", "",
                "## Object types", "",
