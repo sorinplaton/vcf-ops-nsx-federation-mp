@@ -151,8 +151,8 @@ docker run --rm --network host -v $PWD:/work -e GM_HOSTS=<gm1>,<gm2> \
   -e NSX_USER=audit -e NSX_PASSWORD='<password>' fedmp-tooling python tools/localrun.py
 ```
 
-La commande affiche les objets et les métriques d'un cycle. Un appel en échec apparaît ici avant de
-apparaître dans VCF Operations.
+La commande affiche les objets et les métriques d'un cycle. Un appel en échec se voit ici avant
+d'apparaître dans VCF Operations.
 
 ## 6. Installer le pack non signé
 
@@ -176,7 +176,7 @@ L'option s'applique à toute l'instance VCF Operations.
 
 *À exécuter sur : l'hôte de construction*, avec `google-chrome`, `node` et le module Python `requests` installés.
 Les scripts pilotent un Chrome headless via des appels internes à l'interface de VCF Operations. Ces appels
-ne sont pas pris en charge et peuvent changer à chaque release.
+ne sont pas pris en charge et peuvent changer à chaque version.
 
 ```bash
 export OPS_HOST=<ops> OPS_PW='<admin password>'
@@ -228,7 +228,7 @@ compte de type NSX Federation.
 Administration, Configurations, Policy Definition, Import.
 
 ```bash
-export OPS_HOST=<fqdn-de-vcf-operations> OPS_PW='<mot de passe admin>'
+export OPS_HOST=<ops> OPS_PW='<admin password>'
 python3 install/import_policy.py        # policies/NSX_Federation_Non-production.xml ; --insecure en lab seulement
 ```
 

@@ -217,7 +217,7 @@ Federation.
 Configurations, Policy Definition, Import.
 
 ```bash
-export OPS_HOST=<vcf-operations-fqdn> OPS_PW='<admin password>'
+export OPS_HOST=<ops> OPS_PW='<admin password>'
 python3 install/import_policy.py        # policies/NSX_Federation_Non-production.xml; add --insecure in a lab only
 ```
 

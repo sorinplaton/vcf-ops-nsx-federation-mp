@@ -14,7 +14,7 @@ Les noms des métriques, des propriétés, des alertes et des symptômes, ainsi 
 ## Ce que fait la collecte
 
 - Trouve le Global Manager actif à chaque cycle et suit un basculement quand le compte liste les deux Global Managers.
-- Découvre les Local Managers depuis le Global Manager et compare chaque certificat à l'empreinte que détient le Global Manager, ou (confiance des certificats ca) à une autorité de certification de confiance et à l'adresse ; chaque connexion est liée au certificat vérifié.
+- Découvre les Local Managers depuis le Global Manager et compare chaque certificat à l'empreinte que détient le Global Manager, ou (avec Certificate trust réglé sur ca) à une autorité de certification de confiance et à l'adresse ; chaque connexion est liée au certificat vérifié.
 - Identifie les edge nodes et les tunnels RTEP par l'ID NSX du transport node, et les canaux de synchronisation par l'ID de site : un renommage garde l'objet et son historique.
 - Continue de collecter les Local Managers quand aucun Global Manager ne répond, à partir de la liste des emplacements des cycles précédents (cache de l'adaptateur, puis VCF Operations).
 - Signale un appel NSX en échec comme une donnée inconnue : rien n'est envoyé pour les valeurs concernées, et l'appel est listé sur l'objet fédération.
@@ -23,19 +23,19 @@ Les noms des métriques, des propriétés, des alertes et des symptômes, ainsi 
 - Lit la latence et le remplissage des files de synchronisation de chaque emplacement dans les détails des flux du Global Manager, et compare la latence au RTT maximal défini dans NSX.
 - Calcule la part des paquets rejetés par chaque tunnel RTEP, et le taux de coupures des sessions BGP du Tier-0 et des sessions BGP intersites.
 - Lit la réalisation de chaque objet étendu à chaque cycle jusqu'à 200 objets, et par balayage sur six cycles au-delà.
-- Laisse les alarmes de fédération d'un Local Manager à l'intégration NSX native quand celle-ci le supervise, et relie ses nœuds Edge et ses clusters Edge aux objets natifs.
+- Laisse les alarmes de fédération d'un Local Manager à l'intégration NSX native quand celle-ci le supervise, et relie ses edge nodes et ses edge clusters aux objets natifs.
 - Garde silencieuses les alertes des objets dépendants tant qu'un emplacement est coupé du Global Manager.
 - Lit l'usage CPU, mémoire et disque de chaque edge node de la fédération, et l'état HA et le routage de chaque service router de Tier-0 étendu qu'il porte, en un appel par edge. Les alertes d'état et de seuil restent silencieuses pour un edge que l'intégration NSX native supervise, car celle-ci remonte les mêmes alarmes NSX.
 - Alerte sur un Tier-0 étendu sans service router actif, dans la fédération ou, pour un Tier-0 actif-actif, à un emplacement, et sur un service router qui change d'état HA.
 - Enregistre les changements d'un cycle à l'autre : le Global Manager actif, le rôle et la version de chaque Global Manager, les emplacements ajoutés, retirés ou mis à niveau, les edge nodes ajoutés ou retirés, l'état HA des service routers de Tier-0, et les objets étendus créés, modifiés ou supprimés. Chaque changement est un événement d'information sur son objet et apparaît dans la liste de la fédération.
 - Compare l'horloge de chaque manager à celle du Global Manager actif (à partir de l'heure système que renvoie NSX, corrigée de la durée de l'appel) et lit les serveurs et le service NTP de chacun.
 - Lit les limites de configuration de chaque Local Manager telles que NSX les évalue (les objets globaux comptent à chaque emplacement de leur étendue), et liste les objets globaux surchargés à un emplacement.
-- Indique si un Global Manager standby peut prendre le relais : prêt, pas prêt avec les raisons (synchronisation avec l'actif, état du cluster, version, certificat expiré, mise à niveau en cours ou en pause) ou inconnu quand une valeur n'a pas pu être lue. La métrique vaut 1 seulement quand c'est confirmé.
+- Indique si un Standby Global Manager peut prendre le relais : prêt, pas prêt avec les raisons (synchronisation avec l'actif, état du cluster, version, certificat expiré, mise à niveau en cours ou en pause) ou inconnu quand une valeur n'a pas pu être lue. La métrique vaut 1 seulement quand c'est confirmé.
 - Lit sur chaque manager la date d'expiration du mot de passe du compte de collecte, et alerte avant que la collecte ne s'arrête sur un mot de passe expiré.
-- Passe en revue les règles des politiques de sécurité globales : règles masquées par une règle précédente de la politique, règles sans aucun hit à tous les emplacements de leur étendue pendant une période (30 jours par défaut), et règles qui autorisent tout le trafic partout.
+- Passe en revue les règles des stratégies de sécurité globales : règles masquées par une règle précédente de la stratégie, règles sans aucun hit à tous les emplacements de leur étendue pendant une période (30 jours par défaut), et règles qui autorisent tout le trafic partout.
 - Envoie à chaque cycle une valeur de disponibilité (100 ou 0) pour la fédération, chaque Global Manager, chaque emplacement et chaque Tier-0 étendu ; le rapport de disponibilité en fait la moyenne sur 30 jours.
 - Supprime en option les objets qui ont quitté NSX (option désactivée par défaut).
-- Chaque objet porte l'ID de sa fédération : un script crée un groupe personnalisé par fédération et peut lui affecter une politique ; un autre envoie les alertes du pack à une instance sortante (e-mail, webhook, ServiceNow, Slack, SNMP), un troisième rassemble l'état de la collecte pour une demande de support.
+- Chaque objet porte l'ID de sa fédération : un script crée un groupe personnalisé par fédération et peut lui affecter une politique ; un autre envoie les alertes du pack à une instance sortante (e-mail, webhook, ServiceNow, Slack, SNMP, fichier journal), un troisième rassemble l'état de la collecte pour une demande de support.
 
 ## Types d'objet
 
@@ -561,6 +561,6 @@ Propriétés : Action (`action`) ; Disabled (`disabled`) ; Sources (`sources`
 - Tableaux de bord (dossier « NSX Federation ») : Federation Overview, Location Matrix, Switchover Readiness, Inter-site Connectivity, Stretched Objects.
 - Vues en liste : NSX Federation - Locations ; NSX Federation - Sync channels ; NSX Federation - RTEP tunnels ; NSX Federation - Tier-0 BGP neighbors ; NSX Federation - Edge capacity ; NSX Federation - Tier-0 service routers ; NSX Federation - Recent changes ; NSX Federation - Firewall rule review ; NSX Federation - Realization per location ; NSX Federation - Availability of the federation ; NSX Federation - Availability of the Global Managers ; NSX Federation - Availability of the locations ; NSX Federation - Availability of the Tier-0 gateways.
 - Rapports : NSX Federation - Health report ; NSX Federation - Availability report.
-- Politique livrée avec le pack : NSX Federation - Non-production, à affecter à un groupe qui regroupe les objets d'une fédération de lab ou de test (elle désactive les alertes de sauvegarde, de standby, de revue des règles de pare-feu, de surcharges, de limites de configuration et de capacité des edges).
+- Politique fournie dans le dépôt et importée par `install/import_policy.py` : NSX Federation - Non-production, à affecter à un groupe qui regroupe les objets d'une fédération de lab ou de test (elle désactive les alertes de sauvegarde, de standby, de revue des règles de pare-feu, de surcharges, de limites de configuration et de capacité des edges).
 - Groupes personnalisés : NSX Federation - All objects ; NSX Federation - Managers and locations ; NSX Federation - Inter-site connectivity ; NSX Federation - Stretched objects ; et un groupe par fédération, NSX Federation - <fédération>, créé par install/federation_groups.py.
 - Arborescence d'inventaire : NSX Federation (Inventory, Detailed View, dernier onglet).

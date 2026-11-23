@@ -108,7 +108,7 @@ docker build -t fedmp-tooling tooling
 for g in alerts dashboards groups views policy features; do python3 tools/gen_$g.py; done
 
 # test a collection without VCF Operations
-docker run --rm --network host -v $PWD:/work -e GM_HOSTS=<gm1>,<gm2> -e NSX_USER=admin -e NSX_PASSWORD=... \
+docker run --rm --network host -v $PWD:/work -e GM_HOSTS=<gm1>,<gm2> -e NSX_USER=audit -e NSX_PASSWORD=... \
   fedmp-tooling python tools/localrun.py
 
 # build the pack and push the adapter image

@@ -16,6 +16,10 @@
 | Policies collected rule by rule | Empty by default. Rules become objects only for the listed policies |
 | Unused firewall rule period (days) | `30` (default): a rule of a global security policy with no new hit at any location of its span for that long is reported as unused. `0`: off. See "Password expiry, firewall rule review and availability" |
 | API call budget per manager and cycle | 2000 by default, see Sizing |
+| Local Manager address overrides | Optional: `location-name=address;location-name=address`, when the collector cannot reach a Local Manager on the address the Global Manager knows |
+| Managers collected in parallel | 8 by default |
+| API request timeout (s) | 30 by default |
+| Adapter Memory Limit (MB) | 1024 by default: the memory VCF Operations allocates to the adapter container |
 
 ## Certificate trust
 
@@ -58,8 +62,8 @@ Calls per collection cycle, measured with the test suite:
 - Standby Global Manager: 7.
 - Each Local Manager: about 12, plus one per edge cluster, three per edge node, one per Tier-0 locale and one per
   collected policy.
-- Every 30 minutes, two more per Local Manager (configuration limits, overrides). Every hour, one more per
-  manager (NTP servers).
+- Every 30 minutes, two more per Local Manager (configuration limits, overrides). Every hour, a few more per
+  manager (NTP servers, local users, backup, certificates).
 
 The first cycle after a start reads every object, so the budget of 2000 calls per manager covers about 1,800
 stretched objects in that cycle. The following cycles need about a sixth. For more objects, raise the budget and
@@ -117,7 +121,7 @@ For planned work, use a VCF Operations maintenance schedule on the group "NSX Fe
   stretched networks (500 ms otherwise), or above 80% of the setting (warning), and above 100% (immediate).
   With the default setting of 250 ms, 80% is 200 ms, so the 150 ms condition fires first. The same alert also
   fires when the round-trip time leaves the range VCF Operations learned for the location (dynamic threshold,
-  three cycles). This catches a degraded WAN long before it reaches 150 ms. The latency alarms of NSX itself
+  three cycles), which reports a degraded WAN before it reaches 150 ms. The latency alarms of NSX itself
   (between Global Managers, and between a Global Manager and a location) raise their own alerts.
 - Packet loss: for each RTEP tunnel and direction, the dropped packets of the interval are divided by the
   packets of the interval. NSX also counts a dropped packet in the packet total. In the lab, the received total
@@ -377,10 +381,10 @@ then prints the problems it found and what to check. It reads no credential, but
 addresses; read it before sending it outside the organization. A read-only VCF Operations user is enough.
 
 ```bash
-python3 install/diagnostics.py            # nsxfederation-diagnostics-<date>.json
+python3 install/diagnostics.py            # nsxfederation-diagnostics-<date>-<time>.json
 ```
 
-| What you see | Check |
+| Symptom | Check |
 | --- | --- |
 | The account stays `FAILED` with an empty message | The cloud proxy could not pull the adapter image: the registry certificate (INSTALL.md, steps 2 and 3) and the registry log |
 | The account test fails on a certificate | Accept the certificate, or use trust `ca` with the CA certificates (see "Certificate trust"). After a certificate change on a manager, accept it again |
@@ -391,7 +395,7 @@ python3 install/diagnostics.py            # nsxfederation-diagnostics-<date>.jso
 | "VCF Operations API from the adapter" not `ok` | See "What the adapter reads from VCF Operations" |
 | Objects that receive no data | They left NSX (setting "Delete objects that left NSX after (days)"), or they are edge nodes, RTEP tunnels and sync channels keyed by name before 1.9.0 (`cleanup_content.py --legacy-objects`) |
 | Alerts of an old version still open | `install/cleanup_content.py <pak> --delete` removes the definitions the new version no longer ships |
-| Metrics missing right after an upgrade | Normal for the first cycle after the restart; they return from the next one |
+| Metrics missing right after an upgrade | Normal after the restart: metrics return after three cycles, rates after four |
 
 The adapter log is on the cloud proxy that runs the account, in the log of the adapter container of the pack.
 To see what a collection would return without VCF Operations, run `tools/localrun.py` against the managers from the
