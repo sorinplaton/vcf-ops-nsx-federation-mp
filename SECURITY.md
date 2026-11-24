@@ -14,9 +14,9 @@ Give the version of the pack, the versions of NSX and VCF Operations, and the st
   adapter kind and the NSX clusters of the built-in NSX integration. It deletes objects of its own account only
   when "Delete objects that left NSX after (days)" is above 0 (default 0).
 - **Install scripts:** `install/` holds scripts run by an administrator from the build host. `diagnostics.py` only
-  reads. `upi.sh`, `install_unsigned.sh` and `install_pak.py` install the pack. `import_policy.py`,
-  `federation_groups.py` and `notification_rules.py` create or update the policy, the per-federation groups (and
-  their policy assignment) and a notification rule. `cleanup_content.py` deletes only definitions with the IDs the
+  reads. `upi.sh`, `install_unsigned.sh` and `install_pak.py` install the pack. `federation_groups.py`
+  and `notification_rules.py` create or update the per-federation groups (and their policy assignment) and a
+  notification rule. `cleanup_content.py` deletes only definitions with the IDs the
   pack generates and, with `--legacy-objects`, the objects of the pack keyed by name before 1.9.0. No script reads
   or prints a credential of an account.
 

@@ -37,7 +37,7 @@ Valeurs à remplacer :
 - [ ] 6. Pack non signé installé, option à nouveau désactivée
 - [ ] 7. Compte créé, certificats acceptés
 - [ ] 8. Compte à l'état « Collecting », métriques présentes après trois cycles
-- [ ] 9. Facultatif : groupe par fédération, politique pour une fédération de lab ou de test
+- [ ] 9. Facultatif : groupe par fédération
 - [ ] 10. Facultatif : alertes envoyées par e-mail, à un webhook ou à un outil de tickets
 
 ## 1. Prérequis
@@ -222,25 +222,14 @@ compte de type NSX Federation.
       taux demandent un cycle de plus.
 - [ ] L'objet fédération ne liste aucun appel en échec.
 
-## 9. Facultatif : groupe par fédération et politique pour une fédération de lab ou de test
+## 9. Facultatif : groupe par fédération
 
-*À exécuter sur : l'hôte de construction, à la racine du dépôt.* Ou importer le fichier dans l'interface :
-Administration, Configurations, Policy Definition, Import.
+*À exécuter sur : l'hôte de construction, à la racine du dépôt.*
 
 ```bash
 export OPS_HOST=<ops> OPS_PW='<admin password>'
-python3 install/import_policy.py        # policies/NSX_Federation_Non-production.xml ; --insecure en lab seulement
-```
-
-- [ ] La politique « NSX Federation - Non-production » apparaît sous Policies. Une nouvelle importation la met à jour.
-
-Créer ensuite le groupe de chaque fédération et, pour une fédération de lab ou de test, lui affecter la politique.
-Elle désactive 11 alertes (sauvegardes, standby, revue des règles de pare-feu, surcharges, limites de configuration,
-capacité des edges) ; voir OPERATIONS.md.
-
-```bash
 python3 install/federation_groups.py                     # « NSX Federation - <fédération> » pour chaque fédération
-python3 install/federation_groups.py --federation '<fédération>' --policy 'NSX Federation - Non-production'
+python3 install/federation_groups.py --federation '<fédération>' --policy '<politique>'   # et affecter une politique
 ```
 
 - [ ] Le groupe « NSX Federation - <fédération> » liste les objets de cette fédération (Environment, Custom Groups).

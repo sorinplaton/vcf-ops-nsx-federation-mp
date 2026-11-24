@@ -36,7 +36,7 @@ Placeholders:
 - [ ] 6. Unsigned pack installed, switch turned off again
 - [ ] 7. Account created, certificates accepted
 - [ ] 8. Account "Collecting", metrics after three cycles
-- [ ] 9. Optional: group per federation, policy for a lab or test federation
+- [ ] 9. Optional: group per federation
 - [ ] 10. Optional: alerts sent to email, a webhook or a ticketing tool
 
 ## 1. Prerequisites
@@ -211,25 +211,14 @@ Federation.
       properties and events, then metrics after about ten minutes. Rates need one more cycle.
 - [ ] The federation object lists no failed calls.
 
-## 9. Optional: group per federation and policy for a lab or test federation
+## 9. Optional: group per federation
 
-*Run on: the build host, from the root of the repository.* Or import the file in the UI: Administration,
-Configurations, Policy Definition, Import.
+*Run on: the build host, from the root of the repository.*
 
 ```bash
 export OPS_HOST=<ops> OPS_PW='<admin password>'
-python3 install/import_policy.py        # policies/NSX_Federation_Non-production.xml; add --insecure in a lab only
-```
-
-- [ ] The policy "NSX Federation - Non-production" is listed under Policies. Importing it again updates it.
-
-Then create the group of each federation and, for a lab or test federation, assign the policy to it. The
-policy turns off 11 alerts (backups, standby, firewall rule review, overrides, configuration limits, edge
-capacity); see OPERATIONS.md.
-
-```bash
 python3 install/federation_groups.py                     # "NSX Federation - <federation>" for every federation
-python3 install/federation_groups.py --federation '<federation>' --policy 'NSX Federation - Non-production'
+python3 install/federation_groups.py --federation '<federation>' --policy '<policy>'   # and assign a policy
 ```
 
 - [ ] The group "NSX Federation - <federation>" lists the objects of that federation (Environment, Custom Groups).

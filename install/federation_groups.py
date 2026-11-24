@@ -4,8 +4,7 @@
 The pack ships groups by area (all objects, managers and locations, ...) that hold the objects of every federation.
 This script adds a group per federation, "NSX Federation - <federation>", that holds only the objects of that
 federation: every object of the pack carries the property federation_id, and the group selects on it. Use it to
-assign the "NSX Federation - Non-production" policy to a lab federation, or to scope a notification rule or a
-dashboard to one federation.
+assign a policy, or to scope a notification rule or a dashboard, to one federation.
 
 It reads the federations from VCF Operations, so the pack (1.13.0 or later) must have collected at least once.
 Running it again updates the groups; it never deletes one. Needs OPS_HOST and OPS_PW (an administrator) in the
@@ -89,7 +88,7 @@ def send(ops, method, path, body):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--federation", help="only this federation (its name in VCF Operations)")
-    ap.add_argument("--policy", help="assign this policy to the group(s), e.g. 'NSX Federation - Non-production'")
+    ap.add_argument("--policy", help="assign this policy (its name in VCF Operations) to the group(s)")
     ap.add_argument("--insecure", action="store_true", help="do not verify the VCF Operations certificate (lab only)")
     a = ap.parse_args()
     host, password = os.environ.get("OPS_HOST"), os.environ.get("OPS_PW")
@@ -108,7 +107,7 @@ def main():
         policies = ops.get("/api/policies").get("policySummaries", [])
         policy_id = next((p["id"] for p in policies if p.get("name") == a.policy), None)
         if not policy_id:
-            sys.exit(f"no policy named {a.policy!r} (import it first: install/import_policy.py)")
+            sys.exit(f"no policy named {a.policy!r}")
     names = [group_name(n) for n, _, fid in feds if fid]
     clash = sorted({n for n in names if names.count(n) > 1})
     if clash:

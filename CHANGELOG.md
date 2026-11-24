@@ -2,6 +2,11 @@
 
 Each release has a tag `v<version>`; the commit messages give the details.
 
+## Unreleased
+
+- The "NSX Federation - Non-production" policy, `install/import_policy.py` and `tools/gen_policy.py` are removed.
+  `install/federation_groups.py --policy` assigns any existing policy.
+
 ## 1.13.0 (2026-11-22)
 
 - Every object carries the property `federation_id`. `install/federation_groups.py` creates one custom group per

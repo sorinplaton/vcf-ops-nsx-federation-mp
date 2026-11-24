@@ -14,7 +14,6 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import gen_alerts as ga  # noqa: E402
 import gen_groups as gg  # noqa: E402
 import gen_views as gv  # noqa: E402
-import gen_policy as gp  # noqa: E402
 
 _src = open(os.path.join(ROOT, "pack", "app", "adapter.py")).read()
 _ns = {k: getattr(typing, k) for k in ("Dict", "Tuple", "List", "Optional", "Any")}
@@ -181,7 +180,7 @@ def document():
                f"{len(KPI)} indicateurs clés.",
                f"- {n_alerts} définitions d'alerte, {n_symptoms} symptômes, {len(ga.R)} recommandations. "
                f"{n_risk} alertes pèsent sur le badge Risk, les autres sur Health.",
-               f"- {len(gg.GROUPS)} groupes personnalisés, {len(DASHES)} tableaux de bord, {len(gv.VIEWS)} vues en liste, {len(gv.REPORTS)} rapports, 1 politique, "
+               f"- {len(gg.GROUPS)} groupes personnalisés, {len(DASHES)} tableaux de bord, {len(gv.VIEWS)} vues en liste, {len(gv.REPORTS)} rapports, "
                "1 arborescence d'inventaire, 1 icône par type d'objet.",
                "- Collecte en lecture seule depuis NSX. Les réglages du compte, l'approbation des certificats, le "
                "dimensionnement et la mise à niveau sont dans [OPERATIONS.md](OPERATIONS.md) (en anglais).", "",
@@ -246,7 +245,7 @@ def document():
                f"{len(KPI)} key indicators.",
                f"- {n_alerts} alert definitions, {n_symptoms} symptoms, {len(ga.R)} recommendations. "
                f"{n_risk} alerts count against the Risk badge, the others against Health.",
-               f"- {len(gg.GROUPS)} custom groups, {len(DASHES)} dashboards, {len(gv.VIEWS)} list views, {len(gv.REPORTS)} reports, 1 policy, 1 inventory tree, "
+               f"- {len(gg.GROUPS)} custom groups, {len(DASHES)} dashboards, {len(gv.VIEWS)} list views, {len(gv.REPORTS)} reports, 1 inventory tree, "
                "an icon per object type.",
                "- Read-only collection from NSX. Account settings, certificate trust, sizing and upgrade are in "
                "[OPERATIONS.md](OPERATIONS.md).", "",
@@ -334,9 +333,6 @@ def document():
                 "- Tableaux de bord (dossier « NSX Federation ») : Federation Overview, Location Matrix, Switchover Readiness, Inter-site Connectivity, Stretched Objects.",
                 "- Vues en liste : " + _("; ").join(keep(v[0]) for v in gv.VIEWS) + ".",
                 "- Rapports : " + _("; ").join(keep(r[0]) for r in gv.REPORTS) + ".",
-                f"- Politique fournie dans le dépôt et importée par `install/import_policy.py` : {keep(gp.NAME)}, à affecter à un groupe qui regroupe les objets d'une "
-                "fédération de lab ou de test (elle désactive les alertes de sauvegarde, de standby, de revue des règles "
-                "de pare-feu, de surcharges, de limites de configuration et de capacité des edges).",
                 "- Groupes personnalisés : " + _("; ").join(keep(g[0] if isinstance(g, (list, tuple)) else str(g)) for g in gg.GROUPS)
                 + " ; et un groupe par fédération, NSX Federation - <fédération>, créé par install/federation_groups.py.",
                 "- Arborescence d'inventaire : NSX Federation (Inventory, Detailed View, dernier onglet).", ""]
@@ -368,9 +364,6 @@ def document():
             "- Dashboards (folder \"NSX Federation\"): Federation Overview, Location Matrix, Switchover Readiness, Inter-site Connectivity, Stretched Objects.",
             "- List views: " + "; ".join(v[0] for v in gv.VIEWS) + ".",
             "- Reports: " + "; ".join(r[0] for r in gv.REPORTS) + ".",
-            f"- Policy in the repository, imported by `install/import_policy.py`: {gp.NAME}, to assign to a group that holds the objects of a lab or test "
-            "federation (it turns off the alerts for backups, standby, firewall rule review, overrides, configuration "
-            "limits and edge capacity).",
             "- Custom groups: " + "; ".join(g[0] if isinstance(g, (list, tuple)) else str(g) for g in gg.GROUPS)
             + "; and one group per federation, NSX Federation - <federation>, created by install/federation_groups.py.",
             "- Inventory tree: NSX Federation (Inventory, Detailed View, last tab).", ""]

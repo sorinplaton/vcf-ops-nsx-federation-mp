@@ -8,7 +8,7 @@ Les noms des métriques, des propriétés, des alertes et des symptômes, ainsi 
 
 - 16 types d'objet, 175 métriques dans 25 groupes, 168 propriétés, 26 indicateurs clés.
 - 87 définitions d'alerte, 153 symptômes, 53 recommandations. 21 alertes pèsent sur le badge Risk, les autres sur Health.
-- 4 groupes personnalisés, 5 tableaux de bord, 13 vues en liste, 2 rapports, 1 politique, 1 arborescence d'inventaire, 1 icône par type d'objet.
+- 4 groupes personnalisés, 5 tableaux de bord, 13 vues en liste, 2 rapports, 1 arborescence d'inventaire, 1 icône par type d'objet.
 - Collecte en lecture seule depuis NSX. Les réglages du compte, l'approbation des certificats, le dimensionnement et la mise à niveau sont dans [OPERATIONS.md](OPERATIONS.md) (en anglais).
 
 ## Ce que fait la collecte
@@ -561,6 +561,5 @@ Propriétés : Action (`action`) ; Disabled (`disabled`) ; Sources (`sources`
 - Tableaux de bord (dossier « NSX Federation ») : Federation Overview, Location Matrix, Switchover Readiness, Inter-site Connectivity, Stretched Objects.
 - Vues en liste : NSX Federation - Locations ; NSX Federation - Sync channels ; NSX Federation - RTEP tunnels ; NSX Federation - Tier-0 BGP neighbors ; NSX Federation - Edge capacity ; NSX Federation - Tier-0 service routers ; NSX Federation - Recent changes ; NSX Federation - Firewall rule review ; NSX Federation - Realization per location ; NSX Federation - Availability of the federation ; NSX Federation - Availability of the Global Managers ; NSX Federation - Availability of the locations ; NSX Federation - Availability of the Tier-0 gateways.
 - Rapports : NSX Federation - Health report ; NSX Federation - Availability report.
-- Politique fournie dans le dépôt et importée par `install/import_policy.py` : NSX Federation - Non-production, à affecter à un groupe qui regroupe les objets d'une fédération de lab ou de test (elle désactive les alertes de sauvegarde, de standby, de revue des règles de pare-feu, de surcharges, de limites de configuration et de capacité des edges).
 - Groupes personnalisés : NSX Federation - All objects ; NSX Federation - Managers and locations ; NSX Federation - Inter-site connectivity ; NSX Federation - Stretched objects ; et un groupe par fédération, NSX Federation - <fédération>, créé par install/federation_groups.py.
 - Arborescence d'inventaire : NSX Federation (Inventory, Detailed View, dernier onglet).

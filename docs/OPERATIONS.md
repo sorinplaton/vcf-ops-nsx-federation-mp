@@ -253,22 +253,6 @@ read, so a gap in the data does not show up as a change.
   it monthly on the federation object (Visualize, Reports). Cycles in which the adapter did not run send no
   value, so they count neither way.
 
-## Policy for non-production federations
-
-`policies/NSX_Federation_Non-production.xml` is a VCF Operations policy, "NSX Federation - Non-production". It
-turns off 11 alerts that a lab or test federation often raises on purpose: missing backups, no standby Global
-Manager, firewall rule review, overrides, NSX configuration limits and edge capacity. The alerts for outages,
-sync, failover and realization stay on. To use it:
-
-1. Import it: Administration, Configurations, Policy Definition, Import, or `install/import_policy.py` (it reads `OPS_HOST`
-   and `OPS_PW` like the other install scripts). Importing again updates the same policy.
-2. Assign it to the group of that federation: `install/federation_groups.py --federation '<federation>' --policy
-   'NSX Federation - Non-production'` (see "Groups per federation").
-
-The other federations keep the default policy, with every alert on. The policy ships as a separate file because
-a policy inside the PAK needs a describe fragment, and the SDK drops one of its required attributes when it
-builds the PAK.
-
 ## Groups per federation
 
 The custom groups of the pack (All objects, Managers and locations, Inter-site connectivity, Stretched objects)
@@ -282,7 +266,7 @@ name before 1.9.0) do not carry the property and stay out.
 ```bash
 export OPS_HOST=<vcf-operations-fqdn> OPS_PW='<admin password>'
 python3 install/federation_groups.py                       # every federation
-python3 install/federation_groups.py --federation '<federation>' --policy 'NSX Federation - Non-production'
+python3 install/federation_groups.py --federation '<federation>' --policy '<policy>'   # and assign a policy
 ```
 
 The federation name is the name of the federation object in VCF Operations (the account setting "Federation
@@ -317,10 +301,6 @@ The rule takes alerts that are new, updated and cancelled, so a ticket or a chat
 alert cleared. It covers every object type of the pack, including the alerts raised from NSX alarms and events.
 While a location is cut off from the Global Manager, the alerts that depend on it stay quiet (see "Alerts during a
 location outage"), so the outage sends one alert instead of one per object.
-
-In the lab, a rule for a webhook outbound instance, scoped to the group of the federation, sent two "Canceled"
-payloads when the non-production policy turned off the two Global Manager backup alerts. When the policy was
-removed, the alerts returned and two "Active" payloads followed about three seconds later.
 
 ## Changing a threshold
 
@@ -472,7 +452,7 @@ call budget, certificate trust, versions and upgrades, tiered realization on 600
 deletion, edge capacity, Tier-0 service routers in both HA modes, the change timeline (first cycle, failover,
 partial reads), clock differences, configuration limits and overrides, password expiry, the firewall rule review
 (shadowed, any-allow and unused rules, partial reads, counter resets), availability, a federation of 1,310
-stretched objects, the consistency of the alert content and the shipped policy with the object model, the
+stretched objects, the consistency of the alert content with the object model, the
 federation ID on every object, the group, notification rule and diagnostics scripts, and the image packages
 against the Dockerfile.
 

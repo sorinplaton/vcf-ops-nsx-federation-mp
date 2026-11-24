@@ -17,9 +17,9 @@ jobs:
       - run: pip install -r pack/adapter_requirements.txt requests lxml pytest pillow
       - name: Generated content is up to date
         run: |
-          for g in alerts dashboards groups views policy features; do python tools/gen_$g.py; done
-          git add -A pack/content policies docs/FEATURES.md docs/FEATURES.fr.md
-          git diff --cached --exit-code pack/content policies docs/FEATURES.md docs/FEATURES.fr.md
+          for g in alerts dashboards groups views features; do python tools/gen_$g.py; done
+          git add -A pack/content docs/FEATURES.md docs/FEATURES.fr.md
+          git diff --cached --exit-code pack/content docs/FEATURES.md docs/FEATURES.fr.md
       - name: Install scripts parse
         run: |
           for f in install/*.sh; do bash -n "$f"; done

@@ -2049,19 +2049,6 @@ def test_availability_without_an_active_global_manager(nsx):
     assert all(o["m"]["availability|availability_pct"] == 0 for o in r["global_manager"].values())
 
 
-def test_the_shipped_policy_names_existing_alerts_and_is_up_to_date():
-    import re
-    import sys
-    sys.path.insert(0, os.path.join(ROOT, "tools"))
-    import gen_policy
-    with open(os.path.join(ROOT, "policies", "NSX_Federation_Non-production.xml")) as f:
-        assert f.read() == gen_policy.policy_xml()
-    with open(os.path.join(ROOT, "pack/content/alertdefs/nsxfederation_alerts.xml")) as f:
-        alerts = f.read()
-    ids = re.findall(r'<Alert enabled="false" id="([^"]+)"/>', gen_policy.policy_xml())
-    assert len(ids) == len(gen_policy.OFF) and all(f'id="{i}"' in alerts for i in ids)
-
-
 def _grow(nsx, segments, tier1s, policies, rules):
     gm = nsx.data[GM_HOSTS[0]]
     segs = gm["/global-manager/api/v1/global-infra/segments?page_size=500"]
