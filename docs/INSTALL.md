@@ -42,10 +42,10 @@ flowchart LR
   BH -->|"TCP 443: clone"| GH
   BH -->|"TCP 443: base images"| HUB
   BH -->|"TCP 443: SDK and adapter packages"| PYPI
-  BH -->|"TCP 5000: push image (step 4)"| REG
+  BH -->|"TCP 5000: push image (step 3)"| REG
   BH -->|"TCP 443: upload pack, account, scripts (steps 6-10)"| OPS
-  BH -->|"TCP 443: govc (step 3)"| VC
-  BH -->|"TCP 443: govc guest.upload (step 3)"| ESX
+  BH -->|"TCP 443: govc (step 4)"| VC
+  BH -->|"TCP 443: govc guest.upload (step 4)"| ESX
   BH -.->|"TCP 443: optional local test (step 5)"| GM
   CP -.->|"TCP 5000: pull image"| REG
   CP -.->|"TCP 443: collection"| GM
@@ -57,7 +57,7 @@ flowchart LR
 | Build host | Internet (Docker and distribution repositories, GitHub, Docker Hub, PyPI) | TCP 443 | Installing the tools, cloning the repository, building the tooling and adapter images. Through a proxy if the site uses one |
 | Build host | Registry | TCP 5000, or the registry port | Pushing the adapter image. Local when the registry runs on the build host, as in the lab |
 | Build host | VCF Operations | TCP 443 | Admin console and product UI in a browser, and the Suite API for the scripts of steps 6 to 10 |
-| Build host | vCenter of the cloud proxy VM | TCP 443 | `govc` guest operations of step 3. Not needed when the certificate is copied over SSH |
+| Build host | vCenter of the cloud proxy VM | TCP 443 | `govc` guest operations of step 4. Not needed when the certificate is copied over SSH |
 | Build host | ESXi host of the cloud proxy VM | TCP 443 | `govc guest.upload` sends the file to the ESXi host, not to vCenter |
 | Build host | Global Managers | TCP 443 | Only for the optional test of step 5 |
 | Cloud proxy | Registry | TCP 5000, or the registry port | Pulling the adapter image |
@@ -67,8 +67,7 @@ Placeholders:
 
 | Placeholder | Example |
 | --- | --- |
-| `<registry>` | `registry.example.com:5000` (host and port, no `https://`) |
-| `<repository>` | `nsxfederation` |
+| `IP` | `10.x.x.x`, the address of the build host that the cloud proxy reaches (see step 1) |
 | `<ops>` | `ops.example.com` |
 | `<gm1>`, `<gm2>` | cluster address of the active and of the standby Global Manager |
 | `<version>` | `1.13.0` |
@@ -77,8 +76,8 @@ Placeholders:
 
 - [ ] 1. Prerequisites checked
 - [ ] 2. Registry serves HTTPS
-- [ ] 3. Cloud proxy trusts the registry certificate
-- [ ] 4. Pack built, image pushed, registry address in the pack checked
+- [ ] 3. Pack built, image pushed, registry address in the pack checked
+- [ ] 4. Cloud proxy trusts the registry certificate
 - [ ] 5. Optional: collection tested without VCF Operations
 - [ ] 6. Unsigned pack installed, switch turned off again
 - [ ] 7. Account created, certificates accepted
@@ -126,116 +125,132 @@ sudo dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker
 sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin
 ```
 
-On both, start Docker and add the build user to the `docker` group. The build command of step 4 runs as
-that group, so log out and back in before it:
+On both, start Docker. The `docker` commands of this guide carry `sudo`, so the build user does not have to
+be in the `docker` group.
 
 ```bash
 sudo systemctl enable --now docker
-sudo usermod -aG docker $USER
 ```
 
-Check, after logging in again:
+Check:
 
 ```bash
-docker version            # shows a Client and a Server section, without sudo
-docker run --rm hello-world
+sudo docker run --rm hello-world
 git --version
 python3 --version         # 3.8 or later
 python3 -c "import requests"
 ```
 
-## 2. Registry over HTTPS
+### The address of the build host
 
-Skip this step and step 3 if a registry (Harbor or other) already exists with a certificate from an authority
-the cloud proxy trusts.
-
-*Run on: the registry host.* A `registry:2` container with a self-signed certificate:
+The commands of steps 2 to 4 read the address of the build host from one variable, `IP`. It is the address the
+cloud proxy uses to reach the registry. Replace `10.x.x.x` with it, and set the variable again in every new
+shell:
 
 ```bash
-mkdir -p certs
+IP=10.x.x.x
+```
+
+## 2. Registry over HTTPS
+
+Skip this step and step 4 if a registry (Harbor or other) already exists with a certificate from an authority
+the cloud proxy trusts. In step 3, give `mp-build` and `repack.py` the address and the login of that registry
+in place of `localhost:5000` and `$IP:5000`. The build host's Docker must trust that registry.
+
+*Run on: the build host.* A `registry:2` container with a self-signed certificate:
+
+```bash
+IP=10.x.x.x
+mkdir -p ~/fedmp-registry/certs && cd ~/fedmp-registry
 openssl req -x509 -newkey rsa:2048 -nodes -days 825 \
   -keyout certs/registry.key -out certs/registry.crt -subj "/CN=fedmp-registry" \
-  -addext "subjectAltName=IP:<registry-ip>"          # or DNS:<registry-fqdn>
+  -addext "subjectAltName=IP:$IP,IP:127.0.0.1,DNS:localhost"
 
-docker run -d --name fedmp-registry --restart unless-stopped -p <registry-ip>:5000:5000 \
+sudo docker run -d --name fedmp-registry --restart unless-stopped \
+  -p $IP:5000:5000 -p 127.0.0.1:5000:5000 \
   -v registry-data:/var/lib/registry -v $PWD/certs:/certs:ro \
   -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/registry.crt \
   -e REGISTRY_HTTP_TLS_KEY=/certs/registry.key registry:2
 ```
 
-Check, from the build host:
+The certificate also names `127.0.0.1` and `localhost`, and the registry also listens on the local address,
+because step 3 pushes the image to `localhost:5000`.
+
+Check. A new registry answers `{"repositories":[]}` until the first push:
 
 ```bash
-curl --cacert certs/registry.crt https://<registry>/v2/     # answers {}
+curl --cacert ~/fedmp-registry/certs/registry.crt https://$IP:5000/v2/_catalog
 ```
 
-## 3. Cloud proxy trusts the registry certificate
+## 3. Build the pack
+
+*Run on: the build host.*
+
+```bash
+IP=10.x.x.x
+git clone https://github.com/sorinplaton/vcf-ops-nsx-federation-mp.git
+cd vcf-ops-nsx-federation-mp
+sudo docker build -t fedmp-tooling tooling
+
+sudo docker run --rm --network host -u $(id -u):$(getent group docker | cut -d: -f3) -e HOME=$PWD/.sdkhome \
+  -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:$PWD -w $PWD/pack \
+  fedmp-tooling mp-build --no-ttl -r localhost:5000/nsxfederation \
+  --registry-username lab --registry-password lab
+```
+
+The result is `pack/build/NSXFederation_<version>.pak`.
+
+The image is pushed to `localhost:5000`. Docker accepts the self-signed certificate of a registry on the local
+address, so the build host needs no certificate folder of its own. The registry of step 2 has no login.
+`mp-build` still asks for a user and a password, and any value works.
+
+When the registry is given as `host:port` without a domain, `mp-build` writes Docker Hub into the pack. Write
+the address the cloud proxy uses into the pack before the install:
+
+```bash
+python3 tools/repack.py pack/build/NSXFederation_<version>.pak $IP:5000 nsxfederation
+```
+
+Check that the image is in the registry:
+
+```bash
+curl --cacert ~/fedmp-registry/certs/registry.crt https://$IP:5000/v2/nsxfederation/tags/list
+```
+
+## 4. Cloud proxy trusts the registry certificate
 
 Docker on the cloud proxy trusts a private registry whose certificate is in a folder named after the registry,
 port included:
 
 ```
-/etc/docker/certs.d/<registry>/ca.crt
+/etc/docker/certs.d/10.x.x.x:5000/ca.crt
 ```
 
 *Run on: any host with `govc` and access to the vCenter that runs the cloud proxy VM.* SSH on the cloud proxy
 can stay disabled: vCenter guest operations write the file with the appliance root account.
 
 ```bash
-export GOVC_URL=<vcenter> GOVC_USERNAME=<user> GOVC_PASSWORD=<password> GOVC_INSECURE=1
+IP=10.x.x.x
+export GOVC_URL=<vcenter> GOVC_USERNAME=<user> GOVC_PASSWORD='<password>' GOVC_INSECURE=1
 VM=<cloud-proxy-vm-name>
-govc guest.mkdir -vm "$VM" -l "root:<proxy-root-password>" -p "/etc/docker/certs.d/<registry>"
-govc guest.upload -vm "$VM" -l "root:<proxy-root-password>" -f certs/registry.crt \
-  "/etc/docker/certs.d/<registry>/ca.crt"
+govc guest.mkdir -vm "$VM" -l 'root:<proxy-root-password>' -p /etc/docker/certs.d/$IP:5000
+govc guest.upload -vm "$VM" -l 'root:<proxy-root-password>' -f ~/fedmp-registry/certs/registry.crt \
+  /etc/docker/certs.d/$IP:5000/ca.crt
 ```
 
 *Or run on: the cloud proxy*, if SSH is enabled there: create the folder and copy `registry.crt` as `ca.crt`.
 
 An upgrade or a redeploy of the cloud proxy can remove the file. Repeat this step after either one.
 
-## 4. Build the pack
-
-*Run on: the build host*, in a clone of this repository.
-
-```bash
-git clone https://github.com/sorinplaton/vcf-ops-nsx-federation-mp.git
-cd vcf-ops-nsx-federation-mp
-docker build -t fedmp-tooling tooling
-```
-
-Docker on the build host must also trust a self-signed registry before it can push. Copy the same
-`registry.crt` to `/etc/docker/certs.d/<registry>/ca.crt` on the build host (needs root).
-
-Build the pack and push the adapter image:
-
-```bash
-docker run --rm --network host -u $(id -u):$(getent group docker | cut -d: -f3) -e HOME=$PWD/.sdkhome \
-  -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:$PWD -w $PWD/pack \
-  fedmp-tooling mp-build --no-ttl -r <registry>/<repository> \
-  --registry-username <user> --registry-password <password>
-```
-
-The result is `pack/build/NSXFederation_<version>.pak`.
-
-When the registry is given as `host:port` without a domain, `mp-build` writes Docker Hub into the pack. Fix
-the address before the install:
-
-```bash
-python3 tools/repack.py pack/build/NSXFederation_<version>.pak <registry> <repository>
-```
-
-Check that the image is in the registry:
-
-```bash
-curl --cacert certs/registry.crt https://<registry>/v2/<repository>/tags/list
-```
+A registry moved to another address needs a new certificate (step 2), a rewritten pack (step 3) and a new
+folder on the cloud proxy.
 
 ## 5. Optional: test a collection without VCF Operations
 
 *Run on: the build host.* It needs to reach the NSX managers on TCP 443.
 
 ```bash
-docker run --rm --network host -v $PWD:/work -e GM_HOSTS=<gm1>,<gm2> \
+sudo docker run --rm --network host -v $PWD:/work -e GM_HOSTS=<gm1>,<gm2> \
   -e NSX_USER=audit -e NSX_PASSWORD='<password>' fedmp-tooling python tools/localrun.py
 ```
 
@@ -285,7 +300,7 @@ Federation.
 - [ ] Global Manager addresses: `<gm1>,<gm2>`, the cluster address of the active and of the standby. One
       account per federation.
 - [ ] Credential: the read-only NSX account. Add the Local Manager credential only if it differs.
-- [ ] Collector: the cloud proxy that trusts the registry (step 3).
+- [ ] Collector: the cloud proxy that trusts the registry (step 4).
 - [ ] Certificate trust: keep `enforce`, or choose `ca` when the managers have certificates signed by an
       internal CA. With `ca`, paste the CA certificates in "Trusted CA certificates (PEM)" and use addresses
       that the certificates name.
@@ -299,7 +314,7 @@ Federation.
 *Run in: the VCF Operations product UI.*
 
 - [ ] Accounts tab: the account reaches "Collecting". If it stays `FAILED` with an empty message, the cloud
-      proxy could not pull the image: check steps 2 and 3, and the registry log for
+      proxy could not pull the image: check steps 2 and 4, and the registry log for
       `tls: bad certificate`.
 - [ ] With a 5-minute interval, the data arrives over three cycles: objects and relationships first, then
       properties and events, then metrics after about ten minutes. Rates need one more cycle.
@@ -334,7 +349,7 @@ python3 install/notification_rules.py --outbound '<outbound instance>' --min-cri
 
 ## Upgrade
 
-1. Build the new version (step 4) and install it (step 6).
+1. Build the new version (step 3) and install it (step 6).
 2. Stop and start the account. Check that it reaches "Collecting"; start it a second time if it stays stopped.
 3. Metrics return after three cycles, rates after four.
 

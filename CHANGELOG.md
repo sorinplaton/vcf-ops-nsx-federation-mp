@@ -2,6 +2,16 @@
 
 Each release has a tag `v<version>`; the commit messages give the details.
 
+## Unreleased
+
+Install guide only.
+
+- `docs/INSTALL.md` (and the French copy) follows the order of the blog post: registry, build, then the
+  certificate on the cloud proxy. Steps 3 and 4 swapped places.
+- The `docker` commands carry `sudo`, and the address of the build host is read from one variable, `IP`.
+- The build pushes the image to `localhost:5000`, so the build host needs no certificate folder. The registry
+  certificate also names `127.0.0.1` and `localhost`.
+
 ## 1.13.1 (2026-11-26)
 
 Install guide and install scripts only: the pack is unchanged and still reports version 1.13.0.
