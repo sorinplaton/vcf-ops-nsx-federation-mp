@@ -1,0 +1,199 @@
+name: release
+# On a tag v*: build the pack and the adapter image, push both images to ghcr.io, sign them keyless (Sigstore,
+# identity = this workflow at that tag), verify the signatures, and create a DRAFT release for the maintainer to
+# check and publish (docs/RELEASE.md).
+# On a pull request that touches the build: the same build against a throwaway local registry, nothing pushed,
+# nothing signed. It proves that the pack and the pack image still build in CI.
+on:
+  push:
+    tags: ["v*"]
+  pull_request:
+    paths:
+      - "pack/**"
+      - "tooling/**"
+      - "pak-image/**"
+      - ".github/workflows/release.yml"
+
+permissions:
+  contents: read
+
+env:
+  COSIGN_VERSION: v2.4.1
+  IMAGE: ghcr.io/sorinplaton/nsxfederation
+  PAK_IMAGE: ghcr.io/sorinplaton/nsxfederation-pak
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write      # create the draft release
+      packages: write      # push to ghcr.io with GITHUB_TOKEN
+      id-token: write      # keyless signing: OIDC token for Sigstore
+    services:
+      registry:            # pull requests only use it; harmless on tags
+        image: registry:2
+        ports: ["5000:5000"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Settings for this run
+        id: s
+        run: |
+          VERSION=$(sed -n 's/.*"version": "\(.*\)".*/\1/p' pack/manifest.txt)
+          if [ "${GITHUB_REF_TYPE}" = tag ]; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+            echo "registry=$IMAGE" >> "$GITHUB_OUTPUT"
+            echo "release=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "registry=localhost:5000/nsxfederation" >> "$GITHUB_OUTPUT"
+            echo "release=0.0.0-pr${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "pack version $VERSION, release ${GITHUB_REF_NAME}"
+
+      - name: Tooling image (SDK)
+        run: docker build -t fedmp-tooling tooling
+
+      - name: Build the pack and push the adapter image
+        env:
+          REG_USER: ${{ github.actor }}
+          REG_PW: ${{ steps.s.outputs.publish == 'true' && secrets.GITHUB_TOKEN || 'unused' }}
+        run: |
+          # mp-build drives the host Docker through the socket, so the project path must be the same inside and out.
+          docker run --rm --network host -u "$(id -u):$(getent group docker | cut -d: -f3)" -e HOME="$PWD/.sdkhome" \
+            -v /var/run/docker.sock:/var/run/docker.sock -v "$(which docker)":/usr/bin/docker -v "$PWD:$PWD" -w "$PWD/pack" \
+            fedmp-tooling mp-build --no-ttl -P 18080 -r "${{ steps.s.outputs.registry }}" \
+            --registry-username "$REG_USER" --registry-password "$REG_PW"
+          rm -f .sdkhome/.docker/config.json   # mp-build leaves the registry password there in clear text
+
+      - name: Read the image digest from the pack
+        id: p
+        run: |
+          PAK=pack/build/NSXFederation_${{ steps.s.outputs.version }}.pak
+          unzip -p "$PAK" adapter.zip > /tmp/adapter.zip
+          unzip -p /tmp/adapter.zip '*.conf' | grep -E '^(REGISTRY|REPOSITORY|DIGEST)='
+          DIGEST=$(unzip -p /tmp/adapter.zip '*.conf' | sed -n 's/^DIGEST=//p')
+          REGISTRY=$(unzip -p /tmp/adapter.zip '*.conf' | sed -n 's/^REGISTRY=//p')
+          if [ "${{ steps.s.outputs.publish }}" = true ] && [ "$REGISTRY" != ghcr.io ]; then
+            echo "::error::the pack names $REGISTRY, expected ghcr.io"; exit 1
+          fi
+          echo "pak=$PAK" >> "$GITHUB_OUTPUT"
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+
+      - name: Pack image (the .pak in a FROM scratch image)
+        id: k
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          V=${{ steps.s.outputs.version }}
+          cp "${{ steps.p.outputs.pak }}" pak-image/
+          (cd pak-image && sha256sum "NSXFederation_$V.pak" > SHA256SUMS)
+          if [ "${{ steps.s.outputs.publish }}" = true ]; then REF=$PAK_IMAGE:${{ steps.s.outputs.release }}; else REF=localhost:5000/nsxfederation-pak:pr; fi
+          docker build --provenance=false --sbom=false --build-arg VERSION="$V" --build-arg RELEASE="${{ steps.s.outputs.release }}" \
+            --build-arg ADAPTER_DIGEST="${{ steps.p.outputs.digest }}" -t "$REF" pak-image
+          if [ "${{ steps.s.outputs.publish }}" = true ]; then
+            echo "$GH_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          fi
+          docker push "$REF" | tee /tmp/push.txt
+          DIGEST=$(sed -n 's/.*digest: \(sha256:[0-9a-f]*\).*/\1/p' /tmp/push.txt)
+          echo "ref=$REF" >> "$GITHUB_OUTPUT"
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+          # round trip: the file that comes out of the image is the file that went in
+          mkdir /tmp/out && docker create --name pakout "$REF" >/dev/null && docker cp pakout:/pak/. /tmp/out/ && docker rm pakout >/dev/null
+          (cd /tmp/out && sha256sum -c SHA256SUMS)
+
+      - name: SBOM of the adapter image (CycloneDX)
+        run: |
+          pip install --quiet cyclonedx-bom
+          cyclonedx-py requirements pack/image-requirements.txt --of JSON -o "pack/build/NSXFederation_${{ steps.s.outputs.version }}.sbom.cdx.json"
+
+      - uses: sigstore/cosign-installer@v3
+        if: steps.s.outputs.publish == 'true'
+        with:
+          cosign-release: ${{ env.COSIGN_VERSION }}
+
+      - name: Sign keyless (images by digest, pack as a blob)
+        if: steps.s.outputs.publish == 'true'
+        run: |
+          cosign sign --yes "$IMAGE@${{ steps.p.outputs.digest }}"
+          cosign sign --yes "$PAK_IMAGE@${{ steps.k.outputs.digest }}"
+          cd pack/build
+          V=${{ steps.s.outputs.version }}
+          sha256sum "NSXFederation_$V.pak" > "NSXFederation_$V.pak.sha256"
+          cosign sign-blob --yes --bundle "NSXFederation_$V.pak.sigstore.json" "NSXFederation_$V.pak"
+
+      - name: Verify as a user would
+        if: steps.s.outputs.publish == 'true'
+        run: |
+          ID="https://github.com/${GITHUB_REPOSITORY}/.github/workflows/release.yml@${GITHUB_REF}"
+          ISSUER=https://token.actions.githubusercontent.com
+          cosign verify --certificate-identity "$ID" --certificate-oidc-issuer "$ISSUER" "$IMAGE@${{ steps.p.outputs.digest }}" > /dev/null
+          cosign verify --certificate-identity "$ID" --certificate-oidc-issuer "$ISSUER" "$PAK_IMAGE@${{ steps.k.outputs.digest }}" > /dev/null
+          cd pack/build
+          V=${{ steps.s.outputs.version }}
+          cosign verify-blob --certificate-identity "$ID" --certificate-oidc-issuer "$ISSUER" \
+            --bundle "NSXFederation_$V.pak.sigstore.json" "NSXFederation_$V.pak"
+          sha256sum -c "NSXFederation_$V.pak.sha256"
+
+      # Docker Hub copy, for sites whose Artifactory (or other registry) proxies Docker Hub. Byte for byte, so the
+      # digests are the same as on ghcr.io and the pack, which names ghcr.io, can be pointed at either. Runs when the
+      # repository variable DOCKERHUB_NAMESPACE and the secret DOCKERHUB_TOKEN are set (docs/RELEASE.md, step 1).
+      - name: Copy both images to Docker Hub and sign the copies
+        id: hub
+        if: steps.s.outputs.publish == 'true' && vars.DOCKERHUB_NAMESPACE != ''
+        env:
+          NS: ${{ vars.DOCKERHUB_NAMESPACE }}
+          HUB_USER: ${{ vars.DOCKERHUB_USER || vars.DOCKERHUB_NAMESPACE }}
+          HUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          R=${{ steps.s.outputs.release }}
+          SRC="--src-creds ${{ github.actor }}:$GH_TOKEN"
+          DST="--dest-creds $HUB_USER:$HUB_TOKEN"
+          skopeo copy --all --preserve-digests $SRC $DST "docker://$IMAGE@${{ steps.p.outputs.digest }}" "docker://docker.io/$NS/nsxfederation:$R"
+          skopeo copy --all --preserve-digests $SRC $DST "docker://$PAK_IMAGE@${{ steps.k.outputs.digest }}" "docker://docker.io/$NS/nsxfederation-pak:$R"
+          echo "$HUB_TOKEN" | docker login docker.io -u "$HUB_USER" --password-stdin
+          cosign sign --yes "docker.io/$NS/nsxfederation@${{ steps.p.outputs.digest }}"
+          cosign sign --yes "docker.io/$NS/nsxfederation-pak@${{ steps.k.outputs.digest }}"
+          ID="https://github.com/${GITHUB_REPOSITORY}/.github/workflows/release.yml@${GITHUB_REF}"
+          for ref in "docker.io/$NS/nsxfederation@${{ steps.p.outputs.digest }}" "docker.io/$NS/nsxfederation-pak@${{ steps.k.outputs.digest }}"; do
+            cosign verify --certificate-identity "$ID" --certificate-oidc-issuer https://token.actions.githubusercontent.com "$ref" > /dev/null
+          done
+          { echo "| Adapter image, Docker Hub | \`docker.io/$NS/nsxfederation@${{ steps.p.outputs.digest }}\` |"
+            echo "| Pack image, Docker Hub | \`docker.io/$NS/nsxfederation-pak:$R\` |"; } > /tmp/hub_rows.md
+
+      - name: Docker Hub descriptions from the repository
+        if: steps.hub.outcome == 'success'
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ vars.DOCKERHUB_USER || vars.DOCKERHUB_NAMESPACE }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ vars.DOCKERHUB_NAMESPACE }}/nsxfederation-pak
+          short-description: "NSX Federation management pack (.pak) for VCF Operations, from GitHub releases"
+          readme-filepath: pak-image/DOCKERHUB.md
+
+      - name: Draft release
+        if: steps.s.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          V=${{ steps.s.outputs.version }}
+          cat > /tmp/notes.md <<EOF
+          Pack \`NSXFederation_$V.pak\` (pack version $V).
+
+          | Item | Value |
+          | --- | --- |
+          | Adapter image | \`$IMAGE@${{ steps.p.outputs.digest }}\` |
+          | Pack image | \`$PAK_IMAGE:${{ steps.s.outputs.release }}\` (\`${{ steps.k.outputs.digest }}\`) |
+          $(cat /tmp/hub_rows.md 2>/dev/null)
+          | Keyless signer | \`https://github.com/${GITHUB_REPOSITORY}/.github/workflows/release.yml@${GITHUB_REF}\` |
+          | OIDC issuer | \`https://token.actions.githubusercontent.com\` |
+
+          Install: [docs/INSTALL.md](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_REF_NAME}/docs/INSTALL.md).
+          Enterprise registry (Artifactory): [docs/INSTALL-ENTERPRISE.md](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_REF_NAME}/docs/INSTALL-ENTERPRISE.md).
+          EOF
+          cd pack/build
+          gh release create "$GITHUB_REF_NAME" --draft --verify-tag --title "${{ steps.s.outputs.release }}" --notes-file /tmp/notes.md \
+            "NSXFederation_$V.pak" "NSXFederation_$V.pak.sha256" "NSXFederation_$V.pak.sigstore.json" \
+            "NSXFederation_$V.sbom.cdx.json"

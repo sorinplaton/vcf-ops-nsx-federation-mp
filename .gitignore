@@ -7,3 +7,4 @@ pack/venv*/
 .sdkhome/
 *.pak
 fedmp.env
+pak-image/SHA256SUMS
