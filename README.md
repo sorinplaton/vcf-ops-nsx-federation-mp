@@ -96,26 +96,35 @@ read-only NSX account is enough; the built-in `audit` account was tested.
 
 ## Build
 
-The build needs Docker and an image registry the cloud proxy can reach over HTTPS.
+The build needs Docker and an image registry the cloud proxy can reach over HTTPS. The commands below are the
+ones of [docs/INSTALL.md](docs/INSTALL.md), which also sets up that registry on the build host (step 2). They
+carry `sudo`, so the build user does not have to be in the `docker` group. `IP` is the address of the build
+host that the cloud proxy reaches.
 
 ```bash
-docker build -t fedmp-tooling tooling
+IP=10.x.x.x
+sudo docker build -t fedmp-tooling tooling
 
 # regenerate the content after a change to the object model
 for g in alerts dashboards groups views features; do python3 tools/gen_$g.py; done
 
 # test a collection without VCF Operations
-docker run --rm --network host -v $PWD:/work -e GM_HOSTS=<gm1>,<gm2> -e NSX_USER=audit -e NSX_PASSWORD=... \
+sudo docker run --rm --network host -v $PWD:/work -e GM_HOSTS=<gm1>,<gm2> -e NSX_USER=audit -e NSX_PASSWORD='<password>' \
   fedmp-tooling python tools/localrun.py
 
-# build the pack and push the adapter image
-docker run --rm --network host -u $(id -u):$(getent group docker | cut -d: -f3) -e HOME=$PWD/.sdkhome \
+# build the pack and push the adapter image to the registry on the build host
+sudo docker run --rm --network host -u $(id -u):$(getent group docker | cut -d: -f3) -e HOME=$PWD/.sdkhome \
   -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:$PWD -w $PWD/pack \
-  fedmp-tooling mp-build --no-ttl -r <registry>/<repository> --registry-username <user> --registry-password <password>
+  fedmp-tooling mp-build --no-ttl -r localhost:5000/nsxfederation --registry-username lab --registry-password lab
+
+# write the address the cloud proxy uses into the pack
+python3 tools/repack.py pack/build/NSXFederation_<version>.pak $IP:5000 nsxfederation
 ```
 
-When the registry is given as `host:port` without a domain, `mp-build` writes Docker Hub into the pack.
-`tools/repack.py <pak> <host:port> <repository>` corrects it.
+The registry of the install guide has no login. `mp-build` still asks for a user and a password, and any value
+works. When the registry is given as `host:port` without a domain, `mp-build` writes Docker Hub into the pack;
+`tools/repack.py <pak> <host:port> <repository>` corrects it. With an existing registry (Harbor or other), give
+`mp-build` and `repack.py` its address and login in place of `localhost:5000` and `$IP:5000`.
 
 After a change to the Dockerfile or to `pack/adapter_requirements.txt`, run `tools/image_lock.sh <built image>` and
 commit `pack/image-requirements.txt`: CI checks those packages for known vulnerabilities (see

@@ -11,6 +11,7 @@ Install guide only.
 - The `docker` commands carry `sudo`, and the address of the build host is read from one variable, `IP`.
 - The build pushes the image to `localhost:5000`, so the build host needs no certificate folder. The registry
   certificate also names `127.0.0.1` and `localhost`.
+- The Build section of `README.md` uses the same commands.
 
 ## 1.13.1 (2026-11-26)
 
