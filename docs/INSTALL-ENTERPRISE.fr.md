@@ -120,6 +120,7 @@ flowchart LR
 | Artifactory | `registry-1.docker.io`, `auth.docker.io`, `production.cloudflare.docker.com` | TCP 443 | Le dépôt distant Docker Hub. La plupart des instances Artifactory l'ont déjà |
 | Hôte de promotion | Artifactory | TCP 443 | Récupération depuis le dépôt distant, push vers `vcfops-approved` |
 | Hôte de promotion | `tuf-repo-cdn.sigstore.dev`, `rekor.sigstore.dev` | TCP 443 | La vérification des signatures de l'étape 4 : la racine de confiance de Sigstore et le journal de transparence public |
+| Hôte de promotion | `api.github.com` | TCP 443 | Facultatif : la vérification de la provenance de construction de l'étape 4 (`gh attestation verify`) |
 | Hôte de promotion | `github.com`, `raw.githubusercontent.com` | TCP 443 | Une seule fois, pour télécharger `cosign` et `repack.py` (étape 2). Ils peuvent aussi passer par un dépôt distant générique d'Artifactory |
 | Hôte de promotion ou poste d'administration | VCF Operations | TCP 443 | Installation du pack et création du compte (étape 9) |
 | Proxy cloud | Artifactory | TCP 443 | Récupération de l'image de l'adaptateur depuis `vcfops-approved`, sans authentification |
@@ -271,6 +272,22 @@ Les deux lignes doivent se terminer par `verified`. cosign affiche les contrôle
 certificat qui nomme `SIGNER`, et l'entrée dans le journal de transparence public. Un échec signifie que l'image
 n'est pas celle que le workflow de publication a construite pour ce tag : s'arrêter et ne pas la promouvoir.
 
+À partir de `v1.13.4`, deux autres vérifications sont disponibles. Le SBOM de l'image de l'adaptateur accompagne
+l'image sous forme d'attestation signée (tag `sha256-<digest>.att`, servi par Artifactory comme la signature) ;
+cosign la vérifie et peut l'écrire dans un fichier pour l'outil d'analyse de l'étape 5. La provenance de
+construction (SLSA) indique quel commit et quelle exécution du workflow ont construit chaque image ; la CLI GitHub
+la vérifie auprès de `api.github.com`, par digest, et elle s'applique donc aussi à la copie dans Artifactory :
+
+```bash
+cosign verify-attestation --type cyclonedx --certificate-identity "$SIGNER" --certificate-oidc-issuer "$ISSUER" \
+  $ART/$HUB/sorinplaton/nsxfederation@$AD_DIGEST | jq -r '.payload' | base64 -d | jq '.predicate' > adapter.sbom.cdx.json
+gh attestation verify oci://docker.io/sorinplaton/nsxfederation@$AD_DIGEST -R sorinplaton/vcf-ops-nsx-federation-mp \
+  --signer-workflow sorinplaton/vcf-ops-nsx-federation-mp/.github/workflows/release.yml
+```
+
+`jq` vient des paquets de la distribution et `gh` de https://cli.github.com. Pas encore testé : `v1.13.4` est la
+première version qui porte ces attestations.
+
 Les versions jusqu'à `v1.13.2` sont signées avec la clé du projet, et leurs images ne sont que sur `ghcr.io`. Pour
 celles-ci, [INSTALL.fr.md](INSTALL.fr.md#vérifier-les-signatures-recommandé) donne les commandes avec `cosign.pub`.
 
@@ -282,9 +299,12 @@ qu'il faut attendre :
 
 - L'image du pack contient deux fichiers et aucun système d'exploitation. Un outil d'analyse n'y trouve aucun
   paquet.
-- L'image de l'adaptateur est une base Debian avec Python et les paquets du SDK. La version GitHub contient un
-  SBOM de ses paquets Python (`NSXFederation_<version>.sbom.cdx.json`), et [SECURITY.md](../SECURITY.md) liste les
-  problèmes connus de l'image de base que le projet ne peut pas corriger.
+- L'image de l'adaptateur est une base Debian avec Python et les paquets du SDK. Son SBOM accompagne l'image sous
+  forme d'attestation signée (étape 4) et figure en fichier dans la version GitHub
+  (`NSXFederation_<version>.sbom.cdx.json`). La version contient aussi le rapport Trivy du projet
+  (`NSXFederation_<version>.trivy.txt`) : la construction de la version s'arrête sur une vulnérabilité CRITICAL
+  qui a un correctif. Les problèmes restants sont donc ceux de la base Debian sans version corrigée, listés dans
+  [SECURITY.md](../SECURITY.md).
 
 ## 6. Promouvoir : copier dans le dépôt des images approuvées
 
@@ -375,9 +395,12 @@ ou l'autre.
 ## 9. Installer
 
 Installer `NSXFederation_<version>_site.pak` avec [INSTALL.fr.md](INSTALL.fr.md), étapes 6 à 10 : option des packs
-non signés, installation, compte, vérification de la collecte, groupe et alertes facultatifs. Sans cette option,
-VCF Operations n'accepte que les packs signés par Broadcom (KB 415279). Les signatures cosign de l'étape 4 sont
-celles du projet, et VCF Operations ne les lit pas.
+non signés, installation, compte, vérification de la collecte, groupe et alertes facultatifs. Le script
+d'installation vérifie d'abord les signatures (`install/verify_pak.sh`). Le pack réécrit n'a pas de bundle : il
+est installé avec un avertissement. Pour que le script vérifie l'image de l'adaptateur via Artifactory, définir
+`FEDMP_VERIFY=1` et `FEDMP_IMAGE_REPO=$ART/$APPROVED/nsxfederation`, après y avoir copié les signatures
+(`cosign copy`, étape 6). Sans l'option des packs non signés, VCF Operations n'accepte que les packs signés par
+Broadcom (KB 415279). Les signatures cosign de l'étape 4 sont celles du projet, et VCF Operations ne les lit pas.
 
 ## Mise à niveau vers une nouvelle version
 

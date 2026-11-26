@@ -339,6 +339,25 @@ Remplacer `1.13.0` par la version du pack dans les noms de fichiers de cette ver
 `Verified OK`, puis la liste des contrôles faits par cosign. Les commandes joignent les mêmes hôtes que la
 vérification par clé. Testé sur `v1.13.3`, la première version signée sans clé, le 2026-11-26.
 
+#### Facultatif : provenance de construction et SBOM (versions à partir de v1.13.4)
+
+À partir de `v1.13.4`, le pack et les deux images portent aussi une attestation de provenance de construction
+SLSA : un enregistrement signé du commit, du workflow et du runner qui les ont construits. La CLI GitHub la
+vérifie ; elle joint `api.github.com`. L'image de l'adaptateur porte aussi son SBOM sous forme d'attestation
+signée, que cosign vérifie et affiche :
+
+```bash
+gh attestation verify NSXFederation_1.13.0.pak -R sorinplaton/vcf-ops-nsx-federation-mp \
+  --signer-workflow sorinplaton/vcf-ops-nsx-federation-mp/.github/workflows/release.yml
+gh attestation verify oci://ghcr.io/sorinplaton/nsxfederation@$DIGEST -R sorinplaton/vcf-ops-nsx-federation-mp
+cosign verify-attestation --type cyclonedx --certificate-identity "$SIGNER" --certificate-oidc-issuer "$ISSUER" \
+  ghcr.io/sorinplaton/nsxfederation@$DIGEST > /dev/null && echo "SBOM attestation: verified"
+```
+
+Résultat attendu : deux fois `Verification succeeded!`, puis `SBOM attestation: verified`. La version contient
+aussi le rapport Trivy de l'image de l'adaptateur, `NSXFederation_<version>.trivy.txt`. Pas encore testé :
+`v1.13.4` est la première version qui les porte.
+
 Une fois la somme de contrôle et les deux signatures validées, installer le pack avec l'étape 6, à la main ou
 par script, puis continuer avec les étapes 7 à 10. Les scripts demandent un hôte Linux avec un clone de ce
 dépôt, le fichier de paramètres de l'étape 1 et les outils listés dans
@@ -859,6 +878,12 @@ PAK=pack/build/NSXFederation_$VERSION.pak     # option A : le chemin du .pak té
 install/upi.sh enableUPI
 install/install_unsigned.sh "$PAK"
 ```
+
+`install_unsigned.sh` vérifie d'abord les signatures avec `install/verify_pak.sh`. Un pack publié accompagné de
+son `.sigstore.json` doit être validé, sinon rien n'est installé ; pour cela, garder le bundle dans le dossier du
+pack. Un pack sans bundle (une construction locale, ou un pack réécrit par la variante) est installé avec un
+avertissement. `FEDMP_VERIFY=1` exige la vérification de l'image pour tout pack, et `FEDMP_VERIFY=0` désactive la
+vérification. Celle-ci utilise `cosign` s'il est installé, sinon l'image cosign via Docker.
 
 Lancer `install_unsigned.sh` après `upi.sh` : la connexion à la console d'administration ferme la session de
 l'interface du produit, et le script d'installation se reconnecte. Il désactive l'option quelle que soit
