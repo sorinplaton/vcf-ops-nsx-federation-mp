@@ -202,7 +202,7 @@ Paramètres des commandes ci-dessous. Les définir dans chaque nouveau shell ; l
 ART=artifactory.example.com          # nom d'hôte d'Artifactory, avec :port s'il n'écoute pas sur 443
 HUB=dockerhub-remote                 # clé du dépôt distant Docker Hub
 APPROVED=vcfops-approved             # clé du dépôt local de l'étape 1
-RELEASE=1.13.3                       # version à installer : le tag de la version GitHub sans le v
+RELEASE=1.13.5                       # version à installer : le tag de la version GitHub sans le v
 ART_USER=svc-vcfops-promote
 read -rs ART_TOKEN                   # jeton d'identité du compte de promotion
 SIGNER="https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/.github/workflows/release.yml@refs/tags/v$RELEASE"
@@ -285,8 +285,8 @@ gh attestation verify oci://docker.io/sorinplaton/nsxfederation@$AD_DIGEST -R so
   --signer-workflow sorinplaton/vcf-ops-nsx-federation-mp/.github/workflows/release.yml
 ```
 
-`jq` vient des paquets de la distribution et `gh` de https://cli.github.com. Pas encore testé : `v1.13.5` est la
-première version qui porte ces attestations.
+`jq` vient des paquets de la distribution et `gh` de https://cli.github.com. Testé avec `v1.13.5`, la première
+version qui porte ces attestations.
 
 Les versions jusqu'à `v1.13.2` sont signées avec la clé du projet, et leurs images ne sont que sur `ghcr.io`. Pour
 celles-ci, [INSTALL.fr.md](INSTALL.fr.md#vérifier-les-signatures-recommandé) donne les commandes avec `cosign.pub`.
@@ -435,6 +435,11 @@ par une autorité de test, avec skopeo 1.25.1 et cosign 2.4.1 :
   `--all`, l'image du pack est sortie avec un autre digest ; c'est pourquoi l'étape 6 l'utilise.
 - Le pack extrait de l'image du pack dans Artifactory, somme de contrôle OK, et réécrit avec `repack.py` vers le
   dépôt local.
+
+- La version `v1.13.5`, la première avec des attestations, via l'Artifactory du lab (JFrog Container Registry
+  7.161.26 sur `https://10.0.6.28`, dépôt distant Docker Hub) : signatures sans clé des deux images et attestation
+  SBOM signée (46 composants) vérifiées via Artifactory, et provenance de construction de la copie Docker Hub
+  vérifiée avec `gh attestation verify`.
 
 Pas encore testé :
 

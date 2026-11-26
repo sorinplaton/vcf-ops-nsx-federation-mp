@@ -195,7 +195,7 @@ Settings for the commands below. Set them in each new shell; the token is typed,
 ART=artifactory.example.com          # Artifactory host name, with :port if it is not 443
 HUB=dockerhub-remote                 # key of the Docker Hub remote repository
 APPROVED=vcfops-approved             # key of the local repository of step 1
-RELEASE=1.13.3                       # release to install: the GitHub release tag without the v
+RELEASE=1.13.5                       # release to install: the GitHub release tag without the v
 ART_USER=svc-vcfops-promote
 read -rs ART_TOKEN                   # identity token of the promotion account
 SIGNER="https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/.github/workflows/release.yml@refs/tags/v$RELEASE"
@@ -275,8 +275,8 @@ gh attestation verify oci://docker.io/sorinplaton/nsxfederation@$AD_DIGEST -R so
   --signer-workflow sorinplaton/vcf-ops-nsx-federation-mp/.github/workflows/release.yml
 ```
 
-`jq` comes from the distribution packages and `gh` from https://cli.github.com. Not tested yet: `v1.13.5` is the
-first release with these attestations.
+`jq` comes from the distribution packages and `gh` from https://cli.github.com. Tested with `v1.13.5`, the first
+release with these attestations.
 
 Releases up to `v1.13.2` are signed with the project key instead, and their images are on `ghcr.io` only. For
 those, [INSTALL.md](INSTALL.md#verify-the-signatures-recommended) gives the commands with `cosign.pub`.
@@ -418,6 +418,11 @@ test CA, with skopeo 1.25.1 and cosign 2.4.1:
   `--all`, the pack image came out with another digest; that is why step 6 uses it.
 - The pack taken out of the pack image in Artifactory, checksum OK, and rewritten with `repack.py` to the local
   repository.
+
+- Release `v1.13.5`, the first with attestations, through the lab Artifactory (JFrog Container Registry
+  7.161.26 at `https://10.0.6.28`, Docker Hub remote repository): keyless signatures of both images and the
+  signed SBOM attestation (46 components) verified through Artifactory, and the build provenance of the Docker Hub
+  copy verified with `gh attestation verify`.
 
 Not tested yet:
 
