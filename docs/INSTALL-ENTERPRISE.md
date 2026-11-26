@@ -263,7 +263,7 @@ Both lines must end with `verified`. cosign prints the checks it made: the signa
 `SIGNER`, and the entry in the public transparency log. A failure means the image is not the one the release
 workflow built for that tag: stop and do not promote it.
 
-From `v1.13.4`, two more checks are available. The SBOM of the adapter image travels with the image as a signed
+From `v1.13.5`, two more checks are available. The SBOM of the adapter image travels with the image as a signed
 attestation (tag `sha256-<digest>.att`, served by Artifactory like the signature); cosign checks it and can write
 it out for the scanner of step 5. The build provenance (SLSA) says which commit and which workflow run built each
 image; the GitHub CLI checks it against `api.github.com`, by digest, so it applies to the copy in Artifactory too:
@@ -275,7 +275,7 @@ gh attestation verify oci://docker.io/sorinplaton/nsxfederation@$AD_DIGEST -R so
   --signer-workflow sorinplaton/vcf-ops-nsx-federation-mp/.github/workflows/release.yml
 ```
 
-`jq` comes from the distribution packages and `gh` from https://cli.github.com. Not tested yet: `v1.13.4` is the
+`jq` comes from the distribution packages and `gh` from https://cli.github.com. Not tested yet: `v1.13.5` is the
 first release with these attestations.
 
 Releases up to `v1.13.2` are signed with the project key instead, and their images are on `ghcr.io` only. For

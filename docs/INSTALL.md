@@ -328,9 +328,9 @@ Replace `1.13.0` with the pack version in the file names of that release. Expect
 of checks cosign made. The commands reach the same hosts as the key-based check. Tested against `v1.13.3`, the
 first keyless release, on 2026-11-26.
 
-#### Optional: build provenance and SBOM (releases from v1.13.4)
+#### Optional: build provenance and SBOM (releases from v1.13.5)
 
-From `v1.13.4`, the pack and both images also carry a SLSA build provenance attestation: a signed record of the
+From `v1.13.5`, the pack and both images also carry a SLSA build provenance attestation: a signed record of the
 commit, the workflow and the runner that built them. The GitHub CLI checks it; it reaches `api.github.com`. The
 adapter image also carries its SBOM as a signed attestation, which cosign checks and prints:
 
@@ -343,7 +343,7 @@ cosign verify-attestation --type cyclonedx --certificate-identity "$SIGNER" --ce
 ```
 
 Expected: `Verification succeeded!` twice, then `SBOM attestation: verified`. The release also carries the Trivy
-report of the adapter image, `NSXFederation_<version>.trivy.txt`. Not tested yet: `v1.13.4` is the first release
+report of the adapter image, `NSXFederation_<version>.trivy.txt`. Not tested yet: `v1.13.5` is the first release
 with these.
 
 Once the checksum and both signatures are good, install the pack with step 6, by hand or with the scripts, and
