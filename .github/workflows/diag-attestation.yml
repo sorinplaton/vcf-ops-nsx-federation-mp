@@ -1,0 +1,31 @@
+name: diag-attestation
+# Temporary: find why gh attestation verify fails on the runner (release v1.13.4). Read-only.
+on:
+  pull_request:
+    paths: [".github/workflows/diag-attestation.yml"]
+permissions:
+  contents: read
+  attestations: read
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REF: oci://ghcr.io/sorinplaton/nsxfederation@sha256:3ee9f28b0d51270ef09ea7a41a652efc3cfa0163c921193bfb951cc69a978dc1
+      R: sorinplaton/vcf-ops-nsx-federation-mp
+    steps:
+      - name: 1. as in release.yml
+        continue-on-error: true
+        run: |
+          gh --version
+          gh attestation verify "$REF" -R "$R" --signer-workflow "$R/.github/workflows/release.yml"
+      - name: 2. with a trusted root fetched first
+        continue-on-error: true
+        run: |
+          gh attestation trusted-root > /tmp/trusted_root.jsonl && wc -l /tmp/trusted_root.jsonl
+          gh attestation verify "$REF" -R "$R" --signer-workflow "$R/.github/workflows/release.yml" --custom-trusted-root /tmp/trusted_root.jsonl
+      - name: 3. with HOME cache cleared and debug
+        continue-on-error: true
+        run: |
+          rm -rf ~/.cache/gh ~/.local/share/gh 2>/dev/null; ls -la ~ | head -5
+          GH_DEBUG=api gh attestation verify "$REF" -R "$R" --signer-workflow "$R/.github/workflows/release.yml" 2>&1 | grep -v -i authorization | tail -40
