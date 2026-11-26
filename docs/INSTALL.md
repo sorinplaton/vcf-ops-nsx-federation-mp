@@ -214,6 +214,27 @@ curl -s -o /dev/null -w '%{http_code}\n' https://ghcr.io/v2/
 curl -s -o /dev/null -w '%{http_code}\n' https://pkg-containers.githubusercontent.com/
 ```
 
+### Why the cloud proxy reaches the internet
+
+The adapter is a container image that the cloud proxy pulls when the account starts. The `.pak` holds only the
+content of the pack and the address of that image, as [Choose an install path](#choose-an-install-path)
+explains. With Option A, the pack names `ghcr.io`, so the cloud proxy downloads the image from the internet.
+
+That download is the only internet traffic of the cloud proxy. It goes to `ghcr.io` and
+`pkg-containers.githubusercontent.com` on TCP 443: `ghcr.io` answers the registry calls and redirects the
+download of the image layers to the second host. Collection stays on the local network, between the adapter,
+the NSX managers and VCF Operations, and no monitoring data leaves the site. The signature checks below run on
+the machine that downloaded the pack, not on the cloud proxy.
+
+The cloud proxy pulls the image the first time the account starts, and again after a redeploy or an upgrade of
+the cloud proxy, because its local copy is gone. Whether it also contacts `ghcr.io` at each restart of the
+account, with the image still on disk, is not tested. Plan for access whenever the adapter starts.
+
+To keep the cloud proxy off the internet, use the
+[mirror variant](#variant-mirror-the-image-to-an-internal-registry): a machine with internet access copies the
+image once to an internal registry, the pack is pointed at that registry, and the cloud proxy then reaches only
+that registry. [Option B](#1-prerequisites) gives the same result with a build of your own.
+
 ### Verify the signatures (recommended)
 
 The pack and its adapter image are signed with [cosign](https://docs.sigstore.dev/cosign/) (Sigstore). The

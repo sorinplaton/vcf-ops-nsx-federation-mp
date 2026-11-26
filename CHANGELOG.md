@@ -2,6 +2,11 @@
 
 Each release has a tag `v<version>`; the commit messages give the details.
 
+## Unreleased
+
+- Option A of the install guide explains why the cloud proxy reaches the internet: it downloads the adapter
+  image from `ghcr.io` when the account starts, and only that. The mirror variant avoids it.
+
 ## 1.13.2 (2026-11-26)
 
 Install guide and install scripts only: the pack is unchanged and still reports version 1.13.0. The released

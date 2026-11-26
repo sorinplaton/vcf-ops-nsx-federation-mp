@@ -218,6 +218,30 @@ curl -s -o /dev/null -w '%{http_code}\n' https://ghcr.io/v2/
 curl -s -o /dev/null -w '%{http_code}\n' https://pkg-containers.githubusercontent.com/
 ```
 
+### Pourquoi le proxy cloud accède à Internet
+
+L'adaptateur est une image de conteneur que le proxy cloud récupère au démarrage du compte. Le `.pak` ne
+contient que le contenu du pack et l'adresse de cette image, comme l'explique
+[Choisir un mode d'installation](#choisir-un-mode-dinstallation). Avec l'option A, le pack désigne `ghcr.io`,
+et le proxy cloud télécharge donc l'image depuis Internet.
+
+Ce téléchargement est le seul trafic Internet du proxy cloud. Il va vers `ghcr.io` et
+`pkg-containers.githubusercontent.com` en TCP 443 : `ghcr.io` répond aux appels du registre et redirige vers
+le second hôte le téléchargement des couches de l'image. La collecte reste sur le réseau local, entre
+l'adaptateur, les managers NSX et VCF Operations, et aucune donnée de supervision ne quitte le site. Les
+vérifications de signature ci-dessous s'exécutent sur la machine qui a téléchargé le pack, pas sur le proxy
+cloud.
+
+Le proxy cloud récupère l'image au premier démarrage du compte, puis de nouveau après un redéploiement ou un
+upgrade du proxy cloud, car sa copie locale a disparu. Un éventuel contact avec `ghcr.io` à chaque redémarrage
+du compte, quand l'image est encore sur le disque, n'a pas été testé. Prévoir l'accès à chaque démarrage de
+l'adaptateur.
+
+Pour que le proxy cloud n'accède pas à Internet, utiliser la
+[variante de copie](#variante--copier-limage-dans-un-registre-interne) : une machine qui accède à Internet
+copie une fois l'image dans un registre interne, le pack est pointé vers ce registre, et le proxy cloud ne joint
+alors que ce registre. L'[option B](#1-prérequis) donne le même résultat avec son propre build.
+
 ### Vérifier les signatures (recommandé)
 
 Le pack et l'image de son adaptateur sont signés avec [cosign](https://docs.sigstore.dev/cosign/) (Sigstore). La
