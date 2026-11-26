@@ -2,8 +2,13 @@
 
 Each release has a tag `v<version>`; the commit messages give the details.
 
-## Unreleased
+## 1.13.1 (2026-11-26)
 
+Install guide and install scripts only: the pack is unchanged and still reports version 1.13.0.
+
+- `docs/INSTALL.md` (and the French copy) gives the commands to install Docker Engine, `git` and Python 3 with
+  `requests` on Ubuntu/Debian and RHEL-family build hosts, and a diagram with the ports the build host and the
+  cloud proxy must reach.
 - The "NSX Federation - Non-production" policy, `install/import_policy.py` and `tools/gen_policy.py` are removed.
   `install/federation_groups.py --policy` assigns any existing policy.
 
