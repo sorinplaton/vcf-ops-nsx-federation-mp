@@ -272,7 +272,7 @@ Les deux lignes doivent se terminer par `verified`. cosign affiche les contrôle
 certificat qui nomme `SIGNER`, et l'entrée dans le journal de transparence public. Un échec signifie que l'image
 n'est pas celle que le workflow de publication a construite pour ce tag : s'arrêter et ne pas la promouvoir.
 
-À partir de `v1.13.4`, deux autres vérifications sont disponibles. Le SBOM de l'image de l'adaptateur accompagne
+À partir de `v1.13.5`, deux autres vérifications sont disponibles. Le SBOM de l'image de l'adaptateur accompagne
 l'image sous forme d'attestation signée (tag `sha256-<digest>.att`, servi par Artifactory comme la signature) ;
 cosign la vérifie et peut l'écrire dans un fichier pour l'outil d'analyse de l'étape 5. La provenance de
 construction (SLSA) indique quel commit et quelle exécution du workflow ont construit chaque image ; la CLI GitHub
@@ -285,7 +285,7 @@ gh attestation verify oci://docker.io/sorinplaton/nsxfederation@$AD_DIGEST -R so
   --signer-workflow sorinplaton/vcf-ops-nsx-federation-mp/.github/workflows/release.yml
 ```
 
-`jq` vient des paquets de la distribution et `gh` de https://cli.github.com. Pas encore testé : `v1.13.4` est la
+`jq` vient des paquets de la distribution et `gh` de https://cli.github.com. Pas encore testé : `v1.13.5` est la
 première version qui porte ces attestations.
 
 Les versions jusqu'à `v1.13.2` sont signées avec la clé du projet, et leurs images ne sont que sur `ghcr.io`. Pour

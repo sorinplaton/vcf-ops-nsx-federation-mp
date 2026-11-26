@@ -339,9 +339,9 @@ Remplacer `1.13.0` par la version du pack dans les noms de fichiers de cette ver
 `Verified OK`, puis la liste des contrôles faits par cosign. Les commandes joignent les mêmes hôtes que la
 vérification par clé. Testé sur `v1.13.3`, la première version signée sans clé, le 2026-11-26.
 
-#### Facultatif : provenance de construction et SBOM (versions à partir de v1.13.4)
+#### Facultatif : provenance de construction et SBOM (versions à partir de v1.13.5)
 
-À partir de `v1.13.4`, le pack et les deux images portent aussi une attestation de provenance de construction
+À partir de `v1.13.5`, le pack et les deux images portent aussi une attestation de provenance de construction
 SLSA : un enregistrement signé du commit, du workflow et du runner qui les ont construits. La CLI GitHub la
 vérifie ; elle joint `api.github.com`. L'image de l'adaptateur porte aussi son SBOM sous forme d'attestation
 signée, que cosign vérifie et affiche :
@@ -356,7 +356,7 @@ cosign verify-attestation --type cyclonedx --certificate-identity "$SIGNER" --ce
 
 Résultat attendu : deux fois `Verification succeeded!`, puis `SBOM attestation: verified`. La version contient
 aussi le rapport Trivy de l'image de l'adaptateur, `NSXFederation_<version>.trivy.txt`. Pas encore testé :
-`v1.13.4` est la première version qui les porte.
+`v1.13.5` est la première version qui les porte.
 
 Une fois la somme de contrôle et les deux signatures validées, installer le pack avec l'étape 6, à la main ou
 par script, puis continuer avec les étapes 7 à 10. Les scripts demandent un hôte Linux avec un clone de ce

@@ -2,9 +2,11 @@
 
 Each release has a tag `v<version>`; the commit messages give the details.
 
-## 1.13.4 (2026-11-26)
+## 1.13.5 (2026-11-26)
 
-Supply-chain hardening of the release path; the pack itself is unchanged.
+Supply-chain hardening of the release path; the pack itself is unchanged. `v1.13.4` was tagged but never
+published: its release job stopped at the verification step, because the Trivy cache mount had created `~/.cache`
+as root and `gh attestation verify` could not start. Its images on `ghcr.io` belong to no release; use `v1.13.5`.
 
 - Only a repository admin can push a `v*` tag, and `main` changes only through a pull request with green checks
   (rulesets). The release job runs in the environment `release`: it waits for the maintainer's approval and alone

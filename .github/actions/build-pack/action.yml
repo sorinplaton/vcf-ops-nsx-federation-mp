@@ -78,7 +78,11 @@ runs:
         V: ${{ steps.v.outputs.version }}
       run: |
         IMG=isdk_nsxfederation-test:$V   # the local copy mp-build tested, same layers as the pushed image
-        T="docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/.cache/trivy:/root/.cache -v $PWD/pack/build:/out $TRIVY"
+        # The cache lives under RUNNER_TEMP, created here by the runner user. A bind mount of a missing folder under
+        # HOME would make Docker create ~/.cache as root, and gh attestation verify (release job) then cannot
+        # initialise its Sigstore verifiers ("no valid Sigstore verifiers could be initialized", v1.13.4).
+        C="$RUNNER_TEMP/trivy-cache"; mkdir -p "$C"
+        T="docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $C:/root/.cache -v $PWD/pack/build:/out $TRIVY"
         $T image --quiet --scanners vuln --format table --output "/out/NSXFederation_$V.trivy.txt" "$IMG"
         $T image --quiet --scanners vuln --format json --output "/out/NSXFederation_$V.trivy.json" "$IMG"
         echo "Full report: NSXFederation_$V.trivy.txt. Gate: CRITICAL with a fix available."
