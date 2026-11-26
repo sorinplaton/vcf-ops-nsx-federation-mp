@@ -12,7 +12,7 @@ English version: [INSTALL.md](INSTALL.md).
 
 ## Choisir un mode d'installation
 
-Il existe quatre façons de mettre en place le pack et l'image de son adaptateur :
+Il existe cinq façons de mettre en place le pack et l'image de son adaptateur :
 
 - [Option A, télécharger le pack publié](#option-a--télécharger-le-pack-publié) : la voie la plus rapide, pour
   un site dont le proxy cloud joint `ghcr.io`. Rien à construire.
@@ -23,6 +23,10 @@ Il existe quatre façons de mettre en place le pack et l'image de son adaptateur
   sources, ou exploite un lab avec son propre registre sur l'hôte de construction.
 - [La variante Harbor de l'option B](#variante--un-registre-harbor-existant) : le même build, avec un push de
   l'image vers un Harbor existant à la place du petit registre de l'étape 2.
+- [Installation en entreprise avec Docker Hub et Artifactory](INSTALL-ENTERPRISE.fr.md) : pour une organisation
+  dont l'Artifactory récupère les images publiques sur Docker Hub. Le pack et l'image de son adaptateur viennent
+  de Docker Hub via Artifactory, sont vérifiés, analysés et copiés dans un dépôt d'images approuvées. Ce mode a
+  son propre guide.
 
 Tous les modes installent le même pack et se rejoignent à l'étape 6.
 
@@ -244,6 +248,12 @@ alors que ce registre. L'[option B](#1-prérequis) donne le même résultat avec
 
 ### Vérifier les signatures (recommandé)
 
+À partir de la version `v1.13.3`, le workflow de publication sur GitHub signe le pack et les images sans clé
+(« keyless ») : la signature porte un certificat qui nomme le workflow et le tag qui les ont construits, et la
+vérification compare ce nom à la place d'une clé publique.
+[Vérification sans clé](#vérification-sans-clé-versions-à-partir-de-v1133) ci-dessous donne les commandes. Les
+versions jusqu'à `v1.13.2` sont signées avec la clé du projet, comme décrit d'abord.
+
 Le pack et l'image de son adaptateur sont signés avec [cosign](https://docs.sigstore.dev/cosign/) (Sigstore). La
 somme de contrôle prouve seulement que le téléchargement est complet ; elle se trouve à côté du pack, sur la
 même page de version, et quiconque pourrait y remplacer le pack pourrait aussi remplacer la somme. Les
@@ -304,6 +314,30 @@ Les deux commandes accèdent à Internet : `ghcr.io` pour la signature de l'imag
 (`tuf-repo-cdn.sigstore.dev`, `rekor.sigstore.dev`) pour le journal de transparence public où chaque signature est
 enregistrée. Une vérification en échec signifie que le fichier ou l'image n'est pas celui qui a été signé : ne
 pas l'installer.
+
+#### Vérification sans clé (versions à partir de v1.13.3)
+
+Les deux mêmes vérifications, avec l'identité du workflow de publication à la place de `cosign.pub`. Définir la
+version une fois ; la signature doit nommer exactement ce dépôt, ce workflow et ce tag, avec GitHub Actions pour
+émetteur. Les notes de version sur GitHub donnent les mêmes valeurs. Le bundle du pack est le fichier
+`.sigstore.json` de la version.
+
+```bash
+RELEASE=1.13.3
+SIGNER="https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/.github/workflows/release.yml@refs/tags/v$RELEASE"
+ISSUER=https://token.actions.githubusercontent.com
+curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v$RELEASE/NSXFederation_1.13.0.pak.sigstore.json
+
+cosign verify-blob --certificate-identity "$SIGNER" --certificate-oidc-issuer "$ISSUER" \
+  --bundle NSXFederation_1.13.0.pak.sigstore.json NSXFederation_1.13.0.pak
+unzip -p NSXFederation_1.13.0.pak adapter.zip > /tmp/adapter.zip
+DIGEST=$(unzip -p /tmp/adapter.zip '*.conf' | sed -n 's/^DIGEST=//p')
+cosign verify --certificate-identity "$SIGNER" --certificate-oidc-issuer "$ISSUER" ghcr.io/sorinplaton/nsxfederation@$DIGEST
+```
+
+Remplacer `1.13.0` par la version du pack dans les noms de fichiers de cette version. Résultat attendu :
+`Verified OK`, puis la liste des contrôles faits par cosign. Les commandes joignent les mêmes hôtes que la
+vérification par clé. Pas encore testé : la première version signée sans clé est `v1.13.3`.
 
 Une fois la somme de contrôle et les deux signatures validées, installer le pack avec l'étape 6, à la main ou
 par script, puis continuer avec les étapes 7 à 10. Les scripts demandent un hôte Linux avec un clone de ce
@@ -375,13 +409,14 @@ Ensuite, dans le dossier qui contient le pack téléchargé :
 1. Vérifier les signatures du pack et de l'image, comme ci-dessus. Le faire d'abord : le point 3 modifie le
    pack, sa somme de contrôle et sa signature ne correspondent plus ensuite.
 2. Copier l'image par son digest. Les premières lignes relisent le digest dans le pack, pour que le bloc
-   fonctionne aussi dans un nouveau shell. `--preserve-digests` garde le digest que désigne le pack :
+   fonctionne aussi dans un nouveau shell. `--all` copie l'image exactement telle qu'elle a été publiée, et
+   `--preserve-digests` fait s'arrêter skopeo plutôt que de changer le digest que désigne le pack :
 
    ```bash
    set -a; source ~/fedmp.env; set +a
    unzip -p NSXFederation_1.13.0.pak adapter.zip > /tmp/adapter.zip
    DIGEST=$(unzip -p /tmp/adapter.zip '*.conf' | sed -n 's/^DIGEST=//p')
-   skopeo copy --preserve-digests --dest-creds "$HARBOR_USER:$HARBOR_PW" \
+   skopeo copy --all --preserve-digests --dest-creds "$HARBOR_USER:$HARBOR_PW" \
      docker://ghcr.io/sorinplaton/nsxfederation@$DIGEST \
      docker://$HARBOR/$HARBOR_PROJECT/nsxfederation:1.13.0
    ```
