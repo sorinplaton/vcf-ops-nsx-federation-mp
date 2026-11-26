@@ -153,9 +153,8 @@ IP=10.x.x.x
 
 ## 2. Registry over HTTPS
 
-Skip this step and step 4 if a registry (Harbor or other) already exists with a certificate from an authority
-the cloud proxy trusts. In step 3, give `mp-build` and `repack.py` the address and the login of that registry
-in place of `localhost:5000` and `$IP:5000`. The build host's Docker must trust that registry.
+With an existing Harbor registry, skip steps 2 to 4 and follow
+[Variant: an existing Harbor registry](#variant-an-existing-harbor-registry).
 
 *Run on: the build host.* A `registry:2` container with a self-signed certificate:
 
@@ -244,6 +243,64 @@ An upgrade or a redeploy of the cloud proxy can remove the file. Repeat this ste
 
 A registry moved to another address needs a new certificate (step 2), a rewritten pack (step 3) and a new
 folder on the cloud proxy.
+
+## Variant: an existing Harbor registry
+
+Use this in place of steps 2 to 4 when the environment already has Harbor. This variant was not tested in the
+lab, which uses the registry of step 2.
+
+On Harbor, once:
+
+- [ ] A project for the image, for example `nsxfederation`, set to public. The cloud proxy pulls the image
+      without a login, so the image of a private project cannot be pulled.
+- [ ] An account that can push to the project: a robot account with the push permission, or a user with the
+      Developer role.
+- [ ] Network: build host and cloud proxy to Harbor on TCP 443.
+
+*Run on: the build host.* Its Docker must trust the certificate of Harbor. When the certificate comes from an
+internal CA, or is self-signed, copy the CA certificate first:
+
+```bash
+HARBOR=harbor.example.com
+sudo mkdir -p /etc/docker/certs.d/$HARBOR
+sudo cp harbor-ca.crt /etc/docker/certs.d/$HARBOR/ca.crt
+```
+
+Build the pack and push the image. `mp-build` logs in to Harbor with the account given on the command line. The
+name of a robot account contains a `$`, so keep the single quotes:
+
+```bash
+HARBOR=harbor.example.com
+PROJECT=nsxfederation
+git clone https://github.com/sorinplaton/vcf-ops-nsx-federation-mp.git
+cd vcf-ops-nsx-federation-mp
+sudo docker build -t fedmp-tooling tooling
+
+sudo docker run --rm --network host -u $(id -u):$(getent group docker | cut -d: -f3) -e HOME=$PWD/.sdkhome \
+  -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:$PWD -w $PWD/pack \
+  fedmp-tooling mp-build --no-ttl -r $HARBOR/$PROJECT/nsxfederation \
+  --registry-username '<harbor-account>' --registry-password '<harbor-secret>'
+```
+
+Check the address in the pack. The registry has a domain name here, so `repack.py` should not be needed:
+
+```bash
+unzip -p pack/build/NSXFederation_<version>.pak adapter.zip > /tmp/adapter.zip
+unzip -p /tmp/adapter.zip '*.conf' | grep -E '^(REGISTRY|REPOSITORY)='
+```
+
+Expected: `REGISTRY=harbor.example.com` and `REPOSITORY=/nsxfederation/nsxfederation`. If the pack names Docker
+Hub instead, rewrite it:
+
+```bash
+python3 tools/repack.py pack/build/NSXFederation_<version>.pak $HARBOR $PROJECT/nsxfederation
+```
+
+The cloud proxy must trust the certificate of Harbor too. With a certificate from an authority it already
+trusts, nothing more is needed. Otherwise do step 4 with the CA certificate of Harbor and the folder
+`/etc/docker/certs.d/harbor.example.com/` (add `:<port>` to the folder name when Harbor does not listen on 443).
+
+Then continue with step 5 or step 6.
 
 ## 5. Optional: test a collection without VCF Operations
 

@@ -12,6 +12,8 @@ Install guide only.
 - The build pushes the image to `localhost:5000`, so the build host needs no certificate folder. The registry
   certificate also names `127.0.0.1` and `localhost`.
 - The Build section of `README.md` uses the same commands.
+- New variant in the install guide for an environment that already has a Harbor registry. It replaces steps
+  2 to 4 and was not tested in the lab.
 
 ## 1.13.1 (2026-11-26)
 

@@ -157,10 +157,8 @@ IP=10.x.x.x
 
 ## 2. Registre en HTTPS
 
-Passer cette étape et l'étape 4 si un registre (Harbor ou autre) existe déjà avec un certificat émis par une
-autorité à laquelle le proxy cloud fait confiance. À l'étape 3, donner à `mp-build` et à `repack.py` l'adresse
-et les identifiants de ce registre à la place de `localhost:5000` et de `$IP:5000`. Le Docker de l'hôte de
-construction doit faire confiance à ce registre.
+Avec un registre Harbor existant, passer les étapes 2 à 4 et suivre
+[Variante : un registre Harbor existant](#variante--un-registre-harbor-existant).
 
 *À exécuter sur : l'hôte de construction.* Un conteneur `registry:2` avec un certificat autosigné :
 
@@ -253,6 +251,66 @@ l'un ou l'autre.
 
 Un registre déplacé vers une autre adresse demande un nouveau certificat (étape 2), un pack réécrit (étape 3)
 et un nouveau dossier sur le proxy cloud.
+
+## Variante : un registre Harbor existant
+
+À utiliser à la place des étapes 2 à 4 quand l'environnement dispose déjà de Harbor. Cette variante n'a pas été
+testée dans le lab, qui utilise le registre de l'étape 2.
+
+Dans Harbor, une seule fois :
+
+- [ ] Un projet pour l'image, par exemple `nsxfederation`, en accès public. Le proxy cloud récupère l'image
+      sans s'authentifier : l'image d'un projet privé ne peut donc pas être récupérée.
+- [ ] Un compte autorisé à envoyer des images dans le projet : un compte robot avec le droit push, ou un
+      utilisateur avec le rôle Developer.
+- [ ] Réseau : de l'hôte de construction et du proxy cloud vers Harbor en TCP 443.
+
+*À exécuter sur : l'hôte de construction.* Son Docker doit faire confiance au certificat de Harbor. Quand le
+certificat vient d'une autorité interne, ou qu'il est autosigné, copier d'abord le certificat de l'autorité :
+
+```bash
+HARBOR=harbor.example.com
+sudo mkdir -p /etc/docker/certs.d/$HARBOR
+sudo cp harbor-ca.crt /etc/docker/certs.d/$HARBOR/ca.crt
+```
+
+Construire le pack et envoyer l'image. `mp-build` s'authentifie auprès de Harbor avec le compte donné sur la
+ligne de commande. Le nom d'un compte robot contient un `$` : conserver les apostrophes.
+
+```bash
+HARBOR=harbor.example.com
+PROJECT=nsxfederation
+git clone https://github.com/sorinplaton/vcf-ops-nsx-federation-mp.git
+cd vcf-ops-nsx-federation-mp
+sudo docker build -t fedmp-tooling tooling
+
+sudo docker run --rm --network host -u $(id -u):$(getent group docker | cut -d: -f3) -e HOME=$PWD/.sdkhome \
+  -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:$PWD -w $PWD/pack \
+  fedmp-tooling mp-build --no-ttl -r $HARBOR/$PROJECT/nsxfederation \
+  --registry-username '<compte-harbor>' --registry-password '<secret-harbor>'
+```
+
+Vérifier l'adresse inscrite dans le pack. Le registre a ici un nom de domaine : `repack.py` ne devrait donc pas
+être nécessaire.
+
+```bash
+unzip -p pack/build/NSXFederation_<version>.pak adapter.zip > /tmp/adapter.zip
+unzip -p /tmp/adapter.zip '*.conf' | grep -E '^(REGISTRY|REPOSITORY)='
+```
+
+Résultat attendu : `REGISTRY=harbor.example.com` et `REPOSITORY=/nsxfederation/nsxfederation`. Si le pack
+désigne Docker Hub, le réécrire :
+
+```bash
+python3 tools/repack.py pack/build/NSXFederation_<version>.pak $HARBOR $PROJECT/nsxfederation
+```
+
+Le proxy cloud doit lui aussi faire confiance au certificat de Harbor. Avec un certificat émis par une autorité
+qu'il approuve déjà, il n'y a rien d'autre à faire. Sinon, appliquer l'étape 4 avec le certificat de l'autorité
+de Harbor et le dossier `/etc/docker/certs.d/harbor.example.com/` (ajouter `:<port>` au nom du dossier quand
+Harbor n'écoute pas sur le port 443).
+
+Continuer ensuite à l'étape 5 ou à l'étape 6.
 
 ## 5. Facultatif : tester une collecte sans VCF Operations
 

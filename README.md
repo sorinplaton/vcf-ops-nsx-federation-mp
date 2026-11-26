@@ -123,8 +123,8 @@ python3 tools/repack.py pack/build/NSXFederation_<version>.pak $IP:5000 nsxfeder
 
 The registry of the install guide has no login. `mp-build` still asks for a user and a password, and any value
 works. When the registry is given as `host:port` without a domain, `mp-build` writes Docker Hub into the pack;
-`tools/repack.py <pak> <host:port> <repository>` corrects it. With an existing registry (Harbor or other), give
-`mp-build` and `repack.py` its address and login in place of `localhost:5000` and `$IP:5000`.
+`tools/repack.py <pak> <host:port> <repository>` corrects it. With an existing Harbor registry, follow
+[Variant: an existing Harbor registry](docs/INSTALL.md#variant-an-existing-harbor-registry) in the install guide.
 
 After a change to the Dockerfile or to `pack/adapter_requirements.txt`, run `tools/image_lock.sh <built image>` and
 commit `pack/image-requirements.txt`: CI checks those packages for known vulnerabilities (see
