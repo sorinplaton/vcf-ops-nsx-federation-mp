@@ -112,8 +112,8 @@ sudo docker build -t fedmp-tooling tooling
 for g in alerts dashboards groups views features; do python3 tools/gen_$g.py; done
 
 # test a collection without VCF Operations
-sudo docker run --rm --network host -v $PWD:/work -e GM_HOSTS -e NSX_USER -e NSX_PASSWORD \
-  fedmp-tooling python tools/localrun.py
+sudo --preserve-env=GM_HOSTS,NSX_USER,NSX_PASSWORD docker run --rm --network host -v $PWD:/work \
+  -e GM_HOSTS -e NSX_USER -e NSX_PASSWORD fedmp-tooling python tools/localrun.py
 
 # build the pack and push the adapter image to the registry on the build host
 sudo docker run --rm --network host -u $(id -u):$(getent group docker | cut -d: -f3) -e HOME=$PWD/.sdkhome \

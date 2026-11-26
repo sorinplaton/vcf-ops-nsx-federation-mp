@@ -89,8 +89,9 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--federation", help="only this federation (its name in VCF Operations)")
     ap.add_argument("--policy", help="assign this policy (its name in VCF Operations) to the group(s)")
-    ap.add_argument("--insecure", action="store_true", help="do not verify the VCF Operations certificate (lab only)")
+    ap.add_argument("--insecure", action="store_true", help="do not verify the VCF Operations certificate (lab only; or OPS_INSECURE=1)")
     a = ap.parse_args()
+    a.insecure = a.insecure or os.environ.get("OPS_INSECURE") == "1"  # same switch as install_unsigned.sh
     host, password = os.environ.get("OPS_HOST"), os.environ.get("OPS_PW")
     if not host or not password:
         sys.exit("set OPS_HOST and OPS_PW")

@@ -89,8 +89,9 @@ def findings(report, now_ms):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--out", default=f"nsxfederation-diagnostics-{datetime.datetime.now():%Y%m%d-%H%M}.json")
-    ap.add_argument("--insecure", action="store_true", help="do not verify the VCF Operations certificate (lab only)")
+    ap.add_argument("--insecure", action="store_true", help="do not verify the VCF Operations certificate (lab only; or OPS_INSECURE=1)")
     a = ap.parse_args()
+    a.insecure = a.insecure or os.environ.get("OPS_INSECURE") == "1"  # same switch as install_unsigned.sh
     host, password = os.environ.get("OPS_HOST"), os.environ.get("OPS_PW")
     if not host or not password:
         sys.exit("set OPS_HOST and OPS_PW")

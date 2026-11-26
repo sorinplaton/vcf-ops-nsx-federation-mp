@@ -2,9 +2,10 @@
 
 Each release has a tag `v<version>`; the commit messages give the details.
 
-## Unreleased
+## 1.13.2 (2026-11-26)
 
-Install guide only.
+Install guide and install scripts only: the pack is unchanged and still reports version 1.13.0. The released
+pack of `v1.13.1` stays the one to download.
 
 - The adapter image is public on `ghcr.io/sorinplaton/nsxfederation`, and release `v1.13.1` carries a ready-to-install
   `NSXFederation_1.13.0.pak` that pulls it. The install guide offers this as Option A (download the released pack),
@@ -27,6 +28,17 @@ Install guide only.
   2 to 4 and was not tested in the lab.
 - The install guide reads every address, name and password from one settings file, `~/fedmp.env`, made from
   the new `install/fedmp.env.example`. The commands carry no address and no password.
+- The install guide opens with the four install paths and what each is for: Option A, Option A with the mirror
+  variant, Option B, and the Harbor variant of Option B.
+- Two more network drawings: the flows of Option A and of the mirror variant. The port table lists them.
+- A flow check of the guide fixed the places where a reader was stopped: the test of step 5 lost its NSX
+  settings under `sudo`, the scripted install had no folder and a pack path that only fitted Option B, the
+  mirror variant used the settings file, the Harbor values and the digest before they existed, and a site
+  without internet access on the cloud proxy was sent to Option B only.
+- Each step now says what it is for, what the command does and what a good result looks like.
+- `install/federation_groups.py`, `notification_rules.py`, `cleanup_content.py` and `diagnostics.py` honour
+  `OPS_INSECURE=1`, like `install_unsigned.sh`. The guide has a section for the tools some steps need: `govc`,
+  Node.js 22 and Google Chrome.
 
 ## 1.13.1 (2026-11-26)
 

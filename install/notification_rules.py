@@ -54,8 +54,9 @@ def main():
     ap.add_argument("--group", help="only the alerts on the members of this custom group")
     ap.add_argument("--template", help="payload template (default: the default template of the plugin type)")
     ap.add_argument("--name", help="rule name (default 'NSX Federation - <outbound>')")
-    ap.add_argument("--insecure", action="store_true", help="do not verify the VCF Operations certificate (lab only)")
+    ap.add_argument("--insecure", action="store_true", help="do not verify the VCF Operations certificate (lab only; or OPS_INSECURE=1)")
     a = ap.parse_args()
+    a.insecure = a.insecure or os.environ.get("OPS_INSECURE") == "1"  # same switch as install_unsigned.sh
     host, password = os.environ.get("OPS_HOST"), os.environ.get("OPS_PW")
     if not host or not password:
         sys.exit("set OPS_HOST and OPS_PW")

@@ -154,8 +154,9 @@ def main():
     ap.add_argument("--delete", action="store_true", help="delete what is reported (default: report only)")
     ap.add_argument("--legacy-objects", action="store_true",
                     help="also handle the objects keyed by name before 1.9.0 (their history is deleted)")
-    ap.add_argument("--insecure", action="store_true", help="do not verify the VCF Operations certificate (lab only)")
+    ap.add_argument("--insecure", action="store_true", help="do not verify the VCF Operations certificate (lab only; or OPS_INSECURE=1)")
     a = ap.parse_args()
+    a.insecure = a.insecure or os.environ.get("OPS_INSECURE") == "1"  # same switch as install_unsigned.sh
     host, password = os.environ.get("OPS_HOST"), os.environ.get("OPS_PW")
     if not host or not password:
         sys.exit("set OPS_HOST and OPS_PW")
