@@ -6,6 +6,10 @@ Each release has a tag `v<version>`; the commit messages give the details.
 
 Install guide only.
 
+- The adapter image is public on `ghcr.io/sorinplaton/nsxfederation`, and release `v1.13.1` carries a ready-to-install
+  `NSXFederation_1.13.0.pak` that pulls it. The install guide offers this as Option A (download the released pack),
+  next to Option B (build your own, the previous steps). The network diagram shows both.
+
 - `docs/INSTALL.md` (and the French copy) follows the order of the blog post: registry, build, then the
   certificate on the cloud proxy. Steps 3 and 4 swapped places.
 - The `docker` commands carry `sudo`, and the address of the build host is read from one variable, `IP`.

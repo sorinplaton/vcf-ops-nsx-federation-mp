@@ -1,25 +1,42 @@
 # Install guide
 
-How to build the NSX Federation pack and install it in VCF Operations 9.1.1, with the machine each command
-runs on. These are the steps used in the lab. Part 2 of the
+How to install the NSX Federation pack in VCF Operations 9.1.1, either from the released pack or from a
+build of your own, with the machine each command runs on. These are the steps used in the lab. Part 2 of the
 [blog](https://sorinplaton.github.io/posts/nsx-federation-management-pack-install/) shows them with screenshots.
 
 Version française : [INSTALL.fr.md](INSTALL.fr.md).
+
+## Choose an install path
+
+The `.pak` file holds the content of the pack (object model, alerts, dashboards) and the address of the adapter
+image. The adapter itself is a container image that the cloud proxy pulls when the account starts. The two
+paths differ only in where that image comes from.
+
+| | Option A: download the released pack | Option B: build your own |
+| --- | --- | --- |
+| Adapter image | Public, on `ghcr.io/sorinplaton/nsxfederation`, pulled by digest | Pushed by you to a registry of your own |
+| Needs | The cloud proxy reaches `ghcr.io` on TCP 443 | A build host with Docker, and a registry served over HTTPS that the cloud proxy trusts |
+| Steps | [Option A](#option-a-download-the-released-pack), then steps 6 to 10 | Steps 1 to 10, or the Harbor variant in place of steps 2 to 4 |
+| Use when | The cloud proxy has internet access | The cloud proxy has no internet access, images must come from an internal registry, or the pack is modified |
+
+Both paths install the same pack and need "Allow unsigned PAK installation" for the length of the install.
 
 ## Where things run
 
 | Machine | Role |
 | --- | --- |
-| Build host | A Linux host with Docker, `git` and Python 3. It builds the pack and pushes the adapter image. In the lab it is the jump host, which also runs the registry |
-| Registry | An image registry served over HTTPS that the cloud proxy can reach. The cloud proxy does not fall back to HTTP |
+| Build host | Option B only. A Linux host with Docker, `git` and Python 3. It builds the pack and pushes the adapter image. In the lab it is the jump host, which also runs the registry |
+| Registry | Option A: `ghcr.io`, run by GitHub. Option B: an image registry served over HTTPS that the cloud proxy can reach. The cloud proxy does not fall back to HTTP |
 | Cloud proxy | The VCF Operations collector that runs the adapter container. It pulls the image from the registry |
 | VCF Operations | Admin console (`https://<ops>/admin`) and product UI (`https://<ops>/`) |
 | NSX | The Global Managers (active and standby) and the Local Managers of one federation |
 
 ## Network access
 
-What the build host (the jump host in the lab) must reach, and the two flows of the cloud proxy that the
-install depends on. Solid lines start at the build host; dashed lines are the cloud proxy's.
+What the build host (the jump host in the lab) must reach, and the flows of the cloud proxy that the install
+depends on. Solid lines start at the build host and apply to Option B only; dashed lines are the cloud proxy's.
+With Option A, only the cloud proxy flows to `ghcr.io` and to NSX are needed, plus a browser that reaches
+VCF Operations.
 
 ```mermaid
 flowchart LR
@@ -35,6 +52,7 @@ flowchart LR
   VC["vCenter"]
   ESX["ESXi host of the<br/>cloud proxy VM"]
   CP["Cloud proxy"]
+  GHCR["ghcr.io<br/>released image"]
   GM["Global Managers<br/>active and standby"]
   LM["Local Managers"]
 
@@ -47,7 +65,8 @@ flowchart LR
   BH -->|"TCP 443: govc (step 4)"| VC
   BH -->|"TCP 443: govc guest.upload (step 4)"| ESX
   BH -.->|"TCP 443: optional local test (step 5)"| GM
-  CP -.->|"TCP 5000: pull image"| REG
+  CP -.->|"TCP 5000: pull image (Option B)"| REG
+  CP -.->|"TCP 443: pull image (Option A)"| GHCR
   CP -.->|"TCP 443: collection"| GM
   CP -.->|"TCP 443: collection"| LM
 ```
@@ -60,7 +79,8 @@ flowchart LR
 | Build host | vCenter of the cloud proxy VM | TCP 443 | `govc` guest operations of step 4. Not needed when the certificate is copied over SSH |
 | Build host | ESXi host of the cloud proxy VM | TCP 443 | `govc guest.upload` sends the file to the ESXi host, not to vCenter |
 | Build host | Global Managers | TCP 443 | Only for the optional test of step 5 |
-| Cloud proxy | Registry | TCP 5000, or the registry port | Pulling the adapter image |
+| Cloud proxy | Registry | TCP 5000, or the registry port | Option B: pulling the adapter image |
+| Cloud proxy | `ghcr.io` | TCP 443 | Option A: pulling the released adapter image. Through the site proxy if the cloud proxy uses one |
 | Cloud proxy | Global Managers and Local Managers | TCP 443 | Collection |
 
 Placeholders:
@@ -73,6 +93,8 @@ Placeholders:
 
 ## Checklist
 
+Option B. With Option A, use the checklist of [Option A](#option-a-download-the-released-pack).
+
 - [ ] 1. Prerequisites checked
 - [ ] 2. Registry serves HTTPS
 - [ ] 3. Pack built, image pushed, registry address in the pack checked
@@ -83,6 +105,42 @@ Placeholders:
 - [ ] 8. Account "Collecting", metrics after three cycles
 - [ ] 9. Optional: group per federation
 - [ ] 10. Optional: alerts sent to email, a webhook or a ticketing tool
+
+## Option A: download the released pack
+
+Use this in place of steps 1 to 5 when the cloud proxy has internet access. It needs no build host, no Docker
+and no registry of your own. Not yet tested in the lab, which uses Option B.
+
+- [ ] VCF Operations 9.1.1 with at least one cloud proxy in state `UP`, which reaches `ghcr.io` on TCP 443,
+      directly or through the site proxy.
+- [ ] NSX 9.1 Federation and a read-only NSX account, as in step 1.
+- [ ] The cloud proxy reaches every NSX manager on TCP 443.
+- [ ] Admin password of VCF Operations, and the change approval for the unsigned-pack switch if the
+      organisation requires one.
+- [ ] Pack downloaded and checksum verified.
+- [ ] Then steps 6 to 10.
+
+*Run on: any machine with a browser that reaches VCF Operations.* Download the pack and its checksum from the
+[releases page](https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/latest), or:
+
+```bash
+curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.1/NSXFederation_1.13.0.pak
+curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.1/NSXFederation_1.13.0.pak.sha256
+sha256sum -c NSXFederation_1.13.0.pak.sha256
+```
+
+The pack names the image `ghcr.io/sorinplaton/nsxfederation` by digest, so the cloud proxy always runs the
+image the pack was built with. The image is public: the cloud proxy pulls it without a login, and it trusts the
+certificate of `ghcr.io` without a step 4.
+
+Optional check, *on the cloud proxy* if SSH is enabled there. An answer of `401` means `ghcr.io` is reachable:
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' https://ghcr.io/v2/
+```
+
+Then install the pack with step 6, by hand or with the scripts (the scripts need a clone of this repository and
+the settings file of step 1), and continue with steps 7 to 10.
 
 ## 1. Prerequisites
 
@@ -375,7 +433,8 @@ Federation.
 - [ ] Global Manager addresses: `<gm1>,<gm2>`, the cluster address of the active and of the standby. One
       account per federation.
 - [ ] Credential: the read-only NSX account. Add the Local Manager credential only if it differs.
-- [ ] Collector: the cloud proxy that trusts the registry (step 4).
+- [ ] Collector: with Option A, a cloud proxy that reaches `ghcr.io`; with Option B, the cloud proxy that
+      trusts the registry (step 4).
 - [ ] Certificate trust: keep `enforce`, or choose `ca` when the managers have certificates signed by an
       internal CA. With `ca`, paste the CA certificates in "Trusted CA certificates (PEM)" and use addresses
       that the certificates name.
@@ -389,8 +448,8 @@ Federation.
 *Run in: the VCF Operations product UI.*
 
 - [ ] Accounts tab: the account reaches "Collecting". If it stays `FAILED` with an empty message, the cloud
-      proxy could not pull the image: check steps 2 and 4, and the registry log for
-      `tls: bad certificate`.
+      proxy could not pull the image. Option A: check that the cloud proxy reaches `ghcr.io`. Option B: check
+      steps 2 and 4, and the registry log for `tls: bad certificate`.
 - [ ] With a 5-minute interval, the data arrives over three cycles: objects and relationships first, then
       properties and events, then metrics after about ten minutes. Rates need one more cycle.
 - [ ] The federation object lists no failed calls.
@@ -424,7 +483,8 @@ python3 install/notification_rules.py --outbound '<outbound instance>' --min-cri
 
 ## Upgrade
 
-1. Build the new version (step 3) and install it (step 6).
+1. Option A: download the pack of the new release. Option B: build the new version (step 3). Then install it
+   (step 6).
 2. Stop and start the account. Check that it reaches "Collecting"; start it a second time if it stays stopped.
 3. Metrics return after three cycles, rates after four.
 

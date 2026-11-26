@@ -137,6 +137,15 @@ commit `pack/image-requirements.txt`: CI checks those packages for known vulnera
 [docs/INSTALL.md](docs/INSTALL.md) (French: [docs/INSTALL.fr.md](docs/INSTALL.fr.md)) gives each step with the
 machine its commands run on.
 
+Two paths:
+
+- **Option A, download the released pack.** The `.pak` on the
+  [releases page](https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/latest) pulls its adapter
+  image from `ghcr.io/sorinplaton/nsxfederation`. No build and no registry of your own; the cloud proxy must
+  reach `ghcr.io` on TCP 443.
+- **Option B, build your own.** Build the pack and push the image to a registry the cloud proxy trusts, for a
+  cloud proxy without internet access or an internal-registry policy.
+
 The pack is not signed, so VCF Operations 9 refuses it until "Allow unsigned PAK installation" is turned on in
 the admin console (Broadcom KB 415279). The cloud proxy must also trust the certificate of the registry. Part 2
 of the blog shows both steps with screenshots.
