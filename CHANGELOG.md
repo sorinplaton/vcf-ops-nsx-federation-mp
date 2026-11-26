@@ -2,7 +2,7 @@
 
 Each release has a tag `v<version>`; the commit messages give the details.
 
-## Unreleased
+## 1.13.4 (2026-11-26)
 
 Supply-chain hardening of the release path; the pack itself is unchanged.
 
