@@ -30,7 +30,7 @@ jobs:
       - name: a Docker bind mount under ~/.cache, as the Trivy step does
         run: |
           ls -ld ~/.cache 2>&1 || true
-          docker run --rm -v \$HOME/.cache/trivy:/root/.cache busybox:1.36 true
+          docker run --rm -v $HOME/.cache/trivy:/root/.cache busybox:1.36 true
           ls -ld ~/.cache ~/.cache/trivy
       - name: A. gh after keyless cosign
         id: a
