@@ -1,9 +1,9 @@
 # Install guide
 
-How to install the NSX Federation pack in VCF Operations 9.1.1, either from the released pack or from a
-build of your own, with the machine each command runs on. Option B is the path used in the lab. For Option A,
-the commands that verify the signatures were run against the v1.13.3 release (key and keyless), and the mirror variant was tested
-against a local registry; each section says what was not tested. Part 2 of the
+How to install the NSX Federation pack in VCF Operations 9.1.1, either from the released pack or from a build of
+your own, with the machine each command runs on. Option B is the path used in the lab. For Option A, the commands
+that verify the signatures were run against the v1.13.5 release (key, keyless, provenance and SBOM), and the
+mirror variant was tested against a local registry; each section says what was not tested. Part 2 of the
 [blog](https://sorinplaton.github.io/posts/nsx-federation-management-pack-install/) shows the steps with
 screenshots.
 
@@ -152,7 +152,7 @@ and no registry of your own. When the cloud proxy has no internet access, or ima
 registry, add the [mirror variant](#variant-mirror-the-image-to-an-internal-registry) at the end of this
 section.
 
-Tested so far: the download and every command of "Verify the signatures" below, against the v1.13.3 release.
+Tested so far: the download and every command of "Verify the signatures" below, against the v1.13.5 release.
 The pull of the image from `ghcr.io` by the cloud proxy is not yet tested in the lab, which uses Option B.
 
 Network flows of this path. Solid lines start at the admin workstation; dashed lines are the cloud proxy's. The
@@ -199,8 +199,8 @@ Expected: `NSXFederation_1.13.0.pak: OK`. Anything else means the download is da
 it again.
 
 ```bash
-curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.3/NSXFederation_1.13.0.pak
-curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.3/NSXFederation_1.13.0.pak.sha256
+curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.5/NSXFederation_1.13.0.pak
+curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.5/NSXFederation_1.13.0.pak.sha256
 sha256sum -c NSXFederation_1.13.0.pak.sha256
 ```
 
@@ -257,7 +257,7 @@ less. The first command below fetches the key, the second the bundle, which is t
 
 ```bash
 curl -LO https://raw.githubusercontent.com/sorinplaton/vcf-ops-nsx-federation-mp/main/cosign.pub
-curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.3/NSXFederation_1.13.0.pak.bundle
+curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.5/NSXFederation_1.13.0.pak.bundle
 ```
 
 **Install cosign.** *Run on: the machine that downloaded the pack (Linux, x86-64).* One of the three methods
@@ -312,7 +312,7 @@ the signature must name exactly this repository, this workflow and this tag, iss
 release notes on GitHub show the same values. The bundle of the pack is the `.sigstore.json` file of the release.
 
 ```bash
-RELEASE=1.13.3
+RELEASE=1.13.5
 SIGNER="https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/.github/workflows/release.yml@refs/tags/v$RELEASE"
 ISSUER=https://token.actions.githubusercontent.com
 curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v$RELEASE/NSXFederation_1.13.0.pak.sigstore.json
@@ -343,8 +343,8 @@ cosign verify-attestation --type cyclonedx --certificate-identity "$SIGNER" --ce
 ```
 
 Expected: `Verification succeeded!` twice, then `SBOM attestation: verified`. The release also carries the Trivy
-report of the adapter image, `NSXFederation_<version>.trivy.txt`. Not tested yet: `v1.13.5` is the first release
-with these.
+report of the adapter image, `NSXFederation_<version>.trivy.txt`. Tested against `v1.13.5`, the first release with
+these, on 2026-11-26.
 
 Once the checksum and both signatures are good, install the pack with step 6, by hand or with the scripts, and
 continue with steps 7 to 10. The scripts need a Linux host with a clone of this repository, the settings file
