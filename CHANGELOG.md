@@ -14,6 +14,8 @@ Install guide only.
 - Option A lists `pkg-containers.githubusercontent.com` next to `ghcr.io`: the image layers come from there.
 - New variant of Option A: copy the released image by digest into an internal registry with `skopeo`, then point
   the pack at it with `tools/repack.py`. No build needed.
+- New `docs/RELEASE.md` for the maintainer: build from the tag, push to `ghcr.io`, sign the image and the pack
+  with cosign, verify as a user would, publish the GitHub release, and recover from a lost or exposed key.
 
 - `docs/INSTALL.md` (and the French copy) follows the order of the blog post: registry, build, then the
   certificate on the cloud proxy. Steps 3 and 4 swapped places.

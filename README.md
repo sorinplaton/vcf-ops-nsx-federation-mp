@@ -92,6 +92,7 @@ read-only NSX account is enough; the built-in `audit` account was tested.
 | `docs/FEATURES.md`, `docs/FEATURES.fr.md` | Every object type, metric, property and alert of the pack, in English and in French (generated) |
 | `docs/INSTALL.md` | Install guide: checklist and the commands for each step, with the machine they run on ([French](docs/INSTALL.fr.md)) |
 | `docs/OPERATIONS.md` | Account settings, certificate trust, sizing, alert behaviour, groups, notifications, troubleshooting, upgrade |
+| `docs/RELEASE.md` | Maintainer guide: build, sign (cosign) and publish a release, and what to do if the signing key is lost |
 | `SECURITY.md`, `CHANGELOG.md` | How to report a vulnerability, what the pack can do, supply chain; the changes of each release |
 
 ## Build
