@@ -1,41 +1,45 @@
 name: diag-attestation
-# Temporary: find why gh attestation verify fails on the runner (release v1.13.4). Read-only.
+# Temporary: reproduce the failed "gh attestation verify" of release v1.13.4 with the release job's conditions.
 on:
   pull_request:
     paths: [".github/workflows/diag-attestation.yml"]
 permissions:
   contents: read
-  attestations: read
 jobs:
   diag:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      IMG: ghcr.io/sorinplaton/nsxfederation@sha256:3ee9f28b0d51270ef09ea7a41a652efc3cfa0163c921193bfb951cc69a978dc1
       R: sorinplaton/vcf-ops-nsx-federation-mp
     steps:
+      - run: echo "diagnostic subject $GITHUB_RUN_ID" > /tmp/diag-subject.txt
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8  # v4.2.2
+        with:
+          subject-path: /tmp/diag-subject.txt
       - uses: sigstore/cosign-installer@7e8b541eb2e61bf99390e1afd4be13a184e9ebc5  # v3.10.1
         with:
           cosign-release: v2.4.1
-      - name: A. cosign 2.4.1 first, then gh
+      - name: A. gh as in release.yml
         id: a
         continue-on-error: true
         run: |
-          cosign verify --certificate-identity "https://github.com/$R/.github/workflows/release.yml@refs/tags/v1.13.4" \
-            --certificate-oidc-issuer https://token.actions.githubusercontent.com "$IMG" > /dev/null && echo "cosign OK"
-          ls -la ~/.sigstore ~/.sigstore/root 2>&1 | head -8
-          gh attestation verify "oci://$IMG" -R "$R" --signer-workflow "$R/.github/workflows/release.yml"
-      - name: B. gh with its own HOME after cosign
+          env | grep -E '^(ACTIONS_ID_TOKEN|SIGSTORE|TUF|HOME|XDG)' | sed 's/=.*/=<set>/'
+          ls -la ~/.sigstore 2>&1 | head; ls -la ~/.cache 2>&1 | head
+          gh attestation verify /tmp/diag-subject.txt -R "$R" --signer-workflow "$R/.github/workflows/diag-attestation.yml"
+      - name: B. gh with an isolated HOME
         id: b
         continue-on-error: true
         run: |
-          H=$(mktemp -d)
-          HOME=$H gh attestation verify "oci://$IMG" -R "$R" --signer-workflow "$R/.github/workflows/release.yml"
-      - name: C. gh after removing ~/.sigstore
+          HOME=$(mktemp -d) gh attestation verify /tmp/diag-subject.txt -R "$R" --signer-workflow "$R/.github/workflows/diag-attestation.yml"
+      - name: C. gh without the OIDC variables
         id: c
         continue-on-error: true
         run: |
-          rm -rf ~/.sigstore
-          gh attestation verify "oci://$IMG" -R "$R" --signer-workflow "$R/.github/workflows/release.yml"
+          env -u ACTIONS_ID_TOKEN_REQUEST_URL -u ACTIONS_ID_TOKEN_REQUEST_TOKEN \
+            gh attestation verify /tmp/diag-subject.txt -R "$R" --signer-workflow "$R/.github/workflows/diag-attestation.yml"
       - name: Outcomes
         run: echo "A=${{ steps.a.outcome }} B=${{ steps.b.outcome }} C=${{ steps.c.outcome }}"
