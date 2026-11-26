@@ -16,6 +16,53 @@ Version française : [INSTALL.fr.md](INSTALL.fr.md).
 | VCF Operations | Admin console (`https://<ops>/admin`) and product UI (`https://<ops>/`) |
 | NSX | The Global Managers (active and standby) and the Local Managers of one federation |
 
+## Network access
+
+What the build host (the jump host in the lab) must reach, and the two flows of the cloud proxy that the
+install depends on. Solid lines start at the build host; dashed lines are the cloud proxy's.
+
+```mermaid
+flowchart LR
+  subgraph NET["Internet"]
+    PKG["download.docker.com<br/>distribution repositories"]
+    GH["github.com"]
+    HUB["Docker Hub<br/>registry-1.docker.io"]
+    PYPI["pypi.org<br/>files.pythonhosted.org"]
+  end
+  BH["Build host<br/>(jump host)"]
+  REG["Registry<br/>HTTPS, &lt;registry&gt; port"]
+  OPS["VCF Operations<br/>admin console, Suite API"]
+  VC["vCenter"]
+  ESX["ESXi host of the<br/>cloud proxy VM"]
+  CP["Cloud proxy"]
+  GM["Global Managers<br/>active and standby"]
+  LM["Local Managers"]
+
+  BH -->|"TCP 443: Docker, git, Python packages"| PKG
+  BH -->|"TCP 443: clone"| GH
+  BH -->|"TCP 443: base images"| HUB
+  BH -->|"TCP 443: SDK and adapter packages"| PYPI
+  BH -->|"TCP 5000: push image (step 4)"| REG
+  BH -->|"TCP 443: upload pack, account, scripts (steps 6-10)"| OPS
+  BH -->|"TCP 443: govc (step 3)"| VC
+  BH -->|"TCP 443: govc guest.upload (step 3)"| ESX
+  BH -.->|"TCP 443: optional local test (step 5)"| GM
+  CP -.->|"TCP 5000: pull image"| REG
+  CP -.->|"TCP 443: collection"| GM
+  CP -.->|"TCP 443: collection"| LM
+```
+
+| From | To | Port | Used for |
+| --- | --- | --- | --- |
+| Build host | Internet (Docker and distribution repositories, GitHub, Docker Hub, PyPI) | TCP 443 | Installing the tools, cloning the repository, building the tooling and adapter images. Through a proxy if the site uses one |
+| Build host | Registry | TCP 5000, or the registry port | Pushing the adapter image. Local when the registry runs on the build host, as in the lab |
+| Build host | VCF Operations | TCP 443 | Admin console and product UI in a browser, and the Suite API for the scripts of steps 6 to 10 |
+| Build host | vCenter of the cloud proxy VM | TCP 443 | `govc` guest operations of step 3. Not needed when the certificate is copied over SSH |
+| Build host | ESXi host of the cloud proxy VM | TCP 443 | `govc guest.upload` sends the file to the ESXi host, not to vCenter |
+| Build host | Global Managers | TCP 443 | Only for the optional test of step 5 |
+| Cloud proxy | Registry | TCP 5000, or the registry port | Pulling the adapter image |
+| Cloud proxy | Global Managers and Local Managers | TCP 443 | Collection |
+
 Placeholders:
 
 | Placeholder | Example |
@@ -49,6 +96,53 @@ Placeholders:
 - [ ] Admin password of VCF Operations: the unsigned-pack switch is in the admin console.
 - [ ] A change approval to turn on "Allow unsigned PAK installation" for the length of the install, if the
       organisation requires one. The pack is not signed by Broadcom (KB 415279).
+- [ ] Build host tools: Docker Engine, `git` and Python 3 with `requests`, installed as below.
+
+### Build host tools
+
+*Run on: the build host.* Docker comes from the Docker repository rather than the distribution packages, so
+that `docker build` uses BuildKit.
+
+Ubuntu or Debian (on Debian, replace `ubuntu` with `debian` in both URLs):
+
+```bash
+sudo apt-get update
+sudo apt-get install -y ca-certificates curl git python3 python3-requests
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] \
+https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
+  | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin
+```
+
+RHEL, Rocky Linux or AlmaLinux 8 and later:
+
+```bash
+sudo dnf install -y dnf-plugins-core git python3 python3-requests
+sudo dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin
+```
+
+On both, start Docker and add the build user to the `docker` group. The build command of step 4 runs as
+that group, so log out and back in before it:
+
+```bash
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER
+```
+
+Check, after logging in again:
+
+```bash
+docker version            # shows a Client and a Server section, without sudo
+docker run --rm hello-world
+git --version
+python3 --version         # 3.8 or later
+python3 -c "import requests"
+```
 
 ## 2. Registry over HTTPS
 

@@ -17,6 +17,54 @@ English version: [INSTALL.md](INSTALL.md).
 | VCF Operations | Console d'administration (`https://<ops>/admin`) et interface du produit (`https://<ops>/`) |
 | NSX | Les Global Managers (actif et standby) et les Local Managers d'une fédération |
 
+## Accès réseau
+
+Ce que l'hôte de construction (le jumphost dans le lab) doit joindre, et les deux flux du proxy cloud dont
+dépend l'installation. Les traits pleins partent de l'hôte de construction ; les pointillés sont ceux du proxy
+cloud.
+
+```mermaid
+flowchart LR
+  subgraph NET["Internet"]
+    PKG["download.docker.com<br/>dépôts de la distribution"]
+    GH["github.com"]
+    HUB["Docker Hub<br/>registry-1.docker.io"]
+    PYPI["pypi.org<br/>files.pythonhosted.org"]
+  end
+  BH["Hôte de construction<br/>(jumphost)"]
+  REG["Registre<br/>HTTPS, port de &lt;registry&gt;"]
+  OPS["VCF Operations<br/>console d'administration, Suite API"]
+  VC["vCenter"]
+  ESX["Hôte ESXi de la VM<br/>du proxy cloud"]
+  CP["Proxy cloud"]
+  GM["Global Managers<br/>actif et standby"]
+  LM["Local Managers"]
+
+  BH -->|"TCP 443 : Docker, git, paquets Python"| PKG
+  BH -->|"TCP 443 : clone"| GH
+  BH -->|"TCP 443 : images de base"| HUB
+  BH -->|"TCP 443 : paquets du SDK et de l'adaptateur"| PYPI
+  BH -->|"TCP 5000 : envoi de l'image (étape 4)"| REG
+  BH -->|"TCP 443 : pack, compte, scripts (étapes 6 à 10)"| OPS
+  BH -->|"TCP 443 : govc (étape 3)"| VC
+  BH -->|"TCP 443 : govc guest.upload (étape 3)"| ESX
+  BH -.->|"TCP 443 : test local facultatif (étape 5)"| GM
+  CP -.->|"TCP 5000 : récupération de l'image"| REG
+  CP -.->|"TCP 443 : collecte"| GM
+  CP -.->|"TCP 443 : collecte"| LM
+```
+
+| Depuis | Vers | Port | Usage |
+| --- | --- | --- | --- |
+| Hôte de construction | Internet (dépôts Docker et de la distribution, GitHub, Docker Hub, PyPI) | TCP 443 | Installation des outils, clone du dépôt, construction des images d'outillage et de l'adaptateur. Via un proxy si le site en utilise un |
+| Hôte de construction | Registre | TCP 5000, ou le port du registre | Envoi de l'image de l'adaptateur. En local quand le registre tourne sur l'hôte de construction, comme dans le lab |
+| Hôte de construction | VCF Operations | TCP 443 | Console d'administration et interface du produit dans un navigateur, Suite API pour les scripts des étapes 6 à 10 |
+| Hôte de construction | vCenter de la VM du proxy cloud | TCP 443 | Opérations invité `govc` de l'étape 3. Inutile si le certificat est copié par SSH |
+| Hôte de construction | Hôte ESXi de la VM du proxy cloud | TCP 443 | `govc guest.upload` envoie le fichier à l'hôte ESXi, pas au vCenter |
+| Hôte de construction | Global Managers | TCP 443 | Seulement pour le test facultatif de l'étape 5 |
+| Proxy cloud | Registre | TCP 5000, ou le port du registre | Récupération de l'image de l'adaptateur |
+| Proxy cloud | Global Managers et Local Managers | TCP 443 | Collecte |
+
 Valeurs à remplacer :
 
 | Valeur | Exemple |
@@ -51,6 +99,54 @@ Valeurs à remplacer :
       d'administration.
 - [ ] Une approbation de changement pour activer « Allow unsigned PAK installation » le temps de
       l'installation, si l'organisation l'exige. Le pack n'est pas signé par Broadcom (KB 415279).
+- [ ] Outils de l'hôte de construction : Docker Engine, `git` et Python 3 avec `requests`, installés comme
+      ci-dessous.
+
+### Outils de l'hôte de construction
+
+*À exécuter sur : l'hôte de construction.* Docker vient du dépôt Docker plutôt que des paquets de la
+distribution, afin que `docker build` utilise BuildKit.
+
+Ubuntu ou Debian (sur Debian, remplacer `ubuntu` par `debian` dans les deux URL) :
+
+```bash
+sudo apt-get update
+sudo apt-get install -y ca-certificates curl git python3 python3-requests
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] \
+https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
+  | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin
+```
+
+RHEL, Rocky Linux ou AlmaLinux 8 et versions ultérieures :
+
+```bash
+sudo dnf install -y dnf-plugins-core git python3 python3-requests
+sudo dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin
+```
+
+Dans les deux cas, démarrer Docker et ajouter l'utilisateur de construction au groupe `docker`. La commande
+de construction de l'étape 4 s'exécute avec ce groupe : se déconnecter et se reconnecter avant de la lancer.
+
+```bash
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER
+```
+
+Vérification, après la reconnexion :
+
+```bash
+docker version            # affiche une section Client et une section Server, sans sudo
+docker run --rm hello-world
+git --version
+python3 --version         # 3.8 ou ultérieure
+python3 -c "import requests"
+```
 
 ## 2. Registre en HTTPS
 
