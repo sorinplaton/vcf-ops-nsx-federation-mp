@@ -2241,11 +2241,29 @@ def test_diagnostics_findings():
 
 def test_the_image_lock_has_the_fixed_cryptography_of_the_dockerfile():
     import re
-    docker = open(os.path.join(ROOT, "pack", "Dockerfile")).read()
     lock = open(os.path.join(ROOT, "pack", "image-requirements.txt")).read()
+    reqs = ""
+    for name in ("adapter_requirements.txt", "root_requirements.txt"):
+        reqs += open(os.path.join(ROOT, "pack", name)).read()
     for pkg in ("cryptography", "setuptools"):
-        want = re.search(pkg + r"==([\d.]+)", docker).group(1)
+        want = re.search(r"^" + pkg + r"==([\d.]+)", reqs, re.M).group(1)
         assert f"{pkg}=={want}\n" in lock, pkg
+
+
+def test_the_hashed_requirements_match_the_image_lock():
+    # pack/Dockerfile installs these with --no-deps --require-hashes: every package pinned, hashed, and at the
+    # version the image lock records (tools/hash_requirements.py, tools/image_lock.sh)
+    import re
+    lock = open(os.path.join(ROOT, "pack", "image-requirements.txt")).read()
+    docker = open(os.path.join(ROOT, "pack", "Dockerfile")).read()
+    for name in ("adapter_requirements.txt", "root_requirements.txt"):
+        text = open(os.path.join(ROOT, "pack", name)).read()
+        pins = re.findall(r"^([A-Za-z0-9_.-]+)==([\d.]+) \\\n((?:    --hash=sha256:[0-9a-f]{64}(?: \\)?\n)+)", text, re.M)
+        assert pins, name
+        assert len(pins) == len(re.findall(r"^[A-Za-z0-9_.-]+==", text, re.M)), name + ": a package without a hash"
+        for pkg, ver, _ in pins:
+            assert f"{pkg}=={ver}\n" in lock, f"{name}: {pkg}=={ver} is not in image-requirements.txt"
+        assert f"--no-deps --require-hashes -r {name}" in docker, name
 
 
 def test_install_scripts_read_every_page():

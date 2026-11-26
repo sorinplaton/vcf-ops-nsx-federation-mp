@@ -27,7 +27,9 @@ flowchart LR
 | `NSXFederation_<version>.pak` | GitHub release assets | `mp-build` |
 | `NSXFederation_<version>.pak.sha256` | GitHub release assets | `sha256sum` |
 | `NSXFederation_<version>.pak.sigstore.json` | GitHub release assets | `cosign sign-blob --bundle`, keyless |
-| `NSXFederation_<version>.sbom.cdx.json` | GitHub release assets | CycloneDX, from `pack/image-requirements.txt` |
+| `NSXFederation_<version>.sbom.cdx.json` | GitHub release assets, and a signed attestation on the adapter image (`cosign attest --type cyclonedx`) | CycloneDX, from `pack/image-requirements.txt` |
+| Build provenance (SLSA) | GitHub attestation store, and next to each image on `ghcr.io` | `actions/attest-build-provenance`, for the pack and both images |
+| `NSXFederation_<version>.trivy.txt`, `.trivy.json` | GitHub release assets | Trivy scan of the adapter image; the build stops on a CRITICAL with a fix |
 | `NSXFederation_<version>.pak.bundle`, `cosign.pub` | GitHub release assets, transition only | The maintainer, with the project key ([Transition](#transition-key-signatures-next-to-keyless-ones)) |
 
 `<release>` is the tag without the `v`; `<version>` is the pack version of `pack/manifest.txt`. They differ when
@@ -56,12 +58,25 @@ a release changes only the documentation and keeps the pack of the previous one.
 
       Without the variable, the workflow skips Docker Hub and publishes on `ghcr.io` only. Turn on immutable
       tags on both Docker Hub repositories if the plan offers it.
+- [ ] **Environment `release`.** Repository Settings, Environments: required reviewer = the maintainer, deployment
+      branches and tags = tag `v*`. Store the Docker Hub token as a secret of this environment, so that no other
+      job can read it, and delete the repository-level copy:
+
+      ```bash
+      gh secret set DOCKERHUB_TOKEN --env release -R sorinplaton/vcf-ops-nsx-federation-mp
+      gh secret delete DOCKERHUB_TOKEN -R sorinplaton/vcf-ops-nsx-federation-mp
+      ```
+- [ ] **Rulesets.** Settings, Rules, Rulesets: "release tags" (`refs/tags/v*`: creation, update and deletion
+      restricted, bypass for repository admins) and "main" (pull request required, checks `tests` and
+      `dependencies` required, no force push, no deletion, admins may bypass only through a pull request).
 
 ### Each release
 
 1. Commit the version in `pack/manifest.txt` (when the pack changes) and the `CHANGELOG.md` entry on `main`.
-2. Tag and push: `git tag v<release> && git push origin v<release>`.
-3. Follow the run: `gh run watch -R sorinplaton/vcf-ops-nsx-federation-mp`. The job stops at the first error;
+2. Tag and push: `git tag v<release> && git push origin v<release>`. Only a repository admin can push a `v*` tag.
+3. Approve the run: the release job waits for the environment `release`. On the run page, Review deployments,
+   tick `release`, Approve and deploy; or `gh run view <id>` shows the pending deployment.
+   Follow the run: `gh run watch -R sorinplaton/vcf-ops-nsx-federation-mp`. The job stops at the first error;
    nothing is published as a release before the last step, and a failed run can be started again with
    `gh run rerun <id> --failed` once the cause is fixed.
 4. Check the draft release: the assets, and the digests in its notes. The workflow already verified every
@@ -70,13 +85,16 @@ a release changes only the documentation and keeps the pack of the previous one.
 6. Publish: `gh release edit v<release> --draft=false --latest`.
 7. Update the release numbers in Option A of `docs/INSTALL.md` and `docs/INSTALL.fr.md`, and commit.
 
-On a pull request that changes `pack/`, `tooling/`, `pak-image/` or the workflow, the same build runs against a
-throwaway registry inside the job. It pushes nothing and signs nothing; it shows that the release still builds.
+On a pull request that changes `pack/`, `tooling/`, `pak-image/`, the build action or the workflow, the job `build`
+runs the same build against a throwaway registry, with a read-only token. It pushes nothing and signs nothing; it
+shows that the release still builds and that the adapter image has no CRITICAL vulnerability with a fix.
 
 ### Transition: key signatures next to keyless ones
 
-Users of releases up to `v1.13.2` verify with `cosign.pub`. For the next few releases, add the key signatures
-to the draft, so that they can keep their check while they move to the keyless one. The private key stays on
+Users of releases up to `v1.13.2` verify with `cosign.pub`. For releases up to and including `v1.14.0`, add the
+key signatures to the draft, so that they can keep their check while they move to the keyless one. From the next
+release on, skip this step, remove `cosign.pub` from the repository root with a `CHANGELOG.md` entry, and keep the
+key folder only as long as older releases need to be signed again. The private key stays on
 the maintainer machine; it is never given to GitHub. With `RELEASE`, `VERSION` and the adapter digest `DIGEST`
 of the draft release:
 
@@ -92,8 +110,7 @@ gh release upload v$RELEASE -R sorinplaton/vcf-ops-nsx-federation-mp NSXFederati
 ```
 
 Then sign the adapter image with the key as in [step 5](#5-sign-the-image) of the manual release
-(`ghcr.io/sorinplaton/nsxfederation@$DIGEST`). End the transition with a `CHANGELOG.md` entry that says from which
-release only the keyless signatures are made.
+(`ghcr.io/sorinplaton/nsxfederation@$DIGEST`).
 
 ## Manual release (fallback, and releases up to v1.13.2)
 

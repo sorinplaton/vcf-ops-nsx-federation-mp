@@ -1,8 +1,24 @@
 version: 2
-# GitHub Actions only. The Python packages of the adapter image are pinned by the SDK library and the Dockerfile;
-# pack/image-requirements.txt is written from a built image by tools/image_lock.sh, never by hand or by a bot.
+# GitHub Actions (pinned by commit SHA), the tooling image's base (pinned by digest) and the hashed Python locks of the
+# tooling and CI tools. Not pack/: the Python packages of the adapter image are pinned by the SDK library and the
+# Dockerfile; pack/image-requirements.txt is written from a built image by tools/image_lock.sh, and
+# pack/adapter_requirements.txt by tools/hash_requirements.py, never by hand or by a bot.
 updates:
   - package-ecosystem: github-actions
-    directory: /
+    directories: ["/", "/.github/actions/build-pack"]
     schedule:
       interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]
+  - package-ecosystem: docker
+    directory: /tooling
+    schedule:
+      interval: monthly
+  - package-ecosystem: pip
+    directories: ["/tooling", "/.github"]
+    schedule:
+      interval: monthly
+    groups:
+      python-tools:
+        patterns: ["*"]

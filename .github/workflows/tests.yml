@@ -10,11 +10,17 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
           python-version: "3.11"
-      - run: pip install -r pack/adapter_requirements.txt requests lxml pytest pillow
+      - name: The adapter image's packages, then the test tools (hashed)
+        run: |
+          # the exact package set of the adapter image (tools/image_lock.sh), without dependency resolution
+          pip install --no-deps -r pack/image-requirements.txt
+          pip install --require-hashes -r .github/test-requirements.txt
       - name: Generated content is up to date
         run: |
           for g in alerts dashboards groups views features; do python tools/gen_$g.py; done
@@ -29,16 +35,18 @@ jobs:
   dependencies:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
           python-version: "3.11"
-      - run: pip install pip-audit cyclonedx-bom
+      - run: pip install --require-hashes -r .github/ci-requirements.txt
       - name: Known vulnerabilities in the Python packages of the adapter image
         run: pip-audit --no-deps --disable-pip -r pack/image-requirements.txt --progress-spinner off
       - name: SBOM of the adapter image (CycloneDX)
         run: cyclonedx-py requirements pack/image-requirements.txt --of JSON -o sbom.cdx.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: sbom
           path: sbom.cdx.json

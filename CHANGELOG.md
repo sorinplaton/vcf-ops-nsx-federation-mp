@@ -2,6 +2,25 @@
 
 Each release has a tag `v<version>`; the commit messages give the details.
 
+## Unreleased
+
+Supply-chain hardening of the release path; the pack itself is unchanged.
+
+- Only a repository admin can push a `v*` tag, and `main` changes only through a pull request with green checks
+  (rulesets). The release job runs in the environment `release`: it waits for the maintainer's approval and alone
+  holds the Docker Hub token. Pull-request builds run in a separate job with a read-only token.
+- Every GitHub Action is pinned by commit SHA; the tooling image's base by digest; every Python package of the
+  build, the CI tools and the tests is locked with hashes. The adapter image installs its five added packages with
+  `--no-deps --require-hashes` (`tools/hash_requirements.py`), and a test checks them against the image lock.
+  Dependabot proposes updates monthly.
+- Each release adds a SLSA build provenance attestation for the pack and both images, and a signed CycloneDX SBOM
+  attestation on the adapter image (on `ghcr.io` and Docker Hub). The build scans the adapter image with Trivy,
+  stops on a CRITICAL vulnerability with a fix, and attaches the report to the release.
+- `install/install_unsigned.sh` checks the signatures first (`install/verify_pak.sh`): a released pack with its
+  `.sigstore.json` must verify, or nothing is installed.
+- Key signatures (`cosign.pub`) continue up to and including `v1.14.0`; later releases are keyless only.
+- OpenSSF Scorecard runs weekly.
+
 ## 1.13.3 (2026-11-26)
 
 The pack is unchanged and still reports 1.13.0; this release adds the release workflow, Docker Hub and the

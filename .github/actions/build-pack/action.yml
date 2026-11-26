@@ -1,0 +1,110 @@
+name: Build the pack
+description: >
+  Builds the pack and the adapter image with the SDK (mp-build pushes the adapter image to the given registry),
+  puts the .pak in a FROM scratch image and pushes it, checks the file round trip, scans the adapter image with
+  Trivy (stops on a CRITICAL that has a fix), writes the scan report and the SBOM next to the pack.
+inputs:
+  registry:
+    description: Registry and repository of the adapter image, e.g. ghcr.io/sorinplaton/nsxfederation
+    required: true
+  pak-image:
+    description: Full reference of the pack image to push, e.g. ghcr.io/sorinplaton/nsxfederation-pak:1.13.4
+    required: true
+  release:
+    description: Release number written into the pack image label
+    required: true
+  registry-user:
+    description: Login for the registry (unused for a local registry)
+    default: unused
+  registry-password:
+    description: Password or token for the registry (unused for a local registry)
+    default: unused
+outputs:
+  version:
+    description: Pack version from pack/manifest.txt
+    value: ${{ steps.v.outputs.version }}
+  pak:
+    description: Path of the built .pak
+    value: ${{ steps.p.outputs.pak }}
+  digest:
+    description: Digest of the adapter image named in the pack
+    value: ${{ steps.p.outputs.digest }}
+  registry-in-pack:
+    description: REGISTRY line of the pack
+    value: ${{ steps.p.outputs.registry }}
+  pak-digest:
+    description: Digest of the pushed pack image
+    value: ${{ steps.k.outputs.digest }}
+runs:
+  using: composite
+  steps:
+    - id: v
+      shell: bash
+      run: |
+        echo "version=$(sed -n 's/.*"version": "\(.*\)".*/\1/p' pack/manifest.txt)" >> "$GITHUB_OUTPUT"
+
+    - name: Tooling image (SDK, pinned base, hashed packages)
+      shell: bash
+      run: docker build -t fedmp-tooling tooling
+
+    - name: Build the pack and push the adapter image
+      shell: bash
+      env:
+        REG: ${{ inputs.registry }}
+        REG_USER: ${{ inputs.registry-user }}
+        REG_PW: ${{ inputs.registry-password }}
+      run: |
+        # mp-build drives the host Docker through the socket, so the project path must be the same inside and out.
+        docker run --rm --network host -u "$(id -u):$(getent group docker | cut -d: -f3)" -e HOME="$PWD/.sdkhome" \
+          -v /var/run/docker.sock:/var/run/docker.sock -v "$(which docker)":/usr/bin/docker -v "$PWD:$PWD" -w "$PWD/pack" \
+          fedmp-tooling mp-build --no-ttl -P 18080 -r "$REG" --registry-username "$REG_USER" --registry-password "$REG_PW"
+        rm -f .sdkhome/.docker/config.json   # mp-build leaves the registry password there in clear text
+
+    - name: Read the image digest from the pack
+      id: p
+      shell: bash
+      run: |
+        PAK=pack/build/NSXFederation_${{ steps.v.outputs.version }}.pak
+        unzip -p "$PAK" adapter.zip > /tmp/adapter.zip
+        unzip -p /tmp/adapter.zip '*.conf' | grep -E '^(REGISTRY|REPOSITORY|DIGEST)='
+        echo "pak=$PAK" >> "$GITHUB_OUTPUT"
+        echo "digest=$(unzip -p /tmp/adapter.zip '*.conf' | sed -n 's/^DIGEST=//p')" >> "$GITHUB_OUTPUT"
+        echo "registry=$(unzip -p /tmp/adapter.zip '*.conf' | sed -n 's/^REGISTRY=//p')" >> "$GITHUB_OUTPUT"
+
+    - name: Scan the adapter image (Trivy)
+      shell: bash
+      env:
+        TRIVY: aquasec/trivy:0.76.2@sha256:8f6bb947dbc528902e11f2f5be52f7b519f6a39d5d148f41166f2040499768fb
+        V: ${{ steps.v.outputs.version }}
+      run: |
+        IMG=isdk_nsxfederation-test:$V   # the local copy mp-build tested, same layers as the pushed image
+        T="docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/.cache/trivy:/root/.cache -v $PWD/pack/build:/out $TRIVY"
+        $T image --quiet --scanners vuln --format table --output "/out/NSXFederation_$V.trivy.txt" "$IMG"
+        $T image --quiet --scanners vuln --format json --output "/out/NSXFederation_$V.trivy.json" "$IMG"
+        echo "Full report: NSXFederation_$V.trivy.txt. Gate: CRITICAL with a fix available."
+        $T image --quiet --scanners vuln --severity CRITICAL --ignore-unfixed --exit-code 1 "$IMG"
+
+    - name: SBOM of the adapter image (CycloneDX)
+      shell: bash
+      run: |
+        pip install --quiet --require-hashes -r .github/ci-requirements.txt
+        cyclonedx-py requirements pack/image-requirements.txt --of JSON \
+          -o "pack/build/NSXFederation_${{ steps.v.outputs.version }}.sbom.cdx.json"
+
+    - name: Pack image (the .pak in a FROM scratch image)
+      id: k
+      shell: bash
+      env:
+        V: ${{ steps.v.outputs.version }}
+        REF: ${{ inputs.pak-image }}
+      run: |
+        cp "${{ steps.p.outputs.pak }}" pak-image/
+        (cd pak-image && sha256sum "NSXFederation_$V.pak" > SHA256SUMS)
+        docker build --provenance=false --sbom=false --build-arg VERSION="$V" --build-arg RELEASE="${{ inputs.release }}" \
+          --build-arg ADAPTER_DIGEST="${{ steps.p.outputs.digest }}" -t "$REF" pak-image
+        docker push "$REF" | tee /tmp/push.txt
+        echo "digest=$(sed -n 's/.*digest: \(sha256:[0-9a-f]*\).*/\1/p' /tmp/push.txt)" >> "$GITHUB_OUTPUT"
+        # round trip: the file that comes out of the image is the file that went in
+        rm -rf /tmp/out && mkdir /tmp/out && docker create --name pakout "$REF" >/dev/null
+        docker cp pakout:/pak/. /tmp/out/ && docker rm pakout >/dev/null
+        (cd /tmp/out && sha256sum -c SHA256SUMS)

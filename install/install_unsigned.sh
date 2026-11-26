@@ -5,6 +5,8 @@
 # back off and stops the headless Chrome it used. Exit code: 0 only when the install completed AND the setting
 # is off.
 # After the install it deletes the alert and symptom definitions an older version left behind (cleanup_content.py).
+# Before anything else it checks the signatures with verify_pak.sh: a released pack (its .sigstore.json next to it)
+# must verify or nothing is installed; FEDMP_VERIFY=0 skips the check, FEDMP_VERIFY=1 requires it for any pack.
 # Needs OPS_HOST and OPS_PW (admin password) in the environment, and python3 with "requests". OPS_INSECURE=1 skips
 # the certificate check of the suite API for that step (lab only); OPS_CA can name a CA file instead.
 # usage: install_unsigned.sh <pak>
@@ -28,6 +30,7 @@ finish() {
 }
 trap finish EXIT
 trap 'rc=130; exit 130' INT TERM HUP
+"$D/verify_pak.sh" "$1" || exit 1   # finish() still switches the setting off
 # Right after the admin console login of upi.sh the product UI can take a few minutes to accept a login again:
 # up to three logins, each followed by a minute of tries to read the session
 got=1; for round in 1 2 3; do
