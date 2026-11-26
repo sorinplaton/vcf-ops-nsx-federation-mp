@@ -67,10 +67,9 @@ Placeholders:
 
 | Placeholder | Example |
 | --- | --- |
-| `IP` | `10.x.x.x`, the address of the build host that the cloud proxy reaches (see step 1) |
-| `<ops>` | `ops.example.com` |
-| `<gm1>`, `<gm2>` | cluster address of the active and of the standby Global Manager |
-| `<version>` | `1.13.0` |
+| `$IP`, `$VERSION`, `$OPS_HOST` and the other variables | Values of the settings file `~/fedmp.env` (step 1) |
+| `<ops>` | The VCF Operations host name, in the browser steps |
+| `<gm1>`, `<gm2>` | Cluster address of the active and of the standby Global Manager |
 
 ## Checklist
 
@@ -141,15 +140,37 @@ python3 --version         # 3.8 or later
 python3 -c "import requests"
 ```
 
-### The address of the build host
+### The settings file
 
-The commands of steps 2 to 4 read the address of the build host from one variable, `IP`. It is the address the
-cloud proxy uses to reach the registry. Replace `10.x.x.x` with it, and set the variable again in every new
-shell:
+The addresses, the names and the passwords the commands need are in one file, `~/fedmp.env`. The commands of
+this guide then carry no address and no password. Clone the repository, copy the example, fill it in, and make
+it readable by its owner only:
 
 ```bash
-IP=10.x.x.x
+cd ~
+git clone https://github.com/sorinplaton/vcf-ops-nsx-federation-mp.git
+cp vcf-ops-nsx-federation-mp/install/fedmp.env.example ~/fedmp.env && chmod 600 ~/fedmp.env
+nano ~/fedmp.env
 ```
+
+| Variable | Used for |
+| --- | --- |
+| `IP` | The address of the build host that the cloud proxy uses to reach the registry (steps 2 to 4) |
+| `VERSION` | The pack version, as in `pack/manifest.txt` |
+| `OPS_HOST`, `OPS_PW` | VCF Operations and its admin password (steps 6 to 10) |
+| `GOVC_URL`, `GOVC_USERNAME`, `GOVC_PASSWORD` | The vCenter that runs the cloud proxy VM (step 4) |
+| `PROXY_VM`, `PROXY_ROOT_PW` | The name of the cloud proxy VM and its root password (step 4) |
+| `GM_HOSTS`, `NSX_USER`, `NSX_PASSWORD` | The Global Managers and the read-only NSX account (step 5) |
+| `HARBOR`, `HARBOR_PROJECT`, `HARBOR_USER`, `HARBOR_PW` | Only for the Harbor variant |
+
+Each command block starts with the line that loads the file and exports its values:
+
+```bash
+set -a; source ~/fedmp.env; set +a
+```
+
+The file holds passwords. Keep it out of Git (`fedmp.env` is in `.gitignore`), and delete it or move it to a
+vault once the install is done.
 
 ## 2. Registry over HTTPS
 
@@ -159,7 +180,7 @@ With an existing Harbor registry, skip steps 2 to 4 and follow
 *Run on: the build host.* A `registry:2` container with a self-signed certificate:
 
 ```bash
-IP=10.x.x.x
+set -a; source ~/fedmp.env; set +a
 mkdir -p ~/fedmp-registry/certs && cd ~/fedmp-registry
 openssl req -x509 -newkey rsa:2048 -nodes -days 825 \
   -keyout certs/registry.key -out certs/registry.crt -subj "/CN=fedmp-registry" \
@@ -186,9 +207,8 @@ curl --cacert ~/fedmp-registry/certs/registry.crt https://$IP:5000/v2/_catalog
 *Run on: the build host.*
 
 ```bash
-IP=10.x.x.x
-git clone https://github.com/sorinplaton/vcf-ops-nsx-federation-mp.git
-cd vcf-ops-nsx-federation-mp
+set -a; source ~/fedmp.env; set +a
+cd ~/vcf-ops-nsx-federation-mp
 sudo docker build -t fedmp-tooling tooling
 
 sudo docker run --rm --network host -u $(id -u):$(getent group docker | cut -d: -f3) -e HOME=$PWD/.sdkhome \
@@ -197,7 +217,7 @@ sudo docker run --rm --network host -u $(id -u):$(getent group docker | cut -d: 
   --registry-username lab --registry-password lab
 ```
 
-The result is `pack/build/NSXFederation_<version>.pak`.
+The result is `pack/build/NSXFederation_$VERSION.pak`.
 
 The image is pushed to `localhost:5000`. Docker accepts the self-signed certificate of a registry on the local
 address, so the build host needs no certificate folder of its own. The registry of step 2 has no login.
@@ -207,7 +227,7 @@ When the registry is given as `host:port` without a domain, `mp-build` writes Do
 the address the cloud proxy uses into the pack before the install:
 
 ```bash
-python3 tools/repack.py pack/build/NSXFederation_<version>.pak $IP:5000 nsxfederation
+python3 tools/repack.py pack/build/NSXFederation_$VERSION.pak $IP:5000 nsxfederation
 ```
 
 Check that the image is in the registry:
@@ -229,11 +249,9 @@ port included:
 can stay disabled: vCenter guest operations write the file with the appliance root account.
 
 ```bash
-IP=10.x.x.x
-export GOVC_URL=<vcenter> GOVC_USERNAME=<user> GOVC_PASSWORD='<password>' GOVC_INSECURE=1
-VM=<cloud-proxy-vm-name>
-govc guest.mkdir -vm "$VM" -l 'root:<proxy-root-password>' -p /etc/docker/certs.d/$IP:5000
-govc guest.upload -vm "$VM" -l 'root:<proxy-root-password>' -f ~/fedmp-registry/certs/registry.crt \
+set -a; source ~/fedmp.env; set +a
+govc guest.mkdir -vm "$PROXY_VM" -l "root:$PROXY_ROOT_PW" -p /etc/docker/certs.d/$IP:5000
+govc guest.upload -vm "$PROXY_VM" -l "root:$PROXY_ROOT_PW" -f ~/fedmp-registry/certs/registry.crt \
   /etc/docker/certs.d/$IP:5000/ca.crt
 ```
 
@@ -261,31 +279,29 @@ On Harbor, once:
 internal CA, or is self-signed, copy the CA certificate first:
 
 ```bash
-HARBOR=harbor.example.com
+set -a; source ~/fedmp.env; set +a
 sudo mkdir -p /etc/docker/certs.d/$HARBOR
 sudo cp harbor-ca.crt /etc/docker/certs.d/$HARBOR/ca.crt
 ```
 
 Build the pack and push the image. `mp-build` logs in to Harbor with the account given on the command line. The
-name of a robot account contains a `$`, so keep the single quotes:
+name of a robot account contains a `$`, so keep the single quotes around it in `fedmp.env`:
 
 ```bash
-HARBOR=harbor.example.com
-PROJECT=nsxfederation
-git clone https://github.com/sorinplaton/vcf-ops-nsx-federation-mp.git
-cd vcf-ops-nsx-federation-mp
+set -a; source ~/fedmp.env; set +a
+cd ~/vcf-ops-nsx-federation-mp
 sudo docker build -t fedmp-tooling tooling
 
 sudo docker run --rm --network host -u $(id -u):$(getent group docker | cut -d: -f3) -e HOME=$PWD/.sdkhome \
   -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -v $PWD:$PWD -w $PWD/pack \
-  fedmp-tooling mp-build --no-ttl -r $HARBOR/$PROJECT/nsxfederation \
-  --registry-username '<harbor-account>' --registry-password '<harbor-secret>'
+  fedmp-tooling mp-build --no-ttl -r $HARBOR/$HARBOR_PROJECT/nsxfederation \
+  --registry-username "$HARBOR_USER" --registry-password "$HARBOR_PW"
 ```
 
 Check the address in the pack. The registry has a domain name here, so `repack.py` should not be needed:
 
 ```bash
-unzip -p pack/build/NSXFederation_<version>.pak adapter.zip > /tmp/adapter.zip
+unzip -p pack/build/NSXFederation_$VERSION.pak adapter.zip > /tmp/adapter.zip
 unzip -p /tmp/adapter.zip '*.conf' | grep -E '^(REGISTRY|REPOSITORY)='
 ```
 
@@ -293,7 +309,7 @@ Expected: `REGISTRY=harbor.example.com` and `REPOSITORY=/nsxfederation/nsxfedera
 Hub instead, rewrite it:
 
 ```bash
-python3 tools/repack.py pack/build/NSXFederation_<version>.pak $HARBOR $PROJECT/nsxfederation
+python3 tools/repack.py pack/build/NSXFederation_$VERSION.pak $HARBOR $HARBOR_PROJECT/nsxfederation
 ```
 
 The cloud proxy must trust the certificate of Harbor too. With a certificate from an authority it already
@@ -307,8 +323,10 @@ Then continue with step 5 or step 6.
 *Run on: the build host.* It needs to reach the NSX managers on TCP 443.
 
 ```bash
-sudo docker run --rm --network host -v $PWD:/work -e GM_HOSTS=<gm1>,<gm2> \
-  -e NSX_USER=audit -e NSX_PASSWORD='<password>' fedmp-tooling python tools/localrun.py
+set -a; source ~/fedmp.env; set +a
+cd ~/vcf-ops-nsx-federation-mp
+sudo docker run --rm --network host -v $PWD:/work -e GM_HOSTS -e NSX_USER -e NSX_PASSWORD \
+  fedmp-tooling python tools/localrun.py
 ```
 
 It prints the objects and metrics of one cycle. A failed call shows up here before it does in VCF Operations.
@@ -338,9 +356,9 @@ headless Chrome through calls that are internal to the VCF Operations UI. They a
 with any release.
 
 ```bash
-export OPS_HOST=<ops> OPS_PW='<admin password>'
+set -a; source ~/fedmp.env; set +a
 install/upi.sh enableUPI
-install/install_unsigned.sh pack/build/NSXFederation_<version>.pak
+install/install_unsigned.sh pack/build/NSXFederation_$VERSION.pak
 ```
 
 Run `install_unsigned.sh` after `upi.sh`: the admin console login ends the product UI session, and the install
@@ -382,7 +400,7 @@ Federation.
 *Run on: the build host, from the root of the repository.*
 
 ```bash
-export OPS_HOST=<ops> OPS_PW='<admin password>'
+set -a; source ~/fedmp.env; set +a
 python3 install/federation_groups.py                     # "NSX Federation - <federation>" for every federation
 python3 install/federation_groups.py --federation '<federation>' --policy '<policy>'   # and assign a policy
 ```

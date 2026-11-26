@@ -6,3 +6,4 @@ pack/connections.json
 pack/venv*/
 .sdkhome/
 *.pak
+fedmp.env

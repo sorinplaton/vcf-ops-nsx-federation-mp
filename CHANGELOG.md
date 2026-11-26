@@ -14,6 +14,8 @@ Install guide only.
 - The Build section of `README.md` uses the same commands.
 - New variant in the install guide for an environment that already has a Harbor registry. It replaces steps
   2 to 4 and was not tested in the lab.
+- The install guide reads every address, name and password from one settings file, `~/fedmp.env`, made from
+  the new `install/fedmp.env.example`. The commands carry no address and no password.
 
 ## 1.13.1 (2026-11-26)
 

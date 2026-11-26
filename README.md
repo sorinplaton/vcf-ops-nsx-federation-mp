@@ -98,18 +98,20 @@ read-only NSX account is enough; the built-in `audit` account was tested.
 
 The build needs Docker and an image registry the cloud proxy can reach over HTTPS. The commands below are the
 ones of [docs/INSTALL.md](docs/INSTALL.md), which also sets up that registry on the build host (step 2). They
-carry `sudo`, so the build user does not have to be in the `docker` group. `IP` is the address of the build
-host that the cloud proxy reaches.
+carry `sudo`, so the build user does not have to be in the `docker` group.
+
+The addresses and the passwords are read from one settings file, `~/fedmp.env`, made from
+[install/fedmp.env.example](install/fedmp.env.example) (install guide, step 1).
 
 ```bash
-IP=10.x.x.x
+set -a; source ~/fedmp.env; set +a
 sudo docker build -t fedmp-tooling tooling
 
 # regenerate the content after a change to the object model
 for g in alerts dashboards groups views features; do python3 tools/gen_$g.py; done
 
 # test a collection without VCF Operations
-sudo docker run --rm --network host -v $PWD:/work -e GM_HOSTS=<gm1>,<gm2> -e NSX_USER=audit -e NSX_PASSWORD='<password>' \
+sudo docker run --rm --network host -v $PWD:/work -e GM_HOSTS -e NSX_USER -e NSX_PASSWORD \
   fedmp-tooling python tools/localrun.py
 
 # build the pack and push the adapter image to the registry on the build host
@@ -118,7 +120,7 @@ sudo docker run --rm --network host -u $(id -u):$(getent group docker | cut -d: 
   fedmp-tooling mp-build --no-ttl -r localhost:5000/nsxfederation --registry-username lab --registry-password lab
 
 # write the address the cloud proxy uses into the pack
-python3 tools/repack.py pack/build/NSXFederation_<version>.pak $IP:5000 nsxfederation
+python3 tools/repack.py pack/build/NSXFederation_$VERSION.pak $IP:5000 nsxfederation
 ```
 
 The registry of the install guide has no login. `mp-build` still asks for a user and a password, and any value
