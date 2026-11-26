@@ -1,5 +1,7 @@
 # NSX Federation management pack for VCF Operations
 
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/sorinplaton/vcf-ops-nsx-federation-mp/badge)](https://scorecard.dev/viewer/?uri=github.com/sorinplaton/vcf-ops-nsx-federation-mp)
+
 A management pack for VCF Operations 9.1.1 that monitors NSX Federation (NSX 9.1). It is written in Python with
 the [VCF Operations Integration SDK](https://vmware.github.io/vmware-vcf-operations-integration-sdk/introduction).
 Current version: 1.13.0.
@@ -87,7 +89,7 @@ read-only NSX account is enough; the built-in `audit` account was tested.
 | `tools/image_lock.sh` | Writes `pack/image-requirements.txt`, the Python packages of a built adapter image, which CI audits |
 | `tools/schemas/` | The SDK schema files for alert definitions and traversal specs. They must stay out of `pack/content` (see the blog) |
 | `tooling/Dockerfile` | An image with the SDK tools (`mp-init`, `mp-test`, `mp-build`) |
-| `install/` | Scripts for the scripted install of an unsigned pack, the per-federation groups, the notification rule and the diagnostics |
+| `install/` | Scripts for the scripted install of an unsigned pack (with the signature check of `verify_pak.sh`), the per-federation groups, the notification rule and the diagnostics |
 | `tests/` | Test suite with a mock NSX (an anonymised recording of a small federation) |
 | `docs/FEATURES.md`, `docs/FEATURES.fr.md` | Every object type, metric, property and alert of the pack, in English and in French (generated) |
 | `docs/INSTALL.md` | Install guide: checklist and the commands for each step, with the machine they run on ([French](docs/INSTALL.fr.md)) |

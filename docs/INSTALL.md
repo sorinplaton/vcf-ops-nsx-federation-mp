@@ -328,6 +328,24 @@ Replace `1.13.0` with the pack version in the file names of that release. Expect
 of checks cosign made. The commands reach the same hosts as the key-based check. Tested against `v1.13.3`, the
 first keyless release, on 2026-11-26.
 
+#### Optional: build provenance and SBOM (releases from v1.13.4)
+
+From `v1.13.4`, the pack and both images also carry a SLSA build provenance attestation: a signed record of the
+commit, the workflow and the runner that built them. The GitHub CLI checks it; it reaches `api.github.com`. The
+adapter image also carries its SBOM as a signed attestation, which cosign checks and prints:
+
+```bash
+gh attestation verify NSXFederation_1.13.0.pak -R sorinplaton/vcf-ops-nsx-federation-mp \
+  --signer-workflow sorinplaton/vcf-ops-nsx-federation-mp/.github/workflows/release.yml
+gh attestation verify oci://ghcr.io/sorinplaton/nsxfederation@$DIGEST -R sorinplaton/vcf-ops-nsx-federation-mp
+cosign verify-attestation --type cyclonedx --certificate-identity "$SIGNER" --certificate-oidc-issuer "$ISSUER" \
+  ghcr.io/sorinplaton/nsxfederation@$DIGEST > /dev/null && echo "SBOM attestation: verified"
+```
+
+Expected: `Verification succeeded!` twice, then `SBOM attestation: verified`. The release also carries the Trivy
+report of the adapter image, `NSXFederation_<version>.trivy.txt`. Not tested yet: `v1.13.4` is the first release
+with these.
+
 Once the checksum and both signatures are good, install the pack with step 6, by hand or with the scripts, and
 continue with steps 7 to 10. The scripts need a Linux host with a clone of this repository, the settings file
 of step 1 and the tools listed in [Tools for some steps](#tools-for-some-steps). With the mirror variant, do
@@ -826,6 +844,12 @@ PAK=pack/build/NSXFederation_$VERSION.pak     # Option A: the path of the downlo
 install/upi.sh enableUPI
 install/install_unsigned.sh "$PAK"
 ```
+
+`install_unsigned.sh` first checks the signatures with `install/verify_pak.sh`. A released pack with its
+`.sigstore.json` next to it must verify, or nothing is installed; keep the bundle in the folder of the pack for
+that. A pack without the bundle (a build of your own, or one rewritten by the mirror variant) is installed with a
+notice. `FEDMP_VERIFY=1` requires the image check for any pack, and `FEDMP_VERIFY=0` skips the check. The check
+uses `cosign` if it is installed, or the cosign image through Docker.
 
 Run `install_unsigned.sh` after `upi.sh`: the admin console login ends the product UI session, and the install
 script logs in again. It turns the switch off however it ends, and stops the headless Chrome. Exit code 0 means

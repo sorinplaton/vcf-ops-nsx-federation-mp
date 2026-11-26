@@ -1,0 +1,4 @@
+lxml
+pytest
+pillow
+requests
