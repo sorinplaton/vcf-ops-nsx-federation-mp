@@ -1,0 +1,48 @@
+name: diag-attestation
+# Temporary: does a keyless cosign 2.4.1 signature in the same job break "gh attestation verify"?
+on:
+  pull_request:
+    paths: [".github/workflows/diag-attestation.yml"]
+permissions:
+  contents: read
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      R: sorinplaton/vcf-ops-nsx-federation-mp
+    steps:
+      - run: echo "diagnostic subject $GITHUB_RUN_ID" > /tmp/diag-subject.txt
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8  # v4.2.2
+        with:
+          subject-path: /tmp/diag-subject.txt
+      - uses: sigstore/cosign-installer@7e8b541eb2e61bf99390e1afd4be13a184e9ebc5  # v3.10.1
+        with:
+          cosign-release: v2.4.1
+      - name: keyless cosign signature, as in the release job
+        run: |
+          cosign sign-blob --yes --bundle /tmp/diag.sigstore.json /tmp/diag-subject.txt > /dev/null
+          find ~/.sigstore -maxdepth 3 2>/dev/null | head -20
+      - name: A. gh after keyless cosign
+        id: a
+        continue-on-error: true
+        run: gh attestation verify /tmp/diag-subject.txt -R "$R" --signer-workflow "$R/.github/workflows/diag-attestation.yml"
+      - name: B. gh with isolated HOME and XDG folders
+        id: b
+        continue-on-error: true
+        run: |
+          T=$(mktemp -d)
+          HOME=$T XDG_CACHE_HOME=$T/.cache XDG_CONFIG_HOME=$T/.config XDG_DATA_HOME=$T/.local/share \
+            gh attestation verify /tmp/diag-subject.txt -R "$R" --signer-workflow "$R/.github/workflows/diag-attestation.yml"
+      - name: C. gh after removing ~/.sigstore
+        id: c
+        continue-on-error: true
+        run: |
+          rm -rf ~/.sigstore
+          gh attestation verify /tmp/diag-subject.txt -R "$R" --signer-workflow "$R/.github/workflows/diag-attestation.yml"
+      - name: Outcomes
+        run: echo "A=${{ steps.a.outcome }} B=${{ steps.b.outcome }} C=${{ steps.c.outcome }}"
