@@ -27,6 +27,11 @@ jobs:
         run: |
           cosign sign-blob --yes --bundle /tmp/diag.sigstore.json /tmp/diag-subject.txt > /dev/null
           find ~/.sigstore -maxdepth 3 2>/dev/null | head -20
+      - name: a Docker bind mount under ~/.cache, as the Trivy step does
+        run: |
+          ls -ld ~/.cache 2>&1
+          docker run --rm -v \$HOME/.cache/trivy:/root/.cache busybox:1.36 true
+          ls -ld ~/.cache ~/.cache/trivy
       - name: A. gh after keyless cosign
         id: a
         continue-on-error: true
