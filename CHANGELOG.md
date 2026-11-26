@@ -4,6 +4,22 @@ Each release has a tag `v<version>`; the commit messages give the details.
 
 ## Unreleased
 
+- Releases are built and published by a workflow (`.github/workflows/release.yml`) from a Git tag, which is the
+  single source of truth: pack and adapter image built from the tag, pushed to `ghcr.io` and copied byte for
+  byte to Docker Hub (`docker.io/sorinplaton/nsxfederation`), signed keyless with Sigstore, verified, and left as a
+  draft release for the maintainer. The signature names the workflow and the tag; `docs/INSTALL.md` gives the
+  keyless check. Releases up to `v1.13.2` keep their key signatures, and the next ones carry both for a while.
+- New pack image `nsxfederation-pak`: the `.pak` and its checksum in a `FROM scratch` image, on `ghcr.io` and
+  Docker Hub, for sites that receive files through a container registry. The Docker Hub description comes from
+  `pak-image/DOCKERHUB.md`.
+- New `docs/INSTALL-ENTERPRISE.md` (and the French copy): install through JFrog Artifactory with a Docker Hub
+  remote repository: pull, verify by signer identity, scan, promote by digest to a repository of approved
+  images, point the pack at it, cloud proxy pull without a login. Tested against JFrog Container Registry.
+- The mirror variant copies with `skopeo copy --all`: without it, an image published as a list comes out with
+  another digest than the one signed.
+- The SBOM of the adapter image is attached to each release. The tooling image pins the SDK to 1.3.1.
+- `docs/RELEASE.md` describes the workflow; the manual steps stay as the fallback.
+
 - Option A of the install guide explains why the cloud proxy reaches the internet: it downloads the adapter
   image from `ghcr.io` when the account starts, and only that. The mirror variant avoids it.
 

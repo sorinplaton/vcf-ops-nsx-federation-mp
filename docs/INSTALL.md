@@ -11,7 +11,7 @@ Version française : [INSTALL.fr.md](INSTALL.fr.md).
 
 ## Choose an install path
 
-There are four ways to get the pack and its adapter image in place:
+There are five ways to get the pack and its adapter image in place:
 
 - [Option A, download the released pack](#option-a-download-the-released-pack): the fastest way, for a site
   whose cloud proxy can reach `ghcr.io`. Nothing to build.
@@ -22,6 +22,9 @@ There are four ways to get the pack and its adapter image in place:
   source, or runs a lab with its own registry on the build host.
 - [The Harbor variant of Option B](#variant-an-existing-harbor-registry): the same build, with the image pushed
   to an existing Harbor in place of the small registry of step 2.
+- [Enterprise install with Docker Hub and Artifactory](INSTALL-ENTERPRISE.md): for an organisation whose
+  Artifactory pulls public images from Docker Hub. The pack and its adapter image come from Docker Hub through
+  Artifactory, are checked, scanned and copied to a repository of approved images. It has its own guide.
 
 All paths install the same pack and meet again at step 6.
 
@@ -237,6 +240,11 @@ that registry. [Option B](#1-prerequisites) gives the same result with a build o
 
 ### Verify the signatures (recommended)
 
+From release `v1.13.3`, the release workflow on GitHub signs the pack and the images without a key ("keyless"):
+the signature carries a certificate that names the workflow and the tag that built them, and the check compares
+that name instead of a public key. [Keyless check](#keyless-check-releases-from-v1133) below gives the commands.
+Releases up to `v1.13.2` are signed with the project key, as described first.
+
 The pack and its adapter image are signed with [cosign](https://docs.sigstore.dev/cosign/) (Sigstore). The
 checksum only proves that the download is complete; it sits next to the pack on the same release page, so
 whoever could replace the pack there could replace the checksum too. The signatures prove that the pack and the
@@ -296,6 +304,29 @@ cosign verify --key cosign.pub ghcr.io/sorinplaton/nsxfederation@$DIGEST
 Both commands reach the internet: `ghcr.io` for the image signature, and the Sigstore servers
 (`tuf-repo-cdn.sigstore.dev`, `rekor.sigstore.dev`) for the public transparency log in which each signature is
 recorded. A failed verification means the file or the image is not the one that was signed: do not install it.
+
+#### Keyless check (releases from v1.13.3)
+
+The same two checks, with the identity of the release workflow in place of `cosign.pub`. Set the release once;
+the signature must name exactly this repository, this workflow and this tag, issued by GitHub Actions. The
+release notes on GitHub show the same values. The bundle of the pack is the `.sigstore.json` file of the release.
+
+```bash
+RELEASE=1.13.3
+SIGNER="https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/.github/workflows/release.yml@refs/tags/v$RELEASE"
+ISSUER=https://token.actions.githubusercontent.com
+curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v$RELEASE/NSXFederation_1.13.0.pak.sigstore.json
+
+cosign verify-blob --certificate-identity "$SIGNER" --certificate-oidc-issuer "$ISSUER" \
+  --bundle NSXFederation_1.13.0.pak.sigstore.json NSXFederation_1.13.0.pak
+unzip -p NSXFederation_1.13.0.pak adapter.zip > /tmp/adapter.zip
+DIGEST=$(unzip -p /tmp/adapter.zip '*.conf' | sed -n 's/^DIGEST=//p')
+cosign verify --certificate-identity "$SIGNER" --certificate-oidc-issuer "$ISSUER" ghcr.io/sorinplaton/nsxfederation@$DIGEST
+```
+
+Replace `1.13.0` with the pack version in the file names of that release. Expected: `Verified OK`, then the list
+of checks cosign made. The commands reach the same hosts as the key-based check. Not tested yet: the first
+keyless release is `v1.13.3`.
 
 Once the checksum and both signatures are good, install the pack with step 6, by hand or with the scripts, and
 continue with steps 7 to 10. The scripts need a Linux host with a clone of this repository, the settings file
@@ -365,13 +396,14 @@ Then, in the folder that holds the downloaded pack:
 1. Verify the signatures of the pack and the image, as above. Do it first: item 3 changes the pack, so its
    checksum and signature no longer match afterwards.
 2. Copy the image by digest. The first lines read the digest from the pack again, so the block also works in a
-   new shell. `--preserve-digests` keeps the digest the pack names:
+   new shell. `--all` copies the image exactly as published, and `--preserve-digests` makes skopeo stop rather
+   than change the digest the pack names:
 
    ```bash
    set -a; source ~/fedmp.env; set +a
    unzip -p NSXFederation_1.13.0.pak adapter.zip > /tmp/adapter.zip
    DIGEST=$(unzip -p /tmp/adapter.zip '*.conf' | sed -n 's/^DIGEST=//p')
-   skopeo copy --preserve-digests --dest-creds "$HARBOR_USER:$HARBOR_PW" \
+   skopeo copy --all --preserve-digests --dest-creds "$HARBOR_USER:$HARBOR_PW" \
      docker://ghcr.io/sorinplaton/nsxfederation@$DIGEST \
      docker://$HARBOR/$HARBOR_PROJECT/nsxfederation:1.13.0
    ```

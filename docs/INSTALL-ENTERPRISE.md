@@ -1,0 +1,402 @@
+# Enterprise install: Docker Hub and Artifactory
+
+How an organisation installs the NSX Federation pack when everything it runs must come through its own
+JFrog Artifactory, and Artifactory gets public images from Docker Hub. The pack and its adapter image are
+published on Docker Hub by the project's release workflow. The organisation pulls them through Artifactory,
+checks their signatures, scans them, copies them into a repository of approved images, and installs from
+there. No machine of the organisation needs to reach GitHub or Docker Hub except Artifactory itself and the
+promotion host for the signature check.
+
+Tested on 2026-11-26 against JFrog Container Registry 7.161.26 (the free edition of Artifactory) behind HTTPS
+with an internal CA: the pull through a Docker Hub remote repository, the signature check through Artifactory,
+the promotion by digest, the extraction of the pack and its rewrite. Not yet tested: anonymous read for the
+cloud proxy, the pull by the cloud proxy, and the first release on Docker Hub. [What was tested](#what-was-tested)
+lists each step.
+
+For the other install paths (download from GitHub, a build of your own, Harbor), see
+[INSTALL.md](INSTALL.md). Version française : [INSTALL-ENTERPRISE.fr.md](INSTALL-ENTERPRISE.fr.md).
+
+## How a release reaches the organisation
+
+GitHub is the single source of truth. Nobody pushes to Docker Hub by hand: a Git tag starts the release
+workflow, which builds the pack and the adapter image from that tag, publishes both, and signs them. The
+signature names the repository, the workflow and the tag, so an image that did not come from that workflow
+fails the check, even if someone pushed it with a stolen token.
+
+```mermaid
+flowchart LR
+  subgraph GH["GitHub: source of truth"]
+    TAG["Git tag v1.x.y"] --> WF["Release workflow<br/>build, push, sign"]
+    WF --> REL["GitHub release<br/>.pak, checksum, SBOM"]
+  end
+  subgraph HUB["Docker Hub"]
+    PAKI["sorinplaton/nsxfederation-pak<br/>the .pak in an image"]
+    ADI["sorinplaton/nsxfederation<br/>adapter image"]
+  end
+  subgraph ORG["Organisation"]
+    REM["Artifactory<br/>Docker Hub remote repository<br/>(cache, not used by production)"]
+    PH["Promotion host<br/>verify, scan, copy, rewrite"]
+    APP["Artifactory<br/>vcfops-approved<br/>(local repository)"]
+    OPS["VCF Operations"]
+    CP["Cloud proxy"]
+  end
+  WF -->|"push, same digest as ghcr.io"| PAKI
+  WF -->|"push, same digest as ghcr.io"| ADI
+  PAKI --> REM
+  ADI --> REM
+  REM -->|"1. pull by tag, then by digest"| PH
+  PH -->|"2. verify signature, 3. scan"| PH
+  PH -->|"4. copy by digest"| APP
+  PH -->|"5. install the rewritten pack"| OPS
+  APP -.->|"pull the adapter image by digest"| CP
+```
+
+Three things are published for each release:
+
+| Item | Where | What it is |
+| --- | --- | --- |
+| Pack image | `docker.io/sorinplaton/nsxfederation-pak:<release>` | The `.pak` file and a `SHA256SUMS` file, in an image built `FROM scratch`: no operating system, no shell. It cannot run; it only carries the file |
+| Adapter image | `docker.io/sorinplaton/nsxfederation@sha256:<digest>` | The collector that the cloud proxy runs. The pack names it by digest |
+| GitHub release | `github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases` | The same `.pak`, its checksum, its signature bundle and an SBOM of the adapter image. Not needed on this path |
+
+The two images are the same bytes as on `ghcr.io/sorinplaton/`, with the same digests.
+
+Two images are needed because the `.pak` holds the content of the pack (object model, alerts, dashboards) and the
+address of the adapter image, not the adapter itself. Inside the pack, `adapter.zip` holds `NSXFederation.conf`:
+
+```
+REGISTRY=ghcr.io
+REPOSITORY=/sorinplaton/nsxfederation
+DIGEST=sha256:...
+```
+
+When the account starts, the cloud proxy runs a `docker pull` of `REGISTRY` + `REPOSITORY` + `@DIGEST`. Step 7
+rewrites the first two lines so that it pulls from Artifactory instead. The digest does not change, so the cloud
+proxy still runs exactly the image that was signed and scanned.
+
+Every step below copies and checks images by digest. A tag such as `1.13.3` is a label that can be moved to
+another image; a digest is the SHA-256 of the image itself and cannot.
+
+## Who does what
+
+| Role | Machine | Steps |
+| --- | --- | --- |
+| Artifactory administrator | Artifactory UI | 1, once |
+| Platform or security engineer | Promotion host: a Linux machine that reaches Artifactory, with `skopeo`, `cosign`, `python3` and `unzip` | 2 to 7, at each release |
+| VMware administrator | Promotion host or any machine with a browser that reaches VCF Operations | 8 and 9 |
+
+One person can hold all three roles. The split helps where approvals are required: an image becomes usable in
+production at step 6, when it is copied into `vcfops-approved`.
+
+## Network access
+
+```mermaid
+flowchart LR
+  subgraph NET["Internet"]
+    HUBN["Docker Hub<br/>registry-1.docker.io, auth.docker.io<br/>production.cloudflare.docker.com"]
+    SIG["Sigstore<br/>tuf-repo-cdn.sigstore.dev<br/>rekor.sigstore.dev"]
+    GHN["github.com, raw.githubusercontent.com<br/>repack.py, cosign"]
+  end
+  subgraph INT["Internal network"]
+    ART["Artifactory<br/>HTTPS"]
+    PH["Promotion host"]
+    OPS["VCF Operations"]
+    CP["Cloud proxy<br/>no internet access"]
+    NSX["Global Managers and<br/>Local Managers"]
+  end
+  ART -->|"TCP 443: remote repository"| HUBN
+  PH -->|"TCP 443: pull, push (steps 3 to 7)"| ART
+  PH -->|"TCP 443: transparency log (step 4)"| SIG
+  PH -->|"TCP 443: tools, once (step 2)"| GHN
+  PH -->|"TCP 443: install (step 9)"| OPS
+  CP -.->|"TCP 443: pull the adapter image"| ART
+  CP -.->|"TCP 443: collection"| NSX
+```
+
+| From | To | Port | Used for |
+| --- | --- | --- | --- |
+| Artifactory | `registry-1.docker.io`, `auth.docker.io`, `production.cloudflare.docker.com` | TCP 443 | The Docker Hub remote repository. Most Artifactory instances have this already |
+| Promotion host | Artifactory | TCP 443 | Pulling from the remote repository, pushing to `vcfops-approved` |
+| Promotion host | `tuf-repo-cdn.sigstore.dev`, `rekor.sigstore.dev` | TCP 443 | The signature check of step 4: the Sigstore trust root and the public transparency log |
+| Promotion host | `github.com`, `raw.githubusercontent.com` | TCP 443 | Once, to fetch `cosign` and `repack.py` (step 2). They can also come through an Artifactory generic remote |
+| Promotion host or workstation | VCF Operations | TCP 443 | Installing the pack and creating the account (step 9) |
+| Cloud proxy | Artifactory | TCP 443 | Pulling the adapter image from `vcfops-approved`, without a login |
+| Cloud proxy | Global Managers and Local Managers | TCP 443 | Collection |
+
+The cloud proxy needs no internet access on this path. Collection stays between the cloud proxy, the NSX
+managers and VCF Operations.
+
+## Checklist
+
+- [ ] 1. Artifactory: Docker Hub remote, `vcfops-approved`, anonymous read on it, promotion account
+- [ ] 2. Promotion host: tools, settings
+- [ ] 3. Pack image pulled through Artifactory, pack taken out, checksum OK
+- [ ] 4. Signatures of the pack image and the adapter image verified
+- [ ] 5. Both images scanned, if the organisation requires it
+- [ ] 6. Both images copied by digest into `vcfops-approved`
+- [ ] 7. Pack pointed at `vcfops-approved`, stored for the installers
+- [ ] 8. Cloud proxy trusts Artifactory and pulls the adapter image without a login
+- [ ] 9. Pack installed and account created ([INSTALL.md](INSTALL.md), steps 6 to 10)
+
+## 1. Prepare Artifactory (once)
+
+*Run on: the Artifactory UI, as an administrator.* Menu names are from the JFrog Platform 7.x UI.
+
+1. **Docker Hub remote repository.** Most sites have one already, often called `docker-remote` or
+   `dockerhub-remote`; reuse it. To create one: Administration, Repositories, Create a Repository, Remote,
+   Docker. URL `https://registry-1.docker.io/`, "Enable Token Authentication" on. Add a Docker Hub user and
+   token in the repository settings if the site pulls a lot from Docker Hub: anonymous pulls are rate limited
+   per IP address, and Artifactory's cache only helps after the first pull.
+2. **Repository of approved images.** Create a Repository, Local, Docker, key `vcfops-approved`, Docker API
+   version V2. Only promoted images go there.
+3. **Anonymous read on that repository only.** The cloud proxy pulls without credentials: VCF Operations has no
+   setting for a registry login. Administration, User Management, Settings: "Allow Anonymous Access" on. Then
+   Permissions, New Permission: resource `vcfops-approved` only, user `anonymous`, action Read. The remote
+   repository and every other repository stay closed to anonymous users.
+4. **Promotion account.** A user or service account with Read on the Docker Hub remote and Read, Annotate and
+   Deploy on `vcfops-approved`. Create an identity token for it (Edit Profile, Generate an Identity Token): the
+   commands below use the token as the password.
+
+The image address depends on the Docker access method of the Artifactory instance. With the default,
+Repository Path, an image is `<artifactory>/<repository key>/<image>`. With the Subdomain method it is
+`<repository key>.<artifactory>/<image>`: change the variables of step 2 to match.
+
+## 2. Prepare the promotion host
+
+*Run on: the promotion host.* Install the tools from the distribution packages and the cosign release:
+
+```bash
+# Ubuntu or Debian
+sudo apt-get install -y skopeo python3 unzip curl
+curl -LO https://github.com/sigstore/cosign/releases/download/v2.4.1/cosign_2.4.1_amd64.deb
+sudo dpkg -i cosign_2.4.1_amd64.deb
+
+# RHEL, Rocky Linux or AlmaLinux
+sudo dnf install -y skopeo python3 unzip curl
+sudo rpm -ivh https://github.com/sigstore/cosign/releases/download/v2.4.1/cosign-2.4.1-1.x86_64.rpm
+
+# repack.py, the one file of the repository this path needs
+curl -LO https://raw.githubusercontent.com/sorinplaton/vcf-ops-nsx-federation-mp/main/tools/repack.py
+```
+
+If Artifactory uses a certificate from an internal CA, give it to skopeo and cosign. skopeo reads a folder named
+after the registry; cosign reads the system trust store, so add the CA there too:
+
+```bash
+sudo mkdir -p /etc/containers/certs.d/artifactory.example.com
+sudo cp internal-ca.crt /etc/containers/certs.d/artifactory.example.com/ca.crt
+sudo cp internal-ca.crt /usr/local/share/ca-certificates/ && sudo update-ca-certificates   # RHEL: /etc/pki/ca-trust/source/anchors/ + update-ca-trust
+```
+
+Settings for the commands below. Set them in each new shell; the token is typed, not stored:
+
+```bash
+ART=artifactory.example.com          # Artifactory host name, with :port if it is not 443
+HUB=dockerhub-remote                 # key of the Docker Hub remote repository
+APPROVED=vcfops-approved             # key of the local repository of step 1
+RELEASE=1.13.3                       # release to install: the GitHub release tag without the v
+ART_USER=svc-vcfops-promote
+read -rs ART_TOKEN                   # identity token of the promotion account
+SIGNER="https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/.github/workflows/release.yml@refs/tags/v$RELEASE"
+ISSUER=https://token.actions.githubusercontent.com
+```
+
+`SIGNER` and `ISSUER` are what the signature must say: built by the release workflow of this repository, from
+the tag of this release, on GitHub Actions. The release notes on GitHub show the same two values.
+
+## 3. Get the pack through Artifactory
+
+*Run on: the promotion host.* The first command resolves the tag to a digest; every later command uses the
+digest, so a tag moved in the meantime changes nothing. The second copies the pack image out of Artifactory into
+a local folder in OCI layout, and the Python lines unpack its single layer:
+
+```bash
+PAK_DIGEST=$(skopeo inspect --creds "$ART_USER:$ART_TOKEN" --format '{{.Digest}}' \
+  docker://$ART/$HUB/sorinplaton/nsxfederation-pak:$RELEASE)
+echo "$PAK_DIGEST"
+
+rm -rf pakimg && skopeo copy --all --src-creds "$ART_USER:$ART_TOKEN" \
+  docker://$ART/$HUB/sorinplaton/nsxfederation-pak@$PAK_DIGEST oci:pakimg:pak
+python3 - <<'EOF'
+import json, tarfile
+blob = lambda d: json.load(open("pakimg/blobs/sha256/" + d.split(":")[1]))
+man = blob(json.load(open("pakimg/index.json"))["manifests"][0]["digest"])
+while "manifests" in man:                      # an image list: take the image it holds
+    man = blob(man["manifests"][0]["digest"])
+tarfile.open("pakimg/blobs/sha256/" + man["layers"][0]["digest"].split(":")[1]).extractall(".")
+EOF
+ls pak/ && (cd pak && sha256sum -c SHA256SUMS)
+```
+
+Expected: `pak/NSXFederation_<version>.pak` and `pak/SHA256SUMS`, then `NSXFederation_<version>.pak: OK`. The
+pack version can differ from the release number: a release that changes only the documentation keeps the pack
+of the previous one.
+
+On a machine with Docker that trusts Artifactory, the same file comes out with
+`docker pull`, `docker create --name pak <image>`, `docker cp pak:/pak/. ./` and `docker rm pak`.
+
+## 4. Verify the signatures
+
+*Run on: the promotion host.* Two checks, both through Artifactory: cosign reads the signature stored next to
+each image (tag `sha256-<digest>.sig`), and Artifactory serves it from Docker Hub like any other tag.
+
+The pack image. Its digest covers every byte of the `.pak` and of `SHA256SUMS`, so this check also covers the
+file of step 3:
+
+```bash
+cosign login $ART -u "$ART_USER" -p "$ART_TOKEN"
+cosign verify --certificate-identity "$SIGNER" --certificate-oidc-issuer "$ISSUER" \
+  $ART/$HUB/sorinplaton/nsxfederation-pak@$PAK_DIGEST > /dev/null && echo "pack image: verified"
+```
+
+The adapter image that the pack names. The first two lines read its digest from the pack:
+
+```bash
+unzip -p pak/NSXFederation_*.pak adapter.zip > /tmp/adapter.zip
+AD_DIGEST=$(unzip -p /tmp/adapter.zip '*.conf' | sed -n 's/^DIGEST=//p'); echo "$AD_DIGEST"
+cosign verify --certificate-identity "$SIGNER" --certificate-oidc-issuer "$ISSUER" \
+  $ART/$HUB/sorinplaton/nsxfederation@$AD_DIGEST > /dev/null && echo "adapter image: verified"
+```
+
+Both lines must end with `verified`. cosign prints the checks it made: the signature, the certificate that names
+`SIGNER`, and the entry in the public transparency log. A failure means the image is not the one the release
+workflow built for that tag: stop and do not promote it.
+
+Releases up to `v1.13.2` are signed with the project key instead, and their images are on `ghcr.io` only. For
+those, [INSTALL.md](INSTALL.md#verify-the-signatures-recommended) gives the commands with `cosign.pub`.
+
+## 5. Scan
+
+*Run on: Artifactory or the scanner of the organisation.* Scan both images where the organisation scans images,
+for example JFrog Xray on the remote repository or on `vcfops-approved`. What to expect:
+
+- The pack image holds two files and no operating system. A scanner finds no package in it.
+- The adapter image is a Debian base with Python and the packages of the SDK. The GitHub release carries an SBOM
+  of its Python packages (`NSXFederation_<version>.sbom.cdx.json`), and
+  [SECURITY.md](../SECURITY.md) lists the known findings of the base image that the project cannot fix.
+
+## 6. Promote: copy into the approved repository
+
+*Run on: the promotion host.* Copy both images by digest. `--all` copies the image exactly as published, list
+and all; without it, skopeo may copy only the part for one platform, which has another digest, and the signature
+check of step 4 would no longer apply to what is in `vcfops-approved`. `--preserve-digests` makes skopeo stop
+rather than change a digest:
+
+```bash
+C="--all --preserve-digests --src-creds $ART_USER:$ART_TOKEN --dest-creds $ART_USER:$ART_TOKEN"
+skopeo copy $C docker://$ART/$HUB/sorinplaton/nsxfederation@$AD_DIGEST       docker://$ART/$APPROVED/nsxfederation:$RELEASE
+skopeo copy $C docker://$ART/$HUB/sorinplaton/nsxfederation-pak@$PAK_DIGEST  docker://$ART/$APPROVED/nsxfederation-pak:$RELEASE
+
+for i in nsxfederation nsxfederation-pak; do
+  skopeo inspect --creds "$ART_USER:$ART_TOKEN" --format "$i {{.Digest}}" docker://$ART/$APPROVED/$i:$RELEASE
+done
+```
+
+Expected: the two digests of steps 3 and 4. To verify the images again later from `vcfops-approved`, copy their
+signatures too: `cosign copy $ART/$HUB/sorinplaton/nsxfederation@$AD_DIGEST $ART/$APPROVED/nsxfederation`, and the
+same for the pack image.
+
+With Artifactory Pro, the Docker promotion API or `jf rt docker-promote` can do this copy inside Artifactory.
+That was not tested here; check the digests afterwards the same way.
+
+## 7. Point the pack at the approved repository
+
+*Run on: the promotion host.* `repack.py` rewrites the `REGISTRY` and `REPOSITORY` lines inside the pack, in
+place, and prints the new file. Work on a copy, so the original stays as it was signed:
+
+```bash
+V=$(ls pak/NSXFederation_*.pak | sed 's/.*NSXFederation_\(.*\)\.pak/\1/')
+cp pak/NSXFederation_$V.pak NSXFederation_${V}_site.pak
+python3 repack.py NSXFederation_${V}_site.pak $ART $APPROVED/nsxfederation | grep -E '^(REGISTRY|REPOSITORY|DIGEST)='
+```
+
+Expected:
+
+```
+REGISTRY=artifactory.example.com
+REPOSITORY=/vcfops-approved/nsxfederation
+DIGEST=sha256:...          # the same as AD_DIGEST
+```
+
+The rewritten pack is what the organisation installs. Its checksum no longer matches the published one, because
+two lines changed; the digest line, which decides what runs, did not. Keep it where installers take approved
+files, for example in a generic repository:
+
+```bash
+curl -fS -u "$ART_USER:$ART_TOKEN" -T NSXFederation_${V}_site.pak \
+  -H "X-Checksum-Sha256: $(sha256sum NSXFederation_${V}_site.pak | cut -d' ' -f1)" \
+  "https://$ART/artifactory/vcfops-generic-local/nsx-federation/$RELEASE/NSXFederation_${V}_site.pak"
+```
+
+## 8. Cloud proxy: trust Artifactory and test the pull
+
+*Run on: the cloud proxy, as root.* SSH is off on a cloud proxy by default. Enable it for the length of the step,
+or run the commands through vCenter guest operations as in [INSTALL.md, step 4](INSTALL.md#4-cloud-proxy-trusts-the-registry-certificate).
+
+If Artifactory uses an internal CA, Docker on the cloud proxy needs it, in a folder named exactly like the
+`REGISTRY` value of step 7, with `:port` if there is one:
+
+```bash
+mkdir -p /etc/docker/certs.d/artifactory.example.com
+cp internal-ca.crt /etc/docker/certs.d/artifactory.example.com/ca.crt
+```
+
+Then pull the adapter image the way VCF Operations will, without a login:
+
+```bash
+docker logout artifactory.example.com 2>/dev/null
+docker pull artifactory.example.com/vcfops-approved/nsxfederation@sha256:...   # AD_DIGEST
+```
+
+| Result | Meaning |
+| --- | --- |
+| `Status: Downloaded newer image` or `Image is up to date` | Ready. The image also stays cached on the cloud proxy |
+| `unauthorized` or `authentication required` | Anonymous read is missing on `vcfops-approved` (step 1, item 3) |
+| `x509: certificate signed by unknown authority` | The CA is missing, or its folder name does not match `REGISTRY` |
+| `manifest unknown` | The image is not in `vcfops-approved` under that digest: step 6 was skipped, or done without `--all` |
+
+A cloud proxy upgrade or redeploy removes the certificate folder; check it after each one.
+
+## 9. Install
+
+Install `NSXFederation_<version>_site.pak` with [INSTALL.md](INSTALL.md), steps 6 to 10: unsigned-pack switch,
+install, account, collection check, optional group and alerts. VCF Operations only accepts packs signed by
+Broadcom without that switch (KB 415279). The cosign signatures of step 4 are the project's, and VCF Operations
+does not read them.
+
+## Upgrade to a new release
+
+Repeat steps 3 to 9 with the new `RELEASE`. Nothing in Artifactory needs to change: the remote repository
+fetches the new tag from Docker Hub the first time it is asked for it. Keep the previous images in
+`vcfops-approved` until the new version runs, to be able to install the previous pack again.
+
+## Troubleshooting
+
+| Symptom | Cause and fix |
+| --- | --- |
+| The digest in `vcfops-approved` differs from the one of steps 3 and 4 | Copied without `--all`. Copy again with the command of step 6 |
+| `cosign verify`: `no signatures found` | The signature tag did not come through. Check that the remote repository lists `sha256-<digest>.sig` for the image, or verify against `docker.io/sorinplaton/...` directly from a machine with internet access |
+| `cosign verify`: `none of the expected identities matched` | `SIGNER` names another tag than the image was built from, or the image was not built by the release workflow. Compare with the release notes |
+| `toomanyrequests` from Artifactory | Docker Hub rate limit on anonymous pulls. Add a Docker Hub account to the remote repository |
+| Account `FAILED` after the install, empty message | The cloud proxy could not pull the image. Run the pull of step 8 on it |
+
+## What was tested
+
+On 2026-11-26, on a JFrog Container Registry 7.161.26 with PostgreSQL, behind nginx with a certificate from a
+test CA, with skopeo 1.25.1 and cosign 2.4.1:
+
+- A Docker Hub image pulled through a Docker Hub remote repository: same digest as on Docker Hub.
+- The released adapter image `v1.13.1` pulled through a remote repository (of `ghcr.io`, the only place it was
+  published then), and its signature verified through Artifactory, with the key of that release.
+- Both images copied into a local repository with `skopeo copy --all --preserve-digests`: same digests. Without
+  `--all`, the pack image came out with another digest; that is why step 6 uses it.
+- The pack taken out of the pack image in Artifactory, checksum OK, and rewritten with `repack.py` to the local
+  repository.
+
+Not tested yet:
+
+- Anonymous read on `vcfops-approved` and the pull by a cloud proxy from Artifactory. The free edition only sets
+  permissions in its UI. The same pull from a registry of the lab works, and a pull without the permission was
+  refused (`unauthorized`), as expected.
+- The first release on Docker Hub and the keyless verification of step 4, which wait for that release.
+- JFrog Xray, the Artifactory Pro promotion API, and the Subdomain access method.
