@@ -16,7 +16,7 @@ démarrage du compte. Les deux modes ne diffèrent que par l'origine de cette im
 | | Option A : télécharger le pack publié | Option B : construire le pack |
 | --- | --- | --- |
 | Image de l'adaptateur | Publique, sur `ghcr.io/sorinplaton/nsxfederation`, récupérée par son empreinte (digest) | Envoyée par vos soins vers votre propre registre |
-| Prérequis | Le proxy cloud joint `ghcr.io` en TCP 443 | Un hôte de construction avec Docker, et un registre servi en HTTPS auquel le proxy cloud fait confiance |
+| Prérequis | Le proxy cloud joint `ghcr.io` et `pkg-containers.githubusercontent.com` en TCP 443 | Un hôte de construction avec Docker, et un registre servi en HTTPS auquel le proxy cloud fait confiance |
 | Étapes | [Option A](#option-a--télécharger-le-pack-publié), puis les étapes 6 à 10 | Étapes 1 à 10, ou la variante Harbor à la place des étapes 2 à 4 |
 | Cas d'usage | Le proxy cloud a accès à Internet | Le proxy cloud n'a pas accès à Internet, les images doivent venir d'un registre interne, ou le pack est modifié |
 
@@ -54,7 +54,7 @@ flowchart LR
   VC["vCenter"]
   ESX["Hôte ESXi de la VM<br/>du proxy cloud"]
   CP["Proxy cloud"]
-  GHCR["ghcr.io<br/>image publiée"]
+  GHCR["ghcr.io et<br/>pkg-containers.githubusercontent.com<br/>image publiée"]
   GM["Global Managers<br/>actif et standby"]
   LM["Local Managers"]
 
@@ -82,7 +82,7 @@ flowchart LR
 | Hôte de construction | Hôte ESXi de la VM du proxy cloud | TCP 443 | `govc guest.upload` envoie le fichier à l'hôte ESXi, pas au vCenter |
 | Hôte de construction | Global Managers | TCP 443 | Seulement pour le test facultatif de l'étape 5 |
 | Proxy cloud | Registre | TCP 5000, ou le port du registre | Option B : récupération de l'image de l'adaptateur |
-| Proxy cloud | `ghcr.io` | TCP 443 | Option A : récupération de l'image publiée de l'adaptateur. Via le proxy du site si le proxy cloud en utilise un |
+| Proxy cloud | `ghcr.io` et `pkg-containers.githubusercontent.com` | TCP 443 | Option A : récupération de l'image publiée de l'adaptateur. `ghcr.io` répond aux appels du registre et redirige les couches de l'image vers `pkg-containers.githubusercontent.com`. Via le proxy du site si le proxy cloud en utilise un |
 | Proxy cloud | Global Managers et Local Managers | TCP 443 | Collecte |
 
 Valeurs à remplacer :
@@ -113,13 +113,14 @@ Option B. Avec l'option A, suivre la liste de contrôle de l'[option A](#option-
 À utiliser à la place des étapes 1 à 5 quand le proxy cloud a accès à Internet. Ni hôte de construction, ni
 Docker, ni registre à soi. Pas encore testée dans le lab, qui utilise l'option B.
 
-- [ ] VCF Operations 9.1.1 avec au moins un proxy cloud à l'état `UP`, qui joint `ghcr.io` en TCP 443,
-      directement ou via le proxy du site.
+- [ ] VCF Operations 9.1.1 avec au moins un proxy cloud à l'état `UP`, qui joint `ghcr.io` et
+      `pkg-containers.githubusercontent.com` en TCP 443, directement ou via le proxy du site. Les règles de
+      pare-feu demandent les deux noms : les couches de l'image viennent du second.
 - [ ] NSX 9.1 Federation et un compte NSX en lecture seule, comme à l'étape 1.
 - [ ] Le proxy cloud joint chaque manager NSX en TCP 443.
 - [ ] Mot de passe admin de VCF Operations, et l'approbation de changement pour l'option des packs non signés
       si l'organisation l'exige.
-- [ ] Pack téléchargé et somme de contrôle vérifiée.
+- [ ] Pack téléchargé, somme de contrôle vérifiée, signatures vérifiées (recommandé).
 - [ ] Puis les étapes 6 à 10.
 
 *À exécuter sur : n'importe quelle machine dont le navigateur joint VCF Operations.* Télécharger le pack et sa
@@ -145,6 +146,104 @@ curl -s -o /dev/null -w '%{http_code}\n' https://ghcr.io/v2/
 
 Installer ensuite le pack avec l'étape 6, à la main ou par script (les scripts demandent un clone de ce dépôt et
 le fichier de paramètres de l'étape 1), puis continuer avec les étapes 7 à 10.
+
+### Vérifier les signatures (recommandé)
+
+Le pack et l'image de son adaptateur sont signés avec [cosign](https://docs.sigstore.dev/cosign/) (Sigstore). La
+somme de contrôle prouve seulement que le téléchargement est complet ; elle se trouve à côté du pack, sur la
+même page de version. Les signatures prouvent que le pack et l'image ont été produits par le détenteur de la clé
+privée de ce projet, et qu'ils n'ont pas changé depuis. Vérifier les deux avant l'installation, et de nouveau à
+chaque nouvelle version.
+
+La clé publique est `cosign.pub`, à la racine de ce dépôt et sur la page de version. La prendre dans le dépôt
+et garder cette copie pour les versions suivantes : une clé téléchargée au même endroit que le pack prouve moins.
+
+```bash
+curl -LO https://raw.githubusercontent.com/sorinplaton/vcf-ops-nsx-federation-mp/main/cosign.pub
+curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.1/NSXFederation_1.13.0.pak.bundle
+```
+
+**Installer cosign.** *À exécuter sur : la machine qui a téléchargé le pack (Linux, x86-64).* Au choix :
+
+```bash
+# Ubuntu ou Debian
+curl -LO https://github.com/sigstore/cosign/releases/download/v2.4.1/cosign_2.4.1_amd64.deb
+sudo dpkg -i cosign_2.4.1_amd64.deb
+
+# RHEL, Rocky Linux ou AlmaLinux
+curl -LO https://github.com/sigstore/cosign/releases/download/v2.4.1/cosign-2.4.1-1.x86_64.rpm
+sudo rpm -ivh cosign-2.4.1-1.x86_64.rpm
+
+# Tout Linux : le binaire seul
+curl -LO https://github.com/sigstore/cosign/releases/download/v2.4.1/cosign-linux-amd64
+sudo install -m 0755 cosign-linux-amd64 /usr/local/bin/cosign
+
+cosign version
+```
+
+Les [versions de cosign](https://github.com/sigstore/cosign/releases) contiennent aussi les builds macOS et
+Windows et un `cosign_checksums.txt` pour les téléchargements. Sans rien installer, Docker peut exécuter la même
+version : `docker run --rm -v $PWD:/w -w /w -u $(id -u) -e HOME=/tmp ghcr.io/sigstore/cosign/cosign:v2.4.1 <commande>`.
+
+**Vérifier le pack.** Résultat attendu : `Verified OK`.
+
+```bash
+cosign verify-blob --key cosign.pub --bundle NSXFederation_1.13.0.pak.bundle NSXFederation_1.13.0.pak
+```
+
+**Vérifier l'image que désigne le pack.** Lire son empreinte dans le pack, puis la vérifier. Résultat
+attendu : « The signatures were verified against the specified public key ».
+
+```bash
+unzip -p NSXFederation_1.13.0.pak adapter.zip > /tmp/adapter.zip
+DIGEST=$(unzip -p /tmp/adapter.zip '*.conf' | sed -n 's/^DIGEST=//p')
+cosign verify --key cosign.pub ghcr.io/sorinplaton/nsxfederation@$DIGEST
+```
+
+Les deux commandes accèdent à Internet : `ghcr.io` pour la signature de l'image, et les serveurs Sigstore
+(`tuf-repo-cdn.sigstore.dev`, `rekor.sigstore.dev`) pour le journal de transparence public où chaque signature est
+enregistrée. Une vérification en échec signifie que le fichier ou l'image n'est pas celui qui a été signé : ne
+pas l'installer.
+
+### Variante : copier l'image dans un registre interne
+
+Pour une entreprise qui ne laisse pas le proxy cloud accéder à Internet, ou qui analyse chaque image avant
+usage : copier l'image publiée dans un registre interne et y faire pointer le pack publié. Ni hôte de
+construction ni SDK, le proxy cloud ne dépend que du registre interne, et l'image peut y être analysée avant
+usage. Testée dans le lab avec un registre local ; pas testée avec Harbor.
+
+*À exécuter sur : un hôte Linux qui joint à la fois `ghcr.io` et le registre interne*, avec
+[skopeo](https://github.com/containers/skopeo) (`sudo apt-get install -y skopeo` ou `sudo dnf install -y skopeo`)
+et un clone de ce dépôt pour `tools/repack.py`. Le registre interne demande la même préparation que dans
+[Variante : un registre Harbor existant](#variante--un-registre-harbor-existant) : un projet public, un compte
+qui peut y envoyer des images, et un certificat auquel le proxy cloud fait confiance.
+
+1. Vérifier les signatures du pack et de l'image, comme ci-dessus. Le faire d'abord : l'étape 3 modifie le
+   pack, sa somme de contrôle et sa signature ne correspondent plus ensuite.
+2. Copier l'image par son empreinte. `--preserve-digests` garde l'empreinte que désigne le pack :
+
+   ```bash
+   set -a; source ~/fedmp.env; set +a
+   skopeo copy --preserve-digests --dest-creds "$HARBOR_USER:$HARBOR_PW" \
+     docker://ghcr.io/sorinplaton/nsxfederation@$DIGEST \
+     docker://$HARBOR/$HARBOR_PROJECT/nsxfederation:1.13.0
+   ```
+
+   Pour pouvoir vérifier l'image plus tard depuis le registre interne, copier aussi sa signature :
+   `cosign copy ghcr.io/sorinplaton/nsxfederation@$DIGEST $HARBOR/$HARBOR_PROJECT/nsxfederation` (après
+   `docker login $HARBOR`).
+3. Faire pointer le pack vers le registre interne. Seuls le registre et le dépôt changent ; l'empreinte reste :
+
+   ```bash
+   python3 ~/vcf-ops-nsx-federation-mp/tools/repack.py NSXFederation_1.13.0.pak $HARBOR $HARBOR_PROJECT/nsxfederation
+   unzip -p NSXFederation_1.13.0.pak adapter.zip > /tmp/adapter.zip
+   unzip -p /tmp/adapter.zip '*.conf' | grep -E '^(REGISTRY|REPOSITORY|DIGEST)='
+   ```
+
+   Attendu : `REGISTRY` est le registre interne, `REPOSITORY` vaut `/<projet>/nsxfederation`, et `DIGEST` est la
+   valeur de l'étape 2.
+4. Analyser l'image dans le registre interne si l'organisation l'exige, puis installer le pack avec l'étape 6.
+   Le proxy cloud n'a besoin que du registre interne, pas de `ghcr.io`.
 
 ## 1. Prérequis
 
@@ -464,7 +563,8 @@ compte de type NSX Federation.
 *À exécuter dans : l'interface du produit VCF Operations.*
 
 - [ ] Onglet Accounts : le compte passe à l'état « Collecting ». S'il reste `FAILED` avec un message vide, le proxy
-      cloud n'a pas pu récupérer l'image. Option A : vérifier que le proxy cloud joint `ghcr.io`. Option B :
+      cloud n'a pas pu récupérer l'image. Option A : vérifier que le proxy cloud joint `ghcr.io` et
+      `pkg-containers.githubusercontent.com`. Option B :
       vérifier les étapes 2 et 4, et chercher `tls: bad certificate` dans le journal du registre.
 - [ ] Avec un intervalle de 5 minutes, les données arrivent en trois cycles : d'abord les objets et les
       relations, puis les propriétés et les événements, puis les métriques après une dizaine de minutes. Les
@@ -500,7 +600,7 @@ python3 install/notification_rules.py --outbound '<instance sortante>' --min-cri
 
 ## Mise à niveau
 
-1. Option A : télécharger le pack de la nouvelle version. Option B : construire la nouvelle version (étape 3).
+1. Option A : télécharger le pack de la nouvelle version et vérifier ses signatures. Option B : construire la nouvelle version (étape 3).
    Puis l'installer (étape 6).
 2. Arrêter puis démarrer le compte. Vérifier qu'il passe à l'état « Collecting » ; le démarrer une seconde fois s'il
    reste arrêté.

@@ -9,6 +9,11 @@ Install guide only.
 - The adapter image is public on `ghcr.io/sorinplaton/nsxfederation`, and release `v1.13.1` carries a ready-to-install
   `NSXFederation_1.13.0.pak` that pulls it. The install guide offers this as Option A (download the released pack),
   next to Option B (build your own, the previous steps). The network diagram shows both.
+- The released pack and image are signed with cosign; `cosign.pub` is at the root of the repository. Option A
+  gives the commands to install cosign and verify both signatures.
+- Option A lists `pkg-containers.githubusercontent.com` next to `ghcr.io`: the image layers come from there.
+- New variant of Option A: copy the released image by digest into an internal registry with `skopeo`, then point
+  the pack at it with `tools/repack.py`. No build needed.
 
 - `docs/INSTALL.md` (and the French copy) follows the order of the blog post: registry, build, then the
   certificate on the cloud proxy. Steps 3 and 4 swapped places.

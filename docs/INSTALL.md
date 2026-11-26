@@ -15,7 +15,7 @@ paths differ only in where that image comes from.
 | | Option A: download the released pack | Option B: build your own |
 | --- | --- | --- |
 | Adapter image | Public, on `ghcr.io/sorinplaton/nsxfederation`, pulled by digest | Pushed by you to a registry of your own |
-| Needs | The cloud proxy reaches `ghcr.io` on TCP 443 | A build host with Docker, and a registry served over HTTPS that the cloud proxy trusts |
+| Needs | The cloud proxy reaches `ghcr.io` and `pkg-containers.githubusercontent.com` on TCP 443 | A build host with Docker, and a registry served over HTTPS that the cloud proxy trusts |
 | Steps | [Option A](#option-a-download-the-released-pack), then steps 6 to 10 | Steps 1 to 10, or the Harbor variant in place of steps 2 to 4 |
 | Use when | The cloud proxy has internet access | The cloud proxy has no internet access, images must come from an internal registry, or the pack is modified |
 
@@ -52,7 +52,7 @@ flowchart LR
   VC["vCenter"]
   ESX["ESXi host of the<br/>cloud proxy VM"]
   CP["Cloud proxy"]
-  GHCR["ghcr.io<br/>released image"]
+  GHCR["ghcr.io and<br/>pkg-containers.githubusercontent.com<br/>released image"]
   GM["Global Managers<br/>active and standby"]
   LM["Local Managers"]
 
@@ -80,7 +80,7 @@ flowchart LR
 | Build host | ESXi host of the cloud proxy VM | TCP 443 | `govc guest.upload` sends the file to the ESXi host, not to vCenter |
 | Build host | Global Managers | TCP 443 | Only for the optional test of step 5 |
 | Cloud proxy | Registry | TCP 5000, or the registry port | Option B: pulling the adapter image |
-| Cloud proxy | `ghcr.io` | TCP 443 | Option A: pulling the released adapter image. Through the site proxy if the cloud proxy uses one |
+| Cloud proxy | `ghcr.io` and `pkg-containers.githubusercontent.com` | TCP 443 | Option A: pulling the released adapter image. `ghcr.io` answers the registry calls and redirects the image layers to `pkg-containers.githubusercontent.com`. Through the site proxy if the cloud proxy uses one |
 | Cloud proxy | Global Managers and Local Managers | TCP 443 | Collection |
 
 Placeholders:
@@ -111,13 +111,14 @@ Option B. With Option A, use the checklist of [Option A](#option-a-download-the-
 Use this in place of steps 1 to 5 when the cloud proxy has internet access. It needs no build host, no Docker
 and no registry of your own. Not yet tested in the lab, which uses Option B.
 
-- [ ] VCF Operations 9.1.1 with at least one cloud proxy in state `UP`, which reaches `ghcr.io` on TCP 443,
-      directly or through the site proxy.
+- [ ] VCF Operations 9.1.1 with at least one cloud proxy in state `UP`, which reaches `ghcr.io` and
+      `pkg-containers.githubusercontent.com` on TCP 443, directly or through the site proxy. Firewall rules need
+      both names: the image layers come from the second one.
 - [ ] NSX 9.1 Federation and a read-only NSX account, as in step 1.
 - [ ] The cloud proxy reaches every NSX manager on TCP 443.
 - [ ] Admin password of VCF Operations, and the change approval for the unsigned-pack switch if the
       organisation requires one.
-- [ ] Pack downloaded and checksum verified.
+- [ ] Pack downloaded, checksum verified, signatures verified (recommended).
 - [ ] Then steps 6 to 10.
 
 *Run on: any machine with a browser that reaches VCF Operations.* Download the pack and its checksum from the
@@ -141,6 +142,103 @@ curl -s -o /dev/null -w '%{http_code}\n' https://ghcr.io/v2/
 
 Then install the pack with step 6, by hand or with the scripts (the scripts need a clone of this repository and
 the settings file of step 1), and continue with steps 7 to 10.
+
+### Verify the signatures (recommended)
+
+The pack and its adapter image are signed with [cosign](https://docs.sigstore.dev/cosign/) (Sigstore). The
+checksum only proves that the download is complete; it sits next to the pack on the same release page. The
+signatures prove that the pack and the image were produced by the holder of the private key of this project,
+and that neither changed since. Verify both before the install, and again for every new release.
+
+The public key is `cosign.pub`, at the root of this repository and on the release page. Take it from the
+repository, and keep that copy for later releases: a key downloaded from the same place as the pack proves
+less.
+
+```bash
+curl -LO https://raw.githubusercontent.com/sorinplaton/vcf-ops-nsx-federation-mp/main/cosign.pub
+curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.1/NSXFederation_1.13.0.pak.bundle
+```
+
+**Install cosign.** *Run on: the machine that downloaded the pack (Linux, x86-64).* One of:
+
+```bash
+# Ubuntu or Debian
+curl -LO https://github.com/sigstore/cosign/releases/download/v2.4.1/cosign_2.4.1_amd64.deb
+sudo dpkg -i cosign_2.4.1_amd64.deb
+
+# RHEL, Rocky Linux or AlmaLinux
+curl -LO https://github.com/sigstore/cosign/releases/download/v2.4.1/cosign-2.4.1-1.x86_64.rpm
+sudo rpm -ivh cosign-2.4.1-1.x86_64.rpm
+
+# Any Linux: the single binary
+curl -LO https://github.com/sigstore/cosign/releases/download/v2.4.1/cosign-linux-amd64
+sudo install -m 0755 cosign-linux-amd64 /usr/local/bin/cosign
+
+cosign version
+```
+
+The [cosign releases](https://github.com/sigstore/cosign/releases) also hold macOS and Windows builds and a
+`cosign_checksums.txt` for the downloads. Without installing anything, Docker can run the same version:
+`docker run --rm -v $PWD:/w -w /w -u $(id -u) -e HOME=/tmp ghcr.io/sigstore/cosign/cosign:v2.4.1 <command>`.
+
+**Verify the pack.** Expected: `Verified OK`.
+
+```bash
+cosign verify-blob --key cosign.pub --bundle NSXFederation_1.13.0.pak.bundle NSXFederation_1.13.0.pak
+```
+
+**Verify the image the pack points to.** Read its digest from the pack, then verify it. Expected: "The
+signatures were verified against the specified public key".
+
+```bash
+unzip -p NSXFederation_1.13.0.pak adapter.zip > /tmp/adapter.zip
+DIGEST=$(unzip -p /tmp/adapter.zip '*.conf' | sed -n 's/^DIGEST=//p')
+cosign verify --key cosign.pub ghcr.io/sorinplaton/nsxfederation@$DIGEST
+```
+
+Both commands reach the internet: `ghcr.io` for the image signature, and the Sigstore servers
+(`tuf-repo-cdn.sigstore.dev`, `rekor.sigstore.dev`) for the public transparency log in which each signature is
+recorded. A failed verification means the file or the image is not the one that was signed: do not install it.
+
+### Variant: mirror the image to an internal registry
+
+For an enterprise that does not let the cloud proxy reach the internet, or that scans every image before use,
+copy the released image into an internal registry and point the released pack at it. No build host and no
+SDK are needed, the cloud proxy depends on the internal registry only, and the image can be scanned there
+before use. Tested in the lab against a local registry; not tested against Harbor.
+
+*Run on: a Linux host that reaches both `ghcr.io` and the internal registry*, with
+[skopeo](https://github.com/containers/skopeo) (`sudo apt-get install -y skopeo` or `sudo dnf install -y skopeo`)
+and a clone of this repository for `tools/repack.py`. The internal registry needs the same preparation as in
+[Variant: an existing Harbor registry](#variant-an-existing-harbor-registry): a public project, an account that
+can push to it, and a certificate the cloud proxy trusts.
+
+1. Verify the signatures of the pack and the image, as above. Do it first: step 3 changes the pack, so its
+   checksum and signature no longer match afterwards.
+2. Copy the image by digest. `--preserve-digests` keeps the digest the pack names:
+
+   ```bash
+   set -a; source ~/fedmp.env; set +a
+   skopeo copy --preserve-digests --dest-creds "$HARBOR_USER:$HARBOR_PW" \
+     docker://ghcr.io/sorinplaton/nsxfederation@$DIGEST \
+     docker://$HARBOR/$HARBOR_PROJECT/nsxfederation:1.13.0
+   ```
+
+   To verify the image again from the internal registry later, copy its signature too:
+   `cosign copy ghcr.io/sorinplaton/nsxfederation@$DIGEST $HARBOR/$HARBOR_PROJECT/nsxfederation` (needs
+   `docker login $HARBOR` first).
+3. Point the pack at the internal registry. Only the registry and the repository change; the digest stays:
+
+   ```bash
+   python3 ~/vcf-ops-nsx-federation-mp/tools/repack.py NSXFederation_1.13.0.pak $HARBOR $HARBOR_PROJECT/nsxfederation
+   unzip -p NSXFederation_1.13.0.pak adapter.zip > /tmp/adapter.zip
+   unzip -p /tmp/adapter.zip '*.conf' | grep -E '^(REGISTRY|REPOSITORY|DIGEST)='
+   ```
+
+   Expected: `REGISTRY` is the internal registry, `REPOSITORY` is `/<project>/nsxfederation`, and `DIGEST` is the
+   value of step 2.
+4. Scan the image in the internal registry if the organisation requires it, then install the pack with step 6.
+   The cloud proxy needs only the internal registry, not `ghcr.io`.
 
 ## 1. Prerequisites
 
@@ -448,7 +546,7 @@ Federation.
 *Run in: the VCF Operations product UI.*
 
 - [ ] Accounts tab: the account reaches "Collecting". If it stays `FAILED` with an empty message, the cloud
-      proxy could not pull the image. Option A: check that the cloud proxy reaches `ghcr.io`. Option B: check
+      proxy could not pull the image. Option A: check that the cloud proxy reaches `ghcr.io` and `pkg-containers.githubusercontent.com`. Option B: check
       steps 2 and 4, and the registry log for `tls: bad certificate`.
 - [ ] With a 5-minute interval, the data arrives over three cycles: objects and relationships first, then
       properties and events, then metrics after about ten minutes. Rates need one more cycle.
@@ -483,7 +581,7 @@ python3 install/notification_rules.py --outbound '<outbound instance>' --min-cri
 
 ## Upgrade
 
-1. Option A: download the pack of the new release. Option B: build the new version (step 3). Then install it
+1. Option A: download the pack of the new release and verify its signatures. Option B: build the new version (step 3). Then install it
    (step 6).
 2. Stop and start the account. Check that it reaches "Collecting"; start it a second time if it stays stopped.
 3. Metrics return after three cycles, rates after four.

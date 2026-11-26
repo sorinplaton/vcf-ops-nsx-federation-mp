@@ -142,7 +142,9 @@ Two paths:
 - **Option A, download the released pack.** The `.pak` on the
   [releases page](https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/latest) pulls its adapter
   image from `ghcr.io/sorinplaton/nsxfederation`. No build and no registry of your own; the cloud proxy must
-  reach `ghcr.io` on TCP 443.
+  reach `ghcr.io` and `pkg-containers.githubusercontent.com` on TCP 443. The pack and the image are signed with
+  cosign; the public key is [`cosign.pub`](cosign.pub). The image can also be mirrored to an internal registry
+  without a build.
 - **Option B, build your own.** Build the pack and push the image to a registry the cloud proxy trusts, for a
   cloud proxy without internet access or an internal-registry policy.
 
