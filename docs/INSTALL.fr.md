@@ -3,7 +3,7 @@
 Comment installer le pack NSX Federation dans VCF Operations 9.1.1, soit à partir du pack publié, soit à
 partir de votre propre build, avec la machine sur laquelle chaque commande s'exécute. L'option B est le mode
 utilisé dans le lab. Pour l'option A, les commandes de vérification des signatures ont été exécutées sur la
-version v1.13.1 publiée, et la variante avec registre interne a été testée avec un registre local ; chaque
+version v1.13.3 publiée (par clé et sans clé), et la variante avec registre interne a été testée avec un registre local ; chaque
 section précise ce qui n'a pas été testé. La partie 2 du
 [blog](https://sorinplaton.github.io/fr/posts/nsx-federation-management-pack-install/) montre les étapes avec
 des captures d'écran.
@@ -156,7 +156,7 @@ registre interne, ajouter la [variante](#variante--copier-limage-dans-un-registr
 cette section.
 
 Testé à ce jour : le téléchargement et toutes les commandes de « Vérifier les signatures » ci-dessous, sur la
-version v1.13.1 publiée. La récupération de l'image depuis `ghcr.io` par le proxy cloud n'est pas encore testée
+version v1.13.3 publiée. La récupération de l'image depuis `ghcr.io` par le proxy cloud n'est pas encore testée
 dans le lab, qui utilise l'option B.
 
 Flux réseau de ce mode. Les traits pleins partent du poste d'administration ; les traits pointillés sont ceux
@@ -203,8 +203,8 @@ valeur publiée. Résultat attendu : `NSXFederation_1.13.0.pak: OK`. Toute autre
 téléchargement est abîmé ou incomplet ; le refaire.
 
 ```bash
-curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.1/NSXFederation_1.13.0.pak
-curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.1/NSXFederation_1.13.0.pak.sha256
+curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.3/NSXFederation_1.13.0.pak
+curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.3/NSXFederation_1.13.0.pak.sha256
 sha256sum -c NSXFederation_1.13.0.pak.sha256
 ```
 
@@ -266,7 +266,7 @@ La première commande ci-dessous récupère la clé, la seconde le bundle, qui e
 
 ```bash
 curl -LO https://raw.githubusercontent.com/sorinplaton/vcf-ops-nsx-federation-mp/main/cosign.pub
-curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.1/NSXFederation_1.13.0.pak.bundle
+curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.3/NSXFederation_1.13.0.pak.bundle
 ```
 
 **Installer cosign.** *À exécuter sur : la machine qui a téléchargé le pack (Linux, x86-64).* Choisir l'une des
@@ -337,7 +337,7 @@ cosign verify --certificate-identity "$SIGNER" --certificate-oidc-issuer "$ISSUE
 
 Remplacer `1.13.0` par la version du pack dans les noms de fichiers de cette version. Résultat attendu :
 `Verified OK`, puis la liste des contrôles faits par cosign. Les commandes joignent les mêmes hôtes que la
-vérification par clé. Pas encore testé : la première version signée sans clé est `v1.13.3`.
+vérification par clé. Testé sur `v1.13.3`, la première version signée sans clé, le 2026-11-26.
 
 Une fois la somme de contrôle et les deux signatures validées, installer le pack avec l'étape 6, à la main ou
 par script, puis continuer avec les étapes 7 à 10. Les scripts demandent un hôte Linux avec un clone de ce

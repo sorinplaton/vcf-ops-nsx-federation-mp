@@ -9,8 +9,8 @@ promotion host for the signature check.
 
 Tested on 2026-11-26 against JFrog Container Registry 7.161.26 (the free edition of Artifactory) behind HTTPS
 with an internal CA: the pull through a Docker Hub remote repository, the signature check through Artifactory,
-the promotion by digest, the extraction of the pack and its rewrite. Not yet tested: anonymous read for the
-cloud proxy, the pull by the cloud proxy, and the first release on Docker Hub. [What was tested](#what-was-tested)
+the promotion by digest, the extraction of the pack and its rewrite, all with release `v1.13.3` from Docker Hub.
+Not yet tested: anonymous read for the cloud proxy and the pull by the cloud proxy. [What was tested](#what-was-tested)
 lists each step.
 
 For the other install paths (download from GitHub, a build of your own, Harbor), see
@@ -388,6 +388,11 @@ test CA, with skopeo 1.25.1 and cosign 2.4.1:
 - A Docker Hub image pulled through a Docker Hub remote repository: same digest as on Docker Hub.
 - The released adapter image `v1.13.1` pulled through a remote repository (of `ghcr.io`, the only place it was
   published then), and its signature verified through Artifactory, with the key of that release.
+- Release `v1.13.3`, the first one on Docker Hub, run through steps 3, 4, 6 and 7 as written: pack image pulled
+  through the Docker Hub remote repository and pack taken out (checksum OK), keyless signatures of the pack image
+  and of the adapter image verified through Artifactory, both images promoted with the same digests
+  (`nsxfederation-pak` `sha256:1ff264cf...`, `nsxfederation` `sha256:bd533626...`), pack rewritten to the
+  approved repository with the adapter digest unchanged.
 - Both images copied into a local repository with `skopeo copy --all --preserve-digests`: same digests. Without
   `--all`, the pack image came out with another digest; that is why step 6 uses it.
 - The pack taken out of the pack image in Artifactory, checksum OK, and rewritten with `repack.py` to the local
@@ -398,5 +403,4 @@ Not tested yet:
 - Anonymous read on `vcfops-approved` and the pull by a cloud proxy from Artifactory. The free edition only sets
   permissions in its UI. The same pull from a registry of the lab works, and a pull without the permission was
   refused (`unauthorized`), as expected.
-- The first release on Docker Hub and the keyless verification of step 4, which wait for that release.
 - JFrog Xray, the Artifactory Pro promotion API, and the Subdomain access method.

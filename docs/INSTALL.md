@@ -2,7 +2,7 @@
 
 How to install the NSX Federation pack in VCF Operations 9.1.1, either from the released pack or from a
 build of your own, with the machine each command runs on. Option B is the path used in the lab. For Option A,
-the commands that verify the signatures were run against the v1.13.1 release, and the mirror variant was tested
+the commands that verify the signatures were run against the v1.13.3 release (key and keyless), and the mirror variant was tested
 against a local registry; each section says what was not tested. Part 2 of the
 [blog](https://sorinplaton.github.io/posts/nsx-federation-management-pack-install/) shows the steps with
 screenshots.
@@ -152,7 +152,7 @@ and no registry of your own. When the cloud proxy has no internet access, or ima
 registry, add the [mirror variant](#variant-mirror-the-image-to-an-internal-registry) at the end of this
 section.
 
-Tested so far: the download and every command of "Verify the signatures" below, against the v1.13.1 release.
+Tested so far: the download and every command of "Verify the signatures" below, against the v1.13.3 release.
 The pull of the image from `ghcr.io` by the cloud proxy is not yet tested in the lab, which uses Option B.
 
 Network flows of this path. Solid lines start at the admin workstation; dashed lines are the cloud proxy's. The
@@ -199,8 +199,8 @@ Expected: `NSXFederation_1.13.0.pak: OK`. Anything else means the download is da
 it again.
 
 ```bash
-curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.1/NSXFederation_1.13.0.pak
-curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.1/NSXFederation_1.13.0.pak.sha256
+curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.3/NSXFederation_1.13.0.pak
+curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.3/NSXFederation_1.13.0.pak.sha256
 sha256sum -c NSXFederation_1.13.0.pak.sha256
 ```
 
@@ -257,7 +257,7 @@ less. The first command below fetches the key, the second the bundle, which is t
 
 ```bash
 curl -LO https://raw.githubusercontent.com/sorinplaton/vcf-ops-nsx-federation-mp/main/cosign.pub
-curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.1/NSXFederation_1.13.0.pak.bundle
+curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.3/NSXFederation_1.13.0.pak.bundle
 ```
 
 **Install cosign.** *Run on: the machine that downloaded the pack (Linux, x86-64).* One of the three methods
@@ -325,8 +325,8 @@ cosign verify --certificate-identity "$SIGNER" --certificate-oidc-issuer "$ISSUE
 ```
 
 Replace `1.13.0` with the pack version in the file names of that release. Expected: `Verified OK`, then the list
-of checks cosign made. The commands reach the same hosts as the key-based check. Not tested yet: the first
-keyless release is `v1.13.3`.
+of checks cosign made. The commands reach the same hosts as the key-based check. Tested against `v1.13.3`, the
+first keyless release, on 2026-11-26.
 
 Once the checksum and both signatures are good, install the pack with step 6, by hand or with the scripts, and
 continue with steps 7 to 10. The scripts need a Linux host with a clone of this repository, the settings file

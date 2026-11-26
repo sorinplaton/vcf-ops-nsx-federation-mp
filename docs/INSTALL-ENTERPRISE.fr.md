@@ -9,8 +9,9 @@ et l'hôte de promotion pour la vérification des signatures.
 
 Testé le 2026-11-26 avec JFrog Container Registry 7.161.26 (l'édition gratuite d'Artifactory) servi en HTTPS avec
 une autorité interne : la récupération via un dépôt distant Docker Hub, la vérification des signatures via
-Artifactory, la promotion par digest, l'extraction du pack et sa réécriture. Pas encore testé : la lecture anonyme
-pour le proxy cloud, la récupération par le proxy cloud, et la première version publiée sur Docker Hub.
+Artifactory, la promotion par digest, l'extraction du pack et sa réécriture, le tout avec la version `v1.13.3`
+publiée sur Docker Hub. Pas encore testé : la lecture anonyme pour le proxy cloud et la récupération par le proxy
+cloud.
 [Ce qui a été testé](#ce-qui-a-été-testé) détaille chaque étape.
 
 Pour les autres modes d'installation (téléchargement depuis GitHub, build par vos soins, Harbor), voir
@@ -402,6 +403,11 @@ par une autorité de test, avec skopeo 1.25.1 et cosign 2.4.1 :
 - Une image Docker Hub récupérée via un dépôt distant Docker Hub : même digest que sur Docker Hub.
 - L'image publiée de l'adaptateur `v1.13.1` récupérée via un dépôt distant (de `ghcr.io`, le seul endroit où elle
   était publiée à ce moment), et sa signature vérifiée via Artifactory, avec la clé de cette version.
+- La version `v1.13.3`, la première publiée sur Docker Hub, passée par les étapes 3, 4, 6 et 7 telles qu'écrites :
+  image du pack récupérée via le dépôt distant Docker Hub et pack extrait (somme de contrôle OK), signatures sans
+  clé de l'image du pack et de l'image de l'adaptateur vérifiées via Artifactory, les deux images promues avec les
+  mêmes digests (`nsxfederation-pak` `sha256:1ff264cf...`, `nsxfederation` `sha256:bd533626...`), pack réécrit
+  vers le dépôt des images approuvées avec le digest de l'adaptateur inchangé.
 - Les deux images copiées dans un dépôt local avec `skopeo copy --all --preserve-digests` : mêmes digests. Sans
   `--all`, l'image du pack est sortie avec un autre digest ; c'est pourquoi l'étape 6 l'utilise.
 - Le pack extrait de l'image du pack dans Artifactory, somme de contrôle OK, et réécrit avec `repack.py` vers le
@@ -412,6 +418,4 @@ Pas encore testé :
 - La lecture anonyme sur `vcfops-approved` et la récupération par un proxy cloud depuis Artifactory. L'édition
   gratuite ne règle les permissions que dans son interface. La même récupération depuis un registre du lab
   fonctionne, et une récupération sans la permission a été refusée (`unauthorized`), comme prévu.
-- La première version publiée sur Docker Hub et la vérification sans clé de l'étape 4, qui attendent cette
-  version.
 - JFrog Xray, l'API de promotion d'Artifactory Pro et la méthode d'accès Subdomain.

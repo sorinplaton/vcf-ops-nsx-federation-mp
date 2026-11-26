@@ -2,7 +2,10 @@
 
 Each release has a tag `v<version>`; the commit messages give the details.
 
-## Unreleased
+## 1.13.3 (2026-11-26)
+
+The pack is unchanged and still reports 1.13.0; this release adds the release workflow, Docker Hub and the
+enterprise install guide.
 
 - Releases are built and published by a workflow (`.github/workflows/release.yml`) from a Git tag, which is the
   single source of truth: pack and adapter image built from the tag, pushed to `ghcr.io` and copied byte for
