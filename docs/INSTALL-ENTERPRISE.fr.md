@@ -327,9 +327,7 @@ mêmes valeurs.
 
 Un site qui n'accepte pas la base Wolfi de la version 1.13.7 (étape 5) définit `RELEASE=1.13.6`, qui a la même
 version de pack et le même code d'adaptateur sur la base Debian 12. Rien d'autre ne change dans ce guide. Les deux
-bases ont été testées de bout en bout dans le lab : Debian 12 avec la version `v1.13.5`, construite à partir des
-mêmes sources de pack que `v1.13.6`, et Wolfi avec la version `v1.13.7`. La version `v1.13.6` elle-même a suivi
-les étapes 2 à 7.
+bases, Debian 12 et Wolfi, ont été testées de bout en bout dans le lab.
 
 ## 3. Récupérer le pack via Artifactory
 
