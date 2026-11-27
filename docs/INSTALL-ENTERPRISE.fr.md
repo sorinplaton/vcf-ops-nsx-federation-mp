@@ -8,10 +8,10 @@ ce dépôt. Aucune machine de l'organisation n'a besoin de joindre GitHub ou Doc
 et l'hôte de promotion pour la vérification des signatures.
 
 Les étapes 2 à 7 ont été testées le 2026-11-26 avec les versions `v1.13.3`, `v1.13.5` et `v1.13.6`, avec JFrog Container
-Registry 7.161.26 (l'édition gratuite d'Artifactory) servi en HTTPS avec une autorité interne. **Ce mode n'a pas
-encore été exécuté de bout en bout :** la lecture anonyme sur `vcfops-approved` (étape 1, point 3), la récupération
-par le proxy cloud (étape 8), l'installation depuis Artifactory (étape 9), le retour arrière, la désinstallation et
-JFrog Xray restent à tester. [Ce qui a été testé](#ce-qui-a-été-testé) détaille chaque étape.
+Registry 7.161.26 (l'édition gratuite d'Artifactory) servi en HTTPS avec une autorité interne. Ce mode a ensuite été exécuté de bout en bout le 2026-11-27 avec la version `v1.13.5` : lecture anonyme sur
+`vcfops-approved`, récupération par le proxy cloud, installation depuis Artifactory, compte, et retour arrière vers
+`v1.13.3`. La désinstallation et JFrog Xray restent à tester. [Ce qui a été testé](#ce-qui-a-été-testé) détaille
+chaque étape.
 
 Pour les autres modes d'installation (téléchargement depuis GitHub, build par vos soins, Harbor), voir
 [INSTALL.fr.md](INSTALL.fr.md). English version: [INSTALL-ENTERPRISE.md](INSTALL-ENTERPRISE.md).
@@ -238,7 +238,8 @@ l'interface JFrog Platform 7.x.
    aucun réglage pour l'authentification auprès d'un registre. Administration, User Management, Settings :
    « Allow Anonymous Access » activé. Puis Permissions, New Permission : ressource `vcfops-approved` seulement,
    utilisateur `anonymous`, action Read. Le dépôt distant et tous les autres dépôts restent fermés aux
-   utilisateurs anonymes.
+   utilisateurs anonymes. Un site qui n'autorise aucun accès anonyme peut sauter ce point et suivre
+   [Sans lecture anonyme](#sans-lecture-anonyme) à l'étape 8.
 4. **Compte de promotion.** Un utilisateur ou un compte de service avec Read sur le dépôt distant Docker Hub, et
    Read, Annotate et Deploy sur `vcfops-approved`. Lui créer un jeton d'identité (Edit Profile, Generate an
    Identity Token) : les commandes ci-dessous utilisent ce jeton comme mot de passe.
@@ -405,11 +406,13 @@ qu'il faut attendre :
 
 - L'image du pack contient deux fichiers et aucun système d'exploitation. Un outil d'analyse n'y trouve aucun
   paquet.
-- L'image de l'adaptateur est une base Debian avec Python et les paquets du SDK. Son SBOM accompagne l'image sous
+- L'image de l'adaptateur est une base Wolfi avec Python 3.11 et les paquets du SDK (Debian 12 jusqu'à la version
+  1.13.6). Son SBOM accompagne l'image sous
   forme d'attestation signée (étape 4) et figure en fichier dans la version GitHub
   (`NSXFederation_<version>.sbom.cdx.json`). La version contient aussi le rapport Trivy du projet
   (`NSXFederation_<version>.trivy.txt`) : la construction de la version s'arrête sur une vulnérabilité CRITICAL
-  qui a un correctif. Les problèmes restants sont donc ceux de la base Debian sans version corrigée, listés dans
+  qui a un correctif. L'analyse du build 1.13.7 n'a trouvé aucune vulnérabilité ; les versions jusqu'à 1.13.6
+  portent une centaine de problèmes HIGH ou CRITICAL de la base Debian sans version corrigée, comme l'explique
   [SECURITY.md](../SECURITY.md).
 
 ## 6. Promouvoir : copier dans le dépôt des images approuvées
@@ -525,6 +528,24 @@ docker pull artifactory.example.com/vcfops-approved/nsxfederation@sha256:...   #
 Une mise à niveau ou un redéploiement du proxy cloud supprime le dossier du certificat ; le vérifier après l'un
 ou l'autre.
 
+### Sans lecture anonyme
+
+L'adaptateur démarre à partir d'une image déjà présente sur le proxy cloud, même quand le registre refuse la
+récupération. Sur un site qui interdit l'accès anonyme, un administrateur récupère l'image une fois avec un
+identifiant, en root sur chaque proxy cloud qui exécute le compte, puis se déconnecte. Aucun identifiant ne reste
+sur le proxy cloud :
+
+```bash
+docker login artifactory.example.com -u <compte avec Read sur vcfops-approved>
+docker pull artifactory.example.com/vcfops-approved/nsxfederation@sha256:...   # AD_DIGEST
+docker logout artifactory.example.com
+```
+
+Recommencer pour chaque nouvelle version, avant l'installation de l'étape 9, et après tout ce qui vide le magasin
+d'images du proxy cloud (un redéploiement, une mise à niveau, un `docker image prune`). Sans l'image, le compte
+échoue avec `Failed to download image` dans `collector.log`. Un identifiant enregistré pour l'utilisateur du
+collecteur, pour que le proxy cloud récupère l'image lui-même, n'a pas été testé.
+
 ## 9. Installer
 
 Installer `NSXFederation_<version>_site.pak` avec [INSTALL.fr.md](INSTALL.fr.md), étapes 6 à 10 : option des packs
@@ -556,7 +577,9 @@ récupère le nouveau tag sur Docker Hub la première fois qu'il lui est demand�
 
 ## Revenir à la version précédente
 
-Pas encore testé. Un retour arrière réinstalle le pack précédent par-dessus le pack actuel. Il fonctionne tant que
+Un retour arrière réinstalle le pack précédent par-dessus le pack actuel. Testé le 2026-11-27 de `v1.13.5` vers
+`v1.13.3`, deux versions avec la même version de pack ; un retour vers une version de pack inférieure n'a pas été
+testé. Il fonctionne tant que
 les images précédentes sont encore dans `vcfops-approved` et que le pack `_site` précédent et son SHA-256
 enregistré sont conservés ; c'est pourquoi [Mise à niveau](#mise-à-niveau-vers-une-nouvelle-version) demande de les
 garder.
@@ -668,12 +691,19 @@ par une autorité de test, avec skopeo 1.25.1 et cosign 2.4.1 :
   `FEDMP_IMAGE_REPO` pointant vers `vcfops-approved` a réussi ; avec la somme de contrôle d'un autre fichier, il a
   refusé le pack.
 
-Pas encore testé, ce mode n'a donc pas été exécuté de bout en bout :
+- Version `v1.13.5` de bout en bout le 2026-11-27, avec VCF Operations 9.1.2.0 et Docker seul sur l'hôte de
+  promotion (Docker Engine 29.6.2) : Read anonyme sur `vcfops-approved` réglé dans l'interface (l'édition gratuite
+  n'a pas d'API pour cela), récupération par le proxy cloud sans identifiant, installation du pack `_site`, et
+  compte en collecte depuis `vcfops-approved` avec des métriques sur chaque objet.
+- Retour arrière de `v1.13.5` vers `v1.13.3` par Artifactory : installation terminée, le proxy cloud a récupéré
+  lui-même l'image précédente après l'arrêt et le démarrage du compte, et la collecte a repris. Puis `v1.13.5` de
+  nouveau.
+- Sans lecture anonyme : avec le pack pointant vers un dépôt qui refuse les récupérations anonymes, le compte a
+  échoué (`Failed to download image`) ; après une récupération avec un identifiant en root sur le proxy cloud,
+  puis une déconnexion, il a démarré et collecté.
 
-- La lecture anonyme sur `vcfops-approved` (étape 1, point 3) et la récupération par un proxy cloud depuis
-  Artifactory (étape 8). L'édition gratuite ne règle les permissions que dans son interface. La même récupération
-  depuis un registre du lab fonctionne, et une récupération sans la permission a été refusée (`unauthorized`),
-  comme prévu.
-- L'installation du pack `_site` depuis Artifactory et le compte (étape 9), le retour arrière et la
-  désinstallation.
+Pas encore testé :
+
+- La désinstallation, et un retour arrière vers une version de pack inférieure.
+- Un identifiant de registre enregistré sur le proxy cloud pour l'utilisateur du collecteur.
 - JFrog Xray, l'API de promotion d'Artifactory Pro et la méthode d'accès Subdomain.

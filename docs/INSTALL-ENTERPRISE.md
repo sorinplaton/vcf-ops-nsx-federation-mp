@@ -8,10 +8,9 @@ there. No machine of the organisation needs to reach GitHub or Docker Hub except
 promotion host for the signature check.
 
 Steps 2 to 7 were tested on 2026-11-26 with releases `v1.13.3`, `v1.13.5` and `v1.13.6`, against JFrog Container Registry
-7.161.26 (the free edition of Artifactory) behind HTTPS with an internal CA. **This path has not yet run end to
-end:** anonymous read on `vcfops-approved` (step 1, item 3), the pull by the cloud proxy (step 8), the install from
-Artifactory (step 9), rollback, uninstall and JFrog Xray are still to be tested. [What was tested](#what-was-tested)
-lists each step.
+7.161.26 (the free edition of Artifactory) behind HTTPS with an internal CA. The path then ran end to end on 2026-11-27 with release `v1.13.5`: anonymous read on `vcfops-approved`, the pull by
+the cloud proxy, the install from Artifactory, the account, and a rollback to `v1.13.3`. Uninstall and JFrog Xray
+are still to be tested. [What was tested](#what-was-tested) lists each step.
 
 For the other install paths (download from GitHub, a build of your own, Harbor), see
 [INSTALL.md](INSTALL.md). Version française : [INSTALL-ENTERPRISE.fr.md](INSTALL-ENTERPRISE.fr.md).
@@ -228,7 +227,8 @@ managers and VCF Operations.
 3. **Anonymous read on that repository only.** The cloud proxy pulls without credentials: VCF Operations has no
    setting for a registry login. Administration, User Management, Settings: "Allow Anonymous Access" on. Then
    Permissions, New Permission: resource `vcfops-approved` only, user `anonymous`, action Read. The remote
-   repository and every other repository stay closed to anonymous users.
+   repository and every other repository stay closed to anonymous users. A site that does not allow anonymous
+   access at all can skip this item and follow [Without anonymous read](#without-anonymous-read) at step 8.
 4. **Promotion account.** A user or service account with Read on the Docker Hub remote and Read, Annotate and
    Deploy on `vcfops-approved`. Create an identity token for it (Edit Profile, Generate an Identity Token): the
    commands below use the token as the password.
@@ -388,11 +388,12 @@ those, [INSTALL.md](INSTALL.md#verify-the-signatures-recommended) gives the comm
 for example JFrog Xray on the remote repository or on `vcfops-approved`. What to expect:
 
 - The pack image holds two files and no operating system. A scanner finds no package in it.
-- The adapter image is a Debian base with Python and the packages of the SDK. Its SBOM comes with the image as a
+- The adapter image is a Wolfi base with Python 3.11 and the packages of the SDK (Debian 12 up to release 1.13.6). Its SBOM comes with the image as a
   signed attestation (step 4) and as a file on the GitHub release (`NSXFederation_<version>.sbom.cdx.json`). The
   release also carries the project's own Trivy report (`NSXFederation_<version>.trivy.txt`): the release build
-  stops on a CRITICAL vulnerability that has a fix, so what remains are findings of the Debian base without a
-  fixed version, listed in [SECURITY.md](../SECURITY.md).
+  stops on a CRITICAL vulnerability that has a fix. The scan of the 1.13.7 build found no vulnerability; releases
+  up to 1.13.6 carry about a hundred HIGH or CRITICAL findings of the Debian base without a fixed version, as
+  [SECURITY.md](../SECURITY.md) explains.
 
 ## 6. Promote: copy into the approved repository
 
@@ -502,6 +503,23 @@ docker pull artifactory.example.com/vcfops-approved/nsxfederation@sha256:...   #
 
 A cloud proxy upgrade or redeploy removes the certificate folder; check it after each one.
 
+### Without anonymous read
+
+The adapter starts from an image that is already on the cloud proxy, even when the registry refuses the pull. On a
+site that forbids anonymous access, an administrator pulls the image once with a login, as root on each cloud
+proxy that runs the account, and logs out again. No credential stays on the cloud proxy:
+
+```bash
+docker login artifactory.example.com -u <account with Read on vcfops-approved>
+docker pull artifactory.example.com/vcfops-approved/nsxfederation@sha256:...   # AD_DIGEST
+docker logout artifactory.example.com
+```
+
+Repeat it for every new release, before the install of step 9, and after anything that empties the image store of
+the cloud proxy (a redeploy, an upgrade, a `docker image prune`). Without the image, the account fails with
+`Failed to download image` in `collector.log`. A login stored for the collector user, so that the cloud proxy
+pulls by itself, was not tested.
+
 ## 9. Install
 
 Install `NSXFederation_<version>_site.pak` with [INSTALL.md](INSTALL.md), steps 6 to 10: unsigned-pack switch,
@@ -531,7 +549,8 @@ fetches the new tag from Docker Hub the first time it is asked for it. Keep the 
 
 ## Roll back to the previous release
 
-Not tested yet. A rollback installs the previous pack again over the current one. It works as long as the
+A rollback installs the previous pack again over the current one. Tested on 2026-11-27 from `v1.13.5` back to
+`v1.13.3`, two releases with the same pack version; a rollback to a lower pack version was not tested. It works as long as the
 previous images are still in `vcfops-approved` and the previous `_site` pack and its recorded SHA-256 are kept,
 which is why [Upgrade](#upgrade-to-a-new-release) says to keep them.
 
@@ -637,10 +656,18 @@ test CA, with skopeo 1.25.1 and cosign 2.4.1:
   `FEDMP_PAK_SHA256`, `FEDMP_VERIFY=1` and `FEDMP_IMAGE_REPO` pointing at `vcfops-approved` passed; with the
   checksum of another file it refused the pack.
 
-Not tested yet, so the path has not run end to end:
+- Release `v1.13.5` end to end on 2026-11-27, with VCF Operations 9.1.2.0 and Docker only on the promotion host
+  (Docker Engine 29.6.2): anonymous Read on `vcfops-approved` set in the UI (the free edition has no API for it),
+  the pull by the cloud proxy without a login, the install of the `_site` pack, and the account collecting from
+  `vcfops-approved` with metrics on every object.
+- Rollback from `v1.13.5` to `v1.13.3` through Artifactory: install completed, the cloud proxy pulled the previous
+  image by itself after the stop and start of the account, and collection resumed. Then `v1.13.5` again.
+- Without anonymous read: with the pack pointing at a repository that refuses anonymous pulls, the account failed
+  (`Failed to download image`); after one pull with a login as root on the cloud proxy, and a logout, it started
+  and collected.
 
-- Anonymous read on `vcfops-approved` (step 1, item 3) and the pull by a cloud proxy from Artifactory (step 8).
-  The free edition only sets permissions in its UI. The same pull from a registry of the lab works, and a pull
-  without the permission was refused (`unauthorized`), as expected.
-- The install of the `_site` pack from Artifactory and the account (step 9), the rollback and the uninstall.
+Not tested yet:
+
+- The uninstall, and a rollback to a lower pack version.
+- A registry login stored on the cloud proxy for the collector user.
 - JFrog Xray, the Artifactory Pro promotion API, and the Subdomain access method.

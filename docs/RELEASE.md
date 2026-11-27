@@ -73,6 +73,9 @@ a release changes only the documentation and keeps the pack of the previous one.
 ### Each release
 
 1. Commit the version in `pack/manifest.txt` (when the pack changes) and the `CHANGELOG.md` entry on `main`.
+   When the adapter image should take newer operating system packages, also move the Wolfi digest in
+   `pack/Dockerfile` to the current one (`docker buildx imagetools inspect cgr.dev/chainguard/wolfi-base:latest`),
+   build, and run `tools/image_lock.sh` on the built image.
 2. Tag and push: `git tag v<release> && git push origin v<release>`. Only a repository admin can push a `v*` tag.
 3. Approve the run: the release job waits for the environment `release`. On the run page, Review deployments,
    tick `release`, Approve and deploy; or `gh run view <id>` shows the pending deployment.

@@ -2,6 +2,22 @@
 
 Each release has a tag `v<version>`; the commit messages give the details.
 
+## 1.13.7 (2026-11-27)
+
+The adapter image moves to a Wolfi base; the adapter code and the pack content are unchanged.
+
+- `pack/Dockerfile` builds in two stages: the SDK's `base-adapter` image (Debian 12) as before, then the same
+  Python files on a Wolfi base pinned by digest, with Python 3.11. `pip` is removed from the image. The Trivy scan
+  goes from 99 HIGH or CRITICAL findings without a fixed version to none, and the image from 405 MB to about
+  220 MB. The image now has OpenSSL 4. Tested in the lab with VCF Operations 9.1.2.0: same adapter definition, same
+  objects in a collection cycle, account collecting.
+- `tools/image_lock.sh` reads the package list from the package metadata, since the image has no `pip`.
+- `docs/INSTALL-ENTERPRISE.md`: the path ran end to end with `v1.13.5` (anonymous read, pull by the cloud proxy,
+  install from Artifactory), and the rollback was tested. New section "Without anonymous read": an administrator
+  pulls the image once with a login on each cloud proxy, and the account starts from that copy.
+- `NSXFederation_1.13.0.pak` of this release names the new adapter image: same pack content as 1.13.6, different
+  file.
+
 ## 1.13.6 (2026-11-26)
 
 Enterprise install guide, after a review; the pack is unchanged.

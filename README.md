@@ -186,8 +186,8 @@ and recommendation definitions the new version no longer ships (`install/cleanup
 
 ## Tested with
 
-NSX 9.1.1 (two Global Managers, active and standby, and two locations), VCF Operations 9.1.1.0 and Integration
-SDK 1.3.1, in a nested lab. Most alert definitions have never fired, because the lab has none of those faults.
+NSX 9.1.1 (two Global Managers, active and standby, and two locations), VCF Operations 9.1.1.0 and 9.1.2.0 and
+Integration SDK 1.3.1, in a nested lab. Most alert definitions have never fired, because the lab has none of those faults.
 Other versions of NSX or VCF Operations have not been tested.
 
 ## Support
