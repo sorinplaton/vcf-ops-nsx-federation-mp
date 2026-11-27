@@ -8,9 +8,9 @@ The adapter image moves to a Wolfi base; the adapter code and the pack content a
 
 - `pack/Dockerfile` builds in two stages: the SDK's `base-adapter` image (Debian 12) as before, then the same
   Python files on a Wolfi base pinned by digest, with Python 3.11. `pip` is removed from the image. The Trivy scan
-  goes from 99 HIGH or CRITICAL findings without a fixed version to none, and the image from 405 MB to about
-  220 MB. The image now has OpenSSL 4. Tested in the lab with VCF Operations 9.1.2.0: same adapter definition, same
-  objects in a collection cycle, account collecting.
+  goes from 102 HIGH or CRITICAL findings without a fixed version (report of release 1.13.5) to none, and the image from 405 MB to about
+  220 MB. The image now has OpenSSL 4. A lab build of this Dockerfile was tested with VCF Operations 9.1.2.0: same
+  adapter definition, same objects in a collection cycle, account collecting.
 - `tools/image_lock.sh` reads the package list from the package metadata, since the image has no `pip`.
 - `docs/INSTALL-ENTERPRISE.md`: the path ran end to end with `v1.13.5` (anonymous read, pull by the cloud proxy,
   install from Artifactory), and the rollback was tested. New section "Without anonymous read": an administrator
@@ -27,7 +27,7 @@ Enterprise install guide, after a review; the pack is unchanged.
 - `docs/INSTALL-ENTERPRISE.md`: request lists per team, a justification of the unsigned-pack switch for a change
   board, Docker as an alternative to installing skopeo and cosign (tested: digests kept with the containerd image
   store), rollback, uninstall, and air-gapped sites (transfer with `skopeo copy dir:`, tested; `oci-archive:`
-  changes the digest of the pack image). The guide now says plainly that the path has not run end to end.
+  changes the digest of the pack image). The guide now states that the path has not run end to end.
 - The release notes say why the release number and the pack version differ, when they do.
 - README: the enterprise path, keyless signing, a Support section (no SLA, GitHub issues), manual install
   recommended for production, untested versions named as such. SECURITY.md: findings counted from the 1.13.5
@@ -47,7 +47,7 @@ as root and `gh attestation verify` could not start. Its images on `ghcr.io` bel
   (rulesets). The release job runs in the environment `release`: it waits for the maintainer's approval and alone
   holds the Docker Hub token. Pull-request builds run in a separate job with a read-only token.
 - Every GitHub Action is pinned by commit SHA; the tooling image's base by digest; every Python package of the
-  build, the CI tools and the tests is locked with hashes. The adapter image installs its five added packages with
+  build, the CI tools and the test tools is locked with hashes. The adapter image installs its five added packages with
   `--no-deps --require-hashes` (`tools/hash_requirements.py`), and a test checks them against the image lock.
   Dependabot proposes updates monthly.
 - Each release adds a SLSA build provenance attestation for the pack and both images, and a signed CycloneDX SBOM

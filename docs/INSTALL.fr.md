@@ -1,8 +1,8 @@
 # Guide d'installation
 
-Comment installer le pack NSX Federation dans VCF Operations 9.1.1, soit à partir du pack publié, soit à partir de
-votre propre build, avec la machine sur laquelle chaque commande s'exécute. L'option B est le mode utilisé dans le
-lab. Pour l'option A, les commandes de vérification des signatures ont été exécutées sur la version v1.13.6
+Ce guide décrit l'installation du pack NSX Federation dans VCF Operations 9.1.1, soit à partir du pack publié,
+soit à partir de votre propre build, et indique la machine sur laquelle chaque commande s'exécute. L'option B est le mode utilisé dans le
+lab. Pour l'option A, les commandes de vérification des signatures ont été exécutées sur la version v1.13.7
 publiée (par clé, sans clé, provenance et SBOM), et la variante avec registre interne a été testée avec un
 registre local ; chaque section précise ce qui n'a pas été testé. La partie 2 du
 [blog](https://sorinplaton.github.io/fr/posts/nsx-federation-management-pack-install/) montre les étapes avec des
@@ -14,11 +14,11 @@ English version: [INSTALL.md](INSTALL.md).
 
 Il existe cinq façons de mettre en place le pack et l'image de son adaptateur :
 
-- [Option A, télécharger le pack publié](#option-a--télécharger-le-pack-publié) : la voie la plus rapide, pour
-  un site dont le proxy cloud joint `ghcr.io`. Rien à construire.
-- [Option A avec la variante registre interne](#variante--copier-limage-dans-un-registre-interne) : pour un site
+- [Option A, télécharger le pack publié](#option-a--télécharger-le-pack-publié) : le chemin le plus court, pour
+  un site dont le proxy cloud joint `ghcr.io`. Aucun build n'est nécessaire.
+- [Option A, variante avec registre interne](#variante--copier-limage-dans-un-registre-interne) : pour un site
   dont le proxy cloud n'a pas accès à Internet, ou dont les images doivent être analysées et servies par un
-  registre interne. Toujours aucun build.
+  registre interne. Aucun build n'est nécessaire non plus.
 - [Option B, construire le pack](#1-prérequis) : pour qui modifie le pack, veut le construire à partir des
   sources, ou exploite un lab avec son propre registre sur l'hôte de construction.
 - [La variante Harbor de l'option B](#variante--un-registre-harbor-existant) : le même build, avec un push de
@@ -80,6 +80,7 @@ flowchart LR
     GH["github.com<br/>clone, téléchargement de govc"]
     HUB["Docker Hub<br/>registry-1.docker.io"]
     PYPI["pypi.org<br/>files.pythonhosted.org"]
+    CGR["cgr.dev<br/>base et paquets Wolfi"]
   end
   BH["Hôte de construction<br/>(jumphost)"]
   REG["Registre<br/>HTTPS"]
@@ -95,6 +96,7 @@ flowchart LR
   BH -->|"TCP 443 : clone"| GH
   BH -->|"TCP 443 : images de base"| HUB
   BH -->|"TCP 443 : paquets du SDK et de l'adaptateur"| PYPI
+  BH -->|"TCP 443 : base Wolfi de l'image de l'adaptateur"| CGR
   BH -->|"TCP 5000 : push de l'image (étape 3)"| REG
   BH -->|"TCP 443 : pack, compte, scripts (étapes 6 à 10)"| OPS
   BH -->|"TCP 443 : govc (étape 4)"| VC
@@ -109,7 +111,7 @@ flowchart LR
 
 | Depuis | Vers | Port | Usage |
 | --- | --- | --- | --- |
-| Hôte de construction | Internet (dépôts Docker, Google Chrome et de la distribution, GitHub, Docker Hub, PyPI) | TCP 443 | Installation des outils, clone du dépôt, build des images d'outillage et de l'adaptateur. Via un proxy si le site en utilise un |
+| Hôte de construction | Internet (dépôts Docker, Google Chrome et de la distribution, GitHub, Docker Hub, `cgr.dev` et le dépôt de paquets Wolfi, PyPI) | TCP 443 | Installation des outils, clone du dépôt, build des images d'outillage et de l'adaptateur. Via un proxy si le site en utilise un |
 | Hôte de construction | Registre | TCP 5000, ou le port du registre | Push de l'image de l'adaptateur. En local quand le registre tourne sur l'hôte de construction, comme dans le lab |
 | Hôte de construction | VCF Operations | TCP 443 | Console d'administration et interface du produit dans un navigateur, Suite API pour les scripts des étapes 6 à 10 |
 | Hôte de construction | vCenter de la VM du proxy cloud | TCP 443 | Opérations invité `govc` de l'étape 4. Inutile si le certificat est copié par SSH |
@@ -150,13 +152,13 @@ l'[option A](#option-a--télécharger-le-pack-publié).
 
 ## Option A : télécharger le pack publié
 
-À utiliser à la place des étapes 1 à 5 quand le proxy cloud a accès à Internet. Ni hôte de construction, ni
-Docker, ni registre à soi. Quand le proxy cloud n'a pas accès à Internet, ou que les images doivent venir d'un
+À utiliser à la place des étapes 1 à 5 quand le proxy cloud a accès à Internet. Ce mode ne demande ni hôte de
+construction, ni Docker, ni registre à soi. Quand le proxy cloud n'a pas accès à Internet, ou que les images doivent venir d'un
 registre interne, ajouter la [variante](#variante--copier-limage-dans-un-registre-interne) décrite à la fin de
 cette section.
 
 Testé à ce jour : le téléchargement et toutes les commandes de « Vérifier les signatures » ci-dessous, sur la
-version v1.13.5 publiée. La récupération de l'image depuis `ghcr.io` par le proxy cloud n'est pas encore testée
+version v1.13.7 publiée. La récupération de l'image depuis `ghcr.io` par le proxy cloud n'est pas encore testée
 dans le lab, qui utilise l'option B.
 
 Flux réseau de ce mode. Les traits pleins partent du poste d'administration ; les traits pointillés sont ceux
@@ -236,13 +238,13 @@ l'adaptateur, les managers NSX et VCF Operations, et aucune donnée de supervisi
 vérifications de signature ci-dessous s'exécutent sur la machine qui a téléchargé le pack, pas sur le proxy
 cloud.
 
-Le proxy cloud récupère l'image au premier démarrage du compte, puis de nouveau après un redéploiement ou un
-upgrade du proxy cloud, car sa copie locale a disparu. Un éventuel contact avec `ghcr.io` à chaque redémarrage
+Le proxy cloud récupère l'image au premier démarrage du compte, puis de nouveau après un redéploiement ou une
+mise à niveau du proxy cloud, car sa copie locale a disparu. Un éventuel contact avec `ghcr.io` à chaque redémarrage
 du compte, quand l'image est encore sur le disque, n'a pas été testé. Prévoir l'accès à chaque démarrage de
 l'adaptateur.
 
 Pour que le proxy cloud n'accède pas à Internet, utiliser la
-[variante de copie](#variante--copier-limage-dans-un-registre-interne) : une machine qui accède à Internet
+[variante avec registre interne](#variante--copier-limage-dans-un-registre-interne) : une machine qui accède à Internet
 copie une fois l'image dans un registre interne, le pack est pointé vers ce registre, et le proxy cloud ne joint
 alors que ce registre. L'[option B](#1-prérequis) donne le même résultat avec son propre build.
 
@@ -368,7 +370,7 @@ ci-dessous, avant l'étape 6.
 
 Pour une entreprise qui ne laisse pas le proxy cloud accéder à Internet, ou qui analyse chaque image avant
 usage : copier l'image publiée dans un registre interne et y faire pointer le pack publié. Ni hôte de
-construction ni SDK, le proxy cloud ne dépend que du registre interne, et l'image peut y être analysée avant
+construction ni SDK ne sont nécessaires, le proxy cloud ne dépend que du registre interne, et l'image peut y être analysée avant
 usage. L'image est copiée à l'identique et garde son digest : c'est toujours l'image que le projet a signée.
 Testée dans le lab avec un `registry:2` local ; pas testée avec Harbor.
 
@@ -646,7 +648,8 @@ contient les outils du SDK. Le `docker run` lance ensuite `mp-build` depuis cett
 de l'adaptateur avec le Docker de l'hôte (par le socket monté), en fait le push vers le registre de l'étape 2
 et écrit le `.pak`. Le conteneur tourne avec l'ID de l'utilisateur courant et l'ID du groupe `docker` : il peut
 ainsi utiliser le socket, et les fichiers qu'il écrit dans le clone appartiennent à l'utilisateur de
-construction. Le build télécharge les images de base depuis Docker Hub et les paquets Python depuis PyPI.
+construction. Le build télécharge les images de base depuis Docker Hub, la base Wolfi de l'image de l'adaptateur depuis
+`cgr.dev`, le paquet Python de cette base depuis le dépôt de paquets Wolfi, et les paquets Python depuis PyPI.
 
 ```bash
 set -a; source ~/fedmp.env; set +a
@@ -867,8 +870,8 @@ de VCF Operations. Ces appels ne sont pas pris en charge et peuvent changer à c
 le certificat de VCF Operations sans le vérifier : lancer les scripts sur un réseau de confiance.
 
 `upi.sh enableUPI` se connecte à la console d'administration et active l'option. `install_unsigned.sh` envoie
-le pack, attend la fin de l'installation, supprime les définitions d'alertes laissées par une version plus
-ancienne, puis désactive l'option. Mettre dans `PAK` le fichier à installer : la ligne ci-dessous convient à
+le pack, attend la fin de l'installation, supprime les définitions d'alertes, de symptômes et de recommandations
+laissées par une version plus ancienne, puis désactive l'option. Mettre dans `PAK` le fichier à installer : la ligne ci-dessous convient à
 l'option B ; avec l'option A ou sa variante, donner le chemin complet du `.pak` téléchargé ou réécrit.
 
 ```bash
@@ -882,7 +885,8 @@ install/install_unsigned.sh "$PAK"
 `install_unsigned.sh` vérifie d'abord les signatures avec `install/verify_pak.sh`. Un pack publié accompagné de
 son `.sigstore.json` doit être validé, sinon rien n'est installé ; pour cela, garder le bundle dans le dossier du
 pack. Un pack sans bundle (une construction locale, ou un pack réécrit par la variante) est installé avec un
-avertissement. `FEDMP_VERIFY=1` exige la vérification de l'image pour tout pack, et `FEDMP_VERIFY=0` désactive la
+simple avis. Un `.sigstore.json` laissé à côté d'un pack réécrit fait échouer la vérification
+(`pack signature: FAILED`), car il signe le fichier d'origine : le sortir du dossier avant. `FEDMP_VERIFY=1` exige la vérification de l'image pour tout pack, et `FEDMP_VERIFY=0` désactive la
 vérification. Celle-ci utilise `cosign` s'il est installé, sinon l'image cosign via Docker.
 `FEDMP_PAK_SHA256=<sha256>` exige en plus que le fichier ait cette somme de contrôle, quelle que soit la valeur de
 `FEDMP_VERIFY` : l'utiliser pour un pack réécrit, dont vous avez enregistré vous-même la somme de contrôle
@@ -930,8 +934,8 @@ compte de type NSX Federation.
 
 ## 8. Vérifier la collecte
 
-C'est ici que se vérifie le travail des étapes précédentes sur le registre et le certificat : le proxy cloud
-récupère l'image, démarre l'adaptateur et lit NSX.
+Cette étape valide le travail des étapes précédentes sur le registre et le certificat : le proxy cloud récupère
+l'image, démarre l'adaptateur et lit NSX.
 
 *À exécuter dans : l'interface du produit VCF Operations.*
 

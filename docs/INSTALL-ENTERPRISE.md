@@ -5,7 +5,8 @@ JFrog Artifactory, and Artifactory gets public images from Docker Hub. The pack 
 published on Docker Hub by the project's release workflow. The organisation pulls them through Artifactory,
 checks their signatures, scans them, copies them into a repository of approved images, and installs from
 there. No machine of the organisation needs to reach GitHub or Docker Hub except Artifactory itself and the
-promotion host for the signature check.
+promotion host, which fetches its tools from GitHub once (step 2) and reaches Sigstore for the signature check
+(step 4).
 
 Steps 2 to 7 were tested on 2026-11-26 with releases `v1.13.3`, `v1.13.5` and `v1.13.6`, against JFrog Container Registry
 7.161.26 (the free edition of Artifactory) behind HTTPS with an internal CA. The path then ran end to end on 2026-11-27 with release `v1.13.5`: anonymous read on `vcfops-approved`, the pull by
@@ -306,6 +307,9 @@ ISSUER=https://token.actions.githubusercontent.com
 `SIGNER` and `ISSUER` are what the signature must say: built by the release workflow of this repository, from
 the tag of this release, on GitHub Actions. The release notes on GitHub show the same two values.
 
+A site that does not accept the Wolfi base of release 1.13.7 (step 5) sets `RELEASE=1.13.6`, the same pack version
+and adapter code on the Debian 12 base; nothing else in this guide changes.
+
 ## 3. Get the pack through Artifactory
 
 *Run on: the promotion host.* The first command resolves the tag to a digest; every later command uses the
@@ -332,7 +336,7 @@ ls pak/ && (cd pak && sha256sum -c SHA256SUMS)
 
 Expected: `pak/NSXFederation_<version>.pak` and `pak/SHA256SUMS`, then `NSXFederation_<version>.pak: OK`. The
 pack version can differ from the release number: a release that changes only the documentation keeps the pack
-of the previous one.
+version of the previous one.
 
 On a machine with Docker that trusts Artifactory, the same file comes out with
 `docker pull`, `docker create --name pak <image>`, `docker cp pak:/pak/. ./` and `docker rm pak`.
@@ -442,7 +446,7 @@ If a digest differs, delete that tag from `vcfops-approved` and copy with skopeo
 ## 7. Point the pack at the approved repository
 
 *Run on: the promotion host.* `repack.py` rewrites the `REGISTRY` and `REPOSITORY` lines inside the pack, in
-place, and prints the new file. Work on a copy, so the original stays as it was signed:
+place, and prints the rewritten `.conf` file. Work on a copy, so the original stays as it was signed:
 
 ```bash
 V=$(ls pak/NSXFederation_*.pak | sed 's/.*NSXFederation_\(.*\)\.pak/\1/')
@@ -539,7 +543,8 @@ install/upi.sh enableUPI
 install/install_unsigned.sh NSXFederation_${V}_site.pak               # checks again, installs, switches off
 ```
 
-Without `FEDMP_PAK_SHA256` and `FEDMP_VERIFY=1`, the rewritten pack has no bundle and is installed with a notice.
+With neither `FEDMP_PAK_SHA256` nor `FEDMP_VERIFY=1` set, nothing is checked: the rewritten pack has no signature
+bundle next to it, and it is installed with a notice.
 
 ## Upgrade to a new release
 
@@ -550,9 +555,10 @@ fetches the new tag from Docker Hub the first time it is asked for it. Keep the 
 ## Roll back to the previous release
 
 A rollback installs the previous pack again over the current one. Tested on 2026-11-27 from `v1.13.5` back to
-`v1.13.3`, two releases with the same pack version; a rollback to a lower pack version was not tested. It works as long as the
-previous images are still in `vcfops-approved` and the previous `_site` pack and its recorded SHA-256 are kept,
-which is why [Upgrade](#upgrade-to-a-new-release) says to keep them.
+`v1.13.3`, two releases with the same pack version; a rollback to a lower pack version was not tested. It works
+as long as the previous images are still in `vcfops-approved`, which is why
+[Upgrade](#upgrade-to-a-new-release) says to keep them, and the previous `_site` pack and its recorded SHA-256
+are kept.
 
 1. Check that the previous adapter image is still there, by the digest its pack names:
    `skopeo inspect docker://$ART/$APPROVED/nsxfederation@<previous AD_DIGEST>`.
@@ -600,8 +606,8 @@ digests are still the ones verified:
    changes (`sha256:eb35...` became `sha256:00a9...` in the test).
 3. **Inside.** Check the SHA-256 of the tar file, unpack it, and push both folders into `vcfops-approved` with
    `skopeo copy --all --preserve-digests dir:<folder> docker://$ART/$APPROVED/<image>:$RELEASE`. Then check the
-   digests as in step 6: they must match the ones recorded on the connected host. That match carries the
-   signature check across: same digest, same bytes.
+   digests as in step 6: they must match the ones recorded on the connected host. Images with the same
+   digests are the bytes whose signatures were verified there.
 4. Steps 7 to 9 as written. `FEDMP_PAK_SHA256` needs no network. Leave `FEDMP_VERIFY` unset or `0` on the
    inside, since cosign cannot reach Sigstore there.
 
@@ -635,12 +641,10 @@ test CA, with skopeo 1.25.1 and cosign 2.4.1:
   `--all`, the pack image came out with another digest; that is why step 6 uses it.
 - The pack taken out of the pack image in Artifactory, checksum OK, and rewritten with `repack.py` to the local
   repository.
-
 - Release `v1.13.5`, the first with attestations, through the lab Artifactory (JFrog Container Registry
   7.161.26 at `https://10.0.6.28`, Docker Hub remote repository): keyless signatures of both images and the
   signed SBOM attestation (46 components) verified through Artifactory, and the build provenance of the Docker Hub
   copy verified with `gh attestation verify`.
-
 - Docker only, with Docker Engine 29.6.2 and the containerd image store: both `v1.13.5` images pulled from Docker
   Hub by digest, tagged and pushed to a test registry kept their digests. The pack taken out with
   `docker create` and `docker cp` passed its checksum.
@@ -648,7 +652,6 @@ test CA, with skopeo 1.25.1 and cosign 2.4.1:
   digests. Through `oci-archive:`, the pack image came out with another digest.
 - `verify_pak.sh` with `FEDMP_PAK_SHA256`: the right value passes, any other value stops the install, with and
   without `FEDMP_VERIFY`.
-
 - Release `v1.13.6` through the lab Artifactory, steps 2 to 7 as written: pack image `sha256:e241b3f2...` and
   adapter image `sha256:15cd0535...`, both keyless signatures, the SBOM attestation and the provenance verified,
   both images promoted with the same digests, pack rewritten with the adapter digest unchanged. Then the check of
@@ -656,18 +659,25 @@ test CA, with skopeo 1.25.1 and cosign 2.4.1:
   `FEDMP_PAK_SHA256`, `FEDMP_VERIFY=1` and `FEDMP_IMAGE_REPO` pointing at `vcfops-approved` passed; with the
   checksum of another file it refused the pack.
 
-- Release `v1.13.5` end to end on 2026-11-27, with VCF Operations 9.1.2.0 and Docker only on the promotion host
-  (Docker Engine 29.6.2): anonymous Read on `vcfops-approved` set in the UI (the free edition has no API for it),
-  the pull by the cloud proxy without a login, the install of the `_site` pack, and the account collecting from
-  `vcfops-approved` with metrics on every object.
+On 2026-11-27, with VCF Operations 9.1.2.0 and Docker only on the promotion host (Docker Engine 29.6.2, no
+skopeo):
+
+- Release `v1.13.5` end to end: anonymous Read on `vcfops-approved` set in the UI (the free edition has no API for
+  it), the pull by the cloud proxy without a login, the install of the `_site` pack, and the account collecting
+  from `vcfops-approved` with metrics on every object.
 - Rollback from `v1.13.5` to `v1.13.3` through Artifactory: install completed, the cloud proxy pulled the previous
   image by itself after the stop and start of the account, and collection resumed. Then `v1.13.5` again.
 - Without anonymous read: with the pack pointing at a repository that refuses anonymous pulls, the account failed
   (`Failed to download image`); after one pull with a login as root on the cloud proxy, and a logout, it started
   and collected.
+- Release `v1.13.7`, the first on the Wolfi base, through the lab Artifactory with Docker only: both signatures
+  verified, both images promoted with the same digests, the pull by the cloud proxy without a login, the install
+  of the `_site` pack, and the account collecting from `vcfops-approved` with metrics on every object.
 
 Not tested yet:
 
 - The uninstall, and a rollback to a lower pack version.
 - A registry login stored on the cloud proxy for the collector user.
 - JFrog Xray, the Artifactory Pro promotion API, and the Subdomain access method.
+- Promotion with Docker only ([Docker only](#docker-only)) on a Docker Engine older than 29 or with the classic
+  image store.
