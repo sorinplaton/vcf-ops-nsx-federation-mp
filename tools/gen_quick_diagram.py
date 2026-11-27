@@ -34,6 +34,8 @@ L = {
 INK, MUTED, LINE = "#18212b", "#5a6675", "#c9d1db"
 BLUE, GREEN, PURPLE, AMBER = "#0b5cad", "#1e7a50", "#57478c", "#9a5b00"
 e = html.escape
+MONO = 'font-family="ui-monospace,Menlo,Consolas,monospace"'
+DASH, START = 'stroke-dasharray="6 5"', 'marker-start="url(#b)"'
 def box(x, y, w, h, stroke, title, sub=None, fill="#ffffff"):
     o = f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="10" fill="{fill}" stroke="{stroke}" stroke-width="2"/>'
     o += f'<rect x="{x}" y="{y}" width="6" height="{h}" rx="3" fill="{stroke}"/>'
@@ -43,12 +45,12 @@ def box(x, y, w, h, stroke, title, sub=None, fill="#ffffff"):
 def chip(x, y, w, t1, t2=None, mono=False):
     h = 44 if t2 else 30
     o = f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="6" fill="#f3f6fa" stroke="{LINE}"/>'
-    o += f'<text x="{x+10}" y="{y+19}" font-size="{11.8 if mono else 12.5}" fill="{INK}" {"font-family=\"ui-monospace,Menlo,Consolas,monospace\"" if mono else ""}>{e(t1)}</text>'
-    if t2: o += f'<text x="{x+10}" y="{y+36}" font-size="12" fill="{MUTED}" font-family="ui-monospace,Menlo,Consolas,monospace">{e(t2)}</text>'
+    o += f'<text x="{x+10}" y="{y+19}" font-size="{11.8 if mono else 12.5}" fill="{INK}" {MONO if mono else ""}>{e(t1)}</text>'
+    if t2: o += f'<text x="{x+10}" y="{y+36}" font-size="12" fill="{MUTED}" {MONO}>{e(t2)}</text>'
     return o
 def arrow(points, n, bx, by, dashed=False, both=False):
     d = "M" + " L".join(f"{x},{y}" for x, y in points)
-    o = f'<path d="{d}" fill="none" stroke="{INK}" stroke-width="2" {"stroke-dasharray=\"6 5\"" if dashed else ""} marker-end="url(#a)" {"marker-start=\"url(#b)\"" if both else ""}/>'
+    o = f'<path d="{d}" fill="none" stroke="{INK}" stroke-width="2" {DASH if dashed else ""} marker-end="url(#a)" {START if both else ""}/>'
     o += f'<circle cx="{bx}" cy="{by}" r="12" fill="{INK}"/><text x="{bx}" y="{by+4.5}" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">{n}</text>'
     return o
 def svg(lang):
