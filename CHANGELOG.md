@@ -2,7 +2,7 @@
 
 Each release has a tag `v<version>`; the commit messages give the details.
 
-## Unreleased
+## 1.13.6 (2026-11-26)
 
 Enterprise install guide, after a review; the pack is unchanged.
 

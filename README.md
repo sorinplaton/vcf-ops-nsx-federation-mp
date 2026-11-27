@@ -4,7 +4,7 @@
 
 A management pack for VCF Operations 9.1.1 that monitors NSX Federation (NSX 9.1). It is written in Python with
 the [VCF Operations Integration SDK](https://vmware.github.io/vmware-vcf-operations-integration-sdk/introduction).
-Pack version 1.13.0, latest release 1.13.5 (the release number changes with every publication, the pack version
+Pack version 1.13.0, latest release 1.13.6 (the release number changes with every publication, the pack version
 only when the content of the pack changes).
 
 This is a community project under the MIT licence, not a Broadcom product. The pack is not signed by Broadcom and
