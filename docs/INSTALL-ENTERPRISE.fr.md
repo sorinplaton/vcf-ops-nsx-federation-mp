@@ -7,7 +7,7 @@ Artifactory, vérifie leurs signatures, les analyse, les copie dans un dépôt d
 ce dépôt. Aucune machine de l'organisation n'a besoin de joindre GitHub ou Docker Hub, à part Artifactory lui-même
 et l'hôte de promotion pour la vérification des signatures.
 
-Les étapes 2 à 7 ont été testées le 2026-11-26 avec les versions `v1.13.3` et `v1.13.5`, avec JFrog Container
+Les étapes 2 à 7 ont été testées le 2026-11-26 avec les versions `v1.13.3`, `v1.13.5` et `v1.13.6`, avec JFrog Container
 Registry 7.161.26 (l'édition gratuite d'Artifactory) servi en HTTPS avec une autorité interne. **Ce mode n'a pas
 encore été exécuté de bout en bout :** la lecture anonyme sur `vcfops-approved` (étape 1, point 3), la récupération
 par le proxy cloud (étape 8), l'installation depuis Artifactory (étape 9), le retour arrière, la désinstallation et
@@ -659,6 +659,14 @@ par une autorité de test, avec skopeo 1.25.1 et cosign 2.4.1 :
   vers un registre de test, mêmes digests. Via `oci-archive:`, l'image du pack est sortie avec un autre digest.
 - `verify_pak.sh` avec `FEDMP_PAK_SHA256` : la bonne valeur passe, toute autre valeur arrête l'installation, avec
   et sans `FEDMP_VERIFY`.
+
+- La version `v1.13.6` par l'Artifactory du lab, étapes 2 à 7 telles qu'écrites : image du pack `sha256:e241b3f2...`
+  et image de l'adaptateur `sha256:15cd0535...`, les deux signatures keyless, l'attestation SBOM et la provenance
+  vérifiées, les deux images promues avec les mêmes empreintes, pack réécrit avec l'empreinte de l'adaptateur
+  inchangée. Puis la vérification de l'étape 9 avant l'activation de l'option : signatures copiées dans
+  `vcfops-approved` avec `cosign copy`, et `verify_pak.sh` avec `FEDMP_PAK_SHA256`, `FEDMP_VERIFY=1` et
+  `FEDMP_IMAGE_REPO` pointant vers `vcfops-approved` a réussi ; avec la somme de contrôle d'un autre fichier, il a
+  refusé le pack.
 
 Pas encore testé, ce mode n'a donc pas été exécuté de bout en bout :
 
