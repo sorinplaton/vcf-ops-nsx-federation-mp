@@ -66,6 +66,7 @@ from that tag and publishes them; nobody pushes an image by hand. That path is p
 - From release 1.13.7 the adapter image is built in two stages: the SDK's `base-adapter` image (Debian 12) is the
   build stage, and its Python files are copied onto a Wolfi base with Python 3.11. The Trivy report of release
   1.13.7 lists no vulnerability. The image ships OpenSSL 4 where the Debian base had OpenSSL 3.
+  [docs/BASE-IMAGE.md](docs/BASE-IMAGE.md) compares the two bases and explains the two stages.
 - Releases up to 1.13.6 ship the Debian 12 base itself. The Trivy report of release 1.13.5
   (`NSXFederation_1.13.0.trivy.json`) lists 102 HIGH or CRITICAL vulnerabilities (100 HIGH, 2 CRITICAL) in Debian
   packages that have no fixed version in Debian 12, and three on setuptools 70.3.0, the `pkg_resources` copy that

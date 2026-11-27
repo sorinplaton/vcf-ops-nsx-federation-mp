@@ -97,9 +97,11 @@ read-only NSX account is enough; the built-in `audit` account was tested.
 | `docs/INSTALL.md` | Install guide: checklist and the commands for each step, with the machine they run on ([French](docs/INSTALL.fr.md)) |
 | `tools/gen_diagrams.py` | Draws the diagrams of the install guides and of the release guide into `docs/img`, in English and French |
 | `tools/gen_quick_diagram.py` | Draws the diagram of `docs/INSTALL-QUICK.md` (`docs/img/quick-install-flows.svg` and its French version) |
+| `tools/gen_base_diagrams.py` | Draws the two diagrams of `docs/BASE-IMAGE.md` into `docs/img`, in English and French |
 | `docs/INSTALL-QUICK.md` | Quick install once the images are in the organisation's Artifactory: pack, cloud proxy, install, account ([French](docs/INSTALL-QUICK.fr.md)) |
 | `docs/INSTALL-ENTERPRISE.md` | Enterprise install through JFrog Artifactory and Docker Hub: verify, scan, promote, install ([French](docs/INSTALL-ENTERPRISE.fr.md)) |
 | `docs/OPERATIONS.md` | Account settings, certificate trust, sizing, alert behaviour, groups, notifications, troubleshooting, upgrade |
+| `docs/BASE-IMAGE.md` | The base of the adapter image: Debian 12 and Wolfi compared, the two stages of the build, what reaches the organisation's repository and the cloud proxy, and why Wolfi ([French](docs/BASE-IMAGE.fr.md)) |
 | `docs/RELEASE.md` | Maintainer guide: the release workflow (tag, build, keyless signatures, ghcr.io and Docker Hub), the manual fallback, and what to do if the signing key is lost |
 | `pak-image/` | The image that carries the `.pak` on `ghcr.io` and Docker Hub, and its Docker Hub description |
 | `SECURITY.md`, `CHANGELOG.md` | How to report a vulnerability, what the pack can do, supply chain; the changes of each release |

@@ -22,6 +22,10 @@ Robustness fixes in the adapter code, found in a code review; no change to the o
   collection; it now falls back to its default.
 - The connection test closes each client also when the call fails, and a cache file holding valid JSON of another
   shape is ignored like a damaged one.
+- New page `docs/BASE-IMAGE.md` (French: `docs/BASE-IMAGE.fr.md`): Debian 12 and Wolfi compared, the two stages of
+  the adapter image build, what reaches the organisation's repository and the cloud proxy, and why the base
+  changed. Its two diagrams are drawn by `tools/gen_base_diagrams.py`.
+
 ## 1.13.7 (2026-11-27)
 
 The adapter image moves to a Wolfi base; the adapter code and the pack content are unchanged.
