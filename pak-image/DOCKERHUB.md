@@ -23,3 +23,5 @@ The pack needs its adapter image, `<namespace>/nsxfederation` (here and on `ghcr
 same digest). Both images are signed keyless with Sigstore by the release workflow. The install and verification
 steps are in
 [INSTALL-ENTERPRISE.md](https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/blob/main/docs/INSTALL-ENTERPRISE.md).
+Once the images are in your own registry, the short version is
+[INSTALL-QUICK.md](https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/blob/main/docs/INSTALL-QUICK.md).

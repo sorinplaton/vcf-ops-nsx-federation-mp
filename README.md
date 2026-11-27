@@ -95,6 +95,7 @@ read-only NSX account is enough; the built-in `audit` account was tested.
 | `tests/` | Test suite with a mock NSX (an anonymised recording of a small federation) |
 | `docs/FEATURES.md`, `docs/FEATURES.fr.md` | Every object type, metric, property and alert of the pack, in English and in French (generated) |
 | `docs/INSTALL.md` | Install guide: checklist and the commands for each step, with the machine they run on ([French](docs/INSTALL.fr.md)) |
+| `docs/INSTALL-QUICK.md` | Quick install once the images are in the organisation's Artifactory: pack, cloud proxy, install, account ([French](docs/INSTALL-QUICK.fr.md)) |
 | `docs/INSTALL-ENTERPRISE.md` | Enterprise install through JFrog Artifactory and Docker Hub: verify, scan, promote, install ([French](docs/INSTALL-ENTERPRISE.fr.md)) |
 | `docs/OPERATIONS.md` | Account settings, certificate trust, sizing, alert behaviour, groups, notifications, troubleshooting, upgrade |
 | `docs/RELEASE.md` | Maintainer guide: the release workflow (tag, build, keyless signatures, ghcr.io and Docker Hub), the manual fallback, and what to do if the signing key is lost |

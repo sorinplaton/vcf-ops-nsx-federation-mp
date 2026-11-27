@@ -5,7 +5,8 @@ JFrog Artifactory, and where Artifactory gets public images from Docker Hub. The
 published on Docker Hub by the project's release workflow. The organisation pulls them through Artifactory, checks
 their signatures, scans them, copies them into a repository of approved images, and installs from there. Only
 Artifactory and the promotion host need to reach GitHub or Docker Hub. The promotion host fetches its tools from
-GitHub once (step 2) and reaches Sigstore for the signature check (step 4).
+GitHub once (step 2) and reaches Sigstore for the signature check (step 4). Once the images are approved, the
+person who installs can follow the short version, [INSTALL-QUICK.md](INSTALL-QUICK.md).
 
 Steps 2 to 7 were tested on 2026-11-26 with releases `v1.13.3`, `v1.13.5` and `v1.13.6`, against JFrog Container
 Registry 7.161.26 (the free edition of Artifactory) behind HTTPS with an internal CA. The path then ran end to end
