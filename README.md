@@ -4,8 +4,8 @@
 
 A management pack for VCF Operations 9.1.1 that monitors NSX Federation (NSX 9.1). It is written in Python with
 the [VCF Operations Integration SDK](https://vmware.github.io/vmware-vcf-operations-integration-sdk/introduction).
-Pack version 1.13.0, latest release 1.13.6 (the release number changes with every publication, the pack version
-only when the content of the pack changes).
+The pack version is 1.13.0 and the latest release is 1.13.7: the release number changes with every publication,
+and the pack version changes only with the content of the pack.
 
 This is a community project under the MIT licence, not a Broadcom product. The pack is not signed by Broadcom and
 only reads from NSX. See [Support](#support).
@@ -67,8 +67,8 @@ type, metric, property and alert, with the condition and the recommendation of e
   [docs/OPERATIONS.md](docs/OPERATIONS.md#troubleshooting).
 - Replication flows, last-seen time and onboarding status of each location, as on the Location Manager page of
   NSX.
-- No double alerts: the federation alarms of a Local Manager that the built-in NSX integration monitors are left
-  to that integration.
+- The federation alarms of a Local Manager that the built-in NSX integration monitors are left to that
+  integration, so no alert is raised twice.
 - Four custom groups, five dashboards (Federation Overview, Location Matrix, Switchover Readiness, Inter-site
   Connectivity, Stretched Objects), thirteen list views, two reports (health, availability) and an inventory
   tree.
@@ -84,7 +84,7 @@ read-only NSX account is enough; the built-in `audit` account was tested.
 | Path | Content |
 | --- | --- |
 | `pack/` | The SDK project: `app/adapter.py` (object model, collection, events), `app/nsxclient.py` (read-only NSX client), `content/` (alerts, dashboards, views, reports, custom groups, traversal spec) |
-| `tools/gen_*.py` | Generators for the content and the icons. They read the object model from `adapter.py` and write into `pack/content` |
+| `tools/gen_*.py` | Generators for the content, the icons and the feature list. They read the object model from `adapter.py` and write into `pack/content`, `pack/conf/images`, `docs/FEATURES.md` and `docs/FEATURES.fr.md` |
 | `tools/localrun.py` | Runs a collection against live NSX managers without VCF Operations |
 | `tools/test_gaps.py` | The same run with chosen NSX calls made to fail, to check that their data is reported as unknown |
 | `tools/repack.py` | Rewrites the registry address inside a built `.pak` |
@@ -95,6 +95,9 @@ read-only NSX account is enough; the built-in `audit` account was tested.
 | `tests/` | Test suite with a mock NSX (an anonymised recording of a small federation) |
 | `docs/FEATURES.md`, `docs/FEATURES.fr.md` | Every object type, metric, property and alert of the pack, in English and in French (generated) |
 | `docs/INSTALL.md` | Install guide: checklist and the commands for each step, with the machine they run on ([French](docs/INSTALL.fr.md)) |
+| `tools/gen_diagrams.py` | Draws the diagrams of the install guides and of the release guide into `docs/img`, in English and French |
+| `tools/gen_quick_diagram.py` | Draws the diagram of `docs/INSTALL-QUICK.md` (`docs/img/quick-install-flows.svg` and its French version) |
+| `docs/INSTALL-QUICK.md` | Quick install once the images are in the organisation's Artifactory: pack, cloud proxy, install, account ([French](docs/INSTALL-QUICK.fr.md)) |
 | `docs/INSTALL-ENTERPRISE.md` | Enterprise install through JFrog Artifactory and Docker Hub: verify, scan, promote, install ([French](docs/INSTALL-ENTERPRISE.fr.md)) |
 | `docs/OPERATIONS.md` | Account settings, certificate trust, sizing, alert behaviour, groups, notifications, troubleshooting, upgrade |
 | `docs/RELEASE.md` | Maintainer guide: the release workflow (tag, build, keyless signatures, ghcr.io and Docker Hub), the manual fallback, and what to do if the signing key is lost |
@@ -103,9 +106,9 @@ read-only NSX account is enough; the built-in `audit` account was tested.
 
 ## Build
 
-The build needs Docker and an image registry the cloud proxy can reach over HTTPS. The commands below are the
-ones of [docs/INSTALL.md](docs/INSTALL.md), which also sets up that registry on the build host (step 2). They
-carry `sudo`, so the build user does not have to be in the `docker` group.
+The build needs Docker and an image registry the cloud proxy can reach over HTTPS. The commands come from
+[docs/INSTALL.md](docs/INSTALL.md), which also sets up that registry on the build host (step 2). They carry
+`sudo`, so the build user does not have to be in the `docker` group.
 
 The addresses and the passwords are read from one settings file, `~/fedmp.env`, made from
 [install/fedmp.env.example](install/fedmp.env.example) (install guide, step 1).
@@ -144,33 +147,33 @@ commit `pack/image-requirements.txt`: CI checks those packages for known vulnera
 [docs/INSTALL.md](docs/INSTALL.md) (French: [docs/INSTALL.fr.md](docs/INSTALL.fr.md)) gives each step with the
 machine its commands run on.
 
-Two paths:
+The pack can be installed in three ways:
 
 - **Option A, download the released pack.** The `.pak` on the
   [releases page](https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/latest) pulls its adapter
-  image from `ghcr.io/sorinplaton/nsxfederation`. No build and no registry of your own; the cloud proxy must
-  reach `ghcr.io` and `pkg-containers.githubusercontent.com` on TCP 443. The image can also be mirrored to an
-  internal registry without a build.
+  image from `ghcr.io/sorinplaton/nsxfederation`. This option needs no build and no registry of your own, but
+  the cloud proxy must reach `ghcr.io` and `pkg-containers.githubusercontent.com` on TCP 443. The image can also
+  be mirrored to an internal registry without a build.
 - **Enterprise, through Artifactory.** The pack and the adapter image are also on Docker Hub
   (`sorinplaton/nsxfederation-pak`, `sorinplaton/nsxfederation`). An organisation pulls them through its
   Artifactory, verifies, scans and promotes them by digest, and installs from there:
   [docs/INSTALL-ENTERPRISE.md](docs/INSTALL-ENTERPRISE.md).
-- **Option B, build your own.** Build the pack and push the image to a registry the cloud proxy trusts, for a
-  cloud proxy without internet access or an internal-registry policy.
+- **Option B, build your own.** Build the pack and push the image to a registry the cloud proxy trusts. This
+  option is for a cloud proxy without internet access, or for a site whose policy requires an internal registry.
 
 Releases are built by a GitHub workflow from a Git tag and signed keyless with Sigstore: the signature names this
 repository, the release workflow and the tag. Each release also carries SLSA build provenance and a signed SBOM of
 the adapter image. [SECURITY.md](SECURITY.md#supply-chain) describes the checks; `cosign.pub` only serves releases
 up to 1.14.0, during the move to keyless signatures.
 
-The pack is not signed, so VCF Operations 9 refuses it until "Allow unsigned PAK installation" is turned on in
-the admin console (Broadcom KB 415279). The cloud proxy must also trust the certificate of the registry. Part 2
-of the blog shows both steps with screenshots.
+The pack is not signed by Broadcom, so VCF Operations 9 refuses it until "Allow unsigned PAK installation" is
+turned on in the admin console (Broadcom KB 415279). The cloud proxy must also trust the certificate of the
+registry. Part 2 of the blog shows both steps with screenshots.
 
-By hand, recommended for production: turn the switch on, upload the `.pak` under Administration, Integrations, Repository with "Ignore the
-PAK file signature checking", then turn the switch off.
+The manual install is recommended for production: turn the setting on, upload the `.pak` under Administration,
+Integrations, Repository with "Ignore the PAK file signature checking", then turn the setting off.
 
-Scripted, with `google-chrome`, `node` and Python `requests` on the host:
+The scripted install needs `google-chrome`, `node` and Python `requests` on the host that runs it:
 
 ```bash
 export OPS_HOST=<vcf-operations-fqdn> OPS_PW=<admin password>
@@ -178,24 +181,26 @@ install/upi.sh enableUPI
 install/install_unsigned.sh pack/build/NSXFederation_<version>.pak   # turns the switch off at the end
 ```
 
-The scripts use calls that are internal to the VCF Operations UI. They are unsupported and can change with any
-release, so a production install should follow the manual steps; the scripts are for labs and repeated tests.
+The scripts use calls that are internal to the VCF Operations UI. These calls are unsupported and can change with
+any release, so a production install should follow the manual steps; the scripts are for labs and repeated tests.
 
 After an upgrade of the pack, stop and start the account. `install_unsigned.sh` also deletes the alert, symptom
 and recommendation definitions the new version no longer ships (`install/cleanup_content.py`).
 
 ## Tested with
 
-NSX 9.1.1 (two Global Managers, active and standby, and two locations), VCF Operations 9.1.1.0 and Integration
-SDK 1.3.1, in a nested lab. Most alert definitions have never fired, because the lab has none of those faults.
-Other versions of NSX or VCF Operations have not been tested.
+The pack was tested in a lab with NSX 9.1.1 (two Global Managers, active and standby, and two locations), VCF
+Operations 9.1.1.0 and 9.1.2.0 and Integration SDK 1.3.1. Both bases of the adapter image, Debian 12 and
+Wolfi, were installed and collected there. Most alert definitions have never fired, because the lab has none of
+those faults. Other versions of NSX or VCF Operations have not been tested.
 
 ## Support
 
-There is no SLA and no support from Broadcom: Broadcom support does not cover this pack. Report bugs and ask
-questions in the [GitHub issues](https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/issues), with the output
-of `install/diagnostics.py`. Report a vulnerability privately, as in [SECURITY.md](SECURITY.md). Known findings of
-the adapter image without a fixed version are listed in SECURITY.md and in the Trivy report of each release.
+There is no SLA, and Broadcom support does not cover this pack. Report bugs and ask questions in the
+[GitHub issues](https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/issues), with the output of
+`install/diagnostics.py`. Report a vulnerability privately, as [SECURITY.md](SECURITY.md) describes. Known
+findings of the adapter image without a fixed version are listed in SECURITY.md and in the Trivy report of each
+release.
 
 ## Licence
 

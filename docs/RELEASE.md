@@ -1,21 +1,13 @@
 # Release guide (maintainer)
 
-How a release is built, signed and published: the side of the install guides that users never see. Git is the
-single source of truth. A tag `v<release>` starts the workflow `.github/workflows/release.yml`, which builds the
-pack and the adapter image from that tag, publishes them on `ghcr.io` and Docker Hub, signs them, and creates a
-draft GitHub release. Nobody pushes an image by hand. Users download the `.pak` from GitHub
+Git is the single source of truth for a release. A tag `v<release>` starts the workflow
+`.github/workflows/release.yml`, which builds the pack and the adapter image from that tag, publishes them on
+`ghcr.io` and Docker Hub, signs them, and creates a draft GitHub release. Nobody pushes an image by hand. Users
+download the `.pak` from GitHub
 ([INSTALL.md, Option A](INSTALL.md#option-a-download-the-released-pack)) or pull it from Docker Hub through
 their own registry ([INSTALL-ENTERPRISE.md](INSTALL-ENTERPRISE.md)).
 
-```mermaid
-flowchart LR
-  M["Maintainer<br/>commit, tag, push"] --> T["Tag v1.x.y on GitHub"]
-  T --> W["release.yml<br/>mp-build, pack image,<br/>keyless signatures, SBOM"]
-  W --> G["ghcr.io/sorinplaton/<br/>nsxfederation, nsxfederation-pak"]
-  W -->|"byte-for-byte copy"| D["docker.io/sorinplaton/<br/>nsxfederation, nsxfederation-pak"]
-  W --> R["Draft GitHub release"]
-  R -->|"maintainer checks,<br/>adds key signatures (transition),<br/>publishes"| P["Published release"]
-```
+![From a Git tag to a published release](img/release-path.svg)
 
 ## What a release contains
 
@@ -33,7 +25,7 @@ flowchart LR
 | `NSXFederation_<version>.pak.bundle`, `cosign.pub` | GitHub release assets, transition only | The maintainer, with the project key ([Transition](#transition-key-signatures-next-to-keyless-ones)) |
 
 `<release>` is the tag without the `v`; `<version>` is the pack version of `pack/manifest.txt`. They differ when
-a release changes only the documentation and keeps the pack of the previous one.
+a release does not change the content of the pack.
 
 ## Release with the workflow
 
@@ -46,10 +38,10 @@ a release changes only the documentation and keeps the pack of the previous one.
       no API for this on a personal account. `nsxfederation-pak` is created by the first run, already linked.
 - [ ] **ghcr.io: make `nsxfederation-pak` public** after the first run: its Package settings, Danger Zone, Change
       visibility, Public. New packages start private.
-- [ ] **Docker Hub.** Repositories `sorinplaton/nsxfederation` and `sorinplaton/nsxfederation-pak`, public. A
-      Docker Hub personal access token with Read, Write, Delete (Delete is needed to update the repository
-      description), stored as the Actions secret `DOCKERHUB_TOKEN`, and the namespace as the Actions variable
-      `DOCKERHUB_NAMESPACE`. Typed at the prompt, never pasted elsewhere:
+- [ ] **Docker Hub.** The repositories `sorinplaton/nsxfederation` and `sorinplaton/nsxfederation-pak` must be
+      public. A Docker Hub personal access token with Read, Write, Delete (Delete is needed to update the
+      repository description) is stored as the Actions secret `DOCKERHUB_TOKEN`, and the namespace as the Actions
+      variable `DOCKERHUB_NAMESPACE`. Type the token at the prompt and never paste it elsewhere:
 
       ```bash
       gh secret set DOCKERHUB_TOKEN -R sorinplaton/vcf-ops-nsx-federation-mp
@@ -73,6 +65,9 @@ a release changes only the documentation and keeps the pack of the previous one.
 ### Each release
 
 1. Commit the version in `pack/manifest.txt` (when the pack changes) and the `CHANGELOG.md` entry on `main`.
+   When the adapter image should take newer operating system packages, also move the Wolfi digest in
+   `pack/Dockerfile` to the current one (`docker buildx imagetools inspect cgr.dev/chainguard/wolfi-base:latest`),
+   build, and run `tools/image_lock.sh` on the built image.
 2. Tag and push: `git tag v<release> && git push origin v<release>`. Only a repository admin can push a `v*` tag.
 3. Approve the run: the release job waits for the environment `release`. On the run page, Review deployments,
    tick `release`, Approve and deploy; or `gh run view <id>` shows the pending deployment.
@@ -86,17 +81,17 @@ a release changes only the documentation and keeps the pack of the previous one.
 7. Update the release numbers in Option A of `docs/INSTALL.md` and `docs/INSTALL.fr.md`, and commit.
 
 On a pull request that changes `pack/`, `tooling/`, `pak-image/`, the build action or the workflow, the job `build`
-runs the same build against a throwaway registry, with a read-only token. It pushes nothing and signs nothing; it
+runs the same build against a throwaway registry, with a read-only token. It publishes nothing and signs nothing; it
 shows that the release still builds and that the adapter image has no CRITICAL vulnerability with a fix.
 
 ### Transition: key signatures next to keyless ones
 
 Users of releases up to `v1.13.2` verify with `cosign.pub`. For releases up to and including `v1.14.0`, add the
-key signatures to the draft, so that they can keep their check while they move to the keyless one. From the next
-release on, skip this step, remove `cosign.pub` from the repository root with a `CHANGELOG.md` entry, and keep the
-key folder only as long as older releases need to be signed again. The private key stays on
-the maintainer machine; it is never given to GitHub. With `RELEASE`, `VERSION` and the adapter digest `DIGEST`
-of the draft release:
+key signatures to the draft, so that those users can keep their check while they move to the keyless one. From
+the next release on, skip this step, remove `cosign.pub` from the repository root with a `CHANGELOG.md` entry,
+and keep the key folder only as long as older releases need to be signed again. The private key stays on the
+build host; it is never given to GitHub. Set `RELEASE`, `VERSION` and the adapter digest `DIGEST` of the
+draft release, then run:
 
 ```bash
 mkdir -p /tmp/rel && cd /tmp/rel
@@ -114,11 +109,11 @@ Then sign the adapter image with the key as in [step 5](#5-sign-the-image) of th
 
 ## Manual release (fallback, and releases up to v1.13.2)
 
-The steps below build, sign and publish from the maintainer machine with the project key. They were the release
-process up to `v1.13.2`, and they remain the fallback when GitHub Actions cannot run. A manual release is not
-signed keyless and is not copied to Docker Hub.
+A manual release is built, signed and published from the build host with the project key. This was the
+release process up to `v1.13.2`, and it remains the fallback when GitHub Actions cannot run. A manual release is
+not signed keyless and is not copied to Docker Hub.
 
-### 1. Once per maintainer machine
+### 1. Once per build host
 
 *Run on: the build host*, with Docker and the GitHub CLI `gh`.
 
@@ -132,7 +127,7 @@ signed keyless and is not copied to Docker Hub.
       Without the private key, a new release cannot be signed with the key users already trust.
 
 Every cosign command below runs from the official image `ghcr.io/sigstore/cosign/cosign:v2.4.1`, so nothing is
-installed on the host. `-u` and `HOME=/tmp` let it write its cache as the current user.
+installed on the build host. `-u` and `HOME=/tmp` let it write its cache as the current user.
 
 #### Creating the key pair (first release only, or after a key change)
 
@@ -170,7 +165,7 @@ rm -f .sdkhome/.docker/config.json      # mp-build leaves the GitHub token there
 ```
 
 `-P 18080` moves the port of the test container that `mp-build` starts during the build. The default, 8080, is
-taken on the lab jump host (Guacamole). It does not change the pack, which still says `API_PORT=443`.
+already in use on the build host. The option does not change the pack, which still says `API_PORT=443`.
 
 Read the image address and digest from the pack:
 
@@ -187,7 +182,7 @@ Expected: `REGISTRY=ghcr.io`, `REPOSITORY=/sorinplaton/nsxfederation`, and a `DI
 ### 4. First release only: make the image public
 
 GitHub creates a new package as private, and its API cannot change the visibility of a package owned by a
-personal account. Once, in a browser logged in as the owner:
+personal account. Do this once, in a browser logged in as the owner:
 
 1. https://github.com/users/sorinplaton/packages/container/nsxfederation/settings
 2. Danger Zone, Change visibility, Public, confirm with the package name.
@@ -222,7 +217,7 @@ rm -rf $AUTH
 
 Sign the digest, never a tag: a tag can be moved to another image, a digest cannot. The signature is also
 written to the public Sigstore transparency log (`tlog entry created with index ...`). The entry shows the
-digest and the public key, nothing secret.
+digest and the public key, and neither is secret.
 
 ### 6. Checksum and sign the pack
 
@@ -241,8 +236,8 @@ signature.
 
 ### 7. Verify as a user would
 
-With the public key only, the way [Option A](INSTALL.md#verify-the-signatures-recommended) tells users to do it.
-Both must pass before the release is published:
+Verify with the public key only, the way [Option A](INSTALL.md#verify-the-signatures-recommended) tells users
+to. Both must pass before the release is published:
 
 ```bash
 cd ~/fedmp-release/pack/build
@@ -265,8 +260,8 @@ gh release edit v<version> --draft=false --latest
 ```
 
 The notes name the image digest, the requirements (cloud proxy to `ghcr.io` and
-`pkg-containers.githubusercontent.com` on TCP 443, unsigned-pack switch) and link to Option A. The release of
-`v1.13.1` is the model.
+`pkg-containers.githubusercontent.com` on TCP 443, "Allow unsigned PAK installation") and link to Option A. The
+release of `v1.13.1` is the model.
 
 Then:
 

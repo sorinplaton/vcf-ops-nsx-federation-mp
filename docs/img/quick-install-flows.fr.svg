@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 716" width="1100" height="716" font-family="system-ui,-apple-system,Segoe UI,Arial,sans-serif" role="img" aria-label="Pack NSX Federation : qui parle à qui">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#18212b"/></marker><marker id="b" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M10,0 L0,5 L10,10 z" fill="#18212b"/></marker></defs>
+<rect width="1100" height="716" rx="14" fill="#ffffff" stroke="#c9d1db"/>
+<text x="28" y="40" font-size="20" font-weight="600" fill="#18212b">Pack NSX Federation : qui parle à qui</text>
+<rect x="24" y="62" width="276" height="398" rx="12" fill="#fbf6ec" stroke="#e6d9bd"/><text x="40" y="88" font-size="13" font-weight="600" fill="#9a5b00" letter-spacing=".06em">INTERNET</text>
+<rect x="320" y="62" width="756" height="398" rx="12" fill="#f4f7fb" stroke="#d5deea"/><text x="336" y="88" font-size="13" font-weight="600" fill="#0b5cad" letter-spacing=".06em">VOTRE ORGANISATION</text>
+<rect x="40" y="150" width="244" height="136" rx="10" fill="#ffffff" stroke="#9a5b00" stroke-width="2"/><rect x="40" y="150" width="6" height="136" rx="3" fill="#9a5b00"/><text x="60" y="178" font-size="17" font-weight="600" fill="#18212b">Docker Hub</text>
+<rect x="54" y="190" width="222" height="30" rx="6" fill="#f3f6fa" stroke="#c9d1db"/><text x="64" y="209" font-size="11.8" fill="#18212b" font-family="ui-monospace,Menlo,Consolas,monospace">sorinplaton/nsxfederation-pak</text>
+<rect x="54" y="228" width="222" height="30" rx="6" fill="#f3f6fa" stroke="#c9d1db"/><text x="64" y="247" font-size="11.8" fill="#18212b" font-family="ui-monospace,Menlo,Consolas,monospace">sorinplaton/nsxfederation</text>
+<rect x="344" y="112" width="250" height="196" rx="10" fill="#ffffff" stroke="#0b5cad" stroke-width="2"/><rect x="344" y="112" width="6" height="196" rx="3" fill="#0b5cad"/><text x="364" y="140" font-size="17" font-weight="600" fill="#18212b">Artifactory</text>
+<rect x="362" y="154" width="214" height="30" rx="6" fill="#f3f6fa" stroke="#c9d1db"/><text x="372" y="173" font-size="12.5" fill="#18212b" >Dépôt distant Docker Hub</text>
+<rect x="362" y="196" width="214" height="44" rx="6" fill="#f3f6fa" stroke="#c9d1db"/><text x="372" y="215" font-size="12.5" fill="#18212b" >Dépôt des images approuvées</text><text x="372" y="232" font-size="12" fill="#5a6675" font-family="ui-monospace,Menlo,Consolas,monospace">vcfops-approved</text>
+<path d="M469,184 L469,194" stroke="#5a6675" stroke-width="1.5" marker-end="url(#a)"/>
+<rect x="344" y="372" width="250" height="66" rx="10" fill="#ffffff" stroke="#1e7a50" stroke-width="2"/><rect x="344" y="372" width="6" height="66" rx="3" fill="#1e7a50"/><text x="364" y="400" font-size="17" font-weight="600" fill="#18212b">Hôte Linux</text><text x="364" y="420" font-size="12.5" fill="#5a6675">Docker, python3, repack.py</text>
+<rect x="664" y="372" width="220" height="66" rx="10" fill="#ffffff" stroke="#57478c" stroke-width="2"/><rect x="664" y="372" width="6" height="66" rx="3" fill="#57478c"/><text x="684" y="400" font-size="17" font-weight="600" fill="#18212b">VCF Operations</text><text x="684" y="420" font-size="12.5" fill="#5a6675">console d&#x27;administration, UI</text>
+<rect x="664" y="150" width="220" height="66" rx="10" fill="#ffffff" stroke="#57478c" stroke-width="2"/><rect x="664" y="150" width="6" height="66" rx="3" fill="#57478c"/><text x="684" y="178" font-size="17" font-weight="600" fill="#18212b">Proxy cloud</text><text x="684" y="198" font-size="12.5" fill="#5a6675">exécute l&#x27;adaptateur</text>
+<rect x="916" y="112" width="146" height="196" rx="10" fill="#ffffff" stroke="#1e7a50" stroke-width="2"/><rect x="916" y="112" width="6" height="196" rx="3" fill="#1e7a50"/><text x="936" y="140" font-size="17" font-weight="600" fill="#18212b">NSX</text>
+<text x="936" y="170" font-size="12.5" font-weight="600" fill="#18212b">Global Managers</text><text x="936" y="187" font-size="11.5" fill="#5a6675">actif et standby</text>
+<text x="936" y="240" font-size="12.5" font-weight="600" fill="#18212b">Local Managers</text><text x="936" y="257" font-size="11.5" fill="#5a6675">un par emplacement</text>
+<path d="M344,172 L288,172" fill="none" stroke="#18212b" stroke-width="2"  marker-end="url(#a)" /><circle cx="316" cy="150" r="12" fill="#18212b"/><text x="316" y="154.5" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">1</text>
+<path d="M469,372 L469,312" fill="none" stroke="#18212b" stroke-width="2"  marker-end="url(#a)" /><circle cx="492" cy="342" r="12" fill="#18212b"/><text x="492" y="346.5" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">2</text>
+<path d="M664,200 L598,200" fill="none" stroke="#18212b" stroke-width="2"  marker-end="url(#a)" /><circle cx="631" cy="178" r="12" fill="#18212b"/><text x="631" y="182.5" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">3</text>
+<path d="M594,405 L660,405" fill="none" stroke="#18212b" stroke-width="2"  marker-end="url(#a)" /><circle cx="627" cy="383" r="12" fill="#18212b"/><text x="627" y="387.5" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">4</text>
+<path d="M774,368 L774,220" fill="none" stroke="#18212b" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#a)" marker-start="url(#b)"/><circle cx="797" cy="294" r="12" fill="#18212b"/><text x="797" y="298.5" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">5</text>
+<path d="M884,183 L912,183" fill="none" stroke="#18212b" stroke-width="2"  marker-end="url(#a)" /><circle cx="898" cy="161" r="12" fill="#18212b"/><text x="898" y="165.5" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">6</text>
+<text x="28" y="492" font-size="13.5" font-weight="600" fill="#18212b">Flux réseau. Chaque flèche part du système qui ouvre la connexion. Les flux 1 à 4 et 6 utilisent TCP 443.</text>
+<circle cx="40" cy="520" r="11" fill="#18212b"/><text x="40" y="524.5" font-size="12.5" font-weight="700" fill="#fff" text-anchor="middle">1</text>
+<text x="60" y="524.5" font-size="12.8" fill="#18212b">Artifactory récupère les deux images sur Docker Hub (avant ce guide).</text>
+<circle cx="40" cy="547" r="11" fill="#18212b"/><text x="40" y="551.5" font-size="12.5" font-weight="700" fill="#fff" text-anchor="middle">2</text>
+<text x="60" y="551.5" font-size="12.8" fill="#18212b">L&#x27;hôte Linux récupère l&#x27;image du pack et en sort le fichier .pak (étapes 1 et 2).</text>
+<circle cx="40" cy="574" r="11" fill="#18212b"/><text x="40" y="578.5" font-size="12.5" font-weight="700" fill="#fff" text-anchor="middle">3</text>
+<text x="60" y="578.5" font-size="12.8" fill="#18212b">Chaque proxy cloud récupère l&#x27;image de l&#x27;adaptateur par son digest, sans identifiant (étape 3).</text>
+<circle cx="40" cy="601" r="11" fill="#18212b"/><text x="40" y="605.5" font-size="12.5" font-weight="700" fill="#fff" text-anchor="middle">4</text>
+<text x="60" y="605.5" font-size="12.8" fill="#18212b">Depuis l&#x27;hôte Linux ou un poste de travail, l&#x27;administrateur envoie le pack réécrit et crée le compte (étapes 4 et 5).</text>
+<circle cx="40" cy="628" r="11" fill="#18212b"/><text x="40" y="632.5" font-size="12.5" font-weight="700" fill="#fff" text-anchor="middle">5</text>
+<text x="60" y="632.5" font-size="12.8" fill="#18212b">VCF Operations et le proxy cloud utilisent leur lien de collecte existant. Rien à ouvrir.</text>
+<circle cx="40" cy="655" r="11" fill="#18212b"/><text x="40" y="659.5" font-size="12.5" font-weight="700" fill="#fff" text-anchor="middle">6</text>
+<text x="60" y="659.5" font-size="12.8" fill="#18212b">L&#x27;adaptateur lit les Global Managers et les Local Managers, en lecture seule (étape 6).</text>
+<path d="M28,690 L72,690" stroke="#18212b" stroke-width="2" stroke-dasharray="6 5"/><text x="82" y="694" font-size="12.5" fill="#5a6675">lien existant de la plateforme</text>
+</svg>

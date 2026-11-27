@@ -1,10 +1,10 @@
 # Guide d'installation
 
-Comment installer le pack NSX Federation dans VCF Operations 9.1.1, soit à partir du pack publié, soit à partir de
-votre propre build, avec la machine sur laquelle chaque commande s'exécute. L'option B est le mode utilisé dans le
-lab. Pour l'option A, les commandes de vérification des signatures ont été exécutées sur la version v1.13.6
-publiée (par clé, sans clé, provenance et SBOM), et la variante avec registre interne a été testée avec un
-registre local ; chaque section précise ce qui n'a pas été testé. La partie 2 du
+Ce guide décrit l'installation du pack NSX Federation dans VCF Operations 9.1.1, à partir du pack publié ou de
+votre propre build. Il indique la machine sur laquelle chaque commande s'exécute. L'option B est le mode
+utilisé dans le lab. Pour l'option A, les commandes de vérification des signatures ont été exécutées sur la
+version v1.13.7 publiée (par clé, sans clé, provenance et SBOM), et la variante avec registre interne a été
+testée avec un registre local. Chaque section précise ce qui n'a pas été testé. La partie 2 du
 [blog](https://sorinplaton.github.io/fr/posts/nsx-federation-management-pack-install/) montre les étapes avec des
 captures d'écran.
 
@@ -14,11 +14,11 @@ English version: [INSTALL.md](INSTALL.md).
 
 Il existe cinq façons de mettre en place le pack et l'image de son adaptateur :
 
-- [Option A, télécharger le pack publié](#option-a--télécharger-le-pack-publié) : la voie la plus rapide, pour
-  un site dont le proxy cloud joint `ghcr.io`. Rien à construire.
-- [Option A avec la variante registre interne](#variante--copier-limage-dans-un-registre-interne) : pour un site
+- [Option A, télécharger le pack publié](#option-a--télécharger-le-pack-publié) : le chemin le plus court, pour
+  un site dont le proxy cloud joint `ghcr.io`. Aucun build n'est nécessaire.
+- [Option A, variante avec registre interne](#variante--copier-limage-dans-un-registre-interne) : pour un site
   dont le proxy cloud n'a pas accès à Internet, ou dont les images doivent être analysées et servies par un
-  registre interne. Toujours aucun build.
+  registre interne. Aucun build n'est nécessaire non plus.
 - [Option B, construire le pack](#1-prérequis) : pour qui modifie le pack, veut le construire à partir des
   sources, ou exploite un lab avec son propre registre sur l'hôte de construction.
 - [La variante Harbor de l'option B](#variante--un-registre-harbor-existant) : le même build, avec un push de
@@ -45,11 +45,11 @@ cette image.
 | Étapes | [Option A](#option-a--télécharger-le-pack-publié), puis les étapes 6 à 10 | [Option A](#option-a--télécharger-le-pack-publié) avec sa [variante](#variante--copier-limage-dans-un-registre-interne), puis les étapes 6 à 10 | Étapes 1 à 10, ou la variante Harbor à la place des étapes 2 à 4 |
 | Cas d'usage | Le proxy cloud a accès à Internet | Le proxy cloud n'a pas accès à Internet, ou les images doivent être analysées et servies par un registre interne, et le pack publié est utilisé tel quel | Le pack est modifié ou doit être construit à partir des sources, ou un lab exploite son propre registre sur l'hôte de construction. Convient aussi à un proxy cloud sans accès à Internet |
 
-Chaque mode demande l'option « Allow unsigned PAK installation » le temps de l'installation. VCF Operations
-cherche une signature Broadcom dans un `.pak`, et ce pack n'en a pas (KB 415279).
-Le pack publié est signé avec cosign par ce projet, ce qui est une autre signature : elle permet à la personne
-qui installe de vérifier l'origine du fichier, et VCF Operations ne la lit pas. L'option reste donc nécessaire
-même pour un pack dont la signature cosign a été vérifiée.
+Chaque mode demande d'activer l'option « Allow unsigned PAK installation » le temps de l'installation. VCF
+Operations cherche une signature Broadcom dans un `.pak`, et ce pack n'en a pas (KB 415279). Le pack publié
+porte une autre signature, faite avec cosign par ce projet : elle permet à la personne qui installe de vérifier
+l'origine du fichier, et VCF Operations ne la lit pas. L'option reste donc nécessaire même pour un pack dont la
+signature cosign a été vérifiée.
 
 ## Où chaque élément s'exécute
 
@@ -63,56 +63,25 @@ même pour un pack dont la signature cosign a été vérifiée.
 
 ## Accès réseau
 
-Ouvrir ces flux avant de commencer : un flux bloqué se révèle tard, par un build qui ne peut pas télécharger un
-paquet ou par un compte qui reste `FAILED`. Le schéma ci-dessous est celui de l'option B : ce que l'hôte de
-construction (le jumphost dans le lab) doit joindre, et les flux du proxy cloud dont dépend l'installation. Les
-traits pleins partent de l'hôte de construction ; les pointillés sont ceux du proxy cloud. L'option A et sa
-variante ont chacune leur schéma dans leur section, et le tableau couvre les trois cas.
+Ouvrir les flux listés dans cette section avant de commencer : un flux bloqué se révèle tard, par un build qui
+ne peut pas télécharger un paquet ou par un compte qui reste `FAILED`. Le schéma ci-dessous est celui de
+l'option B : ce que l'hôte de construction (le jumphost dans le lab) doit joindre, et les flux du proxy cloud
+dont dépend l'installation. Les traits pleins partent de l'hôte de construction ; les pointillés sont ceux du
+proxy cloud. L'option A et sa variante ont chacune un schéma dans leur propre section, et le tableau couvre
+les trois modes.
 
 Avec l'option A, seuls les flux du proxy cloud vers `ghcr.io`, `pkg-containers.githubusercontent.com` et NSX
 sont nécessaires, plus un navigateur qui joint VCF Operations. Avec la variante, le proxy cloud joint le
 registre interne et NSX, et seul l'hôte de copie accède à Internet.
 
-```mermaid
-flowchart LR
-  subgraph NET["Internet"]
-    PKG["download.docker.com, dl.google.com<br/>dépôts de la distribution"]
-    GH["github.com<br/>clone, téléchargement de govc"]
-    HUB["Docker Hub<br/>registry-1.docker.io"]
-    PYPI["pypi.org<br/>files.pythonhosted.org"]
-  end
-  BH["Hôte de construction<br/>(jumphost)"]
-  REG["Registre<br/>HTTPS"]
-  OPS["VCF Operations<br/>console d'administration, Suite API"]
-  VC["vCenter"]
-  ESX["Hôte ESXi de la VM<br/>du proxy cloud"]
-  CP["Proxy cloud"]
-  GHCR["ghcr.io et<br/>pkg-containers.githubusercontent.com<br/>image publiée"]
-  GM["Global Managers<br/>actif et standby"]
-  LM["Local Managers"]
-
-  BH -->|"TCP 443 : Docker, Chrome, git, paquets Python et Node.js"| PKG
-  BH -->|"TCP 443 : clone"| GH
-  BH -->|"TCP 443 : images de base"| HUB
-  BH -->|"TCP 443 : paquets du SDK et de l'adaptateur"| PYPI
-  BH -->|"TCP 5000 : push de l'image (étape 3)"| REG
-  BH -->|"TCP 443 : pack, compte, scripts (étapes 6 à 10)"| OPS
-  BH -->|"TCP 443 : govc (étape 4)"| VC
-  BH -->|"TCP 443 : govc guest.upload (étape 4)"| ESX
-  BH -->|"TCP 443 : test local facultatif (étape 5)"| GM
-  BH -->|"TCP 443 : test local facultatif (étape 5)"| LM
-  CP -.->|"TCP 5000 : récupération de l'image (option B)"| REG
-  CP -.->|"TCP 443 : récupération de l'image (option A)"| GHCR
-  CP -.->|"TCP 443 : collecte"| GM
-  CP -.->|"TCP 443 : collecte"| LM
-```
+![Option B : flux réseau de l'hôte de construction et du proxy cloud](img/install-option-b.fr.svg)
 
 | Depuis | Vers | Port | Usage |
 | --- | --- | --- | --- |
-| Hôte de construction | Internet (dépôts Docker, Google Chrome et de la distribution, GitHub, Docker Hub, PyPI) | TCP 443 | Installation des outils, clone du dépôt, build des images d'outillage et de l'adaptateur. Via un proxy si le site en utilise un |
+| Hôte de construction | Internet (dépôts Docker, Google Chrome et de la distribution, GitHub, Docker Hub, `cgr.dev` et le dépôt de paquets Wolfi, PyPI) | TCP 443 | Installation des outils, clone du dépôt, build des images d'outillage et de l'adaptateur. Via un proxy si le site en utilise un |
 | Hôte de construction | Registre | TCP 5000, ou le port du registre | Push de l'image de l'adaptateur. En local quand le registre tourne sur l'hôte de construction, comme dans le lab |
 | Hôte de construction | VCF Operations | TCP 443 | Console d'administration et interface du produit dans un navigateur, Suite API pour les scripts des étapes 6 à 10 |
-| Hôte de construction | vCenter de la VM du proxy cloud | TCP 443 | Opérations invité `govc` de l'étape 4. Inutile si le certificat est copié par SSH |
+| Hôte de construction | vCenter de la VM du proxy cloud | TCP 443 | Opérations d'invité `govc` de l'étape 4. Inutile si le certificat est copié par SSH |
 | Hôte de construction | Hôte ESXi de la VM du proxy cloud | TCP 443 | `govc guest.upload` envoie le fichier à l'hôte ESXi, pas au vCenter |
 | Hôte de construction | Global Managers et Local Managers | TCP 443 | Seulement pour le test facultatif de l'étape 5 |
 | Poste d'administration (option A) ou hôte de copie | `github.com` et `raw.githubusercontent.com` | TCP 443 | Téléchargement du pack, de sa somme de contrôle, de son bundle, de `cosign.pub` et de cosign. L'hôte de copie clone aussi le dépôt |
@@ -134,7 +103,7 @@ Valeurs à remplacer :
 
 ## Liste de contrôle
 
-Option B. Avec l'option A ou sa variante, suivre la liste de contrôle de
+Cette liste de contrôle concerne l'option B. Avec l'option A ou sa variante, suivre la liste de contrôle de
 l'[option A](#option-a--télécharger-le-pack-publié).
 
 - [ ] 1. Prérequis vérifiés, outils de l'hôte de construction installés, fichier de paramètres rempli
@@ -150,39 +119,19 @@ l'[option A](#option-a--télécharger-le-pack-publié).
 
 ## Option A : télécharger le pack publié
 
-À utiliser à la place des étapes 1 à 5 quand le proxy cloud a accès à Internet. Ni hôte de construction, ni
-Docker, ni registre à soi. Quand le proxy cloud n'a pas accès à Internet, ou que les images doivent venir d'un
-registre interne, ajouter la [variante](#variante--copier-limage-dans-un-registre-interne) décrite à la fin de
-cette section.
+Utiliser l'option A à la place des étapes 1 à 5 quand le proxy cloud a accès à Internet. Elle ne demande ni
+hôte de construction, ni Docker, ni registre à soi. Quand le proxy cloud n'a pas accès à Internet, ou que les
+images doivent venir d'un registre interne, ajouter la
+[variante](#variante--copier-limage-dans-un-registre-interne) décrite à la fin de cette section.
 
-Testé à ce jour : le téléchargement et toutes les commandes de « Vérifier les signatures » ci-dessous, sur la
-version v1.13.5 publiée. La récupération de l'image depuis `ghcr.io` par le proxy cloud n'est pas encore testée
-dans le lab, qui utilise l'option B.
+À ce jour, le téléchargement et toutes les commandes de « Vérifier les signatures » ci-dessous ont été testés
+sur la version v1.13.7 publiée. La récupération de l'image depuis `ghcr.io` par le proxy cloud n'est pas encore
+testée dans le lab, qui utilise l'option B.
 
-Flux réseau de ce mode. Les traits pleins partent du poste d'administration ; les traits pointillés sont ceux
-du proxy cloud. Le flux vers Sigstore ne sert qu'à la vérification des signatures.
+Ce mode utilise les flux réseau du schéma ci-dessous. Les traits pleins partent du poste d'administration ; les
+traits pointillés sont ceux du proxy cloud. Le flux vers Sigstore ne sert qu'à la vérification des signatures.
 
-```mermaid
-flowchart LR
-  subgraph NET["Internet"]
-    GHR["github.com<br/>page des versions, cosign.pub"]
-    GHCR["ghcr.io et<br/>pkg-containers.githubusercontent.com<br/>image de l'adaptateur et sa signature"]
-    SIG["Sigstore<br/>tuf-repo-cdn.sigstore.dev<br/>rekor.sigstore.dev"]
-  end
-  WS["Poste d'administration<br/>navigateur, cosign"]
-  OPS["VCF Operations<br/>console d'administration, interface du produit"]
-  CP["Proxy cloud"]
-  GM["Global Managers<br/>actif et standby"]
-  LM["Local Managers"]
-
-  WS -->|"TCP 443 : pack, somme de contrôle, bundle, clé"| GHR
-  WS -->|"TCP 443 : vérifier la signature de l'image"| GHCR
-  WS -->|"TCP 443 : journal de transparence"| SIG
-  WS -->|"TCP 443 : installer le pack, créer le compte (étapes 6 à 10)"| OPS
-  CP -.->|"TCP 443 : récupérer l'image par son digest"| GHCR
-  CP -.->|"TCP 443 : collecte"| GM
-  CP -.->|"TCP 443 : collecte"| LM
-```
+![Option A : flux réseau du poste d'administration et du proxy cloud](img/install-option-a.fr.svg)
 
 - [ ] VCF Operations 9.1.1 avec au moins un proxy cloud à l'état `UP`, qui joint `ghcr.io` et
       `pkg-containers.githubusercontent.com` en TCP 443, directement ou via le proxy du site. Les règles de
@@ -198,24 +147,24 @@ flowchart LR
 
 *À exécuter sur : n'importe quelle machine dont le navigateur joint VCF Operations.* Télécharger le pack et sa
 somme de contrôle depuis la [page des versions](https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/latest),
-ou avec les commandes ci-dessous. La dernière calcule le SHA-256 du fichier téléchargé et le compare à la
-valeur publiée. Résultat attendu : `NSXFederation_1.13.0.pak: OK`. Toute autre réponse signifie que le
+ou avec les commandes ci-dessous. La dernière commande calcule le SHA-256 du fichier téléchargé et le compare
+à la valeur publiée. Résultat attendu : `NSXFederation_1.13.0.pak: OK`. Toute autre réponse signifie que le
 téléchargement est abîmé ou incomplet ; le refaire.
 
 ```bash
-curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.6/NSXFederation_1.13.0.pak
-curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.6/NSXFederation_1.13.0.pak.sha256
+curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.7/NSXFederation_1.13.0.pak
+curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.7/NSXFederation_1.13.0.pak.sha256
 sha256sum -c NSXFederation_1.13.0.pak.sha256
 ```
 
-Le pack désigne l'image `ghcr.io/sorinplaton/nsxfederation` par son digest : le proxy cloud exécute toujours
-l'image avec laquelle le pack a été construit. L'image est publique : le proxy cloud la récupère sans
-identifiant, et il fait déjà confiance au certificat de `ghcr.io`, sans étape 4.
+Le pack désigne l'image `ghcr.io/sorinplaton/nsxfederation` par son digest, si bien que le proxy cloud exécute
+toujours l'image avec laquelle le pack a été construit. L'image est publique : le proxy cloud la récupère sans
+identifiant, et il fait déjà confiance au certificat de `ghcr.io`, ce qui rend l'étape 4 inutile.
 
-Vérification facultative, *sur le proxy cloud* si SSH y est activé. Elle indique, avant l'installation, si le
-proxy cloud peut joindre les deux hôtes d'où vient l'image. Tout code HTTP signifie que l'hôte est joignable
-(`401` et `400` sont les réponses attendues) ; `000` signifie qu'il ne l'est pas, et le compte de l'étape 8
-resterait `FAILED` :
+Une vérification facultative, à lancer *sur le proxy cloud* si SSH y est activé, indique avant l'installation
+si le proxy cloud peut joindre les deux hôtes d'où vient l'image. Tout code HTTP signifie que l'hôte est
+joignable (`401` et `400` sont les réponses attendues) ; `000` signifie qu'il ne l'est pas, et le compte de
+l'étape 8 resterait `FAILED` :
 
 ```bash
 curl -s -o /dev/null -w '%{http_code}\n' https://ghcr.io/v2/
@@ -236,15 +185,15 @@ l'adaptateur, les managers NSX et VCF Operations, et aucune donnée de supervisi
 vérifications de signature ci-dessous s'exécutent sur la machine qui a téléchargé le pack, pas sur le proxy
 cloud.
 
-Le proxy cloud récupère l'image au premier démarrage du compte, puis de nouveau après un redéploiement ou un
-upgrade du proxy cloud, car sa copie locale a disparu. Un éventuel contact avec `ghcr.io` à chaque redémarrage
-du compte, quand l'image est encore sur le disque, n'a pas été testé. Prévoir l'accès à chaque démarrage de
-l'adaptateur.
+Le proxy cloud récupère l'image au premier démarrage du compte, puis de nouveau après un redéploiement ou une
+mise à niveau du proxy cloud, car sa copie locale a disparu. Un éventuel contact avec `ghcr.io` à chaque
+redémarrage du compte, quand l'image est encore sur le disque, n'a pas été testé. Prévoir l'accès à chaque
+démarrage de l'adaptateur.
 
 Pour que le proxy cloud n'accède pas à Internet, utiliser la
-[variante de copie](#variante--copier-limage-dans-un-registre-interne) : une machine qui accède à Internet
-copie une fois l'image dans un registre interne, le pack est pointé vers ce registre, et le proxy cloud ne joint
-alors que ce registre. L'[option B](#1-prérequis) donne le même résultat avec son propre build.
+[variante avec registre interne](#variante--copier-limage-dans-un-registre-interne) : une machine qui accède à
+Internet copie une fois l'image dans un registre interne, le pack est pointé vers ce registre, et le proxy cloud
+ne joint alors que ce registre. L'[option B](#1-prérequis) donne le même résultat avec votre propre build.
 
 ### Vérifier les signatures (recommandé)
 
@@ -252,7 +201,8 @@ alors que ce registre. L'[option B](#1-prérequis) donne le même résultat avec
 (« keyless ») : la signature porte un certificat qui nomme le workflow et le tag qui les ont construits, et la
 vérification compare ce nom à la place d'une clé publique.
 [Vérification sans clé](#vérification-sans-clé-versions-à-partir-de-v1133) ci-dessous donne les commandes. Les
-versions jusqu'à `v1.13.2` sont signées avec la clé du projet, comme décrit d'abord.
+versions jusqu'à `v1.13.2` sont signées avec la clé du projet seulement, et les versions de `v1.13.3` à `v1.14.0`
+portent les deux signatures ; la vérification par clé est décrite en premier.
 
 Le pack et l'image de son adaptateur sont signés avec [cosign](https://docs.sigstore.dev/cosign/) (Sigstore). La
 somme de contrôle prouve seulement que le téléchargement est complet ; elle se trouve à côté du pack, sur la
@@ -266,7 +216,7 @@ La première commande ci-dessous récupère la clé, la seconde le bundle, qui e
 
 ```bash
 curl -LO https://raw.githubusercontent.com/sorinplaton/vcf-ops-nsx-federation-mp/main/cosign.pub
-curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.6/NSXFederation_1.13.0.pak.bundle
+curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.7/NSXFederation_1.13.0.pak.bundle
 ```
 
 **Installer cosign.** *À exécuter sur : la machine qui a téléchargé le pack (Linux, x86-64).* Choisir l'une des
@@ -317,13 +267,13 @@ pas l'installer.
 
 #### Vérification sans clé (versions à partir de v1.13.3)
 
-Les deux mêmes vérifications, avec l'identité du workflow de publication à la place de `cosign.pub`. Définir la
-version une fois ; la signature doit nommer exactement ce dépôt, ce workflow et ce tag, avec GitHub Actions pour
-émetteur. Les notes de version sur GitHub donnent les mêmes valeurs. Le bundle du pack est le fichier
-`.sigstore.json` de la version.
+La vérification sans clé refait les deux mêmes vérifications, avec l'identité du workflow de publication à la
+place de `cosign.pub`. Définir la version une fois, sur la première ligne. La signature doit nommer exactement
+ce dépôt, ce workflow et ce tag, avec GitHub Actions pour émetteur. Les notes de version sur GitHub donnent les
+mêmes valeurs. Le bundle du pack est le fichier `.sigstore.json` de la version.
 
 ```bash
-RELEASE=1.13.6
+RELEASE=1.13.7
 SIGNER="https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/.github/workflows/release.yml@refs/tags/v$RELEASE"
 ISSUER=https://token.actions.githubusercontent.com
 curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v$RELEASE/NSXFederation_1.13.0.pak.sigstore.json
@@ -335,16 +285,17 @@ DIGEST=$(unzip -p /tmp/adapter.zip '*.conf' | sed -n 's/^DIGEST=//p')
 cosign verify --certificate-identity "$SIGNER" --certificate-oidc-issuer "$ISSUER" ghcr.io/sorinplaton/nsxfederation@$DIGEST
 ```
 
-Remplacer `1.13.0` par la version du pack dans les noms de fichiers de cette version. Résultat attendu :
-`Verified OK`, puis la liste des contrôles faits par cosign. Les commandes joignent les mêmes hôtes que la
-vérification par clé. Testé sur `v1.13.3`, la première version signée sans clé, le 2026-11-26.
+Dans les noms de fichiers, remplacer `1.13.0` par la version du pack de cette version publiée. Résultat
+attendu : `Verified OK`, puis la liste des contrôles faits par cosign. Les commandes joignent les mêmes hôtes
+que la vérification par clé. Elles ont été testées sur `v1.13.3`, la première version signée sans clé, le
+2026-11-26.
 
 #### Facultatif : provenance de construction et SBOM (versions à partir de v1.13.5)
 
 À partir de `v1.13.5`, le pack et les deux images portent aussi une attestation de provenance de construction
-SLSA : un enregistrement signé du commit, du workflow et du runner qui les ont construits. La CLI GitHub la
-vérifie ; elle joint `api.github.com`. L'image de l'adaptateur porte aussi son SBOM sous forme d'attestation
-signée, que cosign vérifie et affiche :
+SLSA : un enregistrement signé du commit, du workflow et du runner qui les ont construits. La CLI GitHub
+vérifie cette attestation, et joint `api.github.com` pour le faire. L'image de l'adaptateur porte aussi son
+SBOM sous forme d'attestation signée, que cosign vérifie et affiche :
 
 ```bash
 gh attestation verify NSXFederation_1.13.0.pak -R sorinplaton/vcf-ops-nsx-federation-mp \
@@ -355,49 +306,27 @@ cosign verify-attestation --type cyclonedx --certificate-identity "$SIGNER" --ce
 ```
 
 Résultat attendu : deux fois `Verification succeeded!`, puis `SBOM attestation: verified`. La version contient
-aussi le rapport Trivy de l'image de l'adaptateur, `NSXFederation_<version>.trivy.txt`. Testé sur `v1.13.5`, la
-première version qui les porte, le 2026-11-26.
+aussi le rapport Trivy de l'image de l'adaptateur, `NSXFederation_<version>.trivy.txt`. Les commandes ont été
+testées sur `v1.13.5`, la première version qui porte ces attestations, le 2026-11-26.
 
 Une fois la somme de contrôle et les deux signatures validées, installer le pack avec l'étape 6, à la main ou
 par script, puis continuer avec les étapes 7 à 10. Les scripts demandent un hôte Linux avec un clone de ce
 dépôt, le fichier de paramètres de l'étape 1 et les outils listés dans
-[Outils pour certaines étapes](#outils-pour-certaines-étapes). Avec la variante, appliquer d'abord la variante
-ci-dessous, avant l'étape 6.
+[Outils pour certaines étapes](#outils-pour-certaines-étapes). Avec la variante, suivre la section suivante
+avant l'étape 6.
 
 ### Variante : copier l'image dans un registre interne
 
-Pour une entreprise qui ne laisse pas le proxy cloud accéder à Internet, ou qui analyse chaque image avant
-usage : copier l'image publiée dans un registre interne et y faire pointer le pack publié. Ni hôte de
-construction ni SDK, le proxy cloud ne dépend que du registre interne, et l'image peut y être analysée avant
-usage. L'image est copiée à l'identique et garde son digest : c'est toujours l'image que le projet a signée.
-Testée dans le lab avec un `registry:2` local ; pas testée avec Harbor.
+Dans une entreprise qui ne laisse pas le proxy cloud accéder à Internet, ou qui analyse chaque image avant
+usage, copier l'image publiée dans un registre interne et y faire pointer le pack publié. Ni hôte de
+construction ni SDK ne sont nécessaires, le proxy cloud ne dépend que du registre interne, et l'image peut y
+être analysée avant usage. L'image est copiée à l'identique et garde son digest : c'est toujours l'image que le
+projet a signée. La variante a été testée dans le lab avec un `registry:2` local, et pas avec Harbor.
 
-Flux réseau de cette variante. Seul l'hôte de copie accède à Internet. Le proxy cloud ne parle qu'au registre
-interne et à NSX.
+Dans cette variante, seul l'hôte de copie accède à Internet. Le proxy cloud parle au registre interne et à
+NSX.
 
-```mermaid
-flowchart LR
-  subgraph NET["Internet"]
-    GHR["github.com<br/>page des versions, cosign.pub, dépôt"]
-    GHCR["ghcr.io et<br/>pkg-containers.githubusercontent.com<br/>image de l'adaptateur et sa signature"]
-    SIG["Sigstore<br/>tuf-repo-cdn.sigstore.dev<br/>rekor.sigstore.dev"]
-  end
-  subgraph INT["Réseau interne"]
-    MH["Hôte de copie<br/>skopeo, cosign, repack.py"]
-    REG["Registre interne<br/>HTTPS"]
-    OPS["VCF Operations"]
-    CP["Proxy cloud<br/>sans accès à Internet"]
-    NSX["Global Managers et<br/>Local Managers"]
-  end
-
-  MH -->|"TCP 443 : pack, clé, clone"| GHR
-  MH -->|"TCP 443 : copier l'image par son digest"| GHCR
-  MH -->|"TCP 443 : journal de transparence"| SIG
-  MH -->|"TCP 443 : push de l'image"| REG
-  MH -->|"TCP 443 : installer le pack réécrit (étape 6)"| OPS
-  CP -.->|"TCP 443 : récupérer l'image"| REG
-  CP -.->|"TCP 443 : collecte"| NSX
-```
+![Variante avec registre interne : flux réseau](img/install-mirror.fr.svg)
 
 *À exécuter sur : un hôte Linux qui joint à la fois `ghcr.io` et le registre interne*, appelé ici l'hôte de
 copie. Il lui faut [skopeo](https://github.com/containers/skopeo) (`sudo apt-get install -y skopeo` ou `sudo dnf install -y skopeo`),
@@ -418,7 +347,7 @@ nano ~/fedmp.env
 
 Dans `~/fedmp.env`, retirer le `#` devant les quatre lignes `HARBOR` et les remplir : `HARBOR` est l'adresse du
 registre interne, `HARBOR_PROJECT` le projet, `HARBOR_USER` et `HARBOR_PW` le compte qui a le droit de push. Les
-variables portent le nom de Harbor, et les commandes s'en servent pour n'importe quel registre. Remplir aussi
+variables portent le nom de Harbor, mais les commandes s'en servent pour n'importe quel registre. Remplir aussi
 `OPS_HOST` et `OPS_PW` si l'installation par script de l'étape 6 doit partir de cet hôte. Les autres lignes
 peuvent garder leurs valeurs d'exemple. [Le fichier de paramètres](#le-fichier-de-paramètres) décrit le fichier
 et la ligne qui le charge.
@@ -426,7 +355,7 @@ et la ligne qui le charge.
 Ensuite, dans le dossier qui contient le pack téléchargé :
 
 1. Vérifier les signatures du pack et de l'image, comme ci-dessus. Le faire d'abord : le point 3 modifie le
-   pack, sa somme de contrôle et sa signature ne correspondent plus ensuite.
+   pack, dont la somme de contrôle et la signature ne correspondent plus ensuite.
 2. Copier l'image par son digest. Les premières lignes relisent le digest dans le pack, pour que le bloc
    fonctionne aussi dans un nouveau shell. `--all` copie l'image exactement telle qu'elle a été publiée, et
    `--preserve-digests` fait s'arrêter skopeo plutôt que de changer le digest que désigne le pack :
@@ -444,8 +373,8 @@ Ensuite, dans le dossier qui contient le pack téléchargé :
    shell : `cosign copy ghcr.io/sorinplaton/nsxfederation@$DIGEST $HARBOR/$HARBOR_PROJECT/nsxfederation` (après
    `docker login $HARBOR`).
 3. Faire pointer le pack vers le registre interne. `repack.py` réécrit les lignes `REGISTRY` et `REPOSITORY` à
-   l'intérieur du pack, sans créer d'autre fichier. Seuls le registre et le dépôt changent ; le digest reste.
-   Les deux lignes `unzip` affichent le résultat :
+   l'intérieur du pack, dans le fichier même. Seuls le registre et le dépôt changent ; le digest reste. Les
+   deux lignes `unzip` affichent le résultat :
 
    ```bash
    set -a; source ~/fedmp.env; set +a
@@ -454,8 +383,8 @@ Ensuite, dans le dossier qui contient le pack téléchargé :
    unzip -p /tmp/adapter.zip '*.conf' | grep -E '^(REGISTRY|REPOSITORY|DIGEST)='
    ```
 
-   Attendu : `REGISTRY` est le registre interne, `REPOSITORY` vaut `/<projet>/nsxfederation`, et `DIGEST` est la
-   valeur du point 2.
+   Résultat attendu : `REGISTRY` est le registre interne, `REPOSITORY` vaut `/<projet>/nsxfederation`, et
+   `DIGEST` est la valeur du point 2.
 4. Analyser l'image dans le registre interne si l'organisation l'exige, puis installer le pack réécrit avec
    l'étape 6 et continuer avec les étapes 7 à 10. Le proxy cloud n'a besoin que du registre interne, pas de
    `ghcr.io`.
@@ -487,9 +416,9 @@ sont écrits en Python avec le module `requests`. Docker vient du dépôt Docker
 distribution, afin que `docker build` utilise BuildKit. Les commandes Ubuntu de cette section ont été exécutées
 sur un hôte Ubuntu 26.04 vierge ; celles pour RHEL n'ont pas été testées dans le lab.
 
-Ubuntu ou Debian (sur Debian, remplacer `ubuntu` par `debian` dans les deux URL). Le bloc installe les paquets
-de base, ajoute la clé de signature et la source de paquets de Docker, puis installe Docker depuis cette
-source :
+Sur Ubuntu ou Debian (sur Debian, remplacer `ubuntu` par `debian` dans les deux URL), le bloc installe les
+paquets de base, ajoute la clé de signature et la source de paquets de Docker, puis installe Docker depuis
+cette source :
 
 ```bash
 sudo apt-get update
@@ -513,16 +442,16 @@ sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin
 ```
 
 Dans les deux cas, démarrer Docker et l'activer à chaque démarrage du système. Les commandes `docker` de ce
-guide sont préfixées par `sudo` : l'utilisateur de construction n'a donc pas besoin d'être membre du groupe
+guide sont préfixées par `sudo`, et l'utilisateur de construction n'a donc pas besoin d'être membre du groupe
 `docker`.
 
 ```bash
 sudo systemctl enable --now docker
 ```
 
-Vérification. La première commande récupère une image de test sur Docker Hub et l'exécute, ce qui prouve que
-Docker fonctionne et accède à Internet ; elle affiche « Hello from Docker! ». La dernière n'affiche rien quand
-`requests` est installé :
+Vérifier les outils. La première commande récupère une image de test sur Docker Hub et l'exécute, ce qui prouve
+que Docker fonctionne et accède à Internet ; elle affiche « Hello from Docker! ». La dernière n'affiche rien
+quand `requests` est installé :
 
 ```bash
 sudo docker run --rm hello-world
@@ -534,7 +463,8 @@ python3 -c "import requests"
 ### Outils pour certaines étapes
 
 `govc` est le client en ligne de commande de vCenter. L'étape 4 s'en sert pour copier le certificat du registre
-dans la VM du proxy cloud. L'ignorer quand cette copie passe par SSH. La dernière ligne affiche la version :
+dans la VM du proxy cloud. Ignorer cette installation quand cette copie passe par SSH. La dernière ligne
+affiche la version :
 
 ```bash
 curl -fsSL "https://github.com/vmware/govmomi/releases/latest/download/govc_$(uname -s)_$(uname -m).tar.gz" \
@@ -594,9 +524,9 @@ set -a; source ~/fedmp.env; set +a
 ```
 
 `set -a` demande au shell d'exporter toute variable définie à partir de ce point, `source` lit le fichier, et
-`set +a` arrête l'export. Sans l'export, les valeurs restent dans le shell, et les scripts et les
-conteneurs lancés par les commandes ne les voient pas. Les valeurs durent autant que le shell : un nouveau
-terminal demande de relancer la ligne, et un bloc collé sans elle s'exécute avec des adresses vides.
+`set +a` arrête l'export. Sans l'export, les valeurs restent dans le shell, et les scripts et les conteneurs
+lancés par les commandes ne les voient pas. Les valeurs durent autant que le shell : un nouveau terminal
+demande de relancer la ligne, et un bloc collé sans elle s'exécute avec des adresses vides.
 
 Le fichier contient des mots de passe. Le tenir hors de Git (`fedmp.env` est dans `.gitignore`), et le
 supprimer ou le déplacer dans un coffre une fois l'installation terminée.
@@ -608,10 +538,10 @@ Cette étape démarre un petit registre sur l'hôte de construction, avec un cer
 registre Harbor existant, passer les étapes 2 à 4 et suivre
 [Variante : un registre Harbor existant](#variante--un-registre-harbor-existant).
 
-*À exécuter sur : l'hôte de construction.* Un conteneur `registry:2` avec un certificat autosigné. La commande
-`openssl` crée la clé et un certificat valable 825 jours, qui porte l'adresse de `IP`. La commande `docker run`
-démarre le registre avec ce certificat sur le port 5000, garde les images dans le volume Docker
-`registry-data`, et relance le conteneur après un redémarrage de l'hôte :
+*À exécuter sur : l'hôte de construction.* Le registre est un conteneur `registry:2` avec un certificat
+autosigné. La commande `openssl` crée la clé et un certificat valable 825 jours, qui porte l'adresse de `IP`.
+La commande `docker run` démarre le registre avec ce certificat sur le port 5000, garde les images dans le
+volume Docker `registry-data`, et relance le conteneur après un redémarrage de l'hôte :
 
 ```bash
 set -a; source ~/fedmp.env; set +a
@@ -630,9 +560,9 @@ sudo docker run -d --name fedmp-registry --restart unless-stopped \
 Le certificat contient aussi `127.0.0.1` et `localhost`, et le registre écoute également sur l'adresse locale,
 parce que l'étape 3 fait le push de l'image vers `localhost:5000`.
 
-Vérification. La commande appelle le registre sur l'adresse que le proxy cloud utilisera et n'accepte que le
-certificat qui vient d'être créé : une réponse prouve donc à la fois l'écoute et le certificat. Un registre neuf
-répond `{"repositories":[]}` jusqu'au premier push :
+Vérifier le registre. La commande appelle le registre sur l'adresse que le proxy cloud utilisera et n'accepte
+que le certificat qui vient d'être créé, si bien qu'une réponse prouve à la fois l'écoute et le certificat. Un
+registre neuf répond `{"repositories":[]}` jusqu'au premier push :
 
 ```bash
 set -a; source ~/fedmp.env; set +a
@@ -642,11 +572,13 @@ curl --cacert ~/fedmp-registry/certs/registry.crt https://$IP:5000/v2/_catalog
 ## 3. Construire le pack
 
 *À exécuter sur : l'hôte de construction.* Le premier `docker build` crée `fedmp-tooling`, une image qui
-contient les outils du SDK. Le `docker run` lance ensuite `mp-build` depuis cette image : il construit l'image
-de l'adaptateur avec le Docker de l'hôte (par le socket monté), en fait le push vers le registre de l'étape 2
-et écrit le `.pak`. Le conteneur tourne avec l'ID de l'utilisateur courant et l'ID du groupe `docker` : il peut
-ainsi utiliser le socket, et les fichiers qu'il écrit dans le clone appartiennent à l'utilisateur de
-construction. Le build télécharge les images de base depuis Docker Hub et les paquets Python depuis PyPI.
+contient les outils du SDK. Le `docker run` lance ensuite `mp-build` depuis cette image. `mp-build` construit
+l'image de l'adaptateur avec le Docker de l'hôte (par le socket monté), en fait le push vers le registre de
+l'étape 2 et écrit le `.pak`. Le conteneur tourne avec l'ID de l'utilisateur courant et l'ID du groupe
+`docker` : il peut ainsi utiliser le socket, et les fichiers qu'il écrit dans le clone appartiennent à
+l'utilisateur de construction. Le build télécharge les images de base depuis Docker Hub, la base Wolfi de
+l'image de l'adaptateur depuis `cgr.dev`, le paquet Python de cette base depuis le dépôt de paquets Wolfi, et
+les paquets Python depuis PyPI.
 
 ```bash
 set -a; source ~/fedmp.env; set +a
@@ -662,19 +594,20 @@ sudo docker run --rm --network host -u $(id -u):$(getent group docker | cut -d: 
 Le résultat est `pack/build/NSXFederation_$VERSION.pak`.
 
 `mp-build` démarre l'adaptateur pour un test sur `127.0.0.1:8080`. Si ce port est pris sur l'hôte de
-construction, il échoue avec `Bind for 127.0.0.1:8080 failed: port is already allocated` : ajouter `-P 18080`
-(n'importe quel port libre) aux options de `mp-build`. Seul le port de test change ; le pack utilise toujours le
-port 443 sur le proxy cloud.
+construction, le build échoue avec `Bind for 127.0.0.1:8080 failed: port is already allocated` : ajouter
+`-P 18080` (n'importe quel port libre) aux options de `mp-build`. L'option ne change que le port de test ; le
+pack utilise toujours le port 443 sur le proxy cloud.
 
 Le push de l'image se fait vers `localhost:5000`. Docker accepte le certificat autosigné d'un registre joint par
-l'adresse locale : l'hôte de construction n'a donc pas besoin de son propre dossier de certificat. Le registre
+l'adresse locale, et l'hôte de construction n'a donc pas besoin de son propre dossier de certificat. Le registre
 de l'étape 2 ne demande aucune authentification. `mp-build` demande quand même un utilisateur et un mot de
 passe, et n'importe quelle valeur convient.
 
 Quand le registre est donné sous la forme `host:port` sans domaine, `mp-build` écrit Docker Hub dans le pack.
 Le proxy cloud chercherait alors l'image sur Docker Hub, et le compte échouerait. `repack.py` ouvre le pack et
 réécrit deux lignes de la configuration de l'adaptateur, `REGISTRY` et `REPOSITORY`, dans le fichier même ; rien
-d'autre ne change. Inscrire dans le pack l'adresse que le proxy cloud utilise, avant l'installation :
+d'autre ne change. Le lancer avant l'installation, pour inscrire dans le pack l'adresse que le proxy cloud
+utilise :
 
 ```bash
 set -a; source ~/fedmp.env; set +a
@@ -703,10 +636,10 @@ curl --cacert ~/fedmp-registry/certs/registry.crt https://$IP:5000/v2/nsxfederat
 
 ## 4. Le proxy cloud fait confiance au certificat du registre
 
-Le certificat de l'étape 2 est autosigné : le proxy cloud le refuse tant qu'on ne lui a pas dit de lui faire
-confiance. Sans cette étape, la récupération de l'image échoue et le compte reste `FAILED` (étape 8). Docker,
-sur le proxy cloud, fait confiance à un registre privé dont le certificat se trouve dans un dossier qui porte
-le nom du registre, port compris. Avec le registre de l'étape 2, c'est :
+Le certificat de l'étape 2 est autosigné, et le proxy cloud le refuse donc tant qu'il n'a pas été configuré pour
+lui faire confiance. Sans cette étape, la récupération de l'image échoue et le compte reste `FAILED` (étape 8).
+Docker, sur le proxy cloud, fait confiance à un registre privé dont le certificat se trouve dans un dossier qui
+porte le nom du registre, port compris. Avec le registre de l'étape 2, le fichier est :
 
 ```
 /etc/docker/certs.d/$IP:5000/ca.crt
@@ -741,11 +674,11 @@ Sans Harbor, sauter la section suivante et continuer à l'étape 5, qui est facu
 
 ## Variante : un registre Harbor existant
 
-À utiliser à la place des étapes 2 à 4 quand l'environnement dispose déjà de Harbor. Le pack se construit comme
-à l'étape 3, et l'image part dans Harbor. Cette variante n'a pas été testée dans le lab, qui utilise le registre
-de l'étape 2.
+Utiliser la variante Harbor à la place des étapes 2 à 4 quand l'environnement dispose déjà de Harbor. Le pack
+se construit comme à l'étape 3, et l'image part dans Harbor. Cette variante n'a pas été testée dans le lab, qui
+utilise le registre de l'étape 2.
 
-Dans Harbor, une seule fois :
+Préparer Harbor une seule fois :
 
 - [ ] Un projet pour l'image, par exemple `nsxfederation`, en accès public. Le proxy cloud récupère l'image
       sans s'authentifier : l'image d'un projet privé ne peut donc pas être récupérée.
@@ -801,9 +734,9 @@ cd ~/vcf-ops-nsx-federation-mp
 python3 tools/repack.py pack/build/NSXFederation_$VERSION.pak $HARBOR $HARBOR_PROJECT/nsxfederation
 ```
 
-Le proxy cloud doit lui aussi faire confiance au certificat de Harbor. Avec un certificat émis par une autorité
-qu'il approuve déjà, il n'y a rien d'autre à faire. Sinon, copier le certificat de l'autorité de Harbor sur le
-proxy cloud, comme l'étape 4 le fait pour le registre de l'étape 2. Le dossier est
+Le proxy cloud doit lui aussi faire confiance au certificat de Harbor. Avec un certificat émis par une autorité à
+laquelle il fait déjà confiance, il n'y a rien d'autre à faire. Sinon, copier le certificat de l'autorité de Harbor
+sur le proxy cloud, comme l'étape 4 le fait pour le registre de l'étape 2. Le dossier est
 `/etc/docker/certs.d/harbor.example.com/` (ajouter `:<port>` au nom du dossier quand Harbor n'écoute pas sur le
 port 443) :
 
@@ -822,9 +755,9 @@ Ce test exécute une fois le code de l'adaptateur sur l'hôte de construction, f
 affiche ce qu'il enverrait à VCF Operations. Il révèle en une minute une mauvaise adresse, un mauvais mot de
 passe ou un port bloqué, avant l'installation du pack. Il ne fait que lire dans NSX.
 
-*À exécuter sur : l'hôte de construction.* Il doit pouvoir joindre les managers NSX en TCP 443. `sudo` vide
-l'environnement : `--preserve-env` nomme donc les trois variables à conserver, et chaque `-e NOM` sans valeur
-transmet cette variable au conteneur :
+*À exécuter sur : l'hôte de construction.* L'hôte de construction doit pouvoir joindre les managers NSX en
+TCP 443. `sudo` vide l'environnement, donc `--preserve-env` nomme les trois variables à conserver, et chaque
+`-e NOM` sans valeur transmet cette variable au conteneur :
 
 ```bash
 set -a; source ~/fedmp.env; set +a
@@ -840,22 +773,22 @@ Operations.
 
 ## 6. Installer le pack non signé
 
-Les deux méthodes activent « Allow unsigned PAK installation » pour l'envoi et le désactivent ensuite.
-L'option s'applique à toute l'instance VCF Operations : tant qu'elle est active, n'importe quel pack non signé
-peut être installé. Garder cette durée courte et vérifier à la fin que l'option est désactivée.
+Les deux méthodes activent l'option « Allow unsigned PAK installation » pour l'envoi et la désactivent ensuite.
+L'option s'applique à toute l'instance VCF Operations : tant qu'elle est active, n'importe quel pack non signé peut
+être installé. Garder cette durée courte et vérifier à la fin que l'option est désactivée.
 
 ### À la main
 
 *À exécuter dans : un navigateur.*
 
 1. Console d'administration `https://<ops>/admin`, Administrator Settings, Security Settings : activer
-   « unsigned PAK installation ».
+   « Allow unsigned PAK installation ».
 2. Interface du produit : Administration, Integrations, Repository, ajouter un pack.
 3. Choisir `NSXFederation_<version>.pak`, cocher « install even if already installed » et « Ignore the PAK file
    signature checking ».
 4. Envoyer le fichier, accepter l'avertissement sur le fichier non signé et attendre la fin de l'installation.
-5. Console d'administration : désactiver l'installation des PAK non signés. La console refuse le changement tant que
-   l'installation est en cours ; réessayer une fois l'installation terminée.
+5. Console d'administration : désactiver « Allow unsigned PAK installation ». La console refuse le changement
+   tant que l'installation est en cours ; réessayer une fois l'installation terminée.
 
 ### Par script
 
@@ -863,13 +796,15 @@ peut être installé. Garder cette durée courte et vérifier à la fin que l'op
 clone de ce dépôt et `~/fedmp.env` ([Le fichier de paramètres](#le-fichier-de-paramètres)) convient. L'hôte a
 besoin de Google Chrome, de Node.js 22 ou ultérieur ([Outils pour certaines étapes](#outils-pour-certaines-étapes))
 et de Python 3 avec `requests`. Les scripts pilotent un Chrome headless via des appels internes à l'interface
-de VCF Operations. Ces appels ne sont pas pris en charge et peuvent changer à chaque version. Ce Chrome accepte
-le certificat de VCF Operations sans le vérifier : lancer les scripts sur un réseau de confiance.
+de VCF Operations. Ces appels ne sont pas pris en charge et peuvent changer à chaque version. Le Chrome
+headless accepte le certificat de VCF Operations sans le vérifier : lancer les scripts sur un réseau de
+confiance.
 
 `upi.sh enableUPI` se connecte à la console d'administration et active l'option. `install_unsigned.sh` envoie
-le pack, attend la fin de l'installation, supprime les définitions d'alertes laissées par une version plus
-ancienne, puis désactive l'option. Mettre dans `PAK` le fichier à installer : la ligne ci-dessous convient à
-l'option B ; avec l'option A ou sa variante, donner le chemin complet du `.pak` téléchargé ou réécrit.
+le pack, attend la fin de l'installation, supprime les définitions d'alertes, de symptômes et de recommandations
+laissées par une version plus ancienne, puis désactive l'option. Mettre dans `PAK` le fichier à installer : la
+ligne `PAK` ci-dessous convient à l'option B ; avec l'option A ou sa variante, donner le chemin complet du
+`.pak` téléchargé ou réécrit.
 
 ```bash
 set -a; source ~/fedmp.env; set +a
@@ -881,27 +816,31 @@ install/install_unsigned.sh "$PAK"
 
 `install_unsigned.sh` vérifie d'abord les signatures avec `install/verify_pak.sh`. Un pack publié accompagné de
 son `.sigstore.json` doit être validé, sinon rien n'est installé ; pour cela, garder le bundle dans le dossier du
-pack. Un pack sans bundle (une construction locale, ou un pack réécrit par la variante) est installé avec un
-avertissement. `FEDMP_VERIFY=1` exige la vérification de l'image pour tout pack, et `FEDMP_VERIFY=0` désactive la
+pack. Un pack sans bundle (une construction locale, ou un pack réécrit par la variante avec registre interne)
+est installé avec un avis. Un `.sigstore.json` laissé à côté d'un pack réécrit fait échouer la vérification
+(`pack signature: FAILED`), car il signe le fichier d'origine : le sortir du dossier avant.
+
+`FEDMP_VERIFY=1` exige la vérification de l'image pour tout pack, et `FEDMP_VERIFY=0` désactive la
 vérification. Celle-ci utilise `cosign` s'il est installé, sinon l'image cosign via Docker.
 `FEDMP_PAK_SHA256=<sha256>` exige en plus que le fichier ait cette somme de contrôle, quelle que soit la valeur de
 `FEDMP_VERIFY` : l'utiliser pour un pack réécrit, dont vous avez enregistré vous-même la somme de contrôle
 ([INSTALL-ENTERPRISE.fr.md](INSTALL-ENTERPRISE.fr.md), étape 7).
 
 Lancer `install_unsigned.sh` après `upi.sh` : la connexion à la console d'administration ferme la session de
-l'interface du produit, et le script d'installation se reconnecte. Il désactive l'option quelle que soit
-l'issue, et arrête le Chrome headless. Le code de sortie 0 signifie que l'installation est terminée et que
-l'option est désactivée. Une ligne `WARNING: orphan definitions were not all removed` signifie que seul le
-nettoyage après l'installation a échoué, le plus souvent sur le certificat de VCF Operations (`OPS_CA` ou
-`OPS_INSECURE` dans le fichier de paramètres) ; lancer `python3 install/cleanup_content.py "$PAK" --delete`
-une fois ce réglage fait. Une ligne `WARNING: unsigned PAK installation is still enabled` signifie que le
-script n'a pas pu désactiver l'option : le faire dans la console d'administration.
+l'interface du produit, et le script d'installation se reconnecte. Le script d'installation désactive l'option
+quelle que soit l'issue, et arrête le Chrome headless. Le code de sortie 0 signifie que l'installation est
+terminée et que l'option est désactivée. Une ligne `WARNING: orphan definitions were not all removed` signifie
+que seul le nettoyage après l'installation a échoué, le plus souvent sur le certificat de VCF Operations
+(`OPS_CA` ou `OPS_INSECURE` dans le fichier de paramètres) ; lancer
+`python3 install/cleanup_content.py "$PAK" --delete` une fois cette variable définie. Une ligne
+`WARNING: unsigned PAK installation is still enabled` signifie que le script n'a pas pu désactiver l'option :
+le faire dans la console d'administration.
 
-Pour lire l'option seule, `install/upi.sh getUPIStatus`, puis `install/chrome.sh stop` : `upi.sh` laisse tourner
-le Chrome headless, qui détient la session de la console d'administration.
+Pour lire seulement l'état de l'option, lancer `install/upi.sh getUPIStatus`, puis `install/chrome.sh stop` :
+`upi.sh` laisse tourner le Chrome headless, et ce Chrome détient la session de la console d'administration.
 
-Vérification : Administration, Integrations, Repository affiche le pack NSX Federation dans sa nouvelle
-version.
+Vérifier que le pack NSX Federation apparaît dans sa nouvelle version sous Administration, Integrations,
+Repository.
 
 ## 7. Créer le compte
 
@@ -912,13 +851,13 @@ compte.
 *À exécuter dans : l'interface du produit VCF Operations*, Administration, Integrations, Accounts, ajouter un
 compte de type NSX Federation.
 
-- [ ] Adresses des Global Managers : `<gm1>,<gm2>`, l'adresse de cluster de l'actif et celle du standby. Un
-      compte par fédération.
+- [ ] Adresses des Global Managers : `<gm1>,<gm2>`, l'adresse de cluster de l'actif et celle du standby. Créer
+      un compte par fédération.
 - [ ] Identifiant : le compte NSX en lecture seule. N'ajouter l'identifiant des Local Managers que s'il est
       différent.
 - [ ] Collecteur : avec l'option A, un proxy cloud qui joint `ghcr.io` et
-      `pkg-containers.githubusercontent.com` ; avec la variante, un proxy cloud qui fait confiance au registre
-      interne ; avec l'option B, le proxy cloud qui fait confiance au registre (étape 4).
+      `pkg-containers.githubusercontent.com` ; avec la variante avec registre interne, un proxy cloud qui fait
+      confiance au registre interne ; avec l'option B, le proxy cloud qui fait confiance au registre (étape 4).
 - [ ] Confiance des certificats : garder `enforce`, ou choisir `ca` quand les managers ont des certificats signés
       par une autorité de certification interne. Avec `ca`, coller les certificats de l'autorité dans « Trusted CA
       certificates (PEM) » et utiliser des adresses que les certificats nomment.
@@ -930,16 +869,16 @@ compte de type NSX Federation.
 
 ## 8. Vérifier la collecte
 
-C'est ici que se vérifie le travail des étapes précédentes sur le registre et le certificat : le proxy cloud
-récupère l'image, démarre l'adaptateur et lit NSX.
+Cette étape prouve que la préparation du registre et du certificat faite aux étapes précédentes fonctionne : le
+proxy cloud récupère l'image, démarre l'adaptateur et lit NSX.
 
 *À exécuter dans : l'interface du produit VCF Operations.*
 
-- [ ] Onglet Accounts : le compte passe à l'état « Collecting ». S'il reste `FAILED` avec un message vide, le proxy
-      cloud n'a pas pu récupérer l'image. Option A : vérifier que le proxy cloud joint `ghcr.io` et
-      `pkg-containers.githubusercontent.com`. Variante : vérifier que le proxy cloud joint le registre interne
-      et fait confiance à son certificat, et que le projet est public. Option B : vérifier les étapes 2 et 4,
-      et chercher `tls: bad certificate` dans le journal du registre.
+- [ ] Onglet Accounts : le compte passe à l'état « Collecting ». S'il reste `FAILED` avec un message vide, le
+      proxy cloud n'a pas pu récupérer l'image. Option A : vérifier que le proxy cloud joint `ghcr.io` et
+      `pkg-containers.githubusercontent.com`. Variante avec registre interne : vérifier que le proxy cloud joint
+      le registre interne et fait confiance à son certificat, et que le projet est public. Option B : vérifier
+      les étapes 2 et 4, et chercher `tls: bad certificate` dans le journal du registre.
 - [ ] Avec un intervalle de 5 minutes, les données arrivent en trois cycles : d'abord les objets et les
       relations, puis les propriétés et les événements, puis les métriques après une dizaine de minutes. Les
       taux demandent un cycle de plus. Des objets sans métriques pendant les dix premières minutes sont
@@ -948,13 +887,13 @@ récupère l'image, démarre l'adaptateur et lit NSX.
 
 ## 9. Facultatif : groupe par fédération
 
-Le pack fournit des groupes par domaine, qui contiennent les objets de toutes les fédérations. Ce script ajoute
-un groupe personnalisé par fédération : c'est ce qu'il faut pour appliquer une politique, une règle de
-notification ou un tableau de bord à une seule fédération.
+Le pack fournit des groupes par domaine, qui contiennent les objets de toutes les fédérations. Le script
+`federation_groups.py` ajoute un groupe personnalisé par fédération, pour qu'une politique, une règle de
+notification ou un tableau de bord puisse s'appliquer à une seule fédération.
 
 *À exécuter sur : l'hôte de construction.* Avec l'option A ou sa variante, utiliser l'hôte de l'installation
 par script de l'étape 6. Le script lit les fédérations dans VCF Operations par la Suite API et crée les
-groupes. Il n'en supprime jamais.
+groupes. Il ne supprime jamais de groupe.
 
 ```bash
 set -a; source ~/fedmp.env; set +a
@@ -964,19 +903,20 @@ python3 install/federation_groups.py --federation '<fédération>' --policy '<po
 ```
 
 - [ ] Le groupe « NSX Federation - <fédération> » liste les objets de cette fédération (Environment, Custom Groups).
-      Le script nécessite une collecte par la version 1.13.0 ou ultérieure ; le relancer met les groupes à jour.
+      Le script nécessite une collecte faite avec la version 1.13.0 ou ultérieure ; le relancer met les groupes
+      à jour.
 
 ## 10. Facultatif : envoyer les alertes
 
-Les alertes restent dans VCF Operations tant qu'aucune règle de notification ne les envoie ailleurs. Ce script
-crée cette règle pour les alertes du pack. Il ne détient aucun identifiant de messagerie ou d'outil de
-tickets : ceux-ci appartiennent à l'instance sortante, qui doit exister avant.
+Les alertes restent dans VCF Operations tant qu'aucune règle de notification ne les envoie ailleurs. Le script
+`notification_rules.py` crée cette règle pour les alertes du pack. Il ne détient aucun identifiant de
+messagerie ou d'outil de tickets : ceux-ci appartiennent à l'instance sortante, qui doit exister avant.
 
 *À exécuter sur : l'hôte de construction*, ou l'hôte de l'installation par script de l'étape 6. Créer d'abord
 l'instance sortante (serveur de messagerie, webhook, ServiceNow, Slack, SNMP ou fichier journal) sous
 Administration, Configurations, Outbound Settings. La première commande envoie les alertes de criticité
-immediate et critical. La seconde ajoute une règle pour les alertes warning et au-dessus, limitée au groupe
-d'une fédération créé à l'étape 9. Relancer une commande avec le même nom de règle met la règle à jour.
+immediate et critical. La seconde ajoute une règle pour les alertes warning et au-dessus, limitée au groupe que
+l'étape 9 a créé pour une fédération. Relancer une commande avec le même nom de règle met la règle à jour.
 
 ```bash
 set -a; source ~/fedmp.env; set +a
@@ -987,7 +927,7 @@ python3 install/notification_rules.py --outbound '<instance sortante>' --min-cri
 ```
 
 - [ ] La règle « NSX Federation - <instance sortante> » apparaît sous Alerts, Notifications. Elle envoie les
-      alertes nouvelles, mises à jour et annulées : un ticket apprend aussi que l'alerte a disparu.
+      alertes nouvelles, mises à jour et annulées, si bien qu'un ticket apprend aussi que l'alerte a disparu.
 
 ## Mise à niveau
 
@@ -1002,14 +942,14 @@ démarrage du compte.
    - Option B : mettre le clone à jour avec `cd ~/vcf-ops-nsx-federation-mp && git pull`, mettre dans `VERSION`
      de `~/fedmp.env` la nouvelle version (comme dans `pack/manifest.txt`), puis construire la nouvelle version
      (étape 3).
-2. Arrêter puis démarrer le compte. Vérifier qu'il passe à l'état « Collecting » ; le démarrer une seconde fois s'il
-   reste arrêté.
+2. Arrêter puis démarrer le compte. Vérifier qu'il passe à l'état « Collecting » ; le démarrer une seconde fois
+   s'il reste arrêté.
 3. Les métriques reviennent après trois cycles, les taux après quatre.
 
 `install_unsigned.sh` supprime les définitions d'alertes, de symptômes et de recommandations que la nouvelle
 version ne fournit plus. Après une installation manuelle, lancer `install/cleanup_content.py <pak> --delete`
 (voir [OPERATIONS.md](OPERATIONS.md), Upgrade, en anglais).
 
-Depuis une version antérieure à 1.9.0, les edge nodes, les tunnels RTEP et les canaux de synchronisation sont
-recréés sous une clé fondée sur leur ID NSX, et les anciens objets ne reçoivent plus de données.
-`cleanup_content.py <pak> --legacy-objects --delete` les supprime, avec leur historique.
+Après une mise à niveau depuis une version antérieure à 1.9.0, les edge nodes, les tunnels RTEP et les canaux
+de synchronisation sont recréés sous une clé fondée sur leur ID NSX, et les anciens objets ne reçoivent plus de
+données. `cleanup_content.py <pak> --legacy-objects --delete` supprime ces anciens objets, avec leur historique.
