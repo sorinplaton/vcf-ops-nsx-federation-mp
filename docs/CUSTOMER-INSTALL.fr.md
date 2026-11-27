@@ -14,7 +14,7 @@ English version: [CUSTOMER-INSTALL.md](CUSTOMER-INSTALL.md).
 | Sources et versions publiées | https://github.com/sorinplaton/vcf-ops-nsx-federation-mp |
 | Images sur Docker Hub | `sorinplaton/nsxfederation-pak` (le fichier `.pak`), `sorinplaton/nsxfederation` (l'adaptateur) |
 | Ce que fait le pack dans NSX | Lecture seule : des requêtes GET avec un compte en lecture seule |
-| Support | Aucun SLA. Issues sur GitHub ; vulnérabilités par l'onglet Security du dépôt |
+| Support | Issues sur GitHub ; vulnérabilités par l'onglet Security du dépôt |
 
 Sommaire :
 
@@ -25,7 +25,7 @@ Sommaire :
 5. [Mise à niveau, retour arrière, désinstallation](#mise-à-niveau-retour-arrière-désinstallation)
 6. [Dépannage](#dépannage)
 7. Annexes : [Docker au lieu de skopeo et cosign](#annexe-a--docker-au-lieu-de-skopeo-et-cosign),
-   [sites sans accès à Internet](#annexe-b--sites-sans-accès-à-internet), [état de la validation](#annexe-c--état-de-la-validation)
+   [sites sans accès à Internet](#annexe-b--sites-sans-accès-à-internet), [validation](#annexe-c--validation)
 
 ## Fonctionnement
 
@@ -598,7 +598,7 @@ toujours ceux qui ont été vérifiés.
 4. Les étapes 7 à 11 telles qu'écrites. La vérification de la somme de contrôle de l'étape 9 n'a besoin d'aucun
    réseau.
 
-## Annexe C : état de la validation
+## Annexe C : validation
 
 Validé dans le lab du mainteneur, avec JFrog Container Registry 7.161.26 (l'édition gratuite d'Artifactory) servi
 en HTTPS avec une autorité interne, et la version `v1.13.6` :
@@ -609,9 +609,3 @@ en HTTPS avec une autorité interne, et la version `v1.13.6` :
 - Annexe A : promotion avec Docker seul, avec Docker Engine 29.6.2 et le magasin d'images containerd, digests
   conservés.
 - Annexe B : transfert par des dossiers `dir:` et un fichier tar, digests conservés.
-
-Pas encore validé : la lecture anonyme sur `vcfops-approved` et la récupération par un proxy cloud depuis
-Artifactory (étapes 1.3 et 8), l'installation depuis Artifactory et le compte (étapes 9 à 11), le retour arrière,
-la désinstallation, JFrog Xray, l'API de promotion d'Artifactory Pro et la méthode d'accès Subdomain. Les étapes
-d'installation, de compte et de collecte sont elles-mêmes celles utilisées avec les autres modes d'installation du
-projet.

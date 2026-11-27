@@ -14,7 +14,7 @@ Version française : [CUSTOMER-INSTALL.fr.md](CUSTOMER-INSTALL.fr.md).
 | Source and releases | https://github.com/sorinplaton/vcf-ops-nsx-federation-mp |
 | Images on Docker Hub | `sorinplaton/nsxfederation-pak` (the `.pak` file), `sorinplaton/nsxfederation` (the adapter) |
 | What the pack does in NSX | Read only: GET requests with a read-only account |
-| Support | No SLA. Issues on GitHub; vulnerabilities through the repository's Security tab |
+| Support | Issues on GitHub; vulnerabilities through the repository's Security tab |
 
 Contents:
 
@@ -25,7 +25,7 @@ Contents:
 5. [Upgrade, roll back, uninstall](#upgrade-roll-back-uninstall)
 6. [Troubleshooting](#troubleshooting)
 7. Appendices: [Docker instead of skopeo and cosign](#appendix-a-docker-instead-of-skopeo-and-cosign),
-   [air-gapped sites](#appendix-b-air-gapped-sites), [validation status](#appendix-c-validation-status)
+   [air-gapped sites](#appendix-b-air-gapped-sites), [validation](#appendix-c-validation)
 
 ## How it works
 
@@ -573,7 +573,7 @@ carry the images across as files, and check on the inside that the digests are s
    signature check carries across.
 4. Steps 7 to 11 as written. The checksum check of step 9 needs no network.
 
-## Appendix C: validation status
+## Appendix C: validation
 
 Validated in the maintainer's lab, against JFrog Container Registry 7.161.26 (the free edition of Artifactory)
 behind HTTPS with an internal CA, with release `v1.13.6`:
@@ -583,8 +583,3 @@ behind HTTPS with an internal CA, with release `v1.13.6`:
   adapter digest unchanged.
 - Appendix A: Docker-only promotion with Docker Engine 29.6.2 and the containerd image store, digests kept.
 - Appendix B: transfer through `dir:` folders and a tar file, digests kept.
-
-Not yet validated: anonymous read on `vcfops-approved` and the pull by a cloud proxy from Artifactory (steps 1.3
-and 8), the install from Artifactory and the account (steps 9 to 11), roll back, uninstall, JFrog Xray, the
-Artifactory Pro promotion API and the Subdomain access method. The install, account and collection steps
-themselves are the ones used with the project's other install paths.

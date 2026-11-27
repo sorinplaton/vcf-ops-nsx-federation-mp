@@ -194,8 +194,7 @@ Other versions of NSX or VCF Operations have not been tested.
 
 ## Support
 
-There is no SLA and no support from Broadcom: Broadcom support does not cover this pack. Report bugs and ask
-questions in the [GitHub issues](https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/issues), with the output
+Broadcom support does not cover this pack. Report bugs and ask questions in the [GitHub issues](https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/issues), with the output
 of `install/diagnostics.py`. Report a vulnerability privately, as in [SECURITY.md](SECURITY.md). Known findings of
 the adapter image without a fixed version are listed in SECURITY.md and in the Trivy report of each release.
 
