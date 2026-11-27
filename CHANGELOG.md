@@ -2,6 +2,25 @@
 
 Each release has a tag `v<version>`; the commit messages give the details.
 
+## 1.13.6 (2026-11-26)
+
+Enterprise install guide, after a review; the pack is unchanged.
+
+- `install/verify_pak.sh` checks `FEDMP_PAK_SHA256`, the checksum the organisation recorded for a rewritten pack,
+  before anything else and whatever `FEDMP_VERIFY` says. A mismatch stops the install. It needs no network.
+- `docs/INSTALL-ENTERPRISE.md`: request lists per team, a justification of the unsigned-pack switch for a change
+  board, Docker as an alternative to installing skopeo and cosign (tested: digests kept with the containerd image
+  store), rollback, uninstall, and air-gapped sites (transfer with `skopeo copy dir:`, tested; `oci-archive:`
+  changes the digest of the pack image). The guide now says plainly that the path has not run end to end.
+- The release notes say why the release number and the pack version differ, when they do.
+- README: the enterprise path, keyless signing, a Support section (no SLA, GitHub issues), manual install
+  recommended for production, untested versions named as such. SECURITY.md: findings counted from the 1.13.5
+  Trivy report.
+- Dependabot no longer proposes major updates of `sigstore/cosign-installer`: the release job uses it and only runs
+  on a tag. Scorecard action 2.6.0 and CodeQL upload-sarif 4.39.4.
+- 1.13.5 rebuilt the adapter image, so its `NSXFederation_1.13.0.pak` names another adapter digest than the pack
+  of 1.13.3: same pack content, different file.
+
 ## 1.13.5 (2026-11-26)
 
 Supply-chain hardening of the release path; the pack itself is unchanged. `v1.13.4` was tagged but never

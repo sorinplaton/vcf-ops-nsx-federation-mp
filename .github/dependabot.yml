@@ -11,6 +11,11 @@ updates:
     groups:
       actions:
         patterns: ["*"]
+    ignore:
+      # v4 installs cosign v3 by default; the release job uses it and only runs on a tag, so pull-request checks
+      # cannot test a major update. Move it by hand, with a test release.
+      - dependency-name: sigstore/cosign-installer
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: docker
     directory: /tooling
     schedule:

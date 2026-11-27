@@ -199,8 +199,8 @@ Expected: `NSXFederation_1.13.0.pak: OK`. Anything else means the download is da
 it again.
 
 ```bash
-curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.5/NSXFederation_1.13.0.pak
-curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.5/NSXFederation_1.13.0.pak.sha256
+curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.6/NSXFederation_1.13.0.pak
+curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.6/NSXFederation_1.13.0.pak.sha256
 sha256sum -c NSXFederation_1.13.0.pak.sha256
 ```
 
@@ -257,7 +257,7 @@ less. The first command below fetches the key, the second the bundle, which is t
 
 ```bash
 curl -LO https://raw.githubusercontent.com/sorinplaton/vcf-ops-nsx-federation-mp/main/cosign.pub
-curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.5/NSXFederation_1.13.0.pak.bundle
+curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.6/NSXFederation_1.13.0.pak.bundle
 ```
 
 **Install cosign.** *Run on: the machine that downloaded the pack (Linux, x86-64).* One of the three methods
@@ -312,7 +312,7 @@ the signature must name exactly this repository, this workflow and this tag, iss
 release notes on GitHub show the same values. The bundle of the pack is the `.sigstore.json` file of the release.
 
 ```bash
-RELEASE=1.13.5
+RELEASE=1.13.6
 SIGNER="https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/.github/workflows/release.yml@refs/tags/v$RELEASE"
 ISSUER=https://token.actions.githubusercontent.com
 curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v$RELEASE/NSXFederation_1.13.0.pak.sigstore.json
@@ -849,7 +849,9 @@ install/install_unsigned.sh "$PAK"
 `.sigstore.json` next to it must verify, or nothing is installed; keep the bundle in the folder of the pack for
 that. A pack without the bundle (a build of your own, or one rewritten by the mirror variant) is installed with a
 notice. `FEDMP_VERIFY=1` requires the image check for any pack, and `FEDMP_VERIFY=0` skips the check. The check
-uses `cosign` if it is installed, or the cosign image through Docker.
+uses `cosign` if it is installed, or the cosign image through Docker. `FEDMP_PAK_SHA256=<sha256>` also requires
+the file to have that checksum, whatever `FEDMP_VERIFY` says: use it for a rewritten pack, whose checksum you
+recorded yourself ([INSTALL-ENTERPRISE.md](INSTALL-ENTERPRISE.md), step 7).
 
 Run `install_unsigned.sh` after `upi.sh`: the admin console login ends the product UI session, and the install
 script logs in again. It turns the switch off however it ends, and stops the headless Chrome. Exit code 0 means

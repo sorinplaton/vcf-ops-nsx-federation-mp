@@ -203,8 +203,8 @@ valeur publiée. Résultat attendu : `NSXFederation_1.13.0.pak: OK`. Toute autre
 téléchargement est abîmé ou incomplet ; le refaire.
 
 ```bash
-curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.5/NSXFederation_1.13.0.pak
-curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.5/NSXFederation_1.13.0.pak.sha256
+curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.6/NSXFederation_1.13.0.pak
+curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.6/NSXFederation_1.13.0.pak.sha256
 sha256sum -c NSXFederation_1.13.0.pak.sha256
 ```
 
@@ -266,7 +266,7 @@ La première commande ci-dessous récupère la clé, la seconde le bundle, qui e
 
 ```bash
 curl -LO https://raw.githubusercontent.com/sorinplaton/vcf-ops-nsx-federation-mp/main/cosign.pub
-curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.5/NSXFederation_1.13.0.pak.bundle
+curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.6/NSXFederation_1.13.0.pak.bundle
 ```
 
 **Installer cosign.** *À exécuter sur : la machine qui a téléchargé le pack (Linux, x86-64).* Choisir l'une des
@@ -323,7 +323,7 @@ version une fois ; la signature doit nommer exactement ce dépôt, ce workflow e
 `.sigstore.json` de la version.
 
 ```bash
-RELEASE=1.13.5
+RELEASE=1.13.6
 SIGNER="https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/.github/workflows/release.yml@refs/tags/v$RELEASE"
 ISSUER=https://token.actions.githubusercontent.com
 curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v$RELEASE/NSXFederation_1.13.0.pak.sigstore.json
@@ -884,6 +884,9 @@ son `.sigstore.json` doit être validé, sinon rien n'est installé ; pour cela,
 pack. Un pack sans bundle (une construction locale, ou un pack réécrit par la variante) est installé avec un
 avertissement. `FEDMP_VERIFY=1` exige la vérification de l'image pour tout pack, et `FEDMP_VERIFY=0` désactive la
 vérification. Celle-ci utilise `cosign` s'il est installé, sinon l'image cosign via Docker.
+`FEDMP_PAK_SHA256=<sha256>` exige en plus que le fichier ait cette somme de contrôle, quelle que soit la valeur de
+`FEDMP_VERIFY` : l'utiliser pour un pack réécrit, dont vous avez enregistré vous-même la somme de contrôle
+([INSTALL-ENTERPRISE.fr.md](INSTALL-ENTERPRISE.fr.md), étape 7).
 
 Lancer `install_unsigned.sh` après `upi.sh` : la connexion à la console d'administration ferme la session de
 l'interface du produit, et le script d'installation se reconnecte. Il désactive l'option quelle que soit
