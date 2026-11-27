@@ -11,6 +11,8 @@ digests given in the notes of that [release](https://github.com/sorinplaton/vcf-
 
 Replace `artifactory.example.com` and `vcfops-approved` with your own names in every command.
 
+![The systems of the install and the network flows between them](img/quick-install-flows.svg)
+
 ## What you need
 
 - A Linux host with Docker, `python3`, `unzip` and `curl`, logged in to Artifactory.

@@ -11,6 +11,8 @@ digests indiqués dans les notes de cette [version](https://github.com/sorinplat
 
 Remplacez `artifactory.example.com` et `vcfops-approved` par vos propres noms dans chaque commande.
 
+![Les systèmes de l'installation et les flux réseau entre eux](img/quick-install-flows.fr.svg)
+
 ## Ce qu'il vous faut
 
 - Un hôte Linux avec Docker, `python3`, `unzip` et `curl`, connecté à Artifactory.
