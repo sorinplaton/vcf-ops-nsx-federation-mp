@@ -57,10 +57,12 @@ from that tag and publishes them; nobody pushes an image by hand. What protects 
   (`pip-audit`), and produces a CycloneDX SBOM as the build artifact `sbom`.
 - The SDK library pins `cryptography` 44.0.0, which has known vulnerabilities. The image installs 50.0.2 in its
   place; the SDK only uses it to load a PEM certificate. The base image's `setuptools` is upgraded to 84.2.1.
-- The adapter image is built on the SDK's `base-adapter` image (Debian 12). A Trivy scan of the 1.13.0 image
-  finds 101 HIGH or CRITICAL vulnerabilities (99 HIGH, 2 CRITICAL) in Debian packages that have no fixed version
-  in Debian 12; they come with the base image and change only with a new SDK. In Python packages it finds one,
-  a false positive: pip's own SBOM lists the `pkg_resources` copy pip bundles from setuptools 70.3.0, and that
-  copy does not contain the affected code (`PackageIndex`, CVE-2025-47273).
+- The adapter image is built on the SDK's `base-adapter` image (Debian 12). The Trivy report of release 1.13.5
+  (`NSXFederation_1.13.0.trivy.json`) lists 102 HIGH or CRITICAL vulnerabilities (100 HIGH, 2 CRITICAL) in Debian
+  packages that have no fixed version in Debian 12; they come with the base image and change only with a new SDK.
+  In Python packages it lists three, all on setuptools 70.3.0: pip's own SBOM names the `pkg_resources` copy pip
+  bundles from it. CVE-2025-47273 (HIGH) is a false positive, because that copy does not contain the affected code
+  (`PackageIndex`). CVE-2026-59890 (MEDIUM) and GHSA-xmj3-9gf7-h52w (LOW) are reported on the same copy and
+  have not been assessed yet. The installed setuptools is 84.2.1.
 - The PAK is not signed: installing it requires "Allow unsigned PAK installation" in VCF Operations, which the
   install script turns on for the upload and off again at the end.

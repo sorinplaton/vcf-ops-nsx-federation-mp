@@ -4,9 +4,11 @@
 
 A management pack for VCF Operations 9.1.1 that monitors NSX Federation (NSX 9.1). It is written in Python with
 the [VCF Operations Integration SDK](https://vmware.github.io/vmware-vcf-operations-integration-sdk/introduction).
-Current version: 1.13.0.
+Pack version 1.13.0, latest release 1.13.5 (the release number changes with every publication, the pack version
+only when the content of the pack changes).
 
-This is a lab project, not a Broadcom product. The pack is unsigned, has no support, and only reads from NSX.
+This is a community project under the MIT licence, not a Broadcom product. The pack is not signed by Broadcom and
+only reads from NSX. See [Support](#support).
 
 Two blog posts cover the design, the install and the tests:
 
@@ -147,17 +149,25 @@ Two paths:
 - **Option A, download the released pack.** The `.pak` on the
   [releases page](https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/latest) pulls its adapter
   image from `ghcr.io/sorinplaton/nsxfederation`. No build and no registry of your own; the cloud proxy must
-  reach `ghcr.io` and `pkg-containers.githubusercontent.com` on TCP 443. The pack and the image are signed with
-  cosign; the public key is [`cosign.pub`](cosign.pub). The image can also be mirrored to an internal registry
-  without a build.
+  reach `ghcr.io` and `pkg-containers.githubusercontent.com` on TCP 443. The image can also be mirrored to an
+  internal registry without a build.
+- **Enterprise, through Artifactory.** The pack and the adapter image are also on Docker Hub
+  (`sorinplaton/nsxfederation-pak`, `sorinplaton/nsxfederation`). An organisation pulls them through its
+  Artifactory, verifies, scans and promotes them by digest, and installs from there:
+  [docs/INSTALL-ENTERPRISE.md](docs/INSTALL-ENTERPRISE.md).
 - **Option B, build your own.** Build the pack and push the image to a registry the cloud proxy trusts, for a
   cloud proxy without internet access or an internal-registry policy.
+
+Releases are built by a GitHub workflow from a Git tag and signed keyless with Sigstore: the signature names this
+repository, the release workflow and the tag. Each release also carries SLSA build provenance and a signed SBOM of
+the adapter image. [SECURITY.md](SECURITY.md#supply-chain) describes the checks; `cosign.pub` only serves releases
+up to 1.14.0, during the move to keyless signatures.
 
 The pack is not signed, so VCF Operations 9 refuses it until "Allow unsigned PAK installation" is turned on in
 the admin console (Broadcom KB 415279). The cloud proxy must also trust the certificate of the registry. Part 2
 of the blog shows both steps with screenshots.
 
-By hand: turn the switch on, upload the `.pak` under Administration, Integrations, Repository with "Ignore the
+By hand, recommended for production: turn the switch on, upload the `.pak` under Administration, Integrations, Repository with "Ignore the
 PAK file signature checking", then turn the switch off.
 
 Scripted, with `google-chrome`, `node` and Python `requests` on the host:
@@ -169,7 +179,7 @@ install/install_unsigned.sh pack/build/NSXFederation_<version>.pak   # turns the
 ```
 
 The scripts use calls that are internal to the VCF Operations UI. They are unsupported and can change with any
-release.
+release, so a production install should follow the manual steps; the scripts are for labs and repeated tests.
 
 After an upgrade of the pack, stop and start the account. `install_unsigned.sh` also deletes the alert, symptom
 and recommendation definitions the new version no longer ships (`install/cleanup_content.py`).
@@ -178,6 +188,14 @@ and recommendation definitions the new version no longer ships (`install/cleanup
 
 NSX 9.1.1 (two Global Managers, active and standby, and two locations), VCF Operations 9.1.1.0 and Integration
 SDK 1.3.1, in a nested lab. Most alert definitions have never fired, because the lab has none of those faults.
+Other versions of NSX or VCF Operations have not been tested.
+
+## Support
+
+There is no SLA and no support from Broadcom: Broadcom support does not cover this pack. Report bugs and ask
+questions in the [GitHub issues](https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/issues), with the output
+of `install/diagnostics.py`. Report a vulnerability privately, as in [SECURITY.md](SECURITY.md). Known findings of
+the adapter image without a fixed version are listed in SECURITY.md and in the Trivy report of each release.
 
 ## Licence
 
