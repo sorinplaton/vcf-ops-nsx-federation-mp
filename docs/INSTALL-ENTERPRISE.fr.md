@@ -6,7 +6,8 @@ adaptateur sont publiés sur Docker Hub par le workflow de publication du projet
 Artifactory, vérifie leurs signatures, les analyse, les copie dans un dépôt d'images approuvées, et installe depuis
 ce dépôt. Seuls Artifactory et l'hôte de promotion ont besoin de joindre GitHub ou Docker Hub. L'hôte de promotion
 télécharge ses outils sur GitHub une seule fois (étape 2) et joint Sigstore pour la vérification des signatures
-(étape 4).
+(étape 4). Une fois les images approuvées, la personne
+qui installe peut suivre la version courte, [INSTALL-QUICK.fr.md](INSTALL-QUICK.fr.md).
 
 Les étapes 2 à 7 ont été testées le 2026-11-26 avec les versions `v1.13.3`, `v1.13.5` et `v1.13.6`, avec JFrog
 Container Registry 7.161.26 (l'édition gratuite d'Artifactory) servi en HTTPS avec une autorité interne. Ce mode a
