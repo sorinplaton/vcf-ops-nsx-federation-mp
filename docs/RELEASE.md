@@ -5,7 +5,7 @@ single source of truth. A tag `v<release>` starts the workflow `.github/workflow
 pack and the adapter image from that tag, publishes them on `ghcr.io` and Docker Hub, signs them, and creates a
 draft GitHub release. Nobody pushes an image by hand. Users download the `.pak` from GitHub
 ([INSTALL.md, Option A](INSTALL.md#option-a-download-the-released-pack)) or pull it from Docker Hub through
-their own registry ([INSTALL-ENTERPRISE.md](INSTALL-ENTERPRISE.md)).
+their own registry ([CUSTOMER-INSTALL.md](CUSTOMER-INSTALL.md)).
 
 ```mermaid
 flowchart LR
@@ -80,7 +80,7 @@ a release changes only the documentation and keeps the pack of the previous one.
    nothing is published as a release before the last step, and a failed run can be started again with
    `gh run rerun <id> --failed` once the cause is fixed.
 4. Check the draft release: the assets, and the digests in its notes. The workflow already verified every
-   signature against its own identity, the way [INSTALL-ENTERPRISE.md](INSTALL-ENTERPRISE.md#4-verify-the-signatures) does.
+   signature against its own identity, the way [CUSTOMER-INSTALL.md](CUSTOMER-INSTALL.md#4-verify-the-signatures) does.
 5. Transition only: add the key signatures (below).
 6. Publish: `gh release edit v<release> --draft=false --latest`.
 7. Update the release numbers in Option A of `docs/INSTALL.md` and `docs/INSTALL.fr.md`, and commit.

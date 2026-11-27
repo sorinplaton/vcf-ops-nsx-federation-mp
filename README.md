@@ -95,7 +95,8 @@ read-only NSX account is enough; the built-in `audit` account was tested.
 | `tests/` | Test suite with a mock NSX (an anonymised recording of a small federation) |
 | `docs/FEATURES.md`, `docs/FEATURES.fr.md` | Every object type, metric, property and alert of the pack, in English and in French (generated) |
 | `docs/INSTALL.md` | Install guide: checklist and the commands for each step, with the machine they run on ([French](docs/INSTALL.fr.md)) |
-| `docs/INSTALL-ENTERPRISE.md` | Enterprise install through JFrog Artifactory and Docker Hub: verify, scan, promote, install ([French](docs/INSTALL-ENTERPRISE.fr.md)) |
+| `docs/CUSTOMER-INSTALL.md` | Install guide for organisations that use JFrog Artifactory: verify, scan, promote, install ([French](docs/CUSTOMER-INSTALL.fr.md)) |
+| `docs/INSTALL-ENTERPRISE.md` | Maintainer notes for the Artifactory path: scripted install, lab test record ([French](docs/INSTALL-ENTERPRISE.fr.md)) |
 | `docs/OPERATIONS.md` | Account settings, certificate trust, sizing, alert behaviour, groups, notifications, troubleshooting, upgrade |
 | `docs/RELEASE.md` | Maintainer guide: the release workflow (tag, build, keyless signatures, ghcr.io and Docker Hub), the manual fallback, and what to do if the signing key is lost |
 | `pak-image/` | The image that carries the `.pak` on `ghcr.io` and Docker Hub, and its Docker Hub description |
@@ -154,7 +155,7 @@ Two paths:
 - **Enterprise, through Artifactory.** The pack and the adapter image are also on Docker Hub
   (`sorinplaton/nsxfederation-pak`, `sorinplaton/nsxfederation`). An organisation pulls them through its
   Artifactory, verifies, scans and promotes them by digest, and installs from there:
-  [docs/INSTALL-ENTERPRISE.md](docs/INSTALL-ENTERPRISE.md).
+  [docs/CUSTOMER-INSTALL.md](docs/CUSTOMER-INSTALL.md).
 - **Option B, build your own.** Build the pack and push the image to a registry the cloud proxy trusts, for a
   cloud proxy without internet access or an internal-registry policy.
 
