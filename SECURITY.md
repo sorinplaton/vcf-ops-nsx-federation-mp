@@ -36,7 +36,9 @@ from that tag and publishes them; nobody pushes an image by hand. What protects 
   (`--require-hashes`). The adapter image adds exactly five packages to the SDK base image, installed with
   `--no-deps --require-hashes` (`pack/adapter_requirements.txt`, written by `tools/hash_requirements.py`); a test
   checks that their versions equal the image lock. The SDK's own `base-adapter` image is built by `mp-build` from a
-  template inside the SDK and cannot be pinned from this repository. Dependabot proposes updates monthly.
+  template inside the SDK and cannot be pinned from this repository; it is only a build stage. The image that
+  ships is built on a Wolfi base pinned by digest (`pack/Dockerfile`), whose `python-3.11` package is the current
+  one at build time. Dependabot proposes updates monthly, except for that base, which is moved by hand.
 - **Signatures and attestations.** Each release signs the pack and both images keyless with Sigstore: the
   certificate names this repository, `release.yml` and the tag. Each also gets a SLSA build provenance attestation
   (`gh attestation verify`), and the adapter image a signed CycloneDX SBOM attestation
@@ -56,13 +58,14 @@ from that tag and publishes them; nobody pushes an image by hand. What protects 
   `tools/image_lock.sh`. CI checks it against the known-vulnerability databases on every push and every Monday
   (`pip-audit`), and produces a CycloneDX SBOM as the build artifact `sbom`.
 - The SDK library pins `cryptography` 44.0.0, which has known vulnerabilities. The image installs 50.0.2 in its
-  place; the SDK only uses it to load a PEM certificate. The base image's `setuptools` is upgraded to 84.2.1.
-- The adapter image is built on the SDK's `base-adapter` image (Debian 12). The Trivy report of release 1.13.5
+  place; the SDK only uses it to load a PEM certificate. The base image's `setuptools` is upgraded to 84.2.1, and
+  `pip` is removed from the image.
+- From release 1.13.7 the adapter image is built in two stages: the SDK's `base-adapter` image (Debian 12) is the
+  build stage, and its Python files are copied onto a Wolfi base with Python 3.11. The Trivy scan of the 1.13.7
+  build lists no vulnerability. The image ships OpenSSL 4 where the Debian base had OpenSSL 3.
+- Releases up to 1.13.6 ship the Debian 12 base itself. The Trivy report of release 1.13.5
   (`NSXFederation_1.13.0.trivy.json`) lists 102 HIGH or CRITICAL vulnerabilities (100 HIGH, 2 CRITICAL) in Debian
-  packages that have no fixed version in Debian 12; they come with the base image and change only with a new SDK.
-  In Python packages it lists three, all on setuptools 70.3.0: pip's own SBOM names the `pkg_resources` copy pip
-  bundles from it. CVE-2025-47273 (HIGH) is a false positive, because that copy does not contain the affected code
-  (`PackageIndex`). CVE-2026-59890 (MEDIUM) and GHSA-xmj3-9gf7-h52w (LOW) are reported on the same copy and
-  have not been assessed yet. The installed setuptools is 84.2.1.
+  packages that have no fixed version in Debian 12, and three on setuptools 70.3.0, the `pkg_resources` copy that
+  pip bundles.
 - The PAK is not signed: installing it requires "Allow unsigned PAK installation" in VCF Operations, which the
   install script turns on for the upload and off again at the end.
