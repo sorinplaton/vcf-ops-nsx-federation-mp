@@ -74,41 +74,7 @@ Avec l'option A, seuls les flux du proxy cloud vers `ghcr.io`, `pkg-containers.g
 sont nécessaires, plus un navigateur qui joint VCF Operations. Avec la variante, le proxy cloud joint le
 registre interne et NSX, et seul l'hôte de copie accède à Internet.
 
-```mermaid
-flowchart LR
-  subgraph NET["Internet"]
-    PKG["download.docker.com, dl.google.com<br/>dépôts de la distribution"]
-    GH["github.com<br/>clone, téléchargement de govc"]
-    HUB["Docker Hub<br/>registry-1.docker.io"]
-    PYPI["pypi.org<br/>files.pythonhosted.org"]
-    CGR["cgr.dev<br/>base et paquets Wolfi"]
-  end
-  BH["Hôte de construction<br/>(jumphost)"]
-  REG["Registre<br/>HTTPS"]
-  OPS["VCF Operations<br/>console d'administration, Suite API"]
-  VC["vCenter"]
-  ESX["Hôte ESXi de la VM<br/>du proxy cloud"]
-  CP["Proxy cloud"]
-  GHCR["ghcr.io et<br/>pkg-containers.githubusercontent.com<br/>image publiée"]
-  GM["Global Managers<br/>actif et standby"]
-  LM["Local Managers"]
-
-  BH -->|"TCP 443 : Docker, Chrome, git, paquets Python et Node.js"| PKG
-  BH -->|"TCP 443 : clone"| GH
-  BH -->|"TCP 443 : images de base"| HUB
-  BH -->|"TCP 443 : paquets du SDK et de l'adaptateur"| PYPI
-  BH -->|"TCP 443 : base Wolfi de l'image de l'adaptateur"| CGR
-  BH -->|"TCP 5000 : push de l'image (étape 3)"| REG
-  BH -->|"TCP 443 : pack, compte, scripts (étapes 6 à 10)"| OPS
-  BH -->|"TCP 443 : govc (étape 4)"| VC
-  BH -->|"TCP 443 : govc guest.upload (étape 4)"| ESX
-  BH -->|"TCP 443 : test local facultatif (étape 5)"| GM
-  BH -->|"TCP 443 : test local facultatif (étape 5)"| LM
-  CP -.->|"TCP 5000 : récupération de l'image (option B)"| REG
-  CP -.->|"TCP 443 : récupération de l'image (option A)"| GHCR
-  CP -.->|"TCP 443 : collecte"| GM
-  CP -.->|"TCP 443 : collecte"| LM
-```
+![Option B : flux réseau de l'hôte de construction et du proxy cloud](img/install-option-b.fr.svg)
 
 | Depuis | Vers | Port | Usage |
 | --- | --- | --- | --- |
@@ -165,27 +131,7 @@ testée dans le lab, qui utilise l'option B.
 Ce mode utilise les flux réseau du schéma ci-dessous. Les traits pleins partent du poste d'administration ; les
 traits pointillés sont ceux du proxy cloud. Le flux vers Sigstore ne sert qu'à la vérification des signatures.
 
-```mermaid
-flowchart LR
-  subgraph NET["Internet"]
-    GHR["github.com<br/>page des versions, cosign.pub"]
-    GHCR["ghcr.io et<br/>pkg-containers.githubusercontent.com<br/>image de l'adaptateur et sa signature"]
-    SIG["Sigstore<br/>tuf-repo-cdn.sigstore.dev<br/>rekor.sigstore.dev"]
-  end
-  WS["Poste d'administration<br/>navigateur, cosign"]
-  OPS["VCF Operations<br/>console d'administration, interface du produit"]
-  CP["Proxy cloud"]
-  GM["Global Managers<br/>actif et standby"]
-  LM["Local Managers"]
-
-  WS -->|"TCP 443 : pack, somme de contrôle, bundle, clé"| GHR
-  WS -->|"TCP 443 : vérifier la signature de l'image"| GHCR
-  WS -->|"TCP 443 : journal de transparence"| SIG
-  WS -->|"TCP 443 : installer le pack, créer le compte (étapes 6 à 10)"| OPS
-  CP -.->|"TCP 443 : récupérer l'image par son digest"| GHCR
-  CP -.->|"TCP 443 : collecte"| GM
-  CP -.->|"TCP 443 : collecte"| LM
-```
+![Option A : flux réseau du poste d'administration et du proxy cloud](img/install-option-a.fr.svg)
 
 - [ ] VCF Operations 9.1.1 avec au moins un proxy cloud à l'état `UP`, qui joint `ghcr.io` et
       `pkg-containers.githubusercontent.com` en TCP 443, directement ou via le proxy du site. Les règles de
@@ -380,29 +326,7 @@ projet a signée. La variante a été testée dans le lab avec un `registry:2` l
 Dans cette variante, seul l'hôte de copie accède à Internet. Le proxy cloud parle au registre interne et à
 NSX.
 
-```mermaid
-flowchart LR
-  subgraph NET["Internet"]
-    GHR["github.com<br/>page des versions, cosign.pub, dépôt"]
-    GHCR["ghcr.io et<br/>pkg-containers.githubusercontent.com<br/>image de l'adaptateur et sa signature"]
-    SIG["Sigstore<br/>tuf-repo-cdn.sigstore.dev<br/>rekor.sigstore.dev"]
-  end
-  subgraph INT["Réseau interne"]
-    MH["Hôte de copie<br/>skopeo, cosign, repack.py"]
-    REG["Registre interne<br/>HTTPS"]
-    OPS["VCF Operations"]
-    CP["Proxy cloud<br/>sans accès à Internet"]
-    NSX["Global Managers et<br/>Local Managers"]
-  end
-
-  MH -->|"TCP 443 : pack, clé, clone"| GHR
-  MH -->|"TCP 443 : copier l'image par son digest"| GHCR
-  MH -->|"TCP 443 : journal de transparence"| SIG
-  MH -->|"TCP 443 : push de l'image"| REG
-  MH -->|"TCP 443 : installer le pack réécrit (étape 6)"| OPS
-  CP -.->|"TCP 443 : récupérer l'image"| REG
-  CP -.->|"TCP 443 : collecte"| NSX
-```
+![Variante avec registre interne : flux réseau](img/install-mirror.fr.svg)
 
 *À exécuter sur : un hôte Linux qui joint à la fois `ghcr.io` et le registre interne*, appelé ici l'hôte de
 copie. Il lui faut [skopeo](https://github.com/containers/skopeo) (`sudo apt-get install -y skopeo` ou `sudo dnf install -y skopeo`),

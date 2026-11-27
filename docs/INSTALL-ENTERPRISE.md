@@ -25,33 +25,7 @@ workflow, which builds the pack and the adapter image from that tag, publishes b
 signature names the repository, the workflow and the tag, so an image that did not come from that workflow
 fails the check, even if someone pushed it with a stolen token.
 
-```mermaid
-flowchart LR
-  subgraph GH["GitHub: source of truth"]
-    TAG["Git tag v1.x.y"] --> WF["Release workflow<br/>build, push, sign"]
-    WF --> REL["GitHub release<br/>.pak, checksum, SBOM"]
-  end
-  subgraph HUB["Docker Hub"]
-    PAKI["sorinplaton/nsxfederation-pak<br/>the .pak in an image"]
-    ADI["sorinplaton/nsxfederation<br/>adapter image"]
-  end
-  subgraph ORG["Organisation"]
-    REM["Artifactory<br/>Docker Hub remote repository<br/>(cache, not used by production)"]
-    PH["Promotion host<br/>verify, scan, copy, rewrite"]
-    APP["Artifactory<br/>vcfops-approved<br/>(local repository)"]
-    OPS["VCF Operations"]
-    CP["Cloud proxy"]
-  end
-  WF -->|"push, same digest as ghcr.io"| PAKI
-  WF -->|"push, same digest as ghcr.io"| ADI
-  PAKI --> REM
-  ADI --> REM
-  REM -->|"1. pull by tag, then by digest"| PH
-  PH -->|"2. verify signature, 3. scan"| PH
-  PH -->|"4. copy by digest"| APP
-  PH -->|"5. install the rewritten pack"| OPS
-  APP -.->|"pull the adapter image by digest"| CP
-```
+![How a release reaches the organisation](img/enterprise-path.svg)
 
 Three things are published for each release:
 
@@ -167,28 +141,7 @@ administrator turns on "Allow unsigned PAK installation" in the admin console, i
 
 ## Network access
 
-```mermaid
-flowchart LR
-  subgraph NET["Internet"]
-    HUBN["Docker Hub<br/>registry-1.docker.io, auth.docker.io<br/>production.cloudflare.docker.com"]
-    SIG["Sigstore<br/>tuf-repo-cdn.sigstore.dev<br/>rekor.sigstore.dev"]
-    GHN["github.com, raw.githubusercontent.com<br/>repack.py, cosign"]
-  end
-  subgraph INT["Internal network"]
-    ART["Artifactory<br/>HTTPS"]
-    PH["Promotion host"]
-    OPS["VCF Operations"]
-    CP["Cloud proxy<br/>no internet access"]
-    NSX["Global Managers and<br/>Local Managers"]
-  end
-  ART -->|"TCP 443: remote repository"| HUBN
-  PH -->|"TCP 443: pull, push (steps 3 to 7)"| ART
-  PH -->|"TCP 443: transparency log (step 4)"| SIG
-  PH -->|"TCP 443: tools, once (step 2)"| GHN
-  PH -->|"TCP 443: install (step 9)"| OPS
-  CP -.->|"TCP 443: pull the adapter image"| ART
-  CP -.->|"TCP 443: collection"| NSX
-```
+![Enterprise install: network flows](img/enterprise-network.svg)
 
 | From | To | Port | Used for |
 | --- | --- | --- | --- |

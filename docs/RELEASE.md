@@ -7,15 +7,7 @@ download the `.pak` from GitHub
 ([INSTALL.md, Option A](INSTALL.md#option-a-download-the-released-pack)) or pull it from Docker Hub through
 their own registry ([INSTALL-ENTERPRISE.md](INSTALL-ENTERPRISE.md)).
 
-```mermaid
-flowchart LR
-  M["Maintainer<br/>commit, tag, push"] --> T["Tag v1.x.y on GitHub"]
-  T --> W["release.yml<br/>mp-build, pack image,<br/>keyless signatures, SBOM"]
-  W --> G["ghcr.io/sorinplaton/<br/>nsxfederation, nsxfederation-pak"]
-  W -->|"byte-for-byte copy"| D["docker.io/sorinplaton/<br/>nsxfederation, nsxfederation-pak"]
-  W --> R["Draft GitHub release"]
-  R -->|"maintainer checks,<br/>adds key signatures (transition),<br/>publishes"| P["Published release"]
-```
+![From a Git tag to a published release](img/release-path.svg)
 
 ## What a release contains
 
