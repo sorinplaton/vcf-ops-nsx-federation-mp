@@ -527,6 +527,76 @@ def test_retry_after_as_a_date_does_not_break_the_call(monkeypatch):
     assert client.try_get("/api/v1/x", default="unknown") == "unknown" and client.throttled == 3
 
 
+@pytest.mark.parametrize("value", ["-1", "nan", "inf"])
+def test_a_retry_after_that_is_not_a_wait_does_not_break_the_call(monkeypatch, value):
+    monkeypatch.setattr(nsxclient, "server_cert_sha256", lambda host, port=443, timeout=10.0: "a" * 64)
+    waits = []
+    monkeypatch.setattr(nsxclient.time, "sleep", lambda s: waits.append(s) if s >= 0 else (_ for _ in ()).throw(ValueError()))
+    client = nsxclient.NsxClient("gm.example.test", "u", "p", enforce_trust=False)
+    client.check_trust()
+
+    class Resp:
+        status_code, headers, content, text = 429, {"Retry-After": value}, b"", "busy"
+    monkeypatch.setattr(client._session, "get", lambda url, **kw: Resp())
+    assert client.try_get("/api/v1/x", default="unknown") == "unknown" and client.throttled == 3
+    assert all(0 <= w <= 15 for w in waits)
+
+
+def test_a_skipped_manager_uses_no_call_budget(monkeypatch):
+    import requests
+    monkeypatch.setattr(nsxclient, "server_cert_sha256", lambda host, port=443, timeout=10.0: "a" * 64)
+    monkeypatch.setattr(nsxclient.time, "sleep", lambda s: None)
+    client = nsxclient.NsxClient("gm.example.test", "u", "p", enforce_trust=False, call_budget=5)
+    client.check_trust()
+    monkeypatch.setattr(client._session, "get", lambda url, **kw: (_ for _ in ()).throw(requests.Timeout()))
+    for i in range(10):
+        client.try_get(f"/api/v1/x{i}")
+    assert client.calls == 3 and not client.budget_hit  # three requests sent, then the manager is skipped
+
+
+def test_a_list_cut_at_the_item_limit_is_a_gap(monkeypatch):
+    monkeypatch.setattr(nsxclient, "server_cert_sha256", lambda host, port=443, timeout=10.0: "a" * 64)
+    client = nsxclient.NsxClient("gm.example.test", "u", "p", enforce_trust=False)
+    pages = iter([{"results": [{"id": 1}, {"id": 2}], "cursor": "c1"}, {"results": [{"id": 3}], "cursor": "c2"}])
+    monkeypatch.setattr(client, "get", lambda path, params=None: next(pages))
+    assert len(client.list("/api/v1/big", max_items=3)) == 3
+    assert not client.ok("/api/v1/big") and "truncated" in client.failed["/api/v1/big"]
+    whole = nsxclient.NsxClient("gm.example.test", "u", "p", enforce_trust=False)
+    monkeypatch.setattr(whole, "get", lambda path, params=None: {"results": [{"id": 1}]})
+    assert len(whole.list("/api/v1/small", max_items=1)) == 1 and whole.ok("/api/v1/small")  # last page: complete
+
+
+def test_a_cache_file_that_is_not_an_object_is_ignored(monkeypatch, tmp_path):
+    monkeypatch.setattr(nsxclient, "CACHE_DIR", str(tmp_path))
+    with open(os.path.join(str(tmp_path), "ns.json"), "w") as fd:
+        fd.write("[1, 2]")
+    cache = nsxclient.Cache("ns")
+    assert cache.get("x", 60) is None and cache.get_any_age("x") is None
+
+
+def _settings(**ids):
+    from aria.ops.adapter_instance import AdapterInstance
+    return AdapterInstance({
+        "adapter_key": {"adapter_kind": "NSXFederation", "object_kind": "NSXFederation_adapter_instance", "name": "t",
+                        "identifiers": [{"key": k, "value": v, "is_part_of_uniqueness": True} for k, v in ids.items()]},
+        "credential_config": {"credential_key": "nsx_credential", "credential_fields": [
+            {"key": "username", "value": "audit"}, {"key": "password", "value": "x"}]}})
+
+
+def test_endpoints_put_an_ipv6_address_in_brackets():
+    import adapter
+    ai = _settings(gm_hosts="gm.example.test, fd00::10, [fd00::11]:8443", lm_overrides="site-a=fd00::20; site-b=")
+    urls = adapter.get_endpoints(ai).get_json()["endpointUrls"]
+    assert urls == ["https://gm.example.test", "https://[fd00::10]", "https://[fd00::11]:8443", "https://[fd00::20]"]
+
+
+def test_settings_that_are_not_finite_numbers_fall_back():
+    import adapter
+    cfg = adapter.Config(_settings(gm_hosts="gm.example.test", delete_stale_after_days="nan", max_parallel="inf"))
+    assert cfg.delete_stale_days == 0.0 and cfg.max_parallel == 8  # nothing is deleted on a value that is no period
+    assert adapter.Config(_settings(gm_hosts="g", delete_stale_after_days="inf")).delete_stale_days == 0.0
+
+
 # ---- second review: faults reproduced by an independent reviewer
 
 STATS = "/policy/api/v1/global-infra/domains/default/security-policies/fed-demo/statistics"

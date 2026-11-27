@@ -1,5 +1,6 @@
 #  NSX Federation management pack for VCF Operations (Integration SDK, Python).
 #  Read-only. One adapter instance = one federation.
+import math
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -14,7 +15,7 @@ from aria.ops.object import Identifier, Object
 from aria.ops.result import CollectResult, EndpointResult, TestResult
 from aria.ops.timer import Timer
 from constants import ADAPTER_KIND, ADAPTER_NAME
-from nsxclient import BudgetExceeded, Cache, CertificateNotTrusted, NsxClient, pem_sha256, NsxError, split_pem
+from nsxclient import BudgetExceeded, Cache, CertificateNotTrusted, NsxClient, pem_sha256, NsxError, split_hostport, split_pem
 
 logger = logging.getLogger(__name__)
 
@@ -540,13 +541,14 @@ class Config:
         self.change_events = str(val("change_events", "on")) != "off"
         try:
             days = float(str(val("delete_stale_after_days", "0")).replace(",", "."))
-            self.delete_stale_days = 0.0 if days <= 0 else max(1.0, days)  # never less than one day
+            # never less than one day; "nan" or "inf" is not a period, so nothing is deleted
+            self.delete_stale_days = 0.0 if not math.isfinite(days) or days <= 0 else max(1.0, days)
         except ValueError:
             self.delete_stale_days = 0.0
         def number(key: str, default: int, low: int) -> int:
             try:  # a setting that is not a number falls back to its default
                 return max(low, int(float(str(val(key, default)))))
-            except ValueError:
+            except (ValueError, OverflowError):  # OverflowError: "inf"
                 return default
         self.max_parallel = number("max_parallel", 8, 1)
         self.timeout = number("request_timeout", 30, 1)
@@ -2649,10 +2651,10 @@ def test(adapter_instance: AdapterInstance) -> TestResult:
                 return result
             ok, active, errors = 0, 0, []
             for host in cfg.gm_hosts:
+                client = None
                 try:
                     client = cfg.gm_client(host)
                     site = client.get("/api/v1/sites/self").get("site") or {}
-                    client.close()
                     ok += 1
                     mode = str(site.get("active_gm", "")).upper()
                     if mode == "ACTIVE":
@@ -2661,6 +2663,9 @@ def test(adapter_instance: AdapterInstance) -> TestResult:
                         errors.append(f"{host} answers but is not a Global Manager of a federation (mode {mode or 'none'})")
                 except Exception as e:
                     errors.append(f"{host}: {repr(e)[:200]}")
+                finally:
+                    if client is not None:
+                        client.close()
             if ok == 0:
                 result.with_error("No Global Manager could be reached. " + "; ".join(errors))
             elif active == 0:
@@ -2692,12 +2697,11 @@ def get_endpoints(adapter_instance: AdapterInstance) -> EndpointResult:
     with Timer(logger, "Get Endpoints"):
         result = EndpointResult()
         cfg = Config(adapter_instance)
-        for host in cfg.gm_hosts:
-            result.with_endpoint(f"https://{host}")
         # Local Managers are trusted through the thumbprint the Global Manager holds for each of them,
-        # so only overridden addresses are offered to the VCF Operations trust store.
-        for addr in cfg.lm_overrides.values():
-            result.with_endpoint(f"https://{addr}")
+        # so only overridden addresses are offered to the VCF Operations trust store. A bare IPv6 address is
+        # put in brackets, as a URL needs.
+        for host in cfg.gm_hosts + [a for a in cfg.lm_overrides.values() if a]:
+            result.with_endpoint(f"https://{split_hostport(host)[2]}")
         return result
 
 

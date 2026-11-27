@@ -2,6 +2,27 @@
 
 Each release has a tag `v<version>`; the commit messages give the details.
 
+## Unreleased
+
+Robustness fixes in the adapter code, found in a code review; no change to the object model or the content.
+
+- Certificate trust `ca`: on Python 3.13 and later the chain check refused a CA certificate without a key usage
+  extension (`VERIFY_X509_STRICT`, now on by default). The flag is cleared, so the verdict is the same on every
+  Python version; the chain and the name are still checked. CI also runs the tests on Python 3.13 (job `tests-python-313`).
+- A `Retry-After` header of `-1` or `nan` made the call fail with a `ValueError` instead of waiting; it now falls
+  back to the back-off delay.
+- A manager skipped after repeated timeouts no longer uses its call budget for the calls it does not send, so it
+  is not also reported as over budget.
+- A list cut at its item limit (50,000) while NSX still offers pages is reported as a data gap, not as the whole
+  list. A cycle with a gap deletes no stale object.
+- The endpoint URLs offered to the VCF Operations trust store put a bare IPv6 address in brackets, and skip an
+  empty Local Manager override.
+- `Delete objects that left NSX after (days)` set to `nan` enabled deletion after one day; any value that is not a
+  finite number now deletes nothing. A numeric setting of `inf` fell through to an `OverflowError` that stopped the
+  collection; it now falls back to its default.
+- The connection test closes each client also when the call fails, and a cache file holding valid JSON of another
+  shape is ignored like a damaged one.
+
 ## 1.13.6 (2026-11-26)
 
 Enterprise install guide, after a review; the pack is unchanged.

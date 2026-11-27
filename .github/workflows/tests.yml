@@ -32,6 +32,21 @@ jobs:
           for f in install/*.mjs; do node --check "$f"; done
           python -m py_compile install/*.py tools/*.py
       - run: python -m pytest -q tests
+  # Python 3.13 turned on stricter certificate checks (VERIFY_X509_STRICT), which changed the CA trust mode once.
+  # A job of its own, so the required check "tests" keeps its name.
+  tests-python-313:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with:
+          python-version: "3.13"
+      - run: |
+          pip install --no-deps -r pack/image-requirements.txt
+          pip install --require-hashes -r .github/test-requirements.txt
+      - run: python -m pytest -q tests
   dependencies:
     runs-on: ubuntu-latest
     steps:

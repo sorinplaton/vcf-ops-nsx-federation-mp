@@ -14,6 +14,7 @@ Design points (from the enterprise review):
 """
 import hashlib
 import json
+import math
 import os
 import re
 import socket
@@ -119,6 +120,10 @@ def chain_check(host: str, port: int, cadata: str, timeout: float = 10.0) -> Tup
     """(SHA-256 fingerprint of the certificate, "") when the server certificate chains to a CA of `cadata` or of
     the system store and is valid for `host` (DNS name or IP address in the SAN); (None, reason) otherwise."""
     ctx = ssl.create_default_context()
+    # Python 3.13 adds VERIFY_X509_STRICT to the default context, which rejects a CA certificate without a key usage
+    # extension (common for an enterprise or a lab CA). The chain and the name are still checked in full; clearing the
+    # flag keeps the same verdict on every Python version the adapter image may carry.
+    ctx.verify_flags &= ~getattr(ssl, "VERIFY_X509_STRICT", 0)
     if cadata.strip():
         ctx.load_verify_locations(cadata=cadata)
     try:
@@ -209,14 +214,14 @@ class NsxClient:
         delay = 1.0
         for attempt in range(4):
             with self._lock:
+                if self.transport_failures >= 3:
+                    # a manager that keeps timing out is skipped for the rest of the cycle, so that it cannot
+                    # hold the collection for the timeout of every remaining call; a call not sent uses no budget
+                    raise requests.ConnectionError(f"{self.host}: skipped after repeated timeouts in this cycle")
                 if self.calls >= self.call_budget:
                     self.budget_hit = True
                     raise BudgetExceeded(f"{self.host}: call budget {self.call_budget} used")
                 self.calls += 1
-            if self.transport_failures >= 3:
-                # a manager that keeps timing out is skipped for the rest of the cycle, so that it cannot
-                # hold the collection for the timeout of every remaining call
-                raise requests.ConnectionError(f"{self.host}: skipped after repeated timeouts in this cycle")
             try:
                 resp = self._session.get(
                     f"https://{self._netloc}{path}", params=params, timeout=self.timeout
@@ -238,6 +243,8 @@ class NsxClient:
                 try:  # seconds; an HTTP date falls back to the back-off delay
                     wait = float(resp.headers.get("Retry-After") or delay)
                 except ValueError:
+                    wait = delay
+                if not math.isfinite(wait) or wait < 0:  # "-1" or "nan" would make time.sleep raise
                     wait = delay
                 time.sleep(min(wait, 15.0))
                 delay *= 2
@@ -294,7 +301,11 @@ class NsxClient:
             data = self.get(path, query)
             items.extend(data.get(key, []) or [])
             cursor = data.get("cursor")
-            if not cursor or len(items) >= max_items:
+            if not cursor:
+                return items
+            if len(items) >= max_items:
+                # more pages remain: the list is incomplete, so its data is reported as a gap, not as the whole
+                self._failed(path, f"truncated at {len(items)} items")
                 return items
             query["cursor"] = cursor
 
@@ -324,6 +335,8 @@ class Cache:
             with open(self.path) as fd:
                 self.data = json.load(fd)
         except Exception:
+            self.data = {}
+        if not isinstance(self.data, dict):  # valid JSON of another shape is no cache either
             self.data = {}
         self._lock = threading.Lock()
         self.dirty = False
