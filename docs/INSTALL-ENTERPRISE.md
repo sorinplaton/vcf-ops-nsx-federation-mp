@@ -7,7 +7,7 @@ checks their signatures, scans them, copies them into a repository of approved i
 there. No machine of the organisation needs to reach GitHub or Docker Hub except Artifactory itself and the
 promotion host for the signature check.
 
-Steps 2 to 7 were tested on 2026-11-26 with releases `v1.13.3` and `v1.13.5`, against JFrog Container Registry
+Steps 2 to 7 were tested on 2026-11-26 with releases `v1.13.3`, `v1.13.5` and `v1.13.6`, against JFrog Container Registry
 7.161.26 (the free edition of Artifactory) behind HTTPS with an internal CA. **This path has not yet run end to
 end:** anonymous read on `vcfops-approved` (step 1, item 3), the pull by the cloud proxy (step 8), the install from
 Artifactory (step 9), rollback, uninstall and JFrog Xray are still to be tested. [What was tested](#what-was-tested)
@@ -629,6 +629,13 @@ test CA, with skopeo 1.25.1 and cosign 2.4.1:
   digests. Through `oci-archive:`, the pack image came out with another digest.
 - `verify_pak.sh` with `FEDMP_PAK_SHA256`: the right value passes, any other value stops the install, with and
   without `FEDMP_VERIFY`.
+
+- Release `v1.13.6` through the lab Artifactory, steps 2 to 7 as written: pack image `sha256:e241b3f2...` and
+  adapter image `sha256:15cd0535...`, both keyless signatures, the SBOM attestation and the provenance verified,
+  both images promoted with the same digests, pack rewritten with the adapter digest unchanged. Then the check of
+  step 9 before the switch: signatures copied into `vcfops-approved` with `cosign copy`, and `verify_pak.sh` with
+  `FEDMP_PAK_SHA256`, `FEDMP_VERIFY=1` and `FEDMP_IMAGE_REPO` pointing at `vcfops-approved` passed; with the
+  checksum of another file it refused the pack.
 
 Not tested yet, so the path has not run end to end:
 

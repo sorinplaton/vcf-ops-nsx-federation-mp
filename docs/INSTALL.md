@@ -2,7 +2,7 @@
 
 How to install the NSX Federation pack in VCF Operations 9.1.1, either from the released pack or from a build of
 your own, with the machine each command runs on. Option B is the path used in the lab. For Option A, the commands
-that verify the signatures were run against the v1.13.5 release (key, keyless, provenance and SBOM), and the
+that verify the signatures were run against the v1.13.6 release (key, keyless, provenance and SBOM), and the
 mirror variant was tested against a local registry; each section says what was not tested. Part 2 of the
 [blog](https://sorinplaton.github.io/posts/nsx-federation-management-pack-install/) shows the steps with
 screenshots.

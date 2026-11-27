@@ -2,7 +2,7 @@
 
 Comment installer le pack NSX Federation dans VCF Operations 9.1.1, soit à partir du pack publié, soit à partir de
 votre propre build, avec la machine sur laquelle chaque commande s'exécute. L'option B est le mode utilisé dans le
-lab. Pour l'option A, les commandes de vérification des signatures ont été exécutées sur la version v1.13.5
+lab. Pour l'option A, les commandes de vérification des signatures ont été exécutées sur la version v1.13.6
 publiée (par clé, sans clé, provenance et SBOM), et la variante avec registre interne a été testée avec un
 registre local ; chaque section précise ce qui n'a pas été testé. La partie 2 du
 [blog](https://sorinplaton.github.io/fr/posts/nsx-federation-management-pack-install/) montre les étapes avec des
