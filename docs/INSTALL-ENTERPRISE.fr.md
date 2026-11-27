@@ -61,10 +61,10 @@ Trois éléments sont publiés pour chaque version :
 
 Les deux images sont octet pour octet celles de `ghcr.io/sorinplaton/`, avec les mêmes digests.
 
-**Numéro de version publiée et version du pack.** Ce sont deux numéros distincts. La version publiée (`1.13.6`, le
+**Numéro de version publiée et version du pack.** Ce sont deux numéros distincts. La version publiée (`1.13.7`, le
 tag Git) change à chaque publication ; la version du pack (`1.13.0`, dans `pack/manifest.txt` et dans le nom de
 fichier `NSXFederation_1.13.0.pak`) ne change que lorsque le contenu du pack change : modèle d'objets, alertes,
-tableaux de bord, code de l'adaptateur. Les versions `1.13.1` à `1.13.6` ont changé la construction, la signature
+tableaux de bord, code de l'adaptateur. Les versions `1.13.1` à `1.13.7` ont changé la construction, la signature
 et la documentation : elles livrent donc toutes un pack qui indique 1.13.0. Le fichier n'est pas le même dans
 chacune d'elles : `1.13.5` a reconstruit l'image de l'adaptateur avec des dépendances vérifiées par empreinte, et
 son pack désigne donc un autre digest d'adaptateur que le pack de `1.13.3`. Identifier un pack par son SHA-256 et
@@ -264,7 +264,7 @@ sudo dnf install -y skopeo python3 unzip curl
 sudo rpm -ivh https://github.com/sigstore/cosign/releases/download/v2.4.1/cosign-2.4.1-1.x86_64.rpm
 
 # repack.py, le seul fichier du dépôt dont ce mode a besoin, depuis le tag de la version
-curl -LO https://raw.githubusercontent.com/sorinplaton/vcf-ops-nsx-federation-mp/v1.13.6/tools/repack.py
+curl -LO https://raw.githubusercontent.com/sorinplaton/vcf-ops-nsx-federation-mp/v1.13.7/tools/repack.py
 ```
 
 **Docker au lieu de skopeo et cosign.** Beaucoup de sites autorisent Docker sur un hôte mais pas de paquets
@@ -309,7 +309,7 @@ Paramètres des commandes ci-dessous. Les définir dans chaque nouveau shell ; l
 ART=artifactory.example.com          # nom d'hôte d'Artifactory, avec :port s'il n'écoute pas sur 443
 HUB=dockerhub-remote                 # clé du dépôt distant Docker Hub
 APPROVED=vcfops-approved             # clé du dépôt local de l'étape 1
-RELEASE=1.13.6                       # version à installer : le tag de la version GitHub sans le v
+RELEASE=1.13.7                       # version à installer : le tag de la version GitHub sans le v
 ART_USER=svc-vcfops-promote
 read -rs ART_TOKEN                   # jeton d'identité du compte de promotion
 SIGNER="https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/.github/workflows/release.yml@refs/tags/v$RELEASE"

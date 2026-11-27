@@ -199,8 +199,8 @@ Expected: `NSXFederation_1.13.0.pak: OK`. Anything else means the download is da
 it again.
 
 ```bash
-curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.6/NSXFederation_1.13.0.pak
-curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.6/NSXFederation_1.13.0.pak.sha256
+curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.7/NSXFederation_1.13.0.pak
+curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.7/NSXFederation_1.13.0.pak.sha256
 sha256sum -c NSXFederation_1.13.0.pak.sha256
 ```
 
@@ -257,7 +257,7 @@ less. The first command below fetches the key, the second the bundle, which is t
 
 ```bash
 curl -LO https://raw.githubusercontent.com/sorinplaton/vcf-ops-nsx-federation-mp/main/cosign.pub
-curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.6/NSXFederation_1.13.0.pak.bundle
+curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v1.13.7/NSXFederation_1.13.0.pak.bundle
 ```
 
 **Install cosign.** *Run on: the machine that downloaded the pack (Linux, x86-64).* One of the three methods
@@ -312,7 +312,7 @@ the signature must name exactly this repository, this workflow and this tag, iss
 release notes on GitHub show the same values. The bundle of the pack is the `.sigstore.json` file of the release.
 
 ```bash
-RELEASE=1.13.6
+RELEASE=1.13.7
 SIGNER="https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/.github/workflows/release.yml@refs/tags/v$RELEASE"
 ISSUER=https://token.actions.githubusercontent.com
 curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/download/v$RELEASE/NSXFederation_1.13.0.pak.sigstore.json
