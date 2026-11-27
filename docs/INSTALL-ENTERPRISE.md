@@ -60,10 +60,10 @@ Three things are published for each release:
 
 The two images are the same bytes as on `ghcr.io/sorinplaton/`, with the same digests.
 
-**Release number and pack version.** They are two numbers. The release (`1.13.6`, the Git tag) changes with every
+**Release number and pack version.** They are two numbers. The release (`1.13.7`, the Git tag) changes with every
 publication; the pack version (`1.13.0`, in `pack/manifest.txt` and in the file name `NSXFederation_1.13.0.pak`)
 changes only when the content of the pack changes: object model, alerts, dashboards, adapter code. Releases
-`1.13.1` to `1.13.6` changed the build, the signing and the documentation, so they all ship a pack that reports
+`1.13.1` to `1.13.7` changed the build, the signing and the documentation, so they all ship a pack that reports
 1.13.0. The file is not the same in each of them: `1.13.5` rebuilt the adapter image with hashed dependencies, so
 its pack names another adapter digest than the pack of `1.13.3`. Identify a pack by its SHA-256 and the adapter
 digest it names, as in the release notes, not by its file name.
@@ -252,7 +252,7 @@ sudo dnf install -y skopeo python3 unzip curl
 sudo rpm -ivh https://github.com/sigstore/cosign/releases/download/v2.4.1/cosign-2.4.1-1.x86_64.rpm
 
 # repack.py, the one file of the repository this path needs, from the tag of the release
-curl -LO https://raw.githubusercontent.com/sorinplaton/vcf-ops-nsx-federation-mp/v1.13.6/tools/repack.py
+curl -LO https://raw.githubusercontent.com/sorinplaton/vcf-ops-nsx-federation-mp/v1.13.7/tools/repack.py
 ```
 
 **Docker instead of skopeo and cosign.** Many sites allow Docker on a host but not extra packages. skopeo and
@@ -296,7 +296,7 @@ Settings for the commands below. Set them in each new shell; the token is typed,
 ART=artifactory.example.com          # Artifactory host name, with :port if it is not 443
 HUB=dockerhub-remote                 # key of the Docker Hub remote repository
 APPROVED=vcfops-approved             # key of the local repository of step 1
-RELEASE=1.13.6                       # release to install: the GitHub release tag without the v
+RELEASE=1.13.7                       # release to install: the GitHub release tag without the v
 ART_USER=svc-vcfops-promote
 read -rs ART_TOKEN                   # identity token of the promotion account
 SIGNER="https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/.github/workflows/release.yml@refs/tags/v$RELEASE"
