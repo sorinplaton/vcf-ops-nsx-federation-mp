@@ -26,33 +26,7 @@ le workflow de publication, qui construit le pack et l'image de l'adaptateur à 
 les signe. La signature nomme le dépôt, le workflow et le tag : une image qui ne vient pas de ce workflow échoue à
 la vérification, même si quelqu'un en a fait le push avec un jeton volé.
 
-```mermaid
-flowchart LR
-  subgraph GH["GitHub : source de référence"]
-    TAG["Tag Git v1.x.y"] --> WF["Workflow de publication<br/>build, push, signature"]
-    WF --> REL["Version GitHub<br/>.pak, somme de contrôle, SBOM"]
-  end
-  subgraph HUB["Docker Hub"]
-    PAKI["sorinplaton/nsxfederation-pak<br/>le .pak dans une image"]
-    ADI["sorinplaton/nsxfederation<br/>image de l'adaptateur"]
-  end
-  subgraph ORG["Organisation"]
-    REM["Artifactory<br/>dépôt distant Docker Hub<br/>(cache, non utilisé par la production)"]
-    PH["Hôte de promotion<br/>vérifier, analyser, copier, réécrire"]
-    APP["Artifactory<br/>vcfops-approved<br/>(dépôt local)"]
-    OPS["VCF Operations"]
-    CP["Proxy cloud"]
-  end
-  WF -->|"push, même digest que sur ghcr.io"| PAKI
-  WF -->|"push, même digest que sur ghcr.io"| ADI
-  PAKI --> REM
-  ADI --> REM
-  REM -->|"1. récupérer par tag, puis par digest"| PH
-  PH -->|"2. vérifier la signature, 3. analyser"| PH
-  PH -->|"4. copier par digest"| APP
-  PH -->|"5. installer le pack réécrit"| OPS
-  APP -.->|"récupérer l'image de l'adaptateur par son digest"| CP
-```
+![Comment une version arrive dans l'organisation](img/enterprise-path.fr.svg)
 
 Trois éléments sont publiés pour chaque version :
 
@@ -175,28 +149,7 @@ désactive l'option.
 
 ## Accès réseau
 
-```mermaid
-flowchart LR
-  subgraph NET["Internet"]
-    HUBN["Docker Hub<br/>registry-1.docker.io, auth.docker.io<br/>production.cloudflare.docker.com"]
-    SIG["Sigstore<br/>tuf-repo-cdn.sigstore.dev<br/>rekor.sigstore.dev"]
-    GHN["github.com, raw.githubusercontent.com<br/>repack.py, cosign"]
-  end
-  subgraph INT["Réseau interne"]
-    ART["Artifactory<br/>HTTPS"]
-    PH["Hôte de promotion"]
-    OPS["VCF Operations"]
-    CP["Proxy cloud<br/>sans accès à Internet"]
-    NSX["Global Managers et<br/>Local Managers"]
-  end
-  ART -->|"TCP 443 : dépôt distant"| HUBN
-  PH -->|"TCP 443 : pull, push (étapes 3 à 7)"| ART
-  PH -->|"TCP 443 : journal de transparence (étape 4)"| SIG
-  PH -->|"TCP 443 : outils, une seule fois (étape 2)"| GHN
-  PH -->|"TCP 443 : installation (étape 9)"| OPS
-  CP -.->|"TCP 443 : récupérer l'image de l'adaptateur"| ART
-  CP -.->|"TCP 443 : collecte"| NSX
-```
+![Installation en entreprise : flux réseau](img/enterprise-network.fr.svg)
 
 | Depuis | Vers | Port | Usage |
 | --- | --- | --- | --- |

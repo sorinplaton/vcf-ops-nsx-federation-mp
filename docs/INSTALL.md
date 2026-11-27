@@ -70,41 +70,7 @@ With Option A, only the cloud proxy flows to `ghcr.io`, `pkg-containers.githubus
 needed, plus a browser that reaches VCF Operations. With the mirror variant, the cloud proxy reaches the
 internal registry and NSX, and only the mirror host reaches the internet.
 
-```mermaid
-flowchart LR
-  subgraph NET["Internet"]
-    PKG["download.docker.com, dl.google.com<br/>distribution repositories"]
-    GH["github.com<br/>clone, govc download"]
-    HUB["Docker Hub<br/>registry-1.docker.io"]
-    PYPI["pypi.org<br/>files.pythonhosted.org"]
-    CGR["cgr.dev<br/>Wolfi base and packages"]
-  end
-  BH["Build host<br/>(jump host)"]
-  REG["Registry<br/>HTTPS"]
-  OPS["VCF Operations<br/>admin console, Suite API"]
-  VC["vCenter"]
-  ESX["ESXi host of the<br/>cloud proxy VM"]
-  CP["Cloud proxy"]
-  GHCR["ghcr.io and<br/>pkg-containers.githubusercontent.com<br/>released image"]
-  GM["Global Managers<br/>active and standby"]
-  LM["Local Managers"]
-
-  BH -->|"TCP 443: Docker, Chrome, git, Python and Node.js packages"| PKG
-  BH -->|"TCP 443: clone"| GH
-  BH -->|"TCP 443: base images"| HUB
-  BH -->|"TCP 443: SDK and adapter packages"| PYPI
-  BH -->|"TCP 443: Wolfi base of the adapter image"| CGR
-  BH -->|"TCP 5000: push image (step 3)"| REG
-  BH -->|"TCP 443: upload pack, account, scripts (steps 6-10)"| OPS
-  BH -->|"TCP 443: govc (step 4)"| VC
-  BH -->|"TCP 443: govc guest.upload (step 4)"| ESX
-  BH -->|"TCP 443: optional local test (step 5)"| GM
-  BH -->|"TCP 443: optional local test (step 5)"| LM
-  CP -.->|"TCP 5000: pull image (Option B)"| REG
-  CP -.->|"TCP 443: pull image (Option A)"| GHCR
-  CP -.->|"TCP 443: collection"| GM
-  CP -.->|"TCP 443: collection"| LM
-```
+![Option B: network flows of the build host and of the cloud proxy](img/install-option-b.svg)
 
 | From | To | Port | Used for |
 | --- | --- | --- | --- |
@@ -161,27 +127,7 @@ Option B.
 This path uses the network flows drawn below. Solid lines start at the admin workstation; dashed lines are the
 cloud proxy's. The Sigstore flow is only for the signature check.
 
-```mermaid
-flowchart LR
-  subgraph NET["Internet"]
-    GHR["github.com<br/>release page, cosign.pub"]
-    GHCR["ghcr.io and<br/>pkg-containers.githubusercontent.com<br/>adapter image and its signature"]
-    SIG["Sigstore<br/>tuf-repo-cdn.sigstore.dev<br/>rekor.sigstore.dev"]
-  end
-  WS["Admin workstation<br/>browser, cosign"]
-  OPS["VCF Operations<br/>admin console, product UI"]
-  CP["Cloud proxy"]
-  GM["Global Managers<br/>active and standby"]
-  LM["Local Managers"]
-
-  WS -->|"TCP 443: pack, checksum, bundle, key"| GHR
-  WS -->|"TCP 443: verify the image signature"| GHCR
-  WS -->|"TCP 443: transparency log"| SIG
-  WS -->|"TCP 443: install the pack, create the account (steps 6-10)"| OPS
-  CP -.->|"TCP 443: pull image by digest"| GHCR
-  CP -.->|"TCP 443: collection"| GM
-  CP -.->|"TCP 443: collection"| LM
-```
+![Option A: network flows of the admin workstation and of the cloud proxy](img/install-option-a.svg)
 
 - [ ] VCF Operations 9.1.1 with at least one cloud proxy in state `UP`, which reaches `ghcr.io` and
       `pkg-containers.githubusercontent.com` on TCP 443, directly or through the site proxy. Firewall rules need
@@ -368,29 +314,7 @@ The variant was tested in the lab against a local `registry:2`, and not against 
 In this variant, only the mirror host reaches the internet. The cloud proxy talks to the internal registry and
 to NSX.
 
-```mermaid
-flowchart LR
-  subgraph NET["Internet"]
-    GHR["github.com<br/>release page, cosign.pub, repository"]
-    GHCR["ghcr.io and<br/>pkg-containers.githubusercontent.com<br/>adapter image and its signature"]
-    SIG["Sigstore<br/>tuf-repo-cdn.sigstore.dev<br/>rekor.sigstore.dev"]
-  end
-  subgraph INT["Internal network"]
-    MH["Mirror host<br/>skopeo, cosign, repack.py"]
-    REG["Internal registry<br/>HTTPS"]
-    OPS["VCF Operations"]
-    CP["Cloud proxy<br/>no internet access"]
-    NSX["Global Managers and<br/>Local Managers"]
-  end
-
-  MH -->|"TCP 443: pack, key, clone"| GHR
-  MH -->|"TCP 443: copy the image by digest"| GHCR
-  MH -->|"TCP 443: transparency log"| SIG
-  MH -->|"TCP 443: push the image"| REG
-  MH -->|"TCP 443: install the rewritten pack (step 6)"| OPS
-  CP -.->|"TCP 443: pull the image"| REG
-  CP -.->|"TCP 443: collection"| NSX
-```
+![Mirror variant: network flows](img/install-mirror.svg)
 
 *Run on: a Linux host that reaches both `ghcr.io` and the internal registry*, called the mirror host here. It
 needs [skopeo](https://github.com/containers/skopeo) (`sudo apt-get install -y skopeo` or `sudo dnf install -y skopeo`),
