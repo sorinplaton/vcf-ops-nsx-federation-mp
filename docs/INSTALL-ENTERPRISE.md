@@ -195,6 +195,7 @@ flowchart LR
 | Promotion host | `tuf-repo-cdn.sigstore.dev`, `rekor.sigstore.dev` | TCP 443 | The signature check of step 4: the Sigstore trust root and the public transparency log |
 | Promotion host | `api.github.com` | TCP 443 | Optional: the build provenance check of step 4 (`gh attestation verify`) |
 | Promotion host | `github.com`, `raw.githubusercontent.com` | TCP 443 | Once, to fetch `cosign` and `repack.py` (step 2). They can also come through an Artifactory generic remote |
+| Promotion host | `quay.io`, `ghcr.io` and the hosts they send layer downloads to | TCP 443 | Only with the Docker variant of step 2, which runs skopeo and cosign from their images, and when `install/verify_pak.sh` finds no `cosign` installed. The images can also come through Artifactory remote repositories |
 | Promotion host or workstation | VCF Operations | TCP 443 | Installing the pack and creating the account (step 9) |
 | Cloud proxy | Artifactory | TCP 443 | Pulling the adapter image from `vcfops-approved`, without a login |
 | Cloud proxy | Global Managers and Local Managers | TCP 443 | Collection |
@@ -563,7 +564,9 @@ are kept.
 1. Check that the previous adapter image is still there, by the digest its pack names:
    `skopeo inspect docker://$ART/$APPROVED/nsxfederation@<previous AD_DIGEST>`.
 2. Install the previous `_site` pack as in step 9, with its own `FEDMP_PAK_SHA256`. The scripted install uploads
-   with "install even if already installed", so VCF Operations accepts an older version; by hand, tick that box.
+   with "install even if already installed", the option that lets VCF Operations install a pack that is not newer
+   than the installed one; by hand, tick that box. The test reinstalled the same pack version; a lower one was
+   not tested.
 3. `install_unsigned.sh` then deletes the alert, symptom and recommendation definitions that the previous pack does
    not ship, the ones the newer version added. Objects and their history stay.
 4. Stop and start the account, and check that it reaches "Collecting" (INSTALL.md, step 8).

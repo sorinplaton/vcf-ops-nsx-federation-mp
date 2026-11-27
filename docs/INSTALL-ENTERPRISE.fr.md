@@ -203,6 +203,7 @@ flowchart LR
 | Hôte de promotion | `tuf-repo-cdn.sigstore.dev`, `rekor.sigstore.dev` | TCP 443 | La vérification des signatures de l'étape 4 : la racine de confiance de Sigstore et le journal de transparence public |
 | Hôte de promotion | `api.github.com` | TCP 443 | Facultatif : la vérification de la provenance de construction de l'étape 4 (`gh attestation verify`) |
 | Hôte de promotion | `github.com`, `raw.githubusercontent.com` | TCP 443 | Une seule fois, pour télécharger `cosign` et `repack.py` (étape 2). Ils peuvent aussi passer par un dépôt distant générique d'Artifactory |
+| Hôte de promotion | `quay.io`, `ghcr.io` et les hôtes vers lesquels ils renvoient le téléchargement des couches | TCP 443 | Seulement avec la variante Docker de l'étape 2, qui exécute skopeo et cosign à partir de leurs images, et quand `install/verify_pak.sh` ne trouve pas `cosign` installé. Les images peuvent aussi passer par des dépôts distants d'Artifactory |
 | Hôte de promotion ou poste d'administration | VCF Operations | TCP 443 | Installation du pack et création du compte (étape 9) |
 | Proxy cloud | Artifactory | TCP 443 | Récupération de l'image de l'adaptateur depuis `vcfops-approved`, sans authentification |
 | Proxy cloud | Global Managers et Local Managers | TCP 443 | Collecte |
@@ -590,8 +591,9 @@ et son SHA-256 enregistré sont conservés.
 1. Vérifier que l'image précédente de l'adaptateur est toujours là, par le digest que son pack désigne :
    `skopeo inspect docker://$ART/$APPROVED/nsxfederation@<previous AD_DIGEST>`.
 2. Installer le pack `_site` précédent comme à l'étape 9, avec son propre `FEDMP_PAK_SHA256`. L'installation par
-   script téléverse avec « install even if already installed » : VCF Operations accepte donc une version plus
-   ancienne ; à la main, cocher cette case.
+   script téléverse avec « install even if already installed », l'option qui permet à VCF Operations d'installer
+   un pack qui n'est pas plus récent que le pack installé ; à la main, cocher cette case. Le test a réinstallé la
+   même version de pack ; une version inférieure n'a pas été testée.
 3. `install_unsigned.sh` supprime ensuite les définitions d'alertes, de symptômes et de recommandations que le pack
    précédent ne livre pas, celles que la version plus récente a ajoutées. Les objets et leur historique restent.
 4. Arrêter puis démarrer le compte, et vérifier qu'il atteint « Collecting » (INSTALL.fr.md, étape 8).
