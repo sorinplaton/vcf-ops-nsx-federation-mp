@@ -1,6 +1,6 @@
 # Release guide (maintainer)
 
-How a release is built, signed and published: the side of the install guides that users never see. Git is the
+This guide describes how a release is built, signed and published. Git is the
 single source of truth. A tag `v<release>` starts the workflow `.github/workflows/release.yml`, which builds the
 pack and the adapter image from that tag, publishes them on `ghcr.io` and Docker Hub, signs them, and creates a
 draft GitHub release. Nobody pushes an image by hand. Users download the `.pak` from GitHub
@@ -33,7 +33,7 @@ flowchart LR
 | `NSXFederation_<version>.pak.bundle`, `cosign.pub` | GitHub release assets, transition only | The maintainer, with the project key ([Transition](#transition-key-signatures-next-to-keyless-ones)) |
 
 `<release>` is the tag without the `v`; `<version>` is the pack version of `pack/manifest.txt`. They differ when
-a release changes only the documentation and keeps the pack of the previous one.
+a release does not change the content of the pack.
 
 ## Release with the workflow
 
@@ -89,7 +89,7 @@ a release changes only the documentation and keeps the pack of the previous one.
 7. Update the release numbers in Option A of `docs/INSTALL.md` and `docs/INSTALL.fr.md`, and commit.
 
 On a pull request that changes `pack/`, `tooling/`, `pak-image/`, the build action or the workflow, the job `build`
-runs the same build against a throwaway registry, with a read-only token. It pushes nothing and signs nothing; it
+runs the same build against a throwaway registry, with a read-only token. It publishes nothing and signs nothing; it
 shows that the release still builds and that the adapter image has no CRITICAL vulnerability with a fix.
 
 ### Transition: key signatures next to keyless ones
@@ -173,7 +173,7 @@ rm -f .sdkhome/.docker/config.json      # mp-build leaves the GitHub token there
 ```
 
 `-P 18080` moves the port of the test container that `mp-build` starts during the build. The default, 8080, is
-taken on the lab jump host (Guacamole). It does not change the pack, which still says `API_PORT=443`.
+already in use on the maintainer's build host. It does not change the pack, which still says `API_PORT=443`.
 
 Read the image address and digest from the pack:
 

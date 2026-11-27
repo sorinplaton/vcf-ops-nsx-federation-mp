@@ -69,7 +69,7 @@ The first cycle after a start reads every object, so the budget of 2000 calls pe
 stretched objects in that cycle. The following cycles need about a sixth. For more objects, raise the budget and
 watch the metric "Collection duration": a cycle has to finish inside the collection interval (5 minutes by
 default). The alert "NSX Federation collection is slow or throttled" fires above 4 minutes or when NSX answers
-HTTP 429. NSX limits each client to 100 requests per second by default.
+HTTP 429 or 503. NSX limits each client to 100 requests per second by default.
 
 Only a two-location federation was measured on real managers. Larger sizes ran against the mock NSX of the test
 suite (`test_scale_sizing`), with 1,000 more segments, 200 more Tier-1 gateways and 100 more global security
@@ -120,7 +120,7 @@ For planned work, use a VCF Operations maintenance schedule on the group "NSX Fe
   the two Global Managers. The alert fires above 150 ms, the limit Broadcom documents for locations that share
   stretched networks (500 ms otherwise), or above 80% of the setting (warning), and above 100% (immediate).
   With the default setting of 250 ms, 80% is 200 ms, so the 150 ms condition fires first. The same alert also
-  fires when the round-trip time leaves the range VCF Operations learned for the location (dynamic threshold,
+  fires when the round-trip time rises above the range VCF Operations learned for the location (dynamic threshold,
   three cycles), which reports a degraded WAN before it reaches 150 ms. The latency alarms of NSX itself
   (between Global Managers, and between a Global Manager and a location) raise their own alerts.
 - Packet loss: for each RTEP tunnel and direction, the dropped packets of the interval are divided by the
@@ -239,7 +239,7 @@ read, so a gap in the data does not show up as a change.
     cycles. A rule whose count has not grown for the unused-rule period (30 days by default) is unused. For a
     rule that never had a hit, the period starts the day the adapter first saw it, so after an install nothing
     is unused for 30 days. A counter reset (a smaller count) restarts the period. When a location does not
-    answer, the number is not sent for that cycle and the period is kept. The dates live in the adapter cache,
+    answer, the number is not sent for that cycle and the period is kept. The dates are stored in the adapter cache,
     so a new adapter container (an upgrade of the pack) restarts the period.
 
   The system policies of NSX (`default-` IDs) are left out, as in the rest of the collection. The alert "Global
@@ -325,7 +325,7 @@ On the federation object:
 | Metric or property | Meaning |
 | --- | --- |
 | NSX API calls without an answer | Calls that failed in the last cycle. The data behind them is unknown and is not sent |
-| NSX API calls without an answer (property) | Manager, call and HTTP status of each failed call |
+| NSX API calls without an answer (property) | Manager, call and HTTP status (or error type) of the failed calls. The first 8 are listed, with a count of the others |
 | NSX API calls retried after a timeout | A call is retried once after a timeout or a dropped connection |
 | Global Managers not collected | Address and reason: not reachable, certificate not trusted, or another federation. A Global Manager known from an earlier cycle (or, after a restart of the adapter container, from VCF Operations) that does not answer, or that answers for another federation, reads 0 on its metric "Reachable" |
 | Collection mode | `normal`, or `degraded` with the reason (no Global Manager answers, none is active, or the active one did not return its locations) and the source of the location list (the cache or VCF Operations) |
@@ -342,14 +342,14 @@ A sync channel for which the active Global Manager lists no connection detail is
 sent, and VCF Operations keeps the last one.
 
 HTTP 403 on a call points to missing rights of the account. A Local Manager is reported as not reached when its
-cluster status call fails together with most of its other calls (HTTP 401, 403, 5xx or timeouts). A manager
+cluster status call fails and at least half of its calls fail (HTTP 401, 403, 5xx or timeouts). A manager
 whose requests time out or stay throttled (HTTP 429 or 503 after the retries) three times in a row is skipped
 for the rest of the cycle.
 
 One account stays with one federation. If the federation is rebuilt with a new ID, create a new account: when
 every listed Global Manager answers for the new federation, the new account follows it. Remove the old account,
 because after a restart of its container it can follow the rebuilt federation too, and two accounts would then
-collect the same objects. The cache of the location list lives in the adapter container and is lost when the
+collect the same objects. The cache of the location list is stored in the adapter container and is lost when the
 container restarts.
 
 ## Troubleshooting

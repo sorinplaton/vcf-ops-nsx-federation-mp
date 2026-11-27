@@ -2,7 +2,7 @@
 
 This repository holds the `.pak` file of the
 [NSX Federation management pack for VCF Operations](https://github.com/sorinplaton/vcf-ops-nsx-federation-mp),
-packed in a `FROM scratch` image so that it can travel through a container registry such as JFrog Artifactory.
+packed in a `FROM scratch` image so that it can be distributed through a container registry such as JFrog Artifactory.
 
 It is published by the project's release workflow from a Git tag, never pushed by hand. GitHub is the source of
 truth: every tag here matches a [GitHub release](https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases)

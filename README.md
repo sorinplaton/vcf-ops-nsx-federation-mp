@@ -84,7 +84,7 @@ read-only NSX account is enough; the built-in `audit` account was tested.
 | Path | Content |
 | --- | --- |
 | `pack/` | The SDK project: `app/adapter.py` (object model, collection, events), `app/nsxclient.py` (read-only NSX client), `content/` (alerts, dashboards, views, reports, custom groups, traversal spec) |
-| `tools/gen_*.py` | Generators for the content and the icons. They read the object model from `adapter.py` and write into `pack/content` |
+| `tools/gen_*.py` | Generators for the content, the icons and the feature list. They read the object model from `adapter.py` and write into `pack/content`, `pack/conf/images`, `docs/FEATURES.md` and `docs/FEATURES.fr.md` |
 | `tools/localrun.py` | Runs a collection against live NSX managers without VCF Operations |
 | `tools/test_gaps.py` | The same run with chosen NSX calls made to fail, to check that their data is reported as unknown |
 | `tools/repack.py` | Rewrites the registry address inside a built `.pak` |
@@ -144,7 +144,7 @@ commit `pack/image-requirements.txt`: CI checks those packages for known vulnera
 [docs/INSTALL.md](docs/INSTALL.md) (French: [docs/INSTALL.fr.md](docs/INSTALL.fr.md)) gives each step with the
 machine its commands run on.
 
-Two paths:
+Three paths:
 
 - **Option A, download the released pack.** The `.pak` on the
   [releases page](https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/latest) pulls its adapter
@@ -163,7 +163,7 @@ repository, the release workflow and the tag. Each release also carries SLSA bui
 the adapter image. [SECURITY.md](SECURITY.md#supply-chain) describes the checks; `cosign.pub` only serves releases
 up to 1.14.0, during the move to keyless signatures.
 
-The pack is not signed, so VCF Operations 9 refuses it until "Allow unsigned PAK installation" is turned on in
+The pack is not signed by Broadcom, so VCF Operations 9 refuses it until "Allow unsigned PAK installation" is turned on in
 the admin console (Broadcom KB 415279). The cloud proxy must also trust the certificate of the registry. Part 2
 of the blog shows both steps with screenshots.
 

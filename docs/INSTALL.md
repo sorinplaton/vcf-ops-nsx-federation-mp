@@ -1,8 +1,8 @@
 # Install guide
 
-How to install the NSX Federation pack in VCF Operations 9.1.1, either from the released pack or from a build of
-your own, with the machine each command runs on. Option B is the path used in the lab. For Option A, the commands
-that verify the signatures were run against the v1.13.6 release (key, keyless, provenance and SBOM), and the
+This guide describes how to install the NSX Federation pack in VCF Operations 9.1.1, either from the released
+pack or from a build of your own, and names the machine each command runs on. Option B is the path used in the lab. For Option A, the commands
+that verify the signatures were run against the v1.13.7 release (key, keyless, provenance and SBOM), and the
 mirror variant was tested against a local registry; each section says what was not tested. Part 2 of the
 [blog](https://sorinplaton.github.io/posts/nsx-federation-management-pack-install/) shows the steps with
 screenshots.
@@ -13,11 +13,11 @@ Version française : [INSTALL.fr.md](INSTALL.fr.md).
 
 There are five ways to get the pack and its adapter image in place:
 
-- [Option A, download the released pack](#option-a-download-the-released-pack): the fastest way, for a site
-  whose cloud proxy can reach `ghcr.io`. Nothing to build.
+- [Option A, download the released pack](#option-a-download-the-released-pack): the shortest path, for a site
+  whose cloud proxy can reach `ghcr.io`. No build is needed.
 - [Option A with the mirror variant](#variant-mirror-the-image-to-an-internal-registry): for a site whose cloud
-  proxy has no internet access, or whose images must be scanned and served from an internal registry. Still no
-  build.
+  proxy has no internet access, or whose images must be scanned and served from an internal registry. No build is
+  needed either.
 - [Option B, build your own](#1-prerequisites): for someone who changes the pack, wants to build it from
   source, or runs a lab with its own registry on the build host.
 - [The Harbor variant of Option B](#variant-an-existing-harbor-registry): the same build, with the image pushed
@@ -77,6 +77,7 @@ flowchart LR
     GH["github.com<br/>clone, govc download"]
     HUB["Docker Hub<br/>registry-1.docker.io"]
     PYPI["pypi.org<br/>files.pythonhosted.org"]
+    CGR["cgr.dev<br/>Wolfi base and packages"]
   end
   BH["Build host<br/>(jump host)"]
   REG["Registry<br/>HTTPS"]
@@ -92,6 +93,7 @@ flowchart LR
   BH -->|"TCP 443: clone"| GH
   BH -->|"TCP 443: base images"| HUB
   BH -->|"TCP 443: SDK and adapter packages"| PYPI
+  BH -->|"TCP 443: Wolfi base of the adapter image"| CGR
   BH -->|"TCP 5000: push image (step 3)"| REG
   BH -->|"TCP 443: upload pack, account, scripts (steps 6-10)"| OPS
   BH -->|"TCP 443: govc (step 4)"| VC
@@ -106,7 +108,7 @@ flowchart LR
 
 | From | To | Port | Used for |
 | --- | --- | --- | --- |
-| Build host | Internet (Docker, Google Chrome and distribution repositories, GitHub, Docker Hub, PyPI) | TCP 443 | Installing the tools, cloning the repository, building the tooling and adapter images. Through a proxy if the site uses one |
+| Build host | Internet (Docker, Google Chrome and distribution repositories, GitHub, Docker Hub, `cgr.dev` and the Wolfi package repository, PyPI) | TCP 443 | Installing the tools, cloning the repository, building the tooling and adapter images. Through a proxy if the site uses one |
 | Build host | Registry | TCP 5000, or the registry port | Pushing the adapter image. Local when the registry runs on the build host, as in the lab |
 | Build host | VCF Operations | TCP 443 | Admin console and product UI in a browser, and the Suite API for the scripts of steps 6 to 10 |
 | Build host | vCenter of the cloud proxy VM | TCP 443 | `govc` guest operations of step 4. Not needed when the certificate is copied over SSH |
@@ -152,7 +154,7 @@ and no registry of your own. When the cloud proxy has no internet access, or ima
 registry, add the [mirror variant](#variant-mirror-the-image-to-an-internal-registry) at the end of this
 section.
 
-Tested so far: the download and every command of "Verify the signatures" below, against the v1.13.5 release.
+Tested so far: the download and every command of "Verify the signatures" below, against the v1.13.7 release.
 The pull of the image from `ghcr.io` by the cloud proxy is not yet tested in the lab, which uses Option B.
 
 Network flows of this path. Solid lines start at the admin workstation; dashed lines are the cloud proxy's. The
@@ -622,8 +624,9 @@ curl --cacert ~/fedmp-registry/certs/registry.crt https://$IP:5000/v2/_catalog
 The `docker run` then starts `mp-build` from it: it builds the adapter image with the Docker of the host
 (through the mounted socket), pushes it to the registry of step 2 and writes the `.pak`. The container runs
 with the ID of the current user and the group ID of `docker`, so it can use the socket and the files it writes
-in the clone belong to the build user. The build downloads the base images from Docker Hub and the Python
-packages from PyPI.
+in the clone belong to the build user. The build downloads the base images from Docker Hub, the Wolfi base of
+the adapter image from `cgr.dev`, the Python package of that base from the Wolfi package repository, and the
+Python packages from PyPI.
 
 ```bash
 set -a; source ~/fedmp.env; set +a
@@ -826,15 +829,15 @@ time short and check at the end that it is off.
 ### Scripted
 
 *Run on: the build host.* With Option A or the mirror variant, any Linux host with a clone of this repository
-and `~/fedmp.env` ([The settings file](#the-settings-file)) will do. The host needs Google Chrome, Node.js 22
+and `~/fedmp.env` ([The settings file](#the-settings-file)) is suitable. The host needs Google Chrome, Node.js 22
 or later ([Tools for some steps](#tools-for-some-steps)) and Python 3 with `requests`. The scripts drive a
 headless Chrome through calls that are internal to the VCF Operations UI. They are unsupported and can change
 with any release. That Chrome accepts the certificate of VCF Operations without checking it, so run the scripts
 on a trusted network.
 
 `upi.sh enableUPI` logs in to the admin console and turns the switch on. `install_unsigned.sh` uploads the
-pack, waits for the install to finish, deletes the alert definitions an older version left behind, and turns
-the switch off. Set `PAK` to the file to install: the line below is right for Option B; with Option A or the
+pack, waits for the install to finish, deletes the alert, symptom and recommendation definitions an older
+version left behind, and turns the switch off. Set `PAK` to the file to install: the line below is right for Option B; with Option A or the
 mirror variant, give the full path of the downloaded or rewritten `.pak`.
 
 ```bash
@@ -848,7 +851,8 @@ install/install_unsigned.sh "$PAK"
 `install_unsigned.sh` first checks the signatures with `install/verify_pak.sh`. A released pack with its
 `.sigstore.json` next to it must verify, or nothing is installed; keep the bundle in the folder of the pack for
 that. A pack without the bundle (a build of your own, or one rewritten by the mirror variant) is installed with a
-notice. `FEDMP_VERIFY=1` requires the image check for any pack, and `FEDMP_VERIFY=0` skips the check. The check
+notice. A `.sigstore.json` left next to a rewritten pack makes the check fail (`pack signature: FAILED`), because
+it signs the original file: move it out of the folder first. `FEDMP_VERIFY=1` requires the image check for any pack, and `FEDMP_VERIFY=0` skips the check. The check
 uses `cosign` if it is installed, or the cosign image through Docker. `FEDMP_PAK_SHA256=<sha256>` also requires
 the file to have that checksum, whatever `FEDMP_VERIFY` says: use it for a rewritten pack, whose checksum you
 recorded yourself ([INSTALL-ENTERPRISE.md](INSTALL-ENTERPRISE.md), step 7).
@@ -891,8 +895,8 @@ Federation.
 
 ## 8. Check the collection
 
-This is where the registry and certificate work of the earlier steps is proven: the cloud proxy pulls the
-image, starts the adapter and reads NSX.
+This step proves the registry and certificate work of the earlier steps: the cloud proxy pulls the image,
+starts the adapter and reads NSX.
 
 *Run in: the VCF Operations product UI.*
 
