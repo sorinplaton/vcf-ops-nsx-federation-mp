@@ -11,8 +11,8 @@ Steps 2 to 7 were tested on 2026-11-26 with releases `v1.13.3`, `v1.13.5` and `v
 Registry 7.161.26 (the free edition of Artifactory) behind HTTPS with an internal CA. The path then ran end to end
 on 2026-11-27 with release `v1.13.5`: anonymous read on `vcfops-approved`, the pull by the cloud proxy, the install
 from Artifactory, the account, and a rollback to `v1.13.3`. Release `v1.13.7` ran the same path the same day,
-without the rollback. Uninstall and JFrog Xray are still to be tested. [What
-was tested](#what-was-tested) lists each step.
+without the rollback. Uninstall and JFrog Xray are still to be tested. [What was tested](#what-was-tested)
+lists each step.
 
 For the other install paths (download from GitHub, a build of your own, Harbor), see
 [INSTALL.md](INSTALL.md). Version française : [INSTALL-ENTERPRISE.fr.md](INSTALL-ENTERPRISE.fr.md).
@@ -62,7 +62,7 @@ Three things are published for each release:
 
 The two images are the same bytes as on `ghcr.io/sorinplaton/`, with the same digests.
 
-**Release number and pack version.** The two are different numbers. The release (`1.13.7`, the Git tag) changes
+The release number and the pack version are two different numbers. The release (`1.13.7`, the Git tag) changes
 with every publication; the pack version (`1.13.0`, in `pack/manifest.txt` and in the file name
 `NSXFederation_1.13.0.pak`) changes only when the content of the pack changes: object model, alerts, dashboards,
 adapter code. Releases `1.13.1` to `1.13.7` changed the build, the signing and the documentation, so they all ship
@@ -140,7 +140,7 @@ ones the organisation chooses.
 
 ## The unsigned-pack switch: justification for the change board
 
-VCF Operations installs a pack without a switch only when Broadcom signed it (KB 415279). For any other pack, an
+VCF Operations installs a pack without this switch only when Broadcom signed it (KB 415279). For any other pack, an
 administrator turns on "Allow unsigned PAK installation" in the admin console, installs, and turns it off.
 
 - **Why there is no Broadcom signature.** This is a community pack under the MIT licence, published on GitHub. It
@@ -340,8 +340,8 @@ Expected: `pak/NSXFederation_<version>.pak` and `pak/SHA256SUMS`, then `NSXFeder
 pack version can differ from the release number: a release that changes only the documentation keeps the pack
 version of the previous one.
 
-On a machine with Docker that trusts Artifactory, the same file comes out with
-`docker pull`, `docker create --name pak <image>`, `docker cp pak:/pak/. ./` and `docker rm pak`.
+On a machine with Docker that trusts Artifactory, the same file comes out with `docker pull`,
+`docker create --name pak <image>`, `docker cp pak:/pak/. ./` and `docker rm pak`.
 
 ## 4. Verify the signatures
 
@@ -407,8 +407,7 @@ for example JFrog Xray on the remote repository or on `vcfops-approved`. What to
 *Run on: the promotion host.* Copy both images by digest. `--all` copies the image exactly as published. Both
 images are single manifests today, yet in the lab the pack image came out with another digest when it was copied
 without `--all`. With another digest, the signature check of step 4 no longer applies to what is in
-`vcfops-approved`. `--preserve-digests` makes skopeo stop
-rather than change a digest:
+`vcfops-approved`. `--preserve-digests` makes skopeo stop rather than change a digest:
 
 ```bash
 C="--all --preserve-digests --src-creds $ART_USER:$ART_TOKEN --dest-creds $ART_USER:$ART_TOKEN"

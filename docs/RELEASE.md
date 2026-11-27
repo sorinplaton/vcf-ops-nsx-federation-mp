@@ -135,7 +135,7 @@ not signed keyless and is not copied to Docker Hub.
       Without the private key, a new release cannot be signed with the key users already trust.
 
 Every cosign command below runs from the official image `ghcr.io/sigstore/cosign/cosign:v2.4.1`, so nothing is
-installed on the host. `-u` and `HOME=/tmp` let it write its cache as the current user.
+installed on the build host. `-u` and `HOME=/tmp` let it write its cache as the current user.
 
 #### Creating the key pair (first release only, or after a key change)
 
@@ -173,8 +173,7 @@ rm -f .sdkhome/.docker/config.json      # mp-build leaves the GitHub token there
 ```
 
 `-P 18080` moves the port of the test container that `mp-build` starts during the build. The default, 8080, is
-already in use on the build host. The option does not change the pack, which still says
-`API_PORT=443`.
+already in use on the build host. The option does not change the pack, which still says `API_PORT=443`.
 
 Read the image address and digest from the pack:
 
@@ -269,8 +268,8 @@ gh release edit v<version> --draft=false --latest
 ```
 
 The notes name the image digest, the requirements (cloud proxy to `ghcr.io` and
-`pkg-containers.githubusercontent.com` on TCP 443, unsigned-pack switch) and link to Option A. The release of
-`v1.13.1` is the model.
+`pkg-containers.githubusercontent.com` on TCP 443, "Allow unsigned PAK installation") and link to Option A. The
+release of `v1.13.1` is the model.
 
 Then:
 

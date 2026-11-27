@@ -154,7 +154,7 @@ Docker and no registry of your own. When the cloud proxy has no internet access,
 internal registry, add the [mirror variant](#variant-mirror-the-image-to-an-internal-registry) described at the
 end of this section.
 
-So far, the download and every command of "Verify the signatures" below have been tested, against the v1.13.7
+So far, the download and every command of "Verify the signatures" below have been tested against the v1.13.7
 release. The pull of the image from `ghcr.io` by the cloud proxy is not yet tested in the lab, which uses
 Option B.
 
@@ -211,7 +211,7 @@ The pack names the image `ghcr.io/sorinplaton/nsxfederation` by digest, so the c
 image the pack was built with. The image is public: the cloud proxy pulls it without a login, and it already
 trusts the certificate of `ghcr.io`, so step 4 is not needed.
 
-An optional check, run *on the cloud proxy* if SSH is enabled there, tells before the install whether the cloud
+An optional check, run *on the cloud proxy* if SSH is enabled there, shows before the install whether the cloud
 proxy can reach the two hosts the image comes from. Any HTTP code means the host is reachable (`401` and `400`
 are the expected answers); `000` means it is not, and the account of step 8 would stay `FAILED`:
 
@@ -579,9 +579,9 @@ set -a; source ~/fedmp.env; set +a
 ```
 
 `set -a` tells the shell to export every variable it sets from that point, `source` reads the file, and
-`set +a` turns the export off again. Without the export, the values stay in the shell, and the
-scripts and containers the commands start do not see them. The values last as long as the shell, so a new
-terminal needs the line again, and a block pasted without it runs with empty addresses.
+`set +a` turns the export off again. Without the export, the values stay in the shell, and the scripts and
+containers the commands start do not see them. The values last as long as the shell, so a new terminal needs
+the line again, and a block pasted without it runs with empty addresses.
 
 The file holds passwords. Keep it out of Git (`fedmp.env` is in `.gitignore`), and delete it or move it to a
 vault once the install is done.
@@ -823,14 +823,14 @@ time short and check at the end that the switch is off.
 
 *Run in: a browser.*
 
-1. Admin console `https://<ops>/admin`, Administrator Settings, Security Settings: activate "Allow unsigned
-   PAK installation".
+1. Admin console `https://<ops>/admin`, Administrator Settings, Security Settings: activate
+   "Allow unsigned PAK installation".
 2. Product UI: Administration, Integrations, Repository, add a pack.
 3. Select `NSXFederation_<version>.pak`, tick "install even if already installed" and "Ignore the PAK file
    signature checking".
 4. Upload, accept the warning about the unsigned file and wait for the install to finish.
-5. Admin console: deactivate "Allow unsigned PAK installation". The console refuses the change while the install is
-   running; try again once it has finished.
+5. Admin console: deactivate "Allow unsigned PAK installation". The console refuses the change while the
+   install is running; try again once it has finished.
 
 ### Scripted
 

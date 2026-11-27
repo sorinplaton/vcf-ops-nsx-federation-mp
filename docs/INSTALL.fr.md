@@ -115,7 +115,7 @@ flowchart LR
 | Hôte de construction | Internet (dépôts Docker, Google Chrome et de la distribution, GitHub, Docker Hub, `cgr.dev` et le dépôt de paquets Wolfi, PyPI) | TCP 443 | Installation des outils, clone du dépôt, build des images d'outillage et de l'adaptateur. Via un proxy si le site en utilise un |
 | Hôte de construction | Registre | TCP 5000, ou le port du registre | Push de l'image de l'adaptateur. En local quand le registre tourne sur l'hôte de construction, comme dans le lab |
 | Hôte de construction | VCF Operations | TCP 443 | Console d'administration et interface du produit dans un navigateur, Suite API pour les scripts des étapes 6 à 10 |
-| Hôte de construction | vCenter de la VM du proxy cloud | TCP 443 | Opérations invité `govc` de l'étape 4. Inutile si le certificat est copié par SSH |
+| Hôte de construction | vCenter de la VM du proxy cloud | TCP 443 | Opérations d'invité `govc` de l'étape 4. Inutile si le certificat est copié par SSH |
 | Hôte de construction | Hôte ESXi de la VM du proxy cloud | TCP 443 | `govc guest.upload` envoie le fichier à l'hôte ESXi, pas au vCenter |
 | Hôte de construction | Global Managers et Local Managers | TCP 443 | Seulement pour le test facultatif de l'étape 5 |
 | Poste d'administration (option A) ou hôte de copie | `github.com` et `raw.githubusercontent.com` | TCP 443 | Téléchargement du pack, de sa somme de contrôle, de son bundle, de `cosign.pub` et de cosign. L'hôte de copie clone aussi le dépôt |
@@ -158,7 +158,7 @@ hôte de construction, ni Docker, ni registre à soi. Quand le proxy cloud n'a p
 images doivent venir d'un registre interne, ajouter la
 [variante](#variante--copier-limage-dans-un-registre-interne) décrite à la fin de cette section.
 
-À ce jour, le téléchargement et toutes les commandes de « Vérifier les signatures » ci-dessous ont été testés,
+À ce jour, le téléchargement et toutes les commandes de « Vérifier les signatures » ci-dessous ont été testés
 sur la version v1.13.7 publiée. La récupération de l'image depuis `ghcr.io` par le proxy cloud n'est pas encore
 testée dans le lab, qui utilise l'option B.
 
@@ -211,8 +211,8 @@ curl -LO https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/releases/downl
 sha256sum -c NSXFederation_1.13.0.pak.sha256
 ```
 
-Le pack désigne l'image `ghcr.io/sorinplaton/nsxfederation` par son digest : le proxy cloud exécute toujours
-l'image avec laquelle le pack a été construit. L'image est publique : le proxy cloud la récupère sans
+Le pack désigne l'image `ghcr.io/sorinplaton/nsxfederation` par son digest, si bien que le proxy cloud exécute
+toujours l'image avec laquelle le pack a été construit. L'image est publique : le proxy cloud la récupère sans
 identifiant, et il fait déjà confiance au certificat de `ghcr.io`, ce qui rend l'étape 4 inutile.
 
 Une vérification facultative, à lancer *sur le proxy cloud* si SSH y est activé, indique avant l'installation
@@ -247,7 +247,7 @@ démarrage de l'adaptateur.
 Pour que le proxy cloud n'accède pas à Internet, utiliser la
 [variante avec registre interne](#variante--copier-limage-dans-un-registre-interne) : une machine qui accède à
 Internet copie une fois l'image dans un registre interne, le pack est pointé vers ce registre, et le proxy cloud
-ne joint alors que ce registre. L'[option B](#1-prérequis) donne le même résultat avec son propre build.
+ne joint alors que ce registre. L'[option B](#1-prérequis) donne le même résultat avec votre propre build.
 
 ### Vérifier les signatures (recommandé)
 
@@ -366,8 +366,8 @@ testées sur `v1.13.5`, la première version qui porte ces attestations, le 2026
 Une fois la somme de contrôle et les deux signatures validées, installer le pack avec l'étape 6, à la main ou
 par script, puis continuer avec les étapes 7 à 10. Les scripts demandent un hôte Linux avec un clone de ce
 dépôt, le fichier de paramètres de l'étape 1 et les outils listés dans
-[Outils pour certaines étapes](#outils-pour-certaines-étapes). Avec la variante avec registre interne, suivre la
-section suivante avant l'étape 6.
+[Outils pour certaines étapes](#outils-pour-certaines-étapes). Avec la variante, suivre la section suivante
+avant l'étape 6.
 
 ### Variante : copier l'image dans un registre interne
 
@@ -377,8 +377,8 @@ construction ni SDK ne sont nécessaires, le proxy cloud ne dépend que du regis
 être analysée avant usage. L'image est copiée à l'identique et garde son digest : c'est toujours l'image que le
 projet a signée. La variante a été testée dans le lab avec un `registry:2` local, et pas avec Harbor.
 
-Dans cette variante, seul l'hôte de copie accède à Internet. Le proxy cloud ne parle qu'au registre interne et
-à NSX.
+Dans cette variante, seul l'hôte de copie accède à Internet. Le proxy cloud parle au registre interne et à
+NSX.
 
 ```mermaid
 flowchart LR
@@ -449,8 +449,8 @@ Ensuite, dans le dossier qui contient le pack téléchargé :
    shell : `cosign copy ghcr.io/sorinplaton/nsxfederation@$DIGEST $HARBOR/$HARBOR_PROJECT/nsxfederation` (après
    `docker login $HARBOR`).
 3. Faire pointer le pack vers le registre interne. `repack.py` réécrit les lignes `REGISTRY` et `REPOSITORY` à
-   l'intérieur du pack, sans créer d'autre fichier. Seuls le registre et le dépôt changent ; le digest reste.
-   Les deux lignes `unzip` affichent le résultat :
+   l'intérieur du pack, dans le fichier même. Seuls le registre et le dépôt changent ; le digest reste. Les
+   deux lignes `unzip` affichent le résultat :
 
    ```bash
    set -a; source ~/fedmp.env; set +a
@@ -459,8 +459,8 @@ Ensuite, dans le dossier qui contient le pack téléchargé :
    unzip -p /tmp/adapter.zip '*.conf' | grep -E '^(REGISTRY|REPOSITORY|DIGEST)='
    ```
 
-   Attendu : `REGISTRY` est le registre interne, `REPOSITORY` vaut `/<projet>/nsxfederation`, et `DIGEST` est la
-   valeur du point 2.
+   Résultat attendu : `REGISTRY` est le registre interne, `REPOSITORY` vaut `/<projet>/nsxfederation`, et
+   `DIGEST` est la valeur du point 2.
 4. Analyser l'image dans le registre interne si l'organisation l'exige, puis installer le pack réécrit avec
    l'étape 6 et continuer avec les étapes 7 à 10. Le proxy cloud n'a besoin que du registre interne, pas de
    `ghcr.io`.
@@ -518,7 +518,7 @@ sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin
 ```
 
 Dans les deux cas, démarrer Docker et l'activer à chaque démarrage du système. Les commandes `docker` de ce
-guide sont préfixées par `sudo` : l'utilisateur de construction n'a donc pas besoin d'être membre du groupe
+guide sont préfixées par `sudo`, et l'utilisateur de construction n'a donc pas besoin d'être membre du groupe
 `docker`.
 
 ```bash
@@ -600,9 +600,9 @@ set -a; source ~/fedmp.env; set +a
 ```
 
 `set -a` demande au shell d'exporter toute variable définie à partir de ce point, `source` lit le fichier, et
-`set +a` arrête l'export. Sans l'export, les valeurs restent dans le shell, et les scripts et les
-conteneurs lancés par les commandes ne les voient pas. Les valeurs durent autant que le shell : un nouveau
-terminal demande de relancer la ligne, et un bloc collé sans elle s'exécute avec des adresses vides.
+`set +a` arrête l'export. Sans l'export, les valeurs restent dans le shell, et les scripts et les conteneurs
+lancés par les commandes ne les voient pas. Les valeurs durent autant que le shell : un nouveau terminal
+demande de relancer la ligne, et un bloc collé sans elle s'exécute avec des adresses vides.
 
 Le fichier contient des mots de passe. Le tenir hors de Git (`fedmp.env` est dans `.gitignore`), et le
 supprimer ou le déplacer dans un coffre une fois l'installation terminée.
@@ -637,7 +637,7 @@ Le certificat contient aussi `127.0.0.1` et `localhost`, et le registre écoute 
 parce que l'étape 3 fait le push de l'image vers `localhost:5000`.
 
 Vérifier le registre. La commande appelle le registre sur l'adresse que le proxy cloud utilisera et n'accepte
-que le certificat qui vient d'être créé : une réponse prouve donc à la fois l'écoute et le certificat. Un
+que le certificat qui vient d'être créé, si bien qu'une réponse prouve à la fois l'écoute et le certificat. Un
 registre neuf répond `{"repositories":[]}` jusqu'au premier push :
 
 ```bash
@@ -675,7 +675,7 @@ construction, le build échoue avec `Bind for 127.0.0.1:8080 failed: port is alr
 pack utilise toujours le port 443 sur le proxy cloud.
 
 Le push de l'image se fait vers `localhost:5000`. Docker accepte le certificat autosigné d'un registre joint par
-l'adresse locale : l'hôte de construction n'a donc pas besoin de son propre dossier de certificat. Le registre
+l'adresse locale, et l'hôte de construction n'a donc pas besoin de son propre dossier de certificat. Le registre
 de l'étape 2 ne demande aucune authentification. `mp-build` demande quand même un utilisateur et un mot de
 passe, et n'importe quelle valeur convient.
 
@@ -712,10 +712,10 @@ curl --cacert ~/fedmp-registry/certs/registry.crt https://$IP:5000/v2/nsxfederat
 
 ## 4. Le proxy cloud fait confiance au certificat du registre
 
-Le certificat de l'étape 2 est autosigné : le proxy cloud le refuse tant qu'on ne lui a pas dit de lui faire
-confiance. Sans cette étape, la récupération de l'image échoue et le compte reste `FAILED` (étape 8). Docker,
-sur le proxy cloud, fait confiance à un registre privé dont le certificat se trouve dans un dossier qui porte
-le nom du registre, port compris. Avec le registre de l'étape 2, le fichier est :
+Le certificat de l'étape 2 est autosigné, et le proxy cloud le refuse donc tant qu'il n'a pas été configuré pour
+lui faire confiance. Sans cette étape, la récupération de l'image échoue et le compte reste `FAILED` (étape 8).
+Docker, sur le proxy cloud, fait confiance à un registre privé dont le certificat se trouve dans un dossier qui
+porte le nom du registre, port compris. Avec le registre de l'étape 2, le fichier est :
 
 ```
 /etc/docker/certs.d/$IP:5000/ca.crt
@@ -810,9 +810,9 @@ cd ~/vcf-ops-nsx-federation-mp
 python3 tools/repack.py pack/build/NSXFederation_$VERSION.pak $HARBOR $HARBOR_PROJECT/nsxfederation
 ```
 
-Le proxy cloud doit lui aussi faire confiance au certificat de Harbor. Avec un certificat émis par une autorité
-qu'il approuve déjà, il n'y a rien d'autre à faire. Sinon, copier le certificat de l'autorité de Harbor sur le
-proxy cloud, comme l'étape 4 le fait pour le registre de l'étape 2. Le dossier est
+Le proxy cloud doit lui aussi faire confiance au certificat de Harbor. Avec un certificat émis par une autorité à
+laquelle il fait déjà confiance, il n'y a rien d'autre à faire. Sinon, copier le certificat de l'autorité de Harbor
+sur le proxy cloud, comme l'étape 4 le fait pour le registre de l'étape 2. Le dossier est
 `/etc/docker/certs.d/harbor.example.com/` (ajouter `:<port>` au nom du dossier quand Harbor n'écoute pas sur le
 port 443) :
 
@@ -832,7 +832,7 @@ affiche ce qu'il enverrait à VCF Operations. Il révèle en une minute une mauv
 passe ou un port bloqué, avant l'installation du pack. Il ne fait que lire dans NSX.
 
 *À exécuter sur : l'hôte de construction.* L'hôte de construction doit pouvoir joindre les managers NSX en
-TCP 443. `sudo` vide l'environnement : `--preserve-env` nomme donc les trois variables à conserver, et chaque
+TCP 443. `sudo` vide l'environnement, donc `--preserve-env` nomme les trois variables à conserver, et chaque
 `-e NOM` sans valeur transmet cette variable au conteneur :
 
 ```bash
@@ -849,9 +849,9 @@ Operations.
 
 ## 6. Installer le pack non signé
 
-Les deux méthodes activent « Allow unsigned PAK installation » pour l'envoi et le désactivent ensuite.
-L'option s'applique à toute l'instance VCF Operations : tant qu'elle est active, n'importe quel pack non signé
-peut être installé. Garder cette durée courte et vérifier à la fin que l'option est désactivée.
+Les deux méthodes activent l'option « Allow unsigned PAK installation » pour l'envoi et la désactivent ensuite.
+L'option s'applique à toute l'instance VCF Operations : tant qu'elle est active, n'importe quel pack non signé peut
+être installé. Garder cette durée courte et vérifier à la fin que l'option est désactivée.
 
 ### À la main
 
@@ -912,8 +912,8 @@ que seul le nettoyage après l'installation a échoué, le plus souvent sur le c
 `WARNING: unsigned PAK installation is still enabled` signifie que le script n'a pas pu désactiver l'option :
 le faire dans la console d'administration.
 
-Pour lire l'option seule, lancer `install/upi.sh getUPIStatus`, puis `install/chrome.sh stop` : `upi.sh` laisse
-tourner le Chrome headless, et ce Chrome détient la session de la console d'administration.
+Pour lire seulement l'état de l'option, lancer `install/upi.sh getUPIStatus`, puis `install/chrome.sh stop` :
+`upi.sh` laisse tourner le Chrome headless, et ce Chrome détient la session de la console d'administration.
 
 Vérifier que le pack NSX Federation apparaît dans sa nouvelle version sous Administration, Integrations,
 Repository.
@@ -1003,7 +1003,7 @@ python3 install/notification_rules.py --outbound '<instance sortante>' --min-cri
 ```
 
 - [ ] La règle « NSX Federation - <instance sortante> » apparaît sous Alerts, Notifications. Elle envoie les
-      alertes nouvelles, mises à jour et annulées : un ticket apprend aussi que l'alerte a disparu.
+      alertes nouvelles, mises à jour et annulées, si bien qu'un ticket apprend aussi que l'alerte a disparu.
 
 ## Mise à niveau
 

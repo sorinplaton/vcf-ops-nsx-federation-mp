@@ -43,13 +43,12 @@ from that tag and publishes them; nobody pushes an image by hand. That path is p
   base pinned by digest (`pack/Dockerfile`), whose `python-3.11` package is the current one at build time.
   Dependabot proposes updates monthly, except for that base, which is moved by hand.
 - **Signatures and attestations.** Each release signs the pack and both images keyless with Sigstore: the
-  certificate names this repository, `release.yml` and the tag. Each also gets a SLSA build provenance attestation
-  (`gh attestation verify`), and the adapter image a signed CycloneDX SBOM attestation
+  certificate names this repository, `release.yml` and the tag. All three also get a SLSA build provenance
+  attestation (`gh attestation verify`), and the adapter image a signed CycloneDX SBOM attestation
   (`cosign verify-attestation --type cyclonedx`), on `ghcr.io` and on Docker Hub. The release job verifies them
   before it creates the draft release, except the SBOM attestation of the Docker Hub copy.
 - **Scanning.** The release and pull-request builds scan the adapter image with Trivy and stop on a CRITICAL
   vulnerability that has a fixed version. The full report is a release asset (`NSXFederation_<version>.trivy.txt`).
-  `pip-audit` checks the Python packages of the adapter image on every push and every Monday.
 - **Install-time check.** VCF Operations cannot read these signatures (KB 415279). `install/install_unsigned.sh`
   runs `install/verify_pak.sh` first: a released pack whose `.sigstore.json` is next to it must verify, or nothing
   is installed.

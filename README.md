@@ -5,7 +5,7 @@
 A management pack for VCF Operations 9.1.1 that monitors NSX Federation (NSX 9.1). It is written in Python with
 the [VCF Operations Integration SDK](https://vmware.github.io/vmware-vcf-operations-integration-sdk/introduction).
 The pack version is 1.13.0 and the latest release is 1.13.7: the release number changes with every publication,
-the pack version only when the content of the pack changes.
+and the pack version changes only with the content of the pack.
 
 This is a community project under the MIT licence, not a Broadcom product. The pack is not signed by Broadcom and
 only reads from NSX. See [Support](#support).
@@ -167,10 +167,10 @@ The pack is not signed by Broadcom, so VCF Operations 9 refuses it until "Allow 
 turned on in the admin console (Broadcom KB 415279). The cloud proxy must also trust the certificate of the
 registry. Part 2 of the blog shows both steps with screenshots.
 
-The manual install is recommended for production: turn the switch on, upload the `.pak` under Administration,
-Integrations, Repository with "Ignore the PAK file signature checking", then turn the switch off.
+The manual install is recommended for production: turn the setting on, upload the `.pak` under Administration,
+Integrations, Repository with "Ignore the PAK file signature checking", then turn the setting off.
 
-The scripted install needs `google-chrome`, `node` and Python `requests` on the host:
+The scripted install needs `google-chrome`, `node` and Python `requests` on the host that runs it:
 
 ```bash
 export OPS_HOST=<vcf-operations-fqdn> OPS_PW=<admin password>
@@ -178,8 +178,8 @@ install/upi.sh enableUPI
 install/install_unsigned.sh pack/build/NSXFederation_<version>.pak   # turns the switch off at the end
 ```
 
-The scripts use calls that are internal to the VCF Operations UI. They are unsupported and can change with any
-release, so a production install should follow the manual steps; the scripts are for labs and repeated tests.
+The scripts use calls that are internal to the VCF Operations UI. These calls are unsupported and can change with
+any release, so a production install should follow the manual steps; the scripts are for labs and repeated tests.
 
 After an upgrade of the pack, stop and start the account. `install_unsigned.sh` also deletes the alert, symptom
 and recommendation definitions the new version no longer ships (`install/cleanup_content.py`).
