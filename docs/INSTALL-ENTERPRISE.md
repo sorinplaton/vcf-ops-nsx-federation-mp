@@ -310,7 +310,9 @@ ISSUER=https://token.actions.githubusercontent.com
 the tag of this release, on GitHub Actions. The release notes on GitHub show the same two values.
 
 A site that does not accept the Wolfi base of release 1.13.7 (step 5) sets `RELEASE=1.13.6`, which has the same
-pack version and adapter code on the Debian 12 base. Nothing else in this guide changes.
+pack version and adapter code on the Debian 12 base. Nothing else in this guide changes. Both bases were tested
+end to end in the lab: Debian 12 with release `v1.13.5`, which is built from the same pack sources as `v1.13.6`,
+and Wolfi with release `v1.13.7`. Release `v1.13.6` itself was taken through steps 2 to 7.
 
 ## 3. Get the pack through Artifactory
 

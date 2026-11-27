@@ -187,8 +187,10 @@ and recommendation definitions the new version no longer ships (`install/cleanup
 ## Tested with
 
 The pack was tested in a lab with NSX 9.1.1 (two Global Managers, active and standby, and two locations), VCF
-Operations 9.1.1.0 and 9.1.2.0 and Integration SDK 1.3.1. Most alert definitions have never fired, because the
-lab has none of those faults. Other versions of NSX or VCF Operations have not been tested.
+Operations 9.1.1.0 and 9.1.2.0 and Integration SDK 1.3.1. Both bases of the adapter image were installed and
+collected there: Debian 12 with release 1.13.5, built from the same pack sources as 1.13.6, and Wolfi with
+release 1.13.7. Most alert definitions have never fired, because the lab has none of those faults. Other versions
+of NSX or VCF Operations have not been tested.
 
 ## Support
 
