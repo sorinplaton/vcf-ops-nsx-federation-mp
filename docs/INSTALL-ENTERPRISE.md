@@ -404,9 +404,10 @@ for example JFrog Xray on the remote repository or on `vcfops-approved`. What to
 
 ## 6. Promote: copy into the approved repository
 
-*Run on: the promotion host.* Copy both images by digest. `--all` copies the image exactly as published, image list
-included. Without it, skopeo may copy only the part for one platform, which has another digest, and the signature
-check of step 4 would no longer apply to what is in `vcfops-approved`. `--preserve-digests` makes skopeo stop
+*Run on: the promotion host.* Copy both images by digest. `--all` copies the image exactly as published. Both
+images are single manifests today, yet in the lab the pack image came out with another digest when it was copied
+without `--all`. With another digest, the signature check of step 4 no longer applies to what is in
+`vcfops-approved`. `--preserve-digests` makes skopeo stop
 rather than change a digest:
 
 ```bash
@@ -506,7 +507,7 @@ docker pull artifactory.example.com/vcfops-approved/nsxfederation@sha256:...   #
 | `Status: Downloaded newer image` or `Image is up to date` | Ready. The image also stays cached on the cloud proxy |
 | `unauthorized` or `authentication required` | Anonymous read is missing on `vcfops-approved` (step 1, item 3) |
 | `x509: certificate signed by unknown authority` | The CA is missing, or its folder name does not match `REGISTRY` |
-| `manifest unknown` | The image is not in `vcfops-approved` under that digest: step 6 was skipped, or done without `--all` |
+| `manifest unknown` | The image is not in `vcfops-approved` under that digest: step 6 was skipped, or the copy changed the digest (done without `--all`) |
 
 A cloud proxy upgrade or redeploy removes the certificate folder; check it after each one.
 
@@ -622,7 +623,7 @@ A site that accepts no outside binary at all can build the pack and its image fr
 
 | Symptom | Cause and fix |
 | --- | --- |
-| The digest in `vcfops-approved` differs from the one of steps 3 and 4 | Copied without `--all`. Copy again with the command of step 6 |
+| The digest in `vcfops-approved` differs from the one of steps 3 and 4 | The copy rewrote the image, as a copy without `--all` did in the lab. Copy again with the command of step 6 |
 | `cosign verify`: `no signatures found` | The signature tag did not come through. Check that the remote repository lists `sha256-<digest>.sig` for the image, or verify against `docker.io/sorinplaton/...` directly from a machine with internet access |
 | `cosign verify`: `none of the expected identities matched` | `SIGNER` names another tag than the image was built from, or the image was not built by the release workflow. Compare with the release notes |
 | `toomanyrequests` from Artifactory | Docker Hub rate limit on anonymous pulls. Add a Docker Hub account to the remote repository |
