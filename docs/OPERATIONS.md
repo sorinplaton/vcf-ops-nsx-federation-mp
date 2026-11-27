@@ -54,14 +54,21 @@ as soon as the managers present certificates signed by a trusted CA.
 
 ## Sizing
 
-Calls per collection cycle, measured with the test suite:
+Calls per collection cycle, measured with the test suite on a federation the size of the lab: two locations, 10
+stretched objects (Tier-0, Tier-1, segment, global security policy) and, in each location, one edge cluster, two
+edge nodes and one collected policy.
 
-- Active Global Manager: about 20, plus one per location and one per stretched object (Tier-0, Tier-1, segment,
-  global security policy). Above 200 stretched objects, the realization of an object is read again only when the
-  object is new, changed in NSX or not fully realized, or once in six cycles. Otherwise the last state is used.
-- Standby Global Manager: 7.
-- Each Local Manager: about 12, plus one per edge cluster, three per edge node, one per Tier-0 locale and one per
-  collected policy.
+| Manager | First cycle after a start | Following cycles |
+| --- | --- | --- |
+| Active Global Manager | 40 | 25 |
+| Standby Global Manager | 10 | 5 |
+| Each Local Manager | 26 | 15 |
+
+- Active Global Manager: in the following cycles, 13 calls plus one per location and one per stretched object.
+  Above 200 stretched objects, the realization of an object is read again only when the object is new, changed in
+  NSX or not fully realized, or once in six cycles. Otherwise the last state is used.
+- Each Local Manager: one more call per collected policy. The count also grows with the edge clusters, the edge
+  nodes and the Tier-0 locales of the location.
 - Every 30 minutes, two more per Local Manager (configuration limits, overrides). Every hour, a few more per
   manager (NTP servers, local users, backup, certificates).
 
