@@ -5,7 +5,7 @@ single source of truth. A tag `v<release>` starts the workflow `.github/workflow
 pack and the adapter image from that tag, publishes them on `ghcr.io` and Docker Hub, signs them, and creates a
 draft GitHub release. Nobody pushes an image by hand. Users download the `.pak` from GitHub
 ([INSTALL.md, Option A](INSTALL.md#option-a-download-the-released-pack)) or pull it from Docker Hub through
-their own registry ([INSTALL-ENTERPRISE.md](INSTALL-ENTERPRISE.md)).
+their own registry ([CUSTOMER-INSTALL.md](CUSTOMER-INSTALL.md)).
 
 ```mermaid
 flowchart LR
@@ -80,10 +80,10 @@ a release changes only the documentation and keeps the pack of the previous one.
    nothing is published as a release before the last step, and a failed run can be started again with
    `gh run rerun <id> --failed` once the cause is fixed.
 4. Check the draft release: the assets, and the digests in its notes. The workflow already verified every
-   signature against its own identity, the way [INSTALL-ENTERPRISE.md](INSTALL-ENTERPRISE.md#4-verify-the-signatures) does.
+   signature against its own identity, the way [CUSTOMER-INSTALL.md](CUSTOMER-INSTALL.md#4-verify-the-signatures) does.
 5. Transition only: add the key signatures (below).
 6. Publish: `gh release edit v<release> --draft=false --latest`.
-7. Update the release numbers in Option A of `docs/INSTALL.md` and `docs/INSTALL.fr.md`, and commit.
+7. Update the release numbers in Option A and in the signature checks of `docs/INSTALL.md` and `docs/INSTALL.fr.md`, and commit.
 
 On a pull request that changes `pack/`, `tooling/`, `pak-image/`, the build action or the workflow, the job `build`
 runs the same build against a throwaway registry, with a read-only token. It pushes nothing and signs nothing; it
@@ -241,7 +241,7 @@ signature.
 
 ### 7. Verify as a user would
 
-With the public key only, the way [Option A](INSTALL.md#verify-the-signatures-recommended) tells users to do it.
+With the public key only, the way [INSTALL.md](INSTALL.md#key-based-check-releases-up-to-v1140) tells users to do it.
 Both must pass before the release is published:
 
 ```bash
@@ -271,7 +271,7 @@ The notes name the image digest, the requirements (cloud proxy to `ghcr.io` and
 Then:
 
 - [ ] Download the assets from the published release and run step 7 on them once more.
-- [ ] Update the version strings in Option A of `docs/INSTALL.md` and `docs/INSTALL.fr.md` (release tag, file
+- [ ] Update the version strings in Option A and in the signature checks of `docs/INSTALL.md` and `docs/INSTALL.fr.md` (release tag, file
       names) and commit.
 - [ ] Remove the build checkout: `git worktree remove ~/fedmp-release`.
 

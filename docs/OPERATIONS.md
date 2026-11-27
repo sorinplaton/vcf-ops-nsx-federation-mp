@@ -366,7 +366,7 @@ python3 install/diagnostics.py            # nsxfederation-diagnostics-<date>-<ti
 
 | Symptom | Check |
 | --- | --- |
-| The account stays `FAILED` with an empty message | The cloud proxy could not pull the adapter image: the registry certificate (INSTALL.md, steps 2 and 4) and the registry log |
+| The account stays `FAILED` with an empty message | The cloud proxy could not pull the adapter image: the registry certificate ([BUILD.md](BUILD.md), steps 2 and 4) and the registry log |
 | The account test fails on a certificate | Accept the certificate, or use trust `ca` with the CA certificates (see "Certificate trust"). After a certificate change on a manager, accept it again |
 | No objects, the account is "Collecting" | The federation object lists the reason under "Global Managers not collected": address, certificate or account |
 | "NSX API calls without an answer" above 0 | The property of the same name: the manager, the call and the HTTP status. 403 is a missing right of the account, 429 or 503 is NSX throttling |

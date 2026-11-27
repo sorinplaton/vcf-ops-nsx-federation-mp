@@ -19,4 +19,4 @@ sha256sum -c SHA256SUMS
 
 The pack needs its adapter image, `<namespace>/nsxfederation` (here and on `ghcr.io/sorinplaton/nsxfederation`,
 same digest). Both images are signed keyless with Sigstore by the release workflow. Install and verification
-steps: [INSTALL-ENTERPRISE.md](https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/blob/main/docs/INSTALL-ENTERPRISE.md).
+steps: [CUSTOMER-INSTALL.md](https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/blob/main/docs/CUSTOMER-INSTALL.md).

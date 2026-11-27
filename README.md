@@ -95,7 +95,9 @@ read-only NSX account is enough; the built-in `audit` account was tested.
 | `tests/` | Test suite with a mock NSX (an anonymised recording of a small federation) |
 | `docs/FEATURES.md`, `docs/FEATURES.fr.md` | Every object type, metric, property and alert of the pack, in English and in French (generated) |
 | `docs/INSTALL.md` | Install guide: checklist and the commands for each step, with the machine they run on ([French](docs/INSTALL.fr.md)) |
-| `docs/INSTALL-ENTERPRISE.md` | Enterprise install through JFrog Artifactory and Docker Hub: verify, scan, promote, install ([French](docs/INSTALL-ENTERPRISE.fr.md)) |
+| `docs/CUSTOMER-INSTALL.md` | Install guide for organisations that use JFrog Artifactory: verify, scan, promote, install ([French](docs/CUSTOMER-INSTALL.fr.md)) |
+| `docs/INSTALL-ENTERPRISE.md` | Maintainer notes for the Artifactory path: scripted install, lab test record ([French](docs/INSTALL-ENTERPRISE.fr.md)) |
+| `docs/BUILD.md` | Build guide (Option B): build the pack from source and push the adapter image to a registry of your own ([French](docs/BUILD.fr.md)) |
 | `docs/OPERATIONS.md` | Account settings, certificate trust, sizing, alert behaviour, groups, notifications, troubleshooting, upgrade |
 | `docs/RELEASE.md` | Maintainer guide: the release workflow (tag, build, keyless signatures, ghcr.io and Docker Hub), the manual fallback, and what to do if the signing key is lost |
 | `pak-image/` | The image that carries the `.pak` on `ghcr.io` and Docker Hub, and its Docker Hub description |
@@ -104,11 +106,11 @@ read-only NSX account is enough; the built-in `audit` account was tested.
 ## Build
 
 The build needs Docker and an image registry the cloud proxy can reach over HTTPS. The commands below are the
-ones of [docs/INSTALL.md](docs/INSTALL.md), which also sets up that registry on the build host (step 2). They
+ones of [docs/BUILD.md](docs/BUILD.md), which also sets up that registry on the build host (step 2). They
 carry `sudo`, so the build user does not have to be in the `docker` group.
 
 The addresses and the passwords are read from one settings file, `~/fedmp.env`, made from
-[install/fedmp.env.example](install/fedmp.env.example) (install guide, step 1).
+[install/fedmp.env.example](install/fedmp.env.example) (build guide, step 1).
 
 ```bash
 set -a; source ~/fedmp.env; set +a
@@ -130,10 +132,10 @@ sudo docker run --rm --network host -u $(id -u):$(getent group docker | cut -d: 
 python3 tools/repack.py pack/build/NSXFederation_$VERSION.pak $IP:5000 nsxfederation
 ```
 
-The registry of the install guide has no login. `mp-build` still asks for a user and a password, and any value
+The registry of the build guide has no login. `mp-build` still asks for a user and a password, and any value
 works. When the registry is given as `host:port` without a domain, `mp-build` writes Docker Hub into the pack;
 `tools/repack.py <pak> <host:port> <repository>` corrects it. With an existing Harbor registry, follow
-[Variant: an existing Harbor registry](docs/INSTALL.md#variant-an-existing-harbor-registry) in the install guide.
+[Variant: an existing Harbor registry](docs/BUILD.md#variant-an-existing-harbor-registry) in the build guide.
 
 After a change to the Dockerfile or to `pack/adapter_requirements.txt`, run `tools/image_lock.sh <built image>` and
 commit `pack/image-requirements.txt`: CI checks those packages for known vulnerabilities (see
@@ -154,7 +156,7 @@ Two paths:
 - **Enterprise, through Artifactory.** The pack and the adapter image are also on Docker Hub
   (`sorinplaton/nsxfederation-pak`, `sorinplaton/nsxfederation`). An organisation pulls them through its
   Artifactory, verifies, scans and promotes them by digest, and installs from there:
-  [docs/INSTALL-ENTERPRISE.md](docs/INSTALL-ENTERPRISE.md).
+  [docs/CUSTOMER-INSTALL.md](docs/CUSTOMER-INSTALL.md).
 - **Option B, build your own.** Build the pack and push the image to a registry the cloud proxy trusts, for a
   cloud proxy without internet access or an internal-registry policy.
 
@@ -192,8 +194,7 @@ Other versions of NSX or VCF Operations have not been tested.
 
 ## Support
 
-There is no SLA and no support from Broadcom: Broadcom support does not cover this pack. Report bugs and ask
-questions in the [GitHub issues](https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/issues), with the output
+Broadcom support does not cover this pack. Report bugs and ask questions in the [GitHub issues](https://github.com/sorinplaton/vcf-ops-nsx-federation-mp/issues), with the output
 of `install/diagnostics.py`. Report a vulnerability privately, as in [SECURITY.md](SECURITY.md). Known findings of
 the adapter image without a fixed version are listed in SECURITY.md and in the Trivy report of each release.
 

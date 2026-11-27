@@ -212,7 +212,7 @@ jobs:
           of the adapter image is \`NSXFederation_$V.trivy.txt\`.
 
           Install: [docs/INSTALL.md](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_REF_NAME}/docs/INSTALL.md).
-          Enterprise registry (Artifactory): [docs/INSTALL-ENTERPRISE.md](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_REF_NAME}/docs/INSTALL-ENTERPRISE.md).
+          Enterprise registry (Artifactory): [docs/CUSTOMER-INSTALL.md](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_REF_NAME}/docs/CUSTOMER-INSTALL.md).
           NOTES
           cd pack/build
           gh release create "$GITHUB_REF_NAME" --draft --verify-tag --title "$R" --notes-file /tmp/notes.md \

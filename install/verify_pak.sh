@@ -11,7 +11,7 @@
 # FEDMP_IMAGE_REPO where to read the adapter image signature, default ghcr.io/sorinplaton/nsxfederation (the digest is
 #                  the same on Docker Hub and in a registry that mirrors it, so any of them can be named here).
 # FEDMP_PAK_SHA256 the SHA-256 the organisation recorded for this exact file (for a rewritten _site pack, the value
-#                  of INSTALL-ENTERPRISE.md step 7). When set, it is checked first, whatever FEDMP_VERIFY says, and a
+#                  of CUSTOMER-INSTALL.md step 7). When set, it is checked first, whatever FEDMP_VERIFY says, and a
 #                  mismatch stops the install. It needs no network, so it also works on an air-gapped site.
 # cosign from the PATH, or the cosign 2.4.1 image through Docker. Needs unzip.
 # usage: verify_pak.sh <pak>
