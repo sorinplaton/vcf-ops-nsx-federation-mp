@@ -1,17 +1,19 @@
 # Installation en entreprise : Docker Hub et Artifactory
 
-Comment une organisation installe le pack NSX Federation quand tout ce qu'elle exécute doit passer par son propre
-JFrog Artifactory, et qu'Artifactory prend les images publiques sur Docker Hub. Le pack et l'image de son
+Ce guide installe le pack NSX Federation dans une organisation où tout ce qui s'exécute doit passer par son propre
+JFrog Artifactory, et où Artifactory prend les images publiques sur Docker Hub. Le pack et l'image de son
 adaptateur sont publiés sur Docker Hub par le workflow de publication du projet. L'organisation les récupère via
 Artifactory, vérifie leurs signatures, les analyse, les copie dans un dépôt d'images approuvées, et installe depuis
-ce dépôt. Aucune machine de l'organisation n'a besoin de joindre GitHub ou Docker Hub, à part Artifactory lui-même
-et l'hôte de promotion, qui télécharge ses outils sur GitHub une seule fois (étape 2) et joint Sigstore pour la
-vérification des signatures (étape 4).
+ce dépôt. Seuls Artifactory et l'hôte de promotion ont besoin de joindre GitHub ou Docker Hub. L'hôte de promotion
+télécharge ses outils sur GitHub une seule fois (étape 2) et joint Sigstore pour la vérification des signatures
+(étape 4).
 
-Les étapes 2 à 7 ont été testées le 2026-11-26 avec les versions `v1.13.3`, `v1.13.5` et `v1.13.6`, avec JFrog Container
-Registry 7.161.26 (l'édition gratuite d'Artifactory) servi en HTTPS avec une autorité interne. Ce mode a ensuite été exécuté de bout en bout le 2026-11-27 avec la version `v1.13.5` : lecture anonyme sur
+Les étapes 2 à 7 ont été testées le 2026-11-26 avec les versions `v1.13.3`, `v1.13.5` et `v1.13.6`, avec JFrog
+Container Registry 7.161.26 (l'édition gratuite d'Artifactory) servi en HTTPS avec une autorité interne. Ce mode a
+ensuite été exécuté de bout en bout le 2026-11-27 avec la version `v1.13.5` : lecture anonyme sur
 `vcfops-approved`, récupération par le proxy cloud, installation depuis Artifactory, compte, et retour arrière vers
-`v1.13.3`. La désinstallation et JFrog Xray restent à tester. [Ce qui a été testé](#ce-qui-a-été-testé) détaille
+`v1.13.3`. La version `v1.13.7` a suivi le même parcours le même jour, sans le retour arrière. La désinstallation
+et JFrog Xray restent à tester. [Ce qui a été testé](#ce-qui-a-été-testé) détaille
 chaque étape.
 
 Pour les autres modes d'installation (téléchargement depuis GitHub, build par vos soins, Harbor), voir
@@ -82,8 +84,8 @@ DIGEST=sha256:...
 ```
 
 Au démarrage du compte, le proxy cloud lance un `docker pull` de `REGISTRY` + `REPOSITORY` + `@DIGEST`. L'étape 7
-réécrit les deux premières lignes pour qu'il récupère l'image depuis Artifactory. Le digest ne change pas : le
-proxy cloud exécute donc toujours exactement l'image qui a été signée et analysée.
+réécrit les deux premières lignes pour que la récupération se fasse depuis Artifactory. Le digest ne change pas :
+le proxy cloud exécute donc toujours exactement l'image qui a été signée et analysée.
 
 Chaque étape ci-dessous copie et vérifie les images par leur digest. Un tag comme `1.13.3` est une étiquette qui
 peut être déplacée vers une autre image ; un digest est le SHA-256 de l'image elle-même et ne peut pas l'être.
@@ -153,8 +155,8 @@ désactive l'option.
   signature.
 - **Combien de temps l'option reste activée.** Le temps du téléversement et de l'installation seulement.
   `install/upi.sh enableUPI` l'active juste avant l'installation, et `install/install_unsigned.sh` la désactive
-  quelle que soit l'issue de l'installation : succès, échec, Ctrl-C ou terminal perdu. Il réessaie pendant dix
-  minutes au plus tant que l'installation est encore en cours, et se termine avec un code différent de 0 si
+  quelle que soit l'issue de l'installation : succès, échec, Ctrl-C ou terminal perdu. Le script réessaie pendant
+  dix minutes au plus tant que l'installation est encore en cours, et se termine avec un code différent de 0 si
   l'option est toujours activée. L'option s'applique à toute l'instance : l'administrateur vérifie donc à la fin
   que la console d'administration l'affiche désactivée.
 - **Ce qui remplace la signature Broadcom.** Trois vérifications, toutes faites par l'organisation :
@@ -271,9 +273,10 @@ curl -LO https://raw.githubusercontent.com/sorinplaton/vcf-ops-nsx-federation-mp
 
 **Docker au lieu de skopeo et cosign.** Beaucoup de sites autorisent Docker sur un hôte mais pas de paquets
 supplémentaires. skopeo et cosign s'exécutent alors en conteneurs, et rien d'autre n'est installé. Définir les deux
-fonctions dans le shell et garder toutes les commandes des étapes 3 à 7 telles quelles ; c'est ainsi que le runbook
-du lab les a exécutées. `certs/ca.crt` est l'autorité interne d'Artifactory, `bundle.pem` les autorités publiques
-plus cette autorité, et `dc/config.json` un fichier de connexion Docker pour Artifactory que seul cosign lit :
+fonctions ci-dessous dans le shell et garder toutes les commandes des étapes 3 à 7 telles quelles ; c'est ainsi que
+le runbook du lab les a exécutées. `certs/ca.crt` est l'autorité interne d'Artifactory, `bundle.pem` les autorités
+publiques plus cette autorité, et `dc/config.json` un fichier de connexion Docker pour Artifactory que seul cosign
+lit :
 
 ```bash
 mkdir -p certs dc && cp internal-ca.crt certs/ca.crt && chmod 700 dc
@@ -285,19 +288,19 @@ cosign() { docker run --rm --network host -u "$(id -u)" -e HOME=/tmp -e SSL_CERT
 ```
 
 Dans le conteneur, skopeo ne voit pas `/etc/containers/certs.d` : ajouter `--cert-dir /certs` à `skopeo inspect`,
-et `--src-cert-dir /certs --dest-cert-dir /certs` à `skopeo copy`. Écrire `dc/config.json` après les paramètres
-ci-dessous, puis supprimer le dossier `dc` à la fin :
+et `--src-cert-dir /certs --dest-cert-dir /certs` à `skopeo copy`. Supprimer le dossier `dc` à la fin. Écrire
+`dc/config.json` une fois les paramètres ci-dessous définis, car il utilise `ART`, `ART_USER` et `ART_TOKEN` :
 
 ```bash
 printf '{"auths":{"%s":{"auth":"%s"}}}' "$ART" "$(printf '%s:%s' "$ART_USER" "$ART_TOKEN" | base64 -w0)" > dc/config.json
 chmod 600 dc/config.json
 ```
 
-L'étape 6 peut aussi utiliser Docker lui-même, voir [Docker seul](#docker-seul).
+L'étape 6 peut aussi utiliser Docker lui-même : voir [Docker seul](#docker-seul).
 
-Si Artifactory utilise un certificat émis par une autorité interne, le donner à skopeo et à cosign. skopeo lit un
-dossier qui porte le nom du registre ; cosign lit le magasin de confiance du système, où il faut donc aussi
-ajouter l'autorité :
+Si Artifactory utilise un certificat émis par une autorité interne, donner cette autorité à skopeo et à cosign.
+skopeo lit un dossier qui porte le nom du registre ; cosign lit le magasin de confiance du système, où il faut donc
+aussi ajouter l'autorité :
 
 ```bash
 sudo mkdir -p /etc/containers/certs.d/artifactory.example.com
@@ -305,7 +308,8 @@ sudo cp internal-ca.crt /etc/containers/certs.d/artifactory.example.com/ca.crt
 sudo cp internal-ca.crt /usr/local/share/ca-certificates/ && sudo update-ca-certificates   # RHEL : /etc/pki/ca-trust/source/anchors/ + update-ca-trust
 ```
 
-Paramètres des commandes ci-dessous. Les définir dans chaque nouveau shell ; le jeton est saisi, pas enregistré :
+Les commandes ci-dessous utilisent ces paramètres. Les définir dans chaque nouveau shell ; le jeton est saisi, pas
+enregistré :
 
 ```bash
 ART=artifactory.example.com          # nom d'hôte d'Artifactory, avec :port s'il n'écoute pas sur 443
@@ -322,8 +326,8 @@ ISSUER=https://token.actions.githubusercontent.com
 dépôt, à partir du tag de cette version, sur GitHub Actions. Les notes de version sur GitHub donnent les mêmes
 deux valeurs.
 
-Un site qui n'accepte pas la base Wolfi de la version 1.13.7 (étape 5) définit `RELEASE=1.13.6`, soit la même
-version de pack et le même code d'adaptateur sur la base Debian 12 ; rien d'autre ne change dans ce guide.
+Un site qui n'accepte pas la base Wolfi de la version 1.13.7 (étape 5) définit `RELEASE=1.13.6`, qui a la même
+version de pack et le même code d'adaptateur sur la base Debian 12. Rien d'autre ne change dans ce guide.
 
 ## 3. Récupérer le pack via Artifactory
 
@@ -358,12 +362,12 @@ Sur une machine avec Docker qui fait confiance à Artifactory, le même fichier 
 
 ## 4. Vérifier les signatures
 
-*À exécuter sur : l'hôte de promotion.* Deux vérifications, toutes deux via Artifactory : cosign lit la signature
+*À exécuter sur : l'hôte de promotion.* Les deux vérifications passent par Artifactory : cosign lit la signature
 stockée à côté de chaque image (tag `sha256-<digest>.sig`), et Artifactory la sert depuis Docker Hub comme
 n'importe quel autre tag.
 
-L'image du pack. Son digest couvre chaque octet du `.pak` et de `SHA256SUMS` : cette vérification couvre donc
-aussi le fichier de l'étape 3 :
+La première vérification porte sur l'image du pack. Son digest couvre chaque octet du `.pak` et de `SHA256SUMS`, si
+bien qu'elle couvre aussi le fichier de l'étape 3 :
 
 ```bash
 cosign login $ART -u "$ART_USER" -p "$ART_TOKEN"
@@ -371,7 +375,8 @@ cosign verify --certificate-identity "$SIGNER" --certificate-oidc-issuer "$ISSUE
   $ART/$HUB/sorinplaton/nsxfederation-pak@$PAK_DIGEST > /dev/null && echo "pack image: verified"
 ```
 
-L'image de l'adaptateur que désigne le pack. Les deux premières lignes lisent son digest dans le pack :
+La seconde vérification porte sur l'image de l'adaptateur que désigne le pack. Les deux premières lignes lisent son
+digest dans le pack :
 
 ```bash
 unzip -p pak/NSXFederation_*.pak adapter.zip > /tmp/adapter.zip
@@ -380,15 +385,17 @@ cosign verify --certificate-identity "$SIGNER" --certificate-oidc-issuer "$ISSUE
   $ART/$HUB/sorinplaton/nsxfederation@$AD_DIGEST > /dev/null && echo "adapter image: verified"
 ```
 
-Les deux lignes doivent se terminer par `verified`. cosign affiche les contrôles qu'il a faits : la signature, le
-certificat qui nomme `SIGNER`, et l'entrée dans le journal de transparence public. Un échec signifie que l'image
-n'est pas celle que le workflow de publication a construite pour ce tag : s'arrêter et ne pas la promouvoir.
+Les deux commandes doivent afficher une ligne qui se termine par `verified`. cosign affiche les contrôles qu'il a
+faits : la signature, le certificat qui nomme `SIGNER`, et l'entrée dans le journal de transparence public. Un
+échec signifie que l'image n'est pas celle que le workflow de publication a construite pour ce tag : s'arrêter et
+ne pas la promouvoir.
 
 À partir de `v1.13.5`, deux autres vérifications sont disponibles. Le SBOM de l'image de l'adaptateur accompagne
-l'image sous forme d'attestation signée (tag `sha256-<digest>.att`, servi par Artifactory comme la signature) ;
-cosign la vérifie et peut l'écrire dans un fichier pour l'outil d'analyse de l'étape 5. La provenance de
-construction (SLSA) indique quel commit et quelle exécution du workflow ont construit chaque image ; la CLI GitHub
-la vérifie auprès de `api.github.com`, par digest, et elle s'applique donc aussi à la copie dans Artifactory :
+l'image sous forme d'attestation signée (tag `sha256-<digest>.att`, servi par Artifactory comme la signature).
+cosign vérifie l'attestation et peut écrire le SBOM dans un fichier pour l'outil d'analyse de l'étape 5. La
+provenance de construction (SLSA) indique quel commit et quelle exécution du workflow ont construit chaque image.
+La CLI GitHub la vérifie auprès de `api.github.com`, par digest, si bien que la vérification s'applique aussi à la
+copie dans Artifactory :
 
 ```bash
 cosign verify-attestation --type cyclonedx --certificate-identity "$SIGNER" --certificate-oidc-issuer "$ISSUER" \
@@ -397,8 +404,8 @@ gh attestation verify oci://docker.io/sorinplaton/nsxfederation@$AD_DIGEST -R so
   --signer-workflow sorinplaton/vcf-ops-nsx-federation-mp/.github/workflows/release.yml
 ```
 
-`jq` vient des paquets de la distribution et `gh` de https://cli.github.com. Testé avec `v1.13.5`, la première
-version qui porte ces attestations.
+`jq` vient des paquets de la distribution et `gh` de https://cli.github.com. Les deux vérifications ont été testées
+avec `v1.13.5`, la première version qui porte ces attestations.
 
 Les versions jusqu'à `v1.13.2` sont signées avec la clé du projet, et leurs images ne sont que sur `ghcr.io`. Pour
 celles-ci, [INSTALL.fr.md](INSTALL.fr.md#vérifier-les-signatures-recommandé) donne les commandes avec `cosign.pub`.
@@ -413,19 +420,18 @@ Résultats attendus :
   paquet.
 - L'image de l'adaptateur est une base Wolfi avec Python 3.11 et les paquets du SDK (Debian 12 jusqu'à la version
   1.13.6). Son SBOM accompagne l'image sous forme d'attestation signée (étape 4) et figure en fichier dans la
-  version GitHub
-  (`NSXFederation_<version>.sbom.cdx.json`). La version contient aussi le rapport Trivy du projet
-  (`NSXFederation_<version>.trivy.txt`) : la construction de la version s'arrête sur une vulnérabilité CRITICAL
-  qui a un correctif. L'analyse du build 1.13.7 n'a trouvé aucune vulnérabilité ; les versions jusqu'à 1.13.6
-  portent une centaine de vulnérabilités HIGH ou CRITICAL de la base Debian sans version corrigée, comme l'explique
+  version GitHub (`NSXFederation_<version>.sbom.cdx.json`). La version contient aussi le rapport Trivy du projet
+  (`NSXFederation_<version>.trivy.txt`) : la construction de la version s'arrête sur une vulnérabilité CRITICAL qui
+  a un correctif. L'analyse du build 1.13.7 n'a trouvé aucune vulnérabilité ; les versions jusqu'à 1.13.6 portent
+  une centaine de vulnérabilités HIGH ou CRITICAL de la base Debian sans version corrigée, comme l'explique
   [SECURITY.md](../SECURITY.md).
 
 ## 6. Promouvoir : copier dans le dépôt des images approuvées
 
 *À exécuter sur : l'hôte de promotion.* Copier les deux images par leur digest. `--all` copie l'image exactement
-telle qu'elle a été publiée, liste comprise ; sans cette option, skopeo peut ne copier que la partie d'une seule
-plateforme, qui a un autre digest, et la vérification des signatures de l'étape 4 ne s'appliquerait plus à ce qui
-se trouve dans `vcfops-approved`. `--preserve-digests` fait s'arrêter skopeo plutôt que de changer un digest :
+telle qu'elle a été publiée, liste d'images comprise. Sans cette option, skopeo peut ne copier que la partie d'une
+seule plateforme, qui a un autre digest, et la vérification des signatures de l'étape 4 ne s'appliquerait plus à ce
+qui se trouve dans `vcfops-approved`. `--preserve-digests` fait s'arrêter skopeo plutôt que de changer un digest :
 
 ```bash
 C="--all --preserve-digests --src-creds $ART_USER:$ART_TOKEN --dest-creds $ART_USER:$ART_TOKEN"
@@ -443,7 +449,7 @@ Résultat attendu : les deux digests des étapes 3 et 4. Pour pouvoir vérifier 
 l'image du pack.
 
 Avec Artifactory Pro, l'API de promotion Docker ou `jf rt docker-promote` peut faire cette copie à l'intérieur
-d'Artifactory. Ce cas n'a pas été testé ici ; vérifier ensuite les digests de la même façon.
+d'Artifactory. Cette voie n'a pas été testée ; vérifier ensuite les digests de la même façon.
 
 ### Docker seul
 
@@ -467,9 +473,9 @@ Si un digest diffère, supprimer ce tag de `vcfops-approved` et copier avec skop
 
 ## 7. Faire pointer le pack vers le dépôt des images approuvées
 
-*À exécuter sur : l'hôte de promotion.* `repack.py` réécrit les lignes `REGISTRY` et `REPOSITORY` à l'intérieur
-du pack, dans le fichier même, et affiche le fichier `.conf` réécrit. Travailler sur une copie, pour que l'original reste
-tel qu'il a été signé :
+*À exécuter sur : l'hôte de promotion.* `repack.py` réécrit les lignes `REGISTRY` et `REPOSITORY` à l'intérieur du
+pack, dans le fichier même, et affiche le fichier `.conf` réécrit. Travailler sur une copie, pour que l'original
+reste tel qu'il a été signé :
 
 ```bash
 V=$(ls pak/NSXFederation_*.pak | sed 's/.*NSXFederation_\(.*\)\.pak/\1/')
@@ -508,8 +514,8 @@ curl -fS -u "$ART_USER:$ART_TOKEN" -T NSXFederation_${V}_site.pak \
 temps de l'étape, ou exécuter les commandes par les opérations d'invité de vCenter, comme dans
 [INSTALL.fr.md, étape 4](INSTALL.fr.md#4-le-proxy-cloud-fait-confiance-au-certificat-du-registre).
 
-Si Artifactory utilise une autorité interne, Docker sur le proxy cloud en a besoin, dans un dossier qui porte
-exactement le nom de la valeur `REGISTRY` de l'étape 7, avec `:port` s'il y en a un :
+Si Artifactory utilise une autorité interne, Docker sur le proxy cloud a besoin du certificat de cette autorité,
+dans un dossier qui porte exactement le nom de la valeur `REGISTRY` de l'étape 7, avec `:port` s'il y en a un :
 
 ```bash
 mkdir -p /etc/docker/certs.d/artifactory.example.com
@@ -546,10 +552,10 @@ docker pull artifactory.example.com/vcfops-approved/nsxfederation@sha256:...   #
 docker logout artifactory.example.com
 ```
 
-Recommencer pour chaque nouvelle version, avant l'installation de l'étape 9, et après tout ce qui vide le magasin
-d'images du proxy cloud (un redéploiement, une mise à niveau, un `docker image prune`). Sans l'image, le compte
-échoue avec `Failed to download image` dans `collector.log`. Un identifiant enregistré pour l'utilisateur du
-collecteur, pour que le proxy cloud récupère l'image lui-même, n'a pas été testé.
+Refaire cette récupération pour chaque nouvelle version, avant l'installation de l'étape 9, et après tout ce qui
+vide le magasin d'images du proxy cloud (un redéploiement, une mise à niveau, un `docker image prune`). Sans
+l'image, le compte échoue avec `Failed to download image` dans `collector.log`. Un identifiant enregistré pour
+l'utilisateur du collecteur, pour que le proxy cloud récupère l'image lui-même, n'a pas été testé.
 
 ## 9. Installer
 
@@ -560,8 +566,9 @@ l'étape 4 sont celles du projet, et VCF Operations ne les lit pas : c'est donc 
 vérifie (`install/verify_pak.sh`).
 
 Donner au script le SHA-256 enregistré à l'étape 7. Il refuse alors tout autre fichier. Pour qu'il vérifie aussi la
-signature de l'image de l'adaptateur via Artifactory, définir `FEDMP_VERIFY=1` et `FEDMP_IMAGE_REPO`, après y avoir
-copié les signatures (`cosign copy`, étape 6). Lancer d'abord la vérification seule, avant d'activer l'option :
+signature de l'image de l'adaptateur via Artifactory, définir `FEDMP_VERIFY=1` et `FEDMP_IMAGE_REPO`, après avoir
+copié les signatures dans `vcfops-approved` (`cosign copy`, étape 6). Lancer d'abord la vérification seule, avant
+d'activer l'option :
 
 ```bash
 export FEDMP_PAK_SHA256=<the SHA-256 of step 7>
@@ -582,11 +589,11 @@ récupère le nouveau tag sur Docker Hub la première fois qu'il lui est demand�
 
 ## Revenir à la version précédente
 
-Un retour arrière réinstalle le pack précédent par-dessus le pack actuel. Testé le 2026-11-27 de `v1.13.5` vers
-`v1.13.3`, deux versions avec la même version de pack ; un retour vers une version de pack inférieure n'a pas été
-testé. Il fonctionne tant que les images précédentes sont encore dans `vcfops-approved`, raison pour laquelle
-[Mise à niveau](#mise-à-niveau-vers-une-nouvelle-version) demande de les garder, et que le pack `_site` précédent
-et son SHA-256 enregistré sont conservés.
+Un retour arrière réinstalle le pack précédent par-dessus le pack actuel. Il a été testé le 2026-11-27 de `v1.13.5`
+vers `v1.13.3`, deux versions avec la même version de pack ; un retour vers une version de pack inférieure n'a pas
+été testé. Il a besoin de trois éléments de la version précédente : ses images encore présentes dans
+`vcfops-approved` (raison pour laquelle [Mise à niveau](#mise-à-niveau-vers-une-nouvelle-version) demande de les
+garder), son pack `_site`, et le SHA-256 enregistré de ce pack.
 
 1. Vérifier que l'image précédente de l'adaptateur est toujours là, par le digest que son pack désigne :
    `skopeo inspect docker://$ART/$APPROVED/nsxfederation@<previous AD_DIGEST>`.
@@ -603,10 +610,11 @@ avec les étapes 3 à 6 de la version précédente ; leurs digests et leurs sign
 
 ## Désinstaller
 
-Pas encore testé. Dans cet ordre, pour que rien ne collecte avec un pack qui n'existe plus :
+La désinstallation n'a pas encore été testée. Suivre cet ordre, pour que rien ne collecte avec un pack qui n'existe
+plus :
 
 1. VCF Operations, Administration, Integrations, Accounts : arrêter les comptes NSX Federation, puis les supprimer.
-2. Facultatif : supprimer ce que le pack a créé en dehors du pack lui-même : les groupes par fédération
+2. Facultatif : supprimer ce que le pack a créé en dehors du pack lui-même, à savoir les groupes par fédération
    (INSTALL.fr.md, étape 9) et les règles de notification (étape 10).
 3. Administration, Integrations, Repository : sélectionner le pack NSX Federation et le désinstaller. Vérifier dans
    Inventory qu'il ne reste aucun objet du type d'adaptateur NSX Federation ; supprimer ceux qui restent, avec leur
@@ -624,8 +632,8 @@ Sur un site sans aucun accès à Internet, Artifactory ne peut pas joindre Docke
 joindre Sigstore depuis l'intérieur. Vérifier sur un hôte connecté, transférer les images sous forme de fichiers, et
 vérifier à l'intérieur que les digests sont toujours ceux qui ont été vérifiés :
 
-1. **Hôte connecté.** Les étapes 3 et 4 directement face à `docker.io/sorinplaton/...`, sans Artifactory. Garder la
-   sortie de `cosign verify`, les deux digests et les notes de version avec le transfert.
+1. **Hôte connecté.** Exécuter les étapes 3 et 4 directement sur `docker.io/sorinplaton/...`, sans Artifactory.
+   Garder la sortie de `cosign verify`, les deux digests et les notes de version avec le transfert.
 2. **Export.** Copier les deux images dans des dossiers avec le transport `dir:`, qui conserve chaque manifeste
    octet pour octet, puis les regrouper dans un seul fichier pour le transfert :
 
@@ -641,8 +649,8 @@ vérifier à l'intérieur que les digests sont toujours ceux qui ont été véri
    `vcfops-approved` avec `skopeo copy --all --preserve-digests dir:<folder> docker://$ART/$APPROVED/<image>:$RELEASE`.
    Vérifier ensuite les digests comme à l'étape 6 : ils doivent correspondre à ceux enregistrés sur l'hôte connecté.
    Des images de mêmes digests sont les octets dont les signatures y ont été vérifiées.
-4. Les étapes 7 à 9 telles qu'écrites. `FEDMP_PAK_SHA256` n'a besoin d'aucun réseau. Laisser `FEDMP_VERIFY` non
-   défini ou à `0` à l'intérieur, puisque cosign ne peut pas y joindre Sigstore.
+4. Exécuter les étapes 7 à 9 telles qu'écrites. La vérification par `FEDMP_PAK_SHA256` n'a besoin d'aucun réseau.
+   Laisser `FEDMP_VERIFY` non défini ou à `0` à l'intérieur, puisque cosign ne peut pas y joindre Sigstore.
 
 Un site qui n'accepte aucun binaire venu de l'extérieur peut construire le pack et son image à partir des sources
 (option B de [INSTALL.fr.md](INSTALL.fr.md)), après avoir relu les sources.

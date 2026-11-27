@@ -1,9 +1,9 @@
 # Release guide (maintainer)
 
-This guide describes how a release is built, signed and published. Git is the
-single source of truth. A tag `v<release>` starts the workflow `.github/workflows/release.yml`, which builds the
-pack and the adapter image from that tag, publishes them on `ghcr.io` and Docker Hub, signs them, and creates a
-draft GitHub release. Nobody pushes an image by hand. Users download the `.pak` from GitHub
+Git is the single source of truth for a release. A tag `v<release>` starts the workflow
+`.github/workflows/release.yml`, which builds the pack and the adapter image from that tag, publishes them on
+`ghcr.io` and Docker Hub, signs them, and creates a draft GitHub release. Nobody pushes an image by hand. Users
+download the `.pak` from GitHub
 ([INSTALL.md, Option A](INSTALL.md#option-a-download-the-released-pack)) or pull it from Docker Hub through
 their own registry ([INSTALL-ENTERPRISE.md](INSTALL-ENTERPRISE.md)).
 
@@ -46,10 +46,10 @@ a release does not change the content of the pack.
       no API for this on a personal account. `nsxfederation-pak` is created by the first run, already linked.
 - [ ] **ghcr.io: make `nsxfederation-pak` public** after the first run: its Package settings, Danger Zone, Change
       visibility, Public. New packages start private.
-- [ ] **Docker Hub.** Repositories `sorinplaton/nsxfederation` and `sorinplaton/nsxfederation-pak`, public. A
-      Docker Hub personal access token with Read, Write, Delete (Delete is needed to update the repository
-      description), stored as the Actions secret `DOCKERHUB_TOKEN`, and the namespace as the Actions variable
-      `DOCKERHUB_NAMESPACE`. Typed at the prompt, never pasted elsewhere:
+- [ ] **Docker Hub.** The repositories `sorinplaton/nsxfederation` and `sorinplaton/nsxfederation-pak` must be
+      public. A Docker Hub personal access token with Read, Write, Delete (Delete is needed to update the
+      repository description) is stored as the Actions secret `DOCKERHUB_TOKEN`, and the namespace as the Actions
+      variable `DOCKERHUB_NAMESPACE`. Type the token at the prompt and never paste it elsewhere:
 
       ```bash
       gh secret set DOCKERHUB_TOKEN -R sorinplaton/vcf-ops-nsx-federation-mp
@@ -95,11 +95,11 @@ shows that the release still builds and that the adapter image has no CRITICAL v
 ### Transition: key signatures next to keyless ones
 
 Users of releases up to `v1.13.2` verify with `cosign.pub`. For releases up to and including `v1.14.0`, add the
-key signatures to the draft, so that they can keep their check while they move to the keyless one. From the next
-release on, skip this step, remove `cosign.pub` from the repository root with a `CHANGELOG.md` entry, and keep the
-key folder only as long as older releases need to be signed again. The private key stays on
-the maintainer machine; it is never given to GitHub. With `RELEASE`, `VERSION` and the adapter digest `DIGEST`
-of the draft release:
+key signatures to the draft, so that those users can keep their check while they move to the keyless one. From
+the next release on, skip this step, remove `cosign.pub` from the repository root with a `CHANGELOG.md` entry,
+and keep the key folder only as long as older releases need to be signed again. The private key stays on the
+maintainer machine; it is never given to GitHub. Set `RELEASE`, `VERSION` and the adapter digest `DIGEST` of the
+draft release, then run:
 
 ```bash
 mkdir -p /tmp/rel && cd /tmp/rel
@@ -117,9 +117,9 @@ Then sign the adapter image with the key as in [step 5](#5-sign-the-image) of th
 
 ## Manual release (fallback, and releases up to v1.13.2)
 
-The steps below build, sign and publish from the maintainer machine with the project key. They were the release
-process up to `v1.13.2`, and they remain the fallback when GitHub Actions cannot run. A manual release is not
-signed keyless and is not copied to Docker Hub.
+A manual release is built, signed and published from the maintainer machine with the project key. This was the
+release process up to `v1.13.2`, and it remains the fallback when GitHub Actions cannot run. A manual release is
+not signed keyless and is not copied to Docker Hub.
 
 ### 1. Once per maintainer machine
 
@@ -173,7 +173,8 @@ rm -f .sdkhome/.docker/config.json      # mp-build leaves the GitHub token there
 ```
 
 `-P 18080` moves the port of the test container that `mp-build` starts during the build. The default, 8080, is
-already in use on the maintainer's build host. It does not change the pack, which still says `API_PORT=443`.
+already in use on the maintainer's build host. The option does not change the pack, which still says
+`API_PORT=443`.
 
 Read the image address and digest from the pack:
 
@@ -190,7 +191,7 @@ Expected: `REGISTRY=ghcr.io`, `REPOSITORY=/sorinplaton/nsxfederation`, and a `DI
 ### 4. First release only: make the image public
 
 GitHub creates a new package as private, and its API cannot change the visibility of a package owned by a
-personal account. Once, in a browser logged in as the owner:
+personal account. Do this once, in a browser logged in as the owner:
 
 1. https://github.com/users/sorinplaton/packages/container/nsxfederation/settings
 2. Danger Zone, Change visibility, Public, confirm with the package name.
@@ -225,7 +226,7 @@ rm -rf $AUTH
 
 Sign the digest, never a tag: a tag can be moved to another image, a digest cannot. The signature is also
 written to the public Sigstore transparency log (`tlog entry created with index ...`). The entry shows the
-digest and the public key, nothing secret.
+digest and the public key, and neither is secret.
 
 ### 6. Checksum and sign the pack
 
@@ -244,8 +245,8 @@ signature.
 
 ### 7. Verify as a user would
 
-With the public key only, the way [Option A](INSTALL.md#verify-the-signatures-recommended) tells users to do it.
-Both must pass before the release is published:
+Verify with the public key only, the way [Option A](INSTALL.md#verify-the-signatures-recommended) tells users
+to. Both must pass before the release is published:
 
 ```bash
 cd ~/fedmp-release/pack/build

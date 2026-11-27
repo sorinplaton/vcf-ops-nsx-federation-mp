@@ -14,16 +14,16 @@ Give the version of the pack, the versions of NSX and VCF Operations, and the st
   adapter kind and the NSX clusters of the built-in NSX integration. It deletes objects of its own account only
   when "Delete objects that left NSX after (days)" is above 0 (default 0).
 - **Install scripts:** `install/` holds scripts run by an administrator from the build host. `diagnostics.py` only
-  reads. `upi.sh`, `install_unsigned.sh` and `install_pak.py` install the pack. `federation_groups.py`
-  and `notification_rules.py` create or update the per-federation groups (and their policy assignment) and a
-  notification rule. `cleanup_content.py` deletes only definitions with the IDs the
-  pack generates and, with `--legacy-objects`, the objects of the pack keyed by name before 1.9.0. No script reads
-  or prints a credential of an account.
+  reads. `upi.sh`, `install_unsigned.sh` and `install_pak.py` install the pack. `federation_groups.py` and
+  `notification_rules.py` create or update the per-federation groups (and their policy assignment) and a
+  notification rule. `cleanup_content.py` deletes only definitions with the IDs the pack generates and, with
+  `--legacy-objects`, the objects of the pack keyed by name before 1.9.0. No script reads or prints a credential
+  of an account.
 
 ## Supply chain
 
 Releases come from Git only. A `v*` tag runs `.github/workflows/release.yml`, which builds the pack and both images
-from that tag and publishes them; nobody pushes an image by hand. What protects that path:
+from that tag and publishes them; nobody pushes an image by hand. That path is protected as follows:
 
 - **Who can release.** Only a repository admin can create, move or delete a `v*` tag (ruleset "release tags").
   The release job runs in the environment `release`, which waits for the maintainer's approval and alone holds
@@ -35,12 +35,13 @@ from that tag and publishes them; nobody pushes an image by hand. What protects 
 - **Pinned inputs.** Every GitHub Action is pinned by commit SHA. The tooling image's base is pinned by digest,
   and every Python package of the build, of the CI tools and of the test tools is locked with its hashes
   (`--require-hashes`). The test job also installs the package list of the adapter image
-  (`pack/image-requirements.txt`), which gives exact versions without hashes. The adapter image adds exactly five packages to the SDK base image, installed with
-  `--no-deps --require-hashes` (`pack/adapter_requirements.txt`, written by `tools/hash_requirements.py`); a test
-  checks that their versions equal the image lock. The SDK's own `base-adapter` image is built by `mp-build` from a
-  template inside the SDK and cannot be pinned from this repository; it is only a build stage. The image that
-  ships is built on a Wolfi base pinned by digest (`pack/Dockerfile`), whose `python-3.11` package is the current
-  one at build time. Dependabot proposes updates monthly, except for that base, which is moved by hand.
+  (`pack/image-requirements.txt`), which gives exact versions without hashes. The adapter image adds exactly
+  five packages to the SDK base image, installed with `--no-deps --require-hashes`
+  (`pack/adapter_requirements.txt`, written by `tools/hash_requirements.py`); a test checks that their versions
+  equal the image lock. The SDK's own `base-adapter` image is built by `mp-build` from a template inside the SDK
+  and cannot be pinned from this repository; it is only a build stage. The image that ships is built on a Wolfi
+  base pinned by digest (`pack/Dockerfile`), whose `python-3.11` package is the current one at build time.
+  Dependabot proposes updates monthly, except for that base, which is moved by hand.
 - **Signatures and attestations.** Each release signs the pack and both images keyless with Sigstore: the
   certificate names this repository, `release.yml` and the tag. Each also gets a SLSA build provenance attestation
   (`gh attestation verify`), and the adapter image a signed CycloneDX SBOM attestation
@@ -52,7 +53,8 @@ from that tag and publishes them; nobody pushes an image by hand. What protects 
 - **Install-time check.** VCF Operations cannot read these signatures (KB 415279). `install/install_unsigned.sh`
   runs `install/verify_pak.sh` first: a released pack whose `.sigstore.json` is next to it must verify, or nothing
   is installed.
-- **Scorecard.** OpenSSF Scorecard scores the repository weekly; results in the Security tab and on scorecard.dev.
+- **Scorecard.** OpenSSF Scorecard scores the repository weekly; the results are in the Security tab and on
+  scorecard.dev.
 - **Key signatures end with v1.14.0.** Releases up to `v1.13.2` were signed with the project key (`cosign.pub`).
   From `v1.13.3` to `v1.14.0` the maintainer adds key signatures next to the keyless ones; later releases are
   keyless only and the key is retired.

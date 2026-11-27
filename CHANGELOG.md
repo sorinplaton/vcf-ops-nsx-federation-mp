@@ -8,9 +8,9 @@ The adapter image moves to a Wolfi base; the adapter code and the pack content a
 
 - `pack/Dockerfile` builds in two stages: the SDK's `base-adapter` image (Debian 12) as before, then the same
   Python files on a Wolfi base pinned by digest, with Python 3.11. `pip` is removed from the image. The Trivy scan
-  goes from 102 HIGH or CRITICAL findings without a fixed version (report of release 1.13.5) to none, and the image from 405 MB to about
-  220 MB. The image now has OpenSSL 4. A lab build of this Dockerfile was tested with VCF Operations 9.1.2.0: same
-  adapter definition, same objects in a collection cycle, account collecting.
+  goes from 102 HIGH or CRITICAL findings without a fixed version (report of release 1.13.5) to none, and the
+  image from 405 MB to about 220 MB. The image now has OpenSSL 4. A lab build of this Dockerfile was tested with
+  VCF Operations 9.1.2.0: same adapter definition, same objects in a collection cycle, account collecting.
 - `tools/image_lock.sh` reads the package list from the package metadata, since the image has no `pip`.
 - `docs/INSTALL-ENTERPRISE.md`: the path ran end to end with `v1.13.5` (anonymous read, pull by the cloud proxy,
   install from Artifactory), and the rollback was tested. New section "Without anonymous read": an administrator
@@ -20,7 +20,7 @@ The adapter image moves to a Wolfi base; the adapter code and the pack content a
 
 ## 1.13.6 (2026-11-26)
 
-Enterprise install guide, after a review; the pack is unchanged.
+This release revises the enterprise install guide after a review; the pack is unchanged.
 
 - `install/verify_pak.sh` checks `FEDMP_PAK_SHA256`, the checksum the organisation recorded for a rewritten pack,
   before anything else and whatever `FEDMP_VERIFY` says. A mismatch stops the install. It needs no network.
@@ -39,17 +39,18 @@ Enterprise install guide, after a review; the pack is unchanged.
 
 ## 1.13.5 (2026-11-26)
 
-Supply-chain hardening of the release path; the pack itself is unchanged. `v1.13.4` was tagged but never
-published: its release job stopped at the verification step, because the Trivy cache mount had created `~/.cache`
-as root and `gh attestation verify` could not start. Its images on `ghcr.io` belong to no release; use `v1.13.5`.
+This release hardens the supply chain of the release path; the pack itself is unchanged. `v1.13.4` was tagged
+but never published: its release job stopped at the verification step, because the Trivy cache mount had created
+`~/.cache` as root and `gh attestation verify` could not start. Its images on `ghcr.io` belong to no release; use
+`v1.13.5`.
 
 - Only a repository admin can push a `v*` tag, and `main` changes only through a pull request with green checks
   (rulesets). The release job runs in the environment `release`: it waits for the maintainer's approval and alone
   holds the Docker Hub token. Pull-request builds run in a separate job with a read-only token.
-- Every GitHub Action is pinned by commit SHA; the tooling image's base by digest; every Python package of the
-  build, the CI tools and the test tools is locked with hashes. The adapter image installs its five added packages with
-  `--no-deps --require-hashes` (`tools/hash_requirements.py`), and a test checks them against the image lock.
-  Dependabot proposes updates monthly.
+- Every GitHub Action is pinned by commit SHA, and the tooling image's base by digest. Every Python package of
+  the build, the CI tools and the test tools is locked with hashes. The adapter image installs its five added
+  packages with `--no-deps --require-hashes` (`tools/hash_requirements.py`), and a test checks them against the
+  image lock. Dependabot proposes updates monthly.
 - Each release adds a SLSA build provenance attestation for the pack and both images, and a signed CycloneDX SBOM
   attestation on the adapter image (on `ghcr.io` and Docker Hub). The build scans the adapter image with Trivy,
   stops on a CRITICAL vulnerability with a fix, and attaches the report to the release.
