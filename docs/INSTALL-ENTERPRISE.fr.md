@@ -13,8 +13,7 @@ Container Registry 7.161.26 (l'édition gratuite d'Artifactory) servi en HTTPS a
 ensuite été exécuté de bout en bout le 2026-11-27 avec la version `v1.13.5` : lecture anonyme sur
 `vcfops-approved`, récupération par le proxy cloud, installation depuis Artifactory, compte, et retour arrière vers
 `v1.13.3`. La version `v1.13.7` a suivi le même parcours le même jour, sans le retour arrière. La désinstallation
-et JFrog Xray restent à tester. [Ce qui a été testé](#ce-qui-a-été-testé) détaille
-chaque étape.
+et JFrog Xray restent à tester. [Ce qui a été testé](#ce-qui-a-été-testé) détaille chaque étape.
 
 Pour les autres modes d'installation (téléchargement depuis GitHub, build par vos soins, Harbor), voir
 [INSTALL.fr.md](INSTALL.fr.md). English version: [INSTALL-ENTERPRISE.md](INSTALL-ENTERPRISE.md).
@@ -64,7 +63,7 @@ Trois éléments sont publiés pour chaque version :
 
 Les deux images sont octet pour octet celles de `ghcr.io/sorinplaton/`, avec les mêmes digests.
 
-**Numéro de version publiée et version du pack.** Ce sont deux numéros distincts. La version publiée (`1.13.7`, le
+Le numéro de version publiée et la version du pack sont deux numéros distincts. La version publiée (`1.13.7`, le
 tag Git) change à chaque publication ; la version du pack (`1.13.0`, dans `pack/manifest.txt` et dans le nom de
 fichier `NSXFederation_1.13.0.pak`) ne change que lorsque le contenu du pack change : modèle d'objets, alertes,
 tableaux de bord, code de l'adaptateur. Les versions `1.13.1` à `1.13.7` ont changé la construction, la signature
@@ -141,7 +140,7 @@ chevrons sont celles que choisit l'organisation.
 
 **Comité des changements**
 
-- L'approbation d'activer « Allow unsigned PAK installation » le temps de l'installation. La justification se
+- L'approbation pour activer « Allow unsigned PAK installation » le temps de l'installation. La justification se
   trouve dans la section suivante.
 
 ## L'option des packs non signés : justification pour le comité des changements
@@ -169,7 +168,7 @@ désactive l'option.
      d'installation (`FEDMP_PAK_SHA256`), qui refuse tout autre fichier avant tout téléversement.
 - **Ce que change la réécriture.** `repack.py` change deux lignes du pack, `REGISTRY` et `REPOSITORY`, pour que le
   proxy cloud récupère l'image depuis Artifactory. La ligne `DIGEST`, qui décide de ce qui s'exécute, reste telle
-  qu'elle a été signée. L'étape 7 affiche les trois lignes pour l'enregistrement.
+  qu'elle a été signée. L'étape 7 affiche les trois lignes pour en garder la trace.
 - **Risque résiduel.** Tant que l'option est activée, un administrateur pourrait installer n'importe quel pack non
   signé. Garder la fenêtre courte, et faire les vérifications avant d'activer l'option (l'étape 9 montre l'ordre).
 
@@ -323,8 +322,8 @@ ISSUER=https://token.actions.githubusercontent.com
 ```
 
 `SIGNER` et `ISSUER` sont ce que la signature doit indiquer : construit par le workflow de publication de ce
-dépôt, à partir du tag de cette version, sur GitHub Actions. Les notes de version sur GitHub donnent les mêmes
-deux valeurs.
+dépôt, à partir du tag de cette version, sur GitHub Actions. Les notes de version sur GitHub donnent les deux
+mêmes valeurs.
 
 Un site qui n'accepte pas la base Wolfi de la version 1.13.7 (étape 5) définit `RELEASE=1.13.6`, qui a la même
 version de pack et le même code d'adaptateur sur la base Debian 12. Rien d'autre ne change dans ce guide.
@@ -431,7 +430,8 @@ Résultats attendus :
 *À exécuter sur : l'hôte de promotion.* Copier les deux images par leur digest. `--all` copie l'image exactement
 telle qu'elle a été publiée. Les deux images sont aujourd'hui des manifestes simples, mais dans le lab l'image du
 pack est sortie avec un autre digest quand elle a été copiée sans `--all`. Avec un autre digest, la vérification
-des signatures de l'étape 4 ne s'applique plus à ce qui se trouve dans `vcfops-approved`. `--preserve-digests` fait s'arrêter skopeo plutôt que de changer un digest :
+des signatures de l'étape 4 ne s'applique plus à ce qui se trouve dans `vcfops-approved`. `--preserve-digests`
+fait s'arrêter skopeo plutôt que de changer un digest :
 
 ```bash
 C="--all --preserve-digests --src-creds $ART_USER:$ART_TOKEN --dest-creds $ART_USER:$ART_TOKEN"
@@ -455,9 +455,9 @@ d'Artifactory. Cette voie n'a pas été testée ; vérifier ensuite les digests 
 
 Les deux images sont des manifestes simples, pas des listes : `docker pull`, `docker tag` et `docker push` peuvent
 donc les promouvoir. Le digest ne se conserve que si Docker garde les couches exactement telles qu'il les a reçues,
-ce que fait le magasin d'images containerd : `docker info` affiche alors `driver-type
-io.containerd.snapshotter.v1`. Avec l'ancien magasin (`overlay2` seul), Docker peut recompresser les couches et
-pousser une image avec un autre digest. Vérifier le digest après le push, à chaque fois :
+ce que fait le magasin d'images containerd : `docker info` affiche alors
+`driver-type io.containerd.snapshotter.v1`. Avec l'ancien magasin (`overlay2` seul), Docker peut recompresser les
+couches et faire le push d'une image avec un autre digest. Vérifier le digest après le push, à chaque fois :
 
 ```bash
 docker login $ART -u "$ART_USER" --password-stdin <<< "$ART_TOKEN"
@@ -560,10 +560,10 @@ l'utilisateur du collecteur, pour que le proxy cloud récupère l'image lui-mêm
 ## 9. Installer
 
 Installer `NSXFederation_<version>_site.pak` avec [INSTALL.fr.md](INSTALL.fr.md), étapes 6 à 10 : option des packs
-non signés, installation, compte, vérification de la collecte, groupe et alertes facultatifs. Sans l'option des
-packs non signés, VCF Operations n'accepte que les packs signés par Broadcom (KB 415279). Les signatures cosign de
-l'étape 4 sont celles du projet, et VCF Operations ne les lit pas : c'est donc le script d'installation qui les
-vérifie (`install/verify_pak.sh`).
+non signés, installation, compte, vérification de la collecte, groupe et alertes facultatifs. Sans cette option,
+VCF Operations n'accepte que les packs signés par Broadcom (KB 415279). Les signatures cosign de l'étape 4 sont
+celles du projet, et VCF Operations ne les lit pas : c'est donc le script d'installation qui les vérifie
+(`install/verify_pak.sh`).
 
 Donner au script le SHA-256 enregistré à l'étape 7. Il refuse alors tout autre fichier. Pour qu'il vérifie aussi la
 signature de l'image de l'adaptateur via Artifactory, définir `FEDMP_VERIFY=1` et `FEDMP_IMAGE_REPO`, après avoir
@@ -579,7 +579,7 @@ install/install_unsigned.sh NSXFederation_${V}_site.pak               # vérifie
 ```
 
 Si ni `FEDMP_PAK_SHA256` ni `FEDMP_VERIFY=1` ne sont définis, rien n'est vérifié : le pack réécrit n'a pas de
-bundle de signature à côté de lui, et il est installé avec un avertissement.
+bundle de signature à côté de lui, et il est installé avec un avis.
 
 ## Mise à niveau vers une nouvelle version
 
@@ -645,10 +645,10 @@ vérifier à l'intérieur que les digests sont toujours ceux qui ont été véri
 
    Ne pas utiliser `oci-archive:` : il convertit l'image du pack, un manifeste Docker, en manifeste OCI, et son
    digest change (`sha256:eb35...` est devenu `sha256:00a9...` pendant le test).
-3. **Intérieur.** Vérifier le SHA-256 du fichier tar, le décompresser, et pousser les deux dossiers dans
+3. **Intérieur.** Vérifier le SHA-256 du fichier tar, le décompresser, et faire le push des deux dossiers vers
    `vcfops-approved` avec `skopeo copy --all --preserve-digests dir:<folder> docker://$ART/$APPROVED/<image>:$RELEASE`.
    Vérifier ensuite les digests comme à l'étape 6 : ils doivent correspondre à ceux enregistrés sur l'hôte connecté.
-   Des images de mêmes digests sont les octets dont les signatures y ont été vérifiées.
+   Des images qui ont les mêmes digests sont les octets dont les signatures y ont été vérifiées.
 4. Exécuter les étapes 7 à 9 telles qu'écrites. La vérification par `FEDMP_PAK_SHA256` n'a besoin d'aucun réseau.
    Laisser `FEDMP_VERIFY` non défini ou à `0` à l'intérieur, puisque cosign ne peut pas y joindre Sigstore.
 
@@ -660,7 +660,7 @@ Un site qui n'accepte aucun binaire venu de l'extérieur peut construire le pack
 | Symptôme | Cause et correction |
 | --- | --- |
 | Le digest dans `vcfops-approved` diffère de celui des étapes 3 et 4 | La copie a réécrit l'image, comme l'a fait une copie sans `--all` dans le lab. Refaire la copie avec la commande de l'étape 6 |
-| `cosign verify` : `no signatures found` | Le tag de la signature n'est pas passé. Vérifier que le dépôt distant liste `sha256-<digest>.sig` pour l'image, ou vérifier directement face à `docker.io/sorinplaton/...` depuis une machine qui accède à Internet |
+| `cosign verify` : `no signatures found` | Le tag de la signature n'est pas passé. Vérifier que le dépôt distant liste `sha256-<digest>.sig` pour l'image, ou vérifier directement sur `docker.io/sorinplaton/...` depuis une machine qui accède à Internet |
 | `cosign verify` : `none of the expected identities matched` | `SIGNER` nomme un autre tag que celui à partir duquel l'image a été construite, ou l'image n'a pas été construite par le workflow de publication. Comparer avec les notes de version |
 | `toomanyrequests` depuis Artifactory | Limite de Docker Hub sur les récupérations anonymes. Ajouter un compte Docker Hub au dépôt distant |
 | Compte `FAILED` après l'installation, message vide | Le proxy cloud n'a pas pu récupérer l'image. Y lancer la récupération de l'étape 8 |
@@ -687,8 +687,8 @@ par une autorité de test, avec skopeo 1.25.1 et cosign 2.4.1 :
   SBOM signée (46 composants) vérifiées via Artifactory, et provenance de construction de la copie Docker Hub
   vérifiée avec `gh attestation verify`.
 - Docker seul, avec Docker Engine 29.6.2 et le magasin d'images containerd : les deux images `v1.13.5` récupérées
-  sur Docker Hub par digest, taguées et poussées vers un registre de test ont gardé leurs digests. Le pack extrait
-  avec `docker create` et `docker cp` a passé sa somme de contrôle.
+  sur Docker Hub par digest, taguées et envoyées (push) vers un registre de test ont gardé leurs digests. Le pack
+  extrait avec `docker create` et `docker cp` a passé sa somme de contrôle.
 - Le transfert sans accès à Internet : les deux images `v1.13.5` passées par des dossiers `dir:` et un fichier tar
   vers un registre de test, mêmes digests. Via `oci-archive:`, l'image du pack est sortie avec un autre digest.
 - `verify_pak.sh` avec `FEDMP_PAK_SHA256` : la bonne valeur passe, toute autre valeur arrête l'installation, avec
@@ -713,9 +713,10 @@ skopeo) :
 - Sans lecture anonyme : avec le pack pointant vers un dépôt qui refuse les récupérations anonymes, le compte a
   échoué (`Failed to download image`) ; après une récupération avec un identifiant en root sur le proxy cloud,
   puis une déconnexion, il a démarré et collecté.
-- Version `v1.13.7`, la première sur la base Wolfi, via l'Artifactory du lab avec Docker seul : les deux signatures
-  vérifiées, les deux images promues avec les mêmes digests, récupération par le proxy cloud sans identifiant,
-  installation du pack `_site`, et compte en collecte depuis `vcfops-approved` avec des métriques sur chaque objet.
+- La version `v1.13.7`, la première sur la base Wolfi, via l'Artifactory du lab avec Docker seul : les deux
+  signatures vérifiées, les deux images promues avec les mêmes digests, récupération par le proxy cloud sans
+  identifiant, installation du pack `_site`, et compte en collecte depuis `vcfops-approved` avec des métriques sur
+  chaque objet.
 
 Pas encore testé :
 

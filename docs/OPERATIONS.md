@@ -99,8 +99,8 @@ to the property "Locations in outage" of the objects that depend on it: the loca
 edge nodes and BGP neighbors, the tunnels and sync channels with one end at that location, the stretched objects
 whose span includes it and their realization there, and the Global Managers. The alerts of these objects require
 the property to read "none", so they stay quiet during the outage, and the alert of the location is the one to
-act on. If their fault is still there, they fire once the outage symptom has cleared, three cycles after the
-location is back. Objects of the other locations are not affected: a fault there raises its alert.
+act on. An object whose fault is still there raises its alert once the outage symptom has cleared, three cycles
+after the location is back. Objects of the other locations are not affected: a fault there raises its alert.
 
 The alarm alerts of the Global Manager and of the locations are quiet in the same way, except the alarms between
 Global Managers. A stretched object is quiet while any location of its span is in outage; its realization at
@@ -111,8 +111,8 @@ When a Global Manager does not answer, the alerts of its own sync channels are q
 federation. When no Global Manager is active, the same applies to every channel with a Global Manager at one
 end. Channels between two locations are never quiet for that reason.
 
-A second, unrelated fault on the objects of the location in outage raises no alert while the outage lasts. Its
-metrics and properties are still collected.
+A second, unrelated fault on the objects of the location in outage raises no alert while the outage lasts. The
+metrics and properties of those objects are still collected.
 
 For planned work, use a VCF Operations maintenance schedule on the group "NSX Federation - All objects".
 
@@ -204,12 +204,12 @@ read, so a gap in the data does not show up as a change.
   subtracts the midpoint of the call, which gives the offset of the manager against the cloud proxy. The calls
   are timed on a monotonic clock from one reading of the cloud proxy clock per cycle. The difference between two
   managers read in the same cycle therefore does not depend on that clock, even when it steps during the cycle.
-  Each Global Manager and location gets its difference with the active Global Manager ("Clock difference with
-  the active Global Manager"). A property says ahead or behind, and the precision of the reading (half the
-  duration of the two calls). A call that takes more than 3 seconds gives no reading. The alert fires above 5
-  seconds (60 seconds immediate) for two cycles, or when the NTP service of the manager is not running. The NTP
-  servers come from `GET /api/v1/node/services/ntp` once an hour, and the state of the service from its status
-  call in every cycle. The node that answers behind the cluster address is the one read.
+  Each Global Manager and location gets its difference with the active Global Manager ("Clock difference with the
+  active Global Manager"). A property says whether the manager is ahead or behind, and gives the precision of the
+  reading (half the duration of the two calls). A call that takes more than 3 seconds gives no reading. The alert
+  fires above 5 seconds (60 seconds immediate) for two cycles, or when the NTP service of the manager is not
+  running. The NTP servers come from `GET /api/v1/node/services/ntp` once an hour, and the state of the service
+  from its status call in every cycle. The node that answers behind the cluster address is the one read.
 - Configuration limits: `GET /policy/api/v1/infra/capacity/dashboard/usage` on each Local Manager, every 30
   minutes. This is the data of the Capacity page of NSX. NSX rates each limit with its own thresholds (70% and
   100% by default, set in NSX). Its WARNING counts as warning; its CRITICAL or ERROR, or a limit reached (100% or

@@ -23,11 +23,12 @@ The adapter image moves to a Wolfi base; the adapter code and the pack content a
 This release revises the enterprise install guide after a review; the pack is unchanged.
 
 - `install/verify_pak.sh` checks `FEDMP_PAK_SHA256`, the checksum the organisation recorded for a rewritten pack,
-  before anything else and whatever `FEDMP_VERIFY` says. A mismatch stops the install. It needs no network.
-- `docs/INSTALL-ENTERPRISE.md`: request lists per team, a justification of the unsigned-pack switch for a change
-  board, Docker as an alternative to installing skopeo and cosign (tested: digests kept with the containerd image
-  store), rollback, uninstall, and air-gapped sites (transfer with `skopeo copy dir:`, tested; `oci-archive:`
-  changes the digest of the pack image). The guide now states that the path has not run end to end.
+  before anything else and whatever `FEDMP_VERIFY` says. A mismatch stops the install. The check needs no network.
+- `docs/INSTALL-ENTERPRISE.md`: request lists per team, a justification of "Allow unsigned PAK installation" for
+  a change board, Docker as an alternative to installing skopeo and cosign (tested: digests kept with the
+  containerd image store), rollback, uninstall, and air-gapped sites (transfer with `skopeo copy dir:`, tested;
+  `oci-archive:` changes the digest of the pack image). The guide now states that the path has not run end to
+  end.
 - The release notes say why the release number and the pack version differ, when they do.
 - README: the enterprise path, keyless signing, a Support section (no SLA, GitHub issues), manual install
   recommended for production, untested versions named as such. SECURITY.md: findings counted from the 1.13.5
