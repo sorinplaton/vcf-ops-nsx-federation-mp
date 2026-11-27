@@ -429,9 +429,9 @@ Résultats attendus :
 ## 6. Promouvoir : copier dans le dépôt des images approuvées
 
 *À exécuter sur : l'hôte de promotion.* Copier les deux images par leur digest. `--all` copie l'image exactement
-telle qu'elle a été publiée, liste d'images comprise. Sans cette option, skopeo peut ne copier que la partie d'une
-seule plateforme, qui a un autre digest, et la vérification des signatures de l'étape 4 ne s'appliquerait plus à ce
-qui se trouve dans `vcfops-approved`. `--preserve-digests` fait s'arrêter skopeo plutôt que de changer un digest :
+telle qu'elle a été publiée. Les deux images sont aujourd'hui des manifestes simples, mais dans le lab l'image du
+pack est sortie avec un autre digest quand elle a été copiée sans `--all`. Avec un autre digest, la vérification
+des signatures de l'étape 4 ne s'applique plus à ce qui se trouve dans `vcfops-approved`. `--preserve-digests` fait s'arrêter skopeo plutôt que de changer un digest :
 
 ```bash
 C="--all --preserve-digests --src-creds $ART_USER:$ART_TOKEN --dest-creds $ART_USER:$ART_TOKEN"
@@ -534,7 +534,7 @@ docker pull artifactory.example.com/vcfops-approved/nsxfederation@sha256:...   #
 | `Status: Downloaded newer image` ou `Image is up to date` | Prêt. L'image reste aussi en cache sur le proxy cloud |
 | `unauthorized` ou `authentication required` | La lecture anonyme manque sur `vcfops-approved` (étape 1, point 3) |
 | `x509: certificate signed by unknown authority` | L'autorité manque, ou le nom de son dossier ne correspond pas à `REGISTRY` |
-| `manifest unknown` | L'image n'est pas dans `vcfops-approved` sous ce digest : l'étape 6 a été sautée, ou faite sans `--all` |
+| `manifest unknown` | L'image n'est pas dans `vcfops-approved` sous ce digest : l'étape 6 a été sautée, ou la copie a changé le digest (faite sans `--all`) |
 
 Une mise à niveau ou un redéploiement du proxy cloud supprime le dossier du certificat ; le vérifier après l'un
 ou l'autre.
@@ -659,7 +659,7 @@ Un site qui n'accepte aucun binaire venu de l'extérieur peut construire le pack
 
 | Symptôme | Cause et correction |
 | --- | --- |
-| Le digest dans `vcfops-approved` diffère de celui des étapes 3 et 4 | Copie faite sans `--all`. Refaire la copie avec la commande de l'étape 6 |
+| Le digest dans `vcfops-approved` diffère de celui des étapes 3 et 4 | La copie a réécrit l'image, comme l'a fait une copie sans `--all` dans le lab. Refaire la copie avec la commande de l'étape 6 |
 | `cosign verify` : `no signatures found` | Le tag de la signature n'est pas passé. Vérifier que le dépôt distant liste `sha256-<digest>.sig` pour l'image, ou vérifier directement face à `docker.io/sorinplaton/...` depuis une machine qui accède à Internet |
 | `cosign verify` : `none of the expected identities matched` | `SIGNER` nomme un autre tag que celui à partir duquel l'image a été construite, ou l'image n'a pas été construite par le workflow de publication. Comparer avec les notes de version |
 | `toomanyrequests` depuis Artifactory | Limite de Docker Hub sur les récupérations anonymes. Ajouter un compte Docker Hub au dépôt distant |

@@ -823,13 +823,13 @@ time short and check at the end that the switch is off.
 
 *Run in: a browser.*
 
-1. Admin console `https://<ops>/admin`, Administrator Settings, Security Settings: activate "unsigned PAK
-   installation".
+1. Admin console `https://<ops>/admin`, Administrator Settings, Security Settings: activate "Allow unsigned
+   PAK installation".
 2. Product UI: Administration, Integrations, Repository, add a pack.
 3. Select `NSXFederation_<version>.pak`, tick "install even if already installed" and "Ignore the PAK file
    signature checking".
 4. Upload, accept the warning about the unsigned file and wait for the install to finish.
-5. Admin console: deactivate unsigned PAK installation. The console refuses the change while the install is
+5. Admin console: deactivate "Allow unsigned PAK installation". The console refuses the change while the install is
    running; try again once it has finished.
 
 ### Scripted

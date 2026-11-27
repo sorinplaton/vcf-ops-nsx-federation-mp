@@ -98,7 +98,7 @@ Users of releases up to `v1.13.2` verify with `cosign.pub`. For releases up to a
 key signatures to the draft, so that those users can keep their check while they move to the keyless one. From
 the next release on, skip this step, remove `cosign.pub` from the repository root with a `CHANGELOG.md` entry,
 and keep the key folder only as long as older releases need to be signed again. The private key stays on the
-maintainer machine; it is never given to GitHub. Set `RELEASE`, `VERSION` and the adapter digest `DIGEST` of the
+build host; it is never given to GitHub. Set `RELEASE`, `VERSION` and the adapter digest `DIGEST` of the
 draft release, then run:
 
 ```bash
@@ -117,11 +117,11 @@ Then sign the adapter image with the key as in [step 5](#5-sign-the-image) of th
 
 ## Manual release (fallback, and releases up to v1.13.2)
 
-A manual release is built, signed and published from the maintainer machine with the project key. This was the
+A manual release is built, signed and published from the build host with the project key. This was the
 release process up to `v1.13.2`, and it remains the fallback when GitHub Actions cannot run. A manual release is
 not signed keyless and is not copied to Docker Hub.
 
-### 1. Once per maintainer machine
+### 1. Once per build host
 
 *Run on: the build host*, with Docker and the GitHub CLI `gh`.
 
@@ -173,7 +173,7 @@ rm -f .sdkhome/.docker/config.json      # mp-build leaves the GitHub token there
 ```
 
 `-P 18080` moves the port of the test container that `mp-build` starts during the build. The default, 8080, is
-already in use on the maintainer's build host. The option does not change the pack, which still says
+already in use on the build host. The option does not change the pack, which still says
 `API_PORT=443`.
 
 Read the image address and digest from the pack:

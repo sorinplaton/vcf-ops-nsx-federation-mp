@@ -858,12 +858,12 @@ peut être installé. Garder cette durée courte et vérifier à la fin que l'op
 *À exécuter dans : un navigateur.*
 
 1. Console d'administration `https://<ops>/admin`, Administrator Settings, Security Settings : activer
-   « unsigned PAK installation ».
+   « Allow unsigned PAK installation ».
 2. Interface du produit : Administration, Integrations, Repository, ajouter un pack.
 3. Choisir `NSXFederation_<version>.pak`, cocher « install even if already installed » et « Ignore the PAK file
    signature checking ».
 4. Envoyer le fichier, accepter l'avertissement sur le fichier non signé et attendre la fin de l'installation.
-5. Console d'administration : désactiver l'installation des PAK non signés. La console refuse le changement
+5. Console d'administration : désactiver « Allow unsigned PAK installation ». La console refuse le changement
    tant que l'installation est en cours ; réessayer une fois l'installation terminée.
 
 ### Par script
