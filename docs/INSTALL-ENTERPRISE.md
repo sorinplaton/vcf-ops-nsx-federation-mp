@@ -380,7 +380,7 @@ gh attestation verify oci://docker.io/sorinplaton/nsxfederation@$AD_DIGEST -R so
 release with these attestations.
 
 Releases up to `v1.13.2` are signed with the project key instead, and their images are on `ghcr.io` only. For
-those, [INSTALL.md](INSTALL.md#verify-the-signatures-recommended) gives the commands with `cosign.pub`.
+those, [INSTALL.md](INSTALL.md#key-based-check-releases-up-to-v1140) gives the commands with `cosign.pub`.
 
 ## 5. Scan
 
@@ -476,7 +476,7 @@ curl -fS -u "$ART_USER:$ART_TOKEN" -T NSXFederation_${V}_site.pak \
 ## 8. Cloud proxy: trust Artifactory and test the pull
 
 *Run on: the cloud proxy, as root.* SSH is off on a cloud proxy by default. Enable it for the length of the step,
-or run the commands through vCenter guest operations as in [INSTALL.md, step 4](INSTALL.md#4-cloud-proxy-trusts-the-registry-certificate).
+or run the commands through vCenter guest operations as in [INSTALL.md, step 4](BUILD.md#4-cloud-proxy-trusts-the-registry-certificate).
 
 If Artifactory uses an internal CA, Docker on the cloud proxy needs it, in a folder named exactly like the
 `REGISTRY` value of step 7, with `:port` if there is one:

@@ -395,7 +395,7 @@ gh attestation verify oci://docker.io/sorinplaton/nsxfederation@$AD_DIGEST -R so
 version qui porte ces attestations.
 
 Les versions jusqu'à `v1.13.2` sont signées avec la clé du projet, et leurs images ne sont que sur `ghcr.io`. Pour
-celles-ci, [INSTALL.fr.md](INSTALL.fr.md#vérifier-les-signatures-recommandé) donne les commandes avec `cosign.pub`.
+celles-ci, [INSTALL.fr.md](INSTALL.fr.md#vérification-par-clé-versions-jusquà-v1140) donne les commandes avec `cosign.pub`.
 
 ## 5. Analyser
 
@@ -498,7 +498,7 @@ curl -fS -u "$ART_USER:$ART_TOKEN" -T NSXFederation_${V}_site.pak \
 
 *À exécuter sur : le proxy cloud, en tant que root.* SSH est désactivé par défaut sur un proxy cloud. L'activer le
 temps de l'étape, ou exécuter les commandes par les opérations d'invité de vCenter, comme dans
-[INSTALL.fr.md, étape 4](INSTALL.fr.md#4-le-proxy-cloud-fait-confiance-au-certificat-du-registre).
+[INSTALL.fr.md, étape 4](BUILD.fr.md#4-le-proxy-cloud-fait-confiance-au-certificat-du-registre).
 
 Si Artifactory utilise une autorité interne, Docker sur le proxy cloud en a besoin, dans un dossier qui porte
 exactement le nom de la valeur `REGISTRY` de l'étape 7, avec `:port` s'il y en a un :

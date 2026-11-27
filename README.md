@@ -95,6 +95,7 @@ read-only NSX account is enough; the built-in `audit` account was tested.
 | `tests/` | Test suite with a mock NSX (an anonymised recording of a small federation) |
 | `docs/FEATURES.md`, `docs/FEATURES.fr.md` | Every object type, metric, property and alert of the pack, in English and in French (generated) |
 | `docs/INSTALL.md` | Install guide: checklist and the commands for each step, with the machine they run on ([French](docs/INSTALL.fr.md)) |
+| `docs/BUILD.md` | Build guide (Option B): build the pack from source and push the adapter image to a registry of your own ([French](docs/BUILD.fr.md)) |
 | `docs/INSTALL-ENTERPRISE.md` | Enterprise install through JFrog Artifactory and Docker Hub: verify, scan, promote, install ([French](docs/INSTALL-ENTERPRISE.fr.md)) |
 | `docs/OPERATIONS.md` | Account settings, certificate trust, sizing, alert behaviour, groups, notifications, troubleshooting, upgrade |
 | `docs/RELEASE.md` | Maintainer guide: the release workflow (tag, build, keyless signatures, ghcr.io and Docker Hub), the manual fallback, and what to do if the signing key is lost |
@@ -104,11 +105,11 @@ read-only NSX account is enough; the built-in `audit` account was tested.
 ## Build
 
 The build needs Docker and an image registry the cloud proxy can reach over HTTPS. The commands below are the
-ones of [docs/INSTALL.md](docs/INSTALL.md), which also sets up that registry on the build host (step 2). They
+ones of [docs/BUILD.md](docs/BUILD.md), which also sets up that registry on the build host (step 2). They
 carry `sudo`, so the build user does not have to be in the `docker` group.
 
 The addresses and the passwords are read from one settings file, `~/fedmp.env`, made from
-[install/fedmp.env.example](install/fedmp.env.example) (install guide, step 1).
+[install/fedmp.env.example](install/fedmp.env.example) (build guide, step 1).
 
 ```bash
 set -a; source ~/fedmp.env; set +a
@@ -130,10 +131,10 @@ sudo docker run --rm --network host -u $(id -u):$(getent group docker | cut -d: 
 python3 tools/repack.py pack/build/NSXFederation_$VERSION.pak $IP:5000 nsxfederation
 ```
 
-The registry of the install guide has no login. `mp-build` still asks for a user and a password, and any value
+The registry of the build guide has no login. `mp-build` still asks for a user and a password, and any value
 works. When the registry is given as `host:port` without a domain, `mp-build` writes Docker Hub into the pack;
 `tools/repack.py <pak> <host:port> <repository>` corrects it. With an existing Harbor registry, follow
-[Variant: an existing Harbor registry](docs/INSTALL.md#variant-an-existing-harbor-registry) in the install guide.
+[Variant: an existing Harbor registry](docs/BUILD.md#variant-an-existing-harbor-registry) in the build guide.
 
 After a change to the Dockerfile or to `pack/adapter_requirements.txt`, run `tools/image_lock.sh <built image>` and
 commit `pack/image-requirements.txt`: CI checks those packages for known vulnerabilities (see
