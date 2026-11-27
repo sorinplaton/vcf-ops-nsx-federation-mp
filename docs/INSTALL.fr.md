@@ -884,6 +884,9 @@ son `.sigstore.json` doit être validé, sinon rien n'est installé ; pour cela,
 pack. Un pack sans bundle (une construction locale, ou un pack réécrit par la variante) est installé avec un
 avertissement. `FEDMP_VERIFY=1` exige la vérification de l'image pour tout pack, et `FEDMP_VERIFY=0` désactive la
 vérification. Celle-ci utilise `cosign` s'il est installé, sinon l'image cosign via Docker.
+`FEDMP_PAK_SHA256=<sha256>` exige en plus que le fichier ait cette somme de contrôle, quelle que soit la valeur de
+`FEDMP_VERIFY` : l'utiliser pour un pack réécrit, dont vous avez enregistré vous-même la somme de contrôle
+([INSTALL-ENTERPRISE.fr.md](INSTALL-ENTERPRISE.fr.md), étape 7).
 
 Lancer `install_unsigned.sh` après `upi.sh` : la connexion à la console d'administration ferme la session de
 l'interface du produit, et le script d'installation se reconnecte. Il désactive l'option quelle que soit

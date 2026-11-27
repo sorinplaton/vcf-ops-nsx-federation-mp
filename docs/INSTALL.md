@@ -849,7 +849,9 @@ install/install_unsigned.sh "$PAK"
 `.sigstore.json` next to it must verify, or nothing is installed; keep the bundle in the folder of the pack for
 that. A pack without the bundle (a build of your own, or one rewritten by the mirror variant) is installed with a
 notice. `FEDMP_VERIFY=1` requires the image check for any pack, and `FEDMP_VERIFY=0` skips the check. The check
-uses `cosign` if it is installed, or the cosign image through Docker.
+uses `cosign` if it is installed, or the cosign image through Docker. `FEDMP_PAK_SHA256=<sha256>` also requires
+the file to have that checksum, whatever `FEDMP_VERIFY` says: use it for a rewritten pack, whose checksum you
+recorded yourself ([INSTALL-ENTERPRISE.md](INSTALL-ENTERPRISE.md), step 7).
 
 Run `install_unsigned.sh` after `upi.sh`: the admin console login ends the product UI session, and the install
 script logs in again. It turns the switch off however it ends, and stops the headless Chrome. Exit code 0 means

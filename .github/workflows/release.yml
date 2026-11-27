@@ -191,7 +191,12 @@ jobs:
           R: ${{ steps.s.outputs.release }}
           V: ${{ steps.b.outputs.version }}
         run: |
+          if [ "$V" != "$R" ]; then
+            VNOTE="Release $R ships pack version $V: the pack version changes only when the content of the pack changes. Identify the pack by its SHA-256 (\`NSXFederation_$V.pak.sha256\`) and the adapter digest below, not by its file name."
+          else VNOTE=""; fi
           cat > /tmp/notes.md <<NOTES
+          $VNOTE
+
           Pack \`NSXFederation_$V.pak\` (pack version $V).
 
           | Item | Value |
