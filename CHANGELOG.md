@@ -2,6 +2,23 @@
 
 Each release has a tag `v<version>`; the commit messages give the details.
 
+## Unreleased
+
+The adapter code and the pack content are unchanged; the adapter image is not rebuilt.
+
+- `install/verify_pak.sh`: a pack without its `.sigstore.json` that names the release image
+  (`sorinplaton/nsxfederation` on ghcr.io or Docker Hub) must have a verified image signature; before, it was
+  installed with a notice, so removing the bundle skipped the check. `FEDMP_RELEASE=<release>` accepts only the
+  signatures of that release. The cosign errors go to a private temporary file instead of a fixed path in `/tmp`.
+- Tests: `tests/test_alerts_fire.py` and `tests/alert_engine.py` inject one fault at a time and check that each
+  alert definition fires on its object; 85 of the 87 fire, the other two use dynamic thresholds only. The test
+  certificates carry CA extensions, so the suite also passes on Python 3.13.
+- CI runs `ruff` (errors only). Removed an unused variable in the realization loop of `adapter.py`, a repeated
+  dictionary key in `tools/gen_dashboards.py` and an unused import; the generated content is unchanged.
+- Docs: the federation alarm types not in the public NSX event catalog, the NSX call outside the public API
+  reference, what a call that keeps failing does, CA extensions for trust `ca`, the OpenSSL version of the 1.13.7
+  image, the signature options of `verify_pak.sh` (EN and FR).
+
 ## 1.13.7 (2026-11-27)
 
 The adapter image moves to a Wolfi base; the adapter code and the pack content are unchanged.

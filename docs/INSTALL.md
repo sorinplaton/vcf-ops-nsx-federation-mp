@@ -780,14 +780,18 @@ install/install_unsigned.sh "$PAK"
 
 `install_unsigned.sh` first checks the signatures with `install/verify_pak.sh`. A released pack with its
 `.sigstore.json` next to it must verify, or nothing is installed; keep the bundle in the folder of the pack for
-that. A pack without the bundle (a build of your own, or one rewritten by the mirror variant) is installed with a
-notice. A `.sigstore.json` left next to a rewritten pack makes the check fail (`pack signature: FAILED`), because
+that. A pack without the bundle that names the release image (`sorinplaton/nsxfederation` on ghcr.io or Docker
+Hub) must still have a verified image signature, so deleting the bundle does not skip the check. A pack that names
+another registry (a build of your own, or one rewritten by the mirror variant) is installed with a notice. A `.sigstore.json` left next to a rewritten pack makes the check fail (`pack signature: FAILED`), because
 it signs the original file: move it out of the folder first.
 
 `FEDMP_VERIFY=1` requires the image check for any pack, and `FEDMP_VERIFY=0` skips the check. The check uses
 `cosign` if it is installed, or the cosign image through Docker. `FEDMP_PAK_SHA256=<sha256>` also requires the
 file to have that checksum, whatever `FEDMP_VERIFY` says: use it for a rewritten pack, whose checksum you
-recorded yourself ([INSTALL-ENTERPRISE.md](INSTALL-ENTERPRISE.md), step 7).
+recorded yourself ([INSTALL-ENTERPRISE.md](INSTALL-ENTERPRISE.md), step 7). `FEDMP_RELEASE=<release>` (for
+example `FEDMP_RELEASE=1.13.7`) accepts only the signatures of that release, so an older signed release is refused.
+The signature checks need the Sigstore services (`tuf-repo-cdn.sigstore.dev`, `rekor.sigstore.dev`) and the
+registry of the image; on a host without them, set `FEDMP_VERIFY=0` and use `FEDMP_PAK_SHA256`.
 
 Run `install_unsigned.sh` after `upi.sh`: the admin console login ends the product UI session, and the install
 script logs in again. The install script turns the switch off however it ends, and stops the headless Chrome.
