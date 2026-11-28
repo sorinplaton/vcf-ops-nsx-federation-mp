@@ -25,8 +25,10 @@ type, metric, property and alert, with the condition and the recommendation of e
   segments, global security policies, and the realization of each stretched object at each location. Global
   firewall rules are opt-in per policy.
 - Metrics in 25 groups, with rates computed from the NSX counters, federation rollups and 26 key indicators.
-- 87 alert definitions, 153 symptoms and 53 recommendations. They include the 15 federation alarm types of
-  NSX 9.1.1 as named alerts, the sync state of a standby Global Manager, and alerts on the collection itself.
+- 87 alert definitions, 153 symptoms and 53 recommendations. They include 15 federation alarm types of NSX as
+  named alerts, the sync state of a standby Global Manager, and alerts on the collection itself. 13 of the alarm
+  types are in the public NSX event catalogs; `error_in_delta_sync` and `connectivity_to_ldap_server_lost` were
+  not found there.
 - Latency and packet loss: round-trip time to the Global Manager against the maximum RTT set in NSX and against
   its usual range, drops of each RTEP tunnel as a share of its packets, blocked packets, and flaps of the Tier-0
   and inter-site BGP sessions. [docs/FEATURES.md](docs/FEATURES.md#thresholds) lists the thresholds.
@@ -66,7 +68,8 @@ type, metric, property and alert, with the condition and the recommendation of e
 - A diagnostics script for support requests (`install/diagnostics.py`), and troubleshooting in
   [docs/OPERATIONS.md](docs/OPERATIONS.md#troubleshooting).
 - Replication flows, last-seen time and onboarding status of each location, as on the Location Manager page of
-  NSX.
+  NSX. One of these calls is not in the public NSX API reference
+  ([docs/OPERATIONS.md](docs/OPERATIONS.md#nsx-calls-outside-the-public-api-reference)).
 - The federation alarms of a Local Manager that the built-in NSX integration monitors are left to that
   integration, so no alert is raised twice.
 - Four custom groups, five dashboards (Federation Overview, Location Matrix, Switchover Readiness, Inter-site
@@ -92,7 +95,7 @@ read-only NSX account is enough; the built-in `audit` account was tested.
 | `tools/schemas/` | The SDK schema files for alert definitions and traversal specs. They must stay out of `pack/content` (see the blog) |
 | `tooling/Dockerfile` | An image with the SDK tools (`mp-init`, `mp-test`, `mp-build`) |
 | `install/` | Scripts for the scripted install of an unsigned pack (with the signature check of `verify_pak.sh`), the per-federation groups, the notification rule and the diagnostics |
-| `tests/` | Test suite with a mock NSX (an anonymised recording of a small federation) |
+| `tests/` | Test suite with a mock NSX (an anonymised recording of a small federation). `test_alerts_fire.py` injects one fault at a time and checks, with the offline evaluator `alert_engine.py`, that each alert definition fires on its object (85 of 87; the other two use dynamic thresholds only, which VCF Operations learns from history) |
 | `docs/FEATURES.md`, `docs/FEATURES.fr.md` | Every object type, metric, property and alert of the pack, in English and in French (generated) |
 | `docs/INSTALL.md` | Install guide: checklist and the commands for each step, with the machine they run on ([French](docs/INSTALL.fr.md)) |
 | `tools/gen_diagrams.py` | Draws the diagrams of the install guides and of the release guide into `docs/img`, in English and French |
@@ -190,9 +193,11 @@ and recommendation definitions the new version no longer ships (`install/cleanup
 ## Tested with
 
 The pack was tested in a lab with NSX 9.1.1 (two Global Managers, active and standby, and two locations), VCF
-Operations 9.1.1.0 and 9.1.2.0 and Integration SDK 1.3.1. Both bases of the adapter image, Debian 12 and
-Wolfi, were installed and collected there. Most alert definitions have never fired, because the lab has none of
-those faults. Other versions of NSX or VCF Operations have not been tested.
+Operations 9.1.1.0 and 9.1.2.0 and Integration SDK 1.3.1 (the PyPI release). Both bases of the adapter image,
+Debian 12 and Wolfi, were installed and collected there. Most alert definitions have never fired in the lab,
+because the lab has none of those faults. Offline, the test suite injects them one at a time and 85 of the 87
+alert definitions fire ([docs/OPERATIONS.md](docs/OPERATIONS.md#tests)). Other versions of NSX or VCF Operations
+have not been tested.
 
 ## Support
 

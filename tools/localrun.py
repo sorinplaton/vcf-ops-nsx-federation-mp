@@ -7,7 +7,7 @@ Optional: LM_USER and LM_PASSWORD (Local Managers, if different), TRUST=enforce|
 RULE_POLICIES, LINK=on,
 SHOW=<object kinds, comma separated>.
 """
-import collections, json, os, sys
+import collections, os, sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'pack', 'app'))
 sys.argv = ['x', 'collect', '/dev/null', '/dev/null']
 import adapter

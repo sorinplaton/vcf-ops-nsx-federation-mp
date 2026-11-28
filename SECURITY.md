@@ -51,7 +51,9 @@ from that tag and publishes them; nobody pushes an image by hand. That path is p
   vulnerability that has a fixed version. The full report is a release asset (`NSXFederation_<version>.trivy.txt`).
 - **Install-time check.** VCF Operations cannot read these signatures (KB 415279). `install/install_unsigned.sh`
   runs `install/verify_pak.sh` first: a released pack whose `.sigstore.json` is next to it must verify, or nothing
-  is installed.
+  is installed. A pack that names the release image (`sorinplaton/nsxfederation` on ghcr.io or Docker Hub) must
+  have a verified image signature even without its bundle, so removing the bundle does not skip the check.
+  `FEDMP_RELEASE=<version>` accepts only the signatures of that release, which refuses an older signed release.
 - **Scorecard.** OpenSSF Scorecard scores the repository weekly; the results are in the Security tab and on
   scorecard.dev.
 - **Key signatures end with v1.14.0.** Releases up to `v1.13.2` were signed with the project key (`cosign.pub`).
@@ -65,7 +67,8 @@ from that tag and publishes them; nobody pushes an image by hand. That path is p
   `pip` is removed from the image.
 - From release 1.13.7 the adapter image is built in two stages: the SDK's `base-adapter` image (Debian 12) is the
   build stage, and its Python files are copied onto a Wolfi base with Python 3.11. The Trivy report of release
-  1.13.7 lists no vulnerability. The image ships OpenSSL 4 where the Debian base had OpenSSL 3.
+  1.13.7 lists no vulnerability. The image ships OpenSSL 4.0 (4.0.3 in release 1.13.7, per its Trivy report) where the Debian base had
+  OpenSSL 3.
 - Releases up to 1.13.6 ship the Debian 12 base itself. The Trivy report of release 1.13.5
   (`NSXFederation_1.13.0.trivy.json`) lists 102 HIGH or CRITICAL vulnerabilities (100 HIGH, 2 CRITICAL) in Debian
   packages that have no fixed version in Debian 12, and three on setuptools 70.3.0, the `pkg_resources` copy that

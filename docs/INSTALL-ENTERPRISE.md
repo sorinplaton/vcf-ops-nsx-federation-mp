@@ -496,6 +496,7 @@ image signature through Artifactory, set `FEDMP_VERIFY=1` and `FEDMP_IMAGE_REPO`
 ```bash
 export FEDMP_PAK_SHA256=<the SHA-256 of step 7>
 export FEDMP_VERIFY=1 FEDMP_IMAGE_REPO=$ART/$APPROVED/nsxfederation    # only after the cosign copy of step 6
+export FEDMP_RELEASE=<release, e.g. 1.13.7>                           # optional: refuses the signatures of other releases
 install/verify_pak.sh NSXFederation_${V}_site.pak                     # must end without an error
 install/upi.sh enableUPI
 install/install_unsigned.sh NSXFederation_${V}_site.pak               # checks again, installs, switches off

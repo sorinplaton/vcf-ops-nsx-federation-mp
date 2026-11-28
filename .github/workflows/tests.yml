@@ -31,6 +31,9 @@ jobs:
           for f in install/*.sh; do bash -n "$f"; done
           for f in install/*.mjs; do node --check "$f"; done
           python -m py_compile install/*.py tools/*.py
+      - name: Lint (errors only)
+        # syntax errors, undefined names, unused imports and variables, repeated dictionary keys
+        run: ruff check --select E9,F pack/app install tools tests
       - run: python -m pytest -q tests
   dependencies:
     runs-on: ubuntu-latest

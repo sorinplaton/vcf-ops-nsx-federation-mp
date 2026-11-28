@@ -4,8 +4,10 @@
 # project's release workflow from a v* tag. VCF Operations cannot check them itself (KB 415279), so
 # install_unsigned.sh calls this first.
 #
-# FEDMP_VERIFY=auto (default): a pack with <pack>.sigstore.json next to it must verify, or the install stops; a pack
-#                  without it (a build of your own, or a pack rewritten with repack.py) is installed with a notice.
+# FEDMP_VERIFY=auto (default): a pack with <pack>.sigstore.json next to it must verify, or the install stops. A pack
+#                  without it that names this project's release image (ghcr.io or Docker Hub, sorinplaton/nsxfederation)
+#                  must still have a signed image, so removing the bundle does not skip the check. Any other pack (a
+#                  build of your own, or a pack rewritten with repack.py) is installed with a notice.
 # FEDMP_VERIFY=1   both checks are required; a missing bundle only skips the .pak check, the image check still runs.
 # FEDMP_VERIFY=0   no check.
 # FEDMP_IMAGE_REPO where to read the adapter image signature, default ghcr.io/sorinplaton/nsxfederation (the digest is
@@ -13,13 +15,21 @@
 # FEDMP_PAK_SHA256 the SHA-256 the organisation recorded for this exact file (for a rewritten _site pack, the value
 #                  of INSTALL-ENTERPRISE.md step 7). When set, it is checked first, whatever FEDMP_VERIFY says, and a
 #                  mismatch stops the install. It needs no network, so it also works on an air-gapped site.
+# FEDMP_RELEASE    the release expected, e.g. 1.13.7: the signatures must come from the workflow run of that tag, not of
+#                  any release tag, so an older signed release is refused.
 # cosign from the PATH, or the cosign 2.4.1 image through Docker. Needs unzip.
 # usage: verify_pak.sh <pak>
 set -u
 PAK="${1:?usage: verify_pak.sh <pak>}"
 MODE="${FEDMP_VERIFY:-auto}"
 REPO="${FEDMP_IMAGE_REPO:-ghcr.io/sorinplaton/nsxfederation}"
-ID_RX='^https://github\.com/sorinplaton/vcf-ops-nsx-federation-mp/\.github/workflows/release\.yml@refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$'
+TAG_RX='v[0-9]+\.[0-9]+\.[0-9]+'
+if [ -n "${FEDMP_RELEASE:-}" ]; then
+  REL="${FEDMP_RELEASE#v}"
+  printf '%s' "$REL" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || { echo "FEDMP_RELEASE must look like 1.13.7, not $FEDMP_RELEASE" >&2; exit 1; }
+  TAG_RX="v$(printf '%s' "$REL" | sed 's/\./\\./g')"
+fi
+ID_RX="^https://github\.com/sorinplaton/vcf-ops-nsx-federation-mp/\.github/workflows/release\.yml@refs/tags/${TAG_RX}\$"
 ISSUER=https://token.actions.githubusercontent.com
 BUNDLE="$PAK.sigstore.json"
 
@@ -33,10 +43,26 @@ if [ -n "${FEDMP_PAK_SHA256:-}" ]; then
   fi
 fi
 [ "$MODE" = 0 ] && { echo "signature check skipped (FEDMP_VERIFY=0)"; exit 0; }
+
+# the adapter image the pack names: REGISTRY, REPOSITORY and DIGEST of the .conf at the top of adapter.zip
+CONF=$(unzip -p "$PAK" adapter.zip 2>/dev/null | python3 -c 'import io,sys,zipfile
+z=zipfile.ZipFile(io.BytesIO(sys.stdin.buffer.read()))
+c=[n for n in z.namelist() if n.endswith(".conf") and "/" not in n][0]
+v=dict(l.split("=",1) for l in z.read(c).decode().splitlines() if "=" in l)
+print(v.get("REGISTRY",""), v.get("REPOSITORY",""), v["DIGEST"])' 2>/dev/null)
+read -r IMG_REGISTRY IMG_REPOSITORY DIGEST <<< "$CONF"
+case "$IMG_REGISTRY$IMG_REPOSITORY" in
+  ghcr.io/sorinplaton/nsxfederation|docker.io/sorinplaton/nsxfederation|registry-1.docker.io/sorinplaton/nsxfederation|index.docker.io/sorinplaton/nsxfederation)
+    RELEASED_IMAGE=1 ;;
+  *) RELEASED_IMAGE=0 ;;
+esac
 if [ "$MODE" = auto ] && [ ! -f "$BUNDLE" ]; then
-  echo "NOTICE: $PAK not verified: no $(basename "$BUNDLE") next to it (a build of your own, or a rewritten pack)."
-  echo "        For a released pack, download its .sigstore.json from the GitHub release, or set FEDMP_VERIFY=1."
-  exit 0
+  if [ "$RELEASED_IMAGE" = 0 ]; then
+    echo "NOTICE: $PAK not verified: no $(basename "$BUNDLE") next to it (a build of your own, or a rewritten pack)."
+    echo "        For a released pack, download its .sigstore.json from the GitHub release, or set FEDMP_VERIFY=1."
+    exit 0
+  fi
+  echo "no $(basename "$BUNDLE"): the pack names the release image $IMG_REGISTRY$IMG_REPOSITORY, whose signature is checked"
 fi
 
 if command -v cosign >/dev/null 2>&1; then
@@ -50,28 +76,25 @@ else
   echo "cannot verify: neither cosign nor docker is installed (install cosign, or set FEDMP_VERIFY=0)" >&2; exit 1
 fi
 
-DIGEST=$(unzip -p "$PAK" adapter.zip 2>/dev/null | python3 -c 'import io,sys,zipfile
-z=zipfile.ZipFile(io.BytesIO(sys.stdin.buffer.read()))
-c=[n for n in z.namelist() if n.endswith(".conf") and "/" not in n][0]
-print([l[7:] for l in z.read(c).decode().splitlines() if l.startswith("DIGEST=")][0])' 2>/dev/null)
 [ -n "$DIGEST" ] || { echo "cannot read the adapter image digest from $PAK" >&2; exit 1; }
 
+ERR=$(mktemp) || exit 1
+trap 'rm -f "$ERR"' EXIT
 rc=0
 if [ -f "$BUNDLE" ]; then
   if cosign verify-blob --certificate-identity-regexp "$ID_RX" --certificate-oidc-issuer "$ISSUER" \
-       --bundle "$(cd "$(dirname "$BUNDLE")" && pwd)/$(basename "$BUNDLE")" "$(cd "$(dirname "$PAK")" && pwd)/$(basename "$PAK")" >/dev/null 2>/tmp/fedmp-verify.err; then
+       --bundle "$(cd "$(dirname "$BUNDLE")" && pwd)/$(basename "$BUNDLE")" "$(cd "$(dirname "$PAK")" && pwd)/$(basename "$PAK")" >/dev/null 2>"$ERR"; then
     echo "pack signature: verified (release workflow of sorinplaton/vcf-ops-nsx-federation-mp)"
   else
-    echo "pack signature: FAILED" >&2; tail -3 /tmp/fedmp-verify.err >&2; rc=1
+    echo "pack signature: FAILED" >&2; tail -3 "$ERR" >&2; rc=1
   fi
 else
   echo "pack signature: not checked, no $(basename "$BUNDLE") (the image check below still runs)"
 fi
-if cosign verify --certificate-identity-regexp "$ID_RX" --certificate-oidc-issuer "$ISSUER" "$REPO@$DIGEST" >/dev/null 2>/tmp/fedmp-verify.err; then
+if cosign verify --certificate-identity-regexp "$ID_RX" --certificate-oidc-issuer "$ISSUER" "$REPO@$DIGEST" >/dev/null 2>"$ERR"; then
   echo "adapter image signature: verified ($REPO@$DIGEST)"
 else
-  echo "adapter image signature: FAILED ($REPO@$DIGEST)" >&2; tail -3 /tmp/fedmp-verify.err >&2; rc=1
+  echo "adapter image signature: FAILED ($REPO@$DIGEST)" >&2; tail -3 "$ERR" >&2; rc=1
 fi
-rm -f /tmp/fedmp-verify.err
 [ $rc = 0 ] || echo "Not installing: the pack or its image is not the one the release workflow built. FEDMP_VERIFY=0 skips this check." >&2
 exit $rc

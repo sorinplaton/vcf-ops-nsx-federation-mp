@@ -1246,15 +1246,18 @@ def _openssl(*args, cwd):
 
 def _pki(d):
     """Two CAs and two server certificates in `d`: good.pem (CA one, valid for 127.0.0.1) and badname.pem (CA one,
-    valid only for other.example.test)."""
+    valid only for other.example.test). They carry the extensions of a real CA and server certificate (key usage,
+    basic constraints, key identifiers), which the strict X.509 checks of Python 3.13 and later require."""
     for ca in ("ca1", "ca2"):
         _openssl("req", "-x509", "-newkey", "rsa:2048", "-nodes", "-days", "2", "-subj", f"/CN={ca}",
+                 "-addext", "basicConstraints=critical,CA:TRUE", "-addext", "keyUsage=critical,keyCertSign,cRLSign",
                  "-keyout", f"{ca}.key", "-out", f"{ca}.pem", cwd=d)
     for name, san in (("good", "IP:127.0.0.1"), ("badname", "DNS:other.example.test")):
         _openssl("req", "-newkey", "rsa:2048", "-nodes", "-subj", f"/CN={name}", "-keyout", f"{name}.key",
                  "-out", f"{name}.csr", cwd=d)
         with open(os.path.join(d, f"{name}.ext"), "w") as fd:
-            fd.write(f"subjectAltName={san}\n")
+            fd.write(f"subjectAltName={san}\nbasicConstraints=CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\n"
+                     "extendedKeyUsage=serverAuth\nauthorityKeyIdentifier=keyid\nsubjectKeyIdentifier=hash\n")
         _openssl("x509", "-req", "-in", f"{name}.csr", "-CA", "ca1.pem", "-CAkey", "ca1.key", "-CAcreateserial",
                  "-days", "2", "-extfile", f"{name}.ext", "-out", f"{name}.pem", cwd=d)
 
@@ -1591,7 +1594,7 @@ def test_changes_of_locations_managers_edges_and_stretched_objects(nsx):
     assert any("version changed:" in m and "-> 9.9.9.0.1" in m for m in events), events
     assert any(f"{segs[0]['display_name']} changed by netadmin (revision" in m for m in events), events
     assert any(f"{gone['display_name']} deleted" in m for m in events), events
-    assert any(f"Edge node renamed at location" in m and f"{old_edge} -> edge-renamed" in m for m in events), events
+    assert any("Edge node renamed at location" in m and f"{old_edge} -> edge-renamed" in m for m in events), events
     assert fed(r)["m"]["changes|changes_detected"] == len(events)
     assert not any("created" in m or "added" in m for m in events), events
 

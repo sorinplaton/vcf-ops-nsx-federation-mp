@@ -528,6 +528,7 @@ d'activer l'option :
 ```bash
 export FEDMP_PAK_SHA256=<the SHA-256 of step 7>
 export FEDMP_VERIFY=1 FEDMP_IMAGE_REPO=$ART/$APPROVED/nsxfederation    # seulement après le cosign copy de l'étape 6
+export FEDMP_RELEASE=<version, ex. 1.13.7>                            # facultatif : refuse les signatures des autres versions
 install/verify_pak.sh NSXFederation_${V}_site.pak                     # doit se terminer sans erreur
 install/upi.sh enableUPI
 install/install_unsigned.sh NSXFederation_${V}_site.pak               # vérifie à nouveau, installe, désactive l'option

@@ -816,15 +816,21 @@ install/install_unsigned.sh "$PAK"
 
 `install_unsigned.sh` vérifie d'abord les signatures avec `install/verify_pak.sh`. Un pack publié accompagné de
 son `.sigstore.json` doit être validé, sinon rien n'est installé ; pour cela, garder le bundle dans le dossier du
-pack. Un pack sans bundle (une construction locale, ou un pack réécrit par la variante avec registre interne)
-est installé avec un avis. Un `.sigstore.json` laissé à côté d'un pack réécrit fait échouer la vérification
+pack. Un pack sans bundle qui désigne l'image publiée (`sorinplaton/nsxfederation` sur ghcr.io ou Docker Hub)
+doit tout de même avoir une signature d'image validée : supprimer le bundle ne saute donc pas la vérification. Un
+pack qui désigne un autre registre (une construction locale, ou un pack réécrit par la variante avec registre
+interne) est installé avec un avis. Un `.sigstore.json` laissé à côté d'un pack réécrit fait échouer la vérification
 (`pack signature: FAILED`), car il signe le fichier d'origine : le sortir du dossier avant.
 
 `FEDMP_VERIFY=1` exige la vérification de l'image pour tout pack, et `FEDMP_VERIFY=0` désactive la
 vérification. Celle-ci utilise `cosign` s'il est installé, sinon l'image cosign via Docker.
 `FEDMP_PAK_SHA256=<sha256>` exige en plus que le fichier ait cette somme de contrôle, quelle que soit la valeur de
 `FEDMP_VERIFY` : l'utiliser pour un pack réécrit, dont vous avez enregistré vous-même la somme de contrôle
-([INSTALL-ENTERPRISE.fr.md](INSTALL-ENTERPRISE.fr.md), étape 7).
+([INSTALL-ENTERPRISE.fr.md](INSTALL-ENTERPRISE.fr.md), étape 7). `FEDMP_RELEASE=<version>` (par exemple
+`FEDMP_RELEASE=1.13.7`) n'accepte que les signatures de cette version : une version signée plus ancienne est
+refusée. Les vérifications de signature ont besoin des services Sigstore (`tuf-repo-cdn.sigstore.dev`,
+`rekor.sigstore.dev`) et du registre de l'image ; sur un hôte qui ne les joint pas, définir `FEDMP_VERIFY=0` et
+utiliser `FEDMP_PAK_SHA256`.
 
 Lancer `install_unsigned.sh` après `upi.sh` : la connexion à la console d'administration ferme la session de
 l'interface du produit, et le script d'installation se reconnecte. Le script d'installation désactive l'option

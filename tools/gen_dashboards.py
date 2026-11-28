@@ -60,7 +60,7 @@ SHORT = {"global_managers_active": "Active GMs", "global_managers_unreachable": 
          "rules_total": "Rules", "rules_disabled": "Rules disabled", "hit_count": "Rule hits", "realized": "Realized",
          "switchover_ready": "Ready to take over", "healthy": "Healthy", "locations_healthy": "Locations healthy",
          "standby_full_sync_age_hours": "Last full sync (h)", "standby_sync_remaining": "Entries to send",
-         "service_groups_degraded": "Services degraded", "reachable": "Reachable"}
+         "reachable": "Reachable"}
 IS_PROP = {k: {p for p, _ in MODEL[k][2]} for k in KINDS}
 
 

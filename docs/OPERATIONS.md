@@ -38,7 +38,9 @@ that presents another certificate.
   not in that store: paste them in the setting. Each manager address must match its certificate. Use the FQDN
   of the Global Manager cluster, and set an override for a Local Manager that the Global Manager knows by an
   address that is not in the certificate. The connection test reports a block of the PEM setting that is not a
-  certificate, and text with no PEM block at all.
+  certificate, and text with no PEM block at all. Give CA certificates the usual extensions of a CA (basic
+  constraints `CA:TRUE` and key usage `keyCertSign`): the image runs Python 3.11, and Python 3.13 and later refuse
+  a CA without them, so an image on a newer Python would stop trusting such a CA.
 - `report`: the manager is collected and the mismatch raises an alert on the location.
 
 The property "Certificate trust" of each collected Global Manager and location says how its certificate was
@@ -353,6 +355,20 @@ cluster status call fails and at least half of its calls fail (HTTP 401, 403, 5x
 whose requests time out or stay throttled (HTTP 429 or 503 after the retries) three times in a row is skipped
 for the rest of the cycle.
 
+A call that fails in every cycle, for example one endpoint that a custom NSX role does not allow, keeps the
+"data gaps" alert open and makes every cycle incomplete, so stale objects are never deleted (see "Objects that no
+longer exist"). Grant the account read access to that call (the property "NSX API calls without an answer" names
+it), or accept the open alert and delete stale objects by hand.
+
+## NSX calls outside the public API reference
+
+One call of the adapter is not in the public NSX API reference: `GET
+/api/v1/federation/replication/gm/sites/<site id>/status` on the active Global Manager. It answered in the lab
+(NSX 9.1.1) and gives what the Location Manager page of NSX shows for each location: the state of each replication
+flow, the last time the location was seen and the round-trip time. An NSX upgrade can change or remove it. If it
+fails, its data reads as unknown, the "data gaps" alert names it, and the rest of the collection goes on; the
+alert "Replication between the location and the Global Manager is in error" then has no data.
+
 One account stays with one federation. If the federation is rebuilt with a new ID, create a new account: when
 every listed Global Manager answers for the new federation, the new account follows it. Remove the old account,
 because after a restart of its container it can follow the rebuilt federation too, and two accounts would then
@@ -461,6 +477,15 @@ partial reads), clock differences, configuration limits and overrides, password 
 (shadowed, any-allow and unused rules, partial reads, counter resets), availability, a federation of 1,310
 stretched objects, the consistency of the alert content with the object model, the federation ID on every object,
 the group, notification rule and diagnostics scripts, and the image packages against the Dockerfile.
+
+`tests/test_alerts_fire.py` injects one fault at a time into the recorded answers (an edge down, BGP sessions
+idle, a certificate about to expire, a realization error, RTEP drops, each NSX federation alarm...), runs as many
+cycles as the alert waits, and checks with `tests/alert_engine.py` that the alert definition fires on its object,
+the way VCF Operations evaluates it. With the scenarios above, 85 of the 87 alert definitions fire; the other two
+use dynamic thresholds only, which VCF Operations learns from weeks of data. The same file checks that a healthy
+cycle fires only the conditions of the recorded lab, that alerts cancel when the fault is gone, and that a
+location outage keeps the alerts of its objects quiet. This evaluates the alert content offline; it does not
+replace an alert raised by VCF Operations itself.
 
 CI also checks the Python packages of the adapter image (`pack/image-requirements.txt`) against the known
 vulnerabilities on every push and every Monday and builds an SBOM; see [SECURITY.md](../SECURITY.md).
