@@ -92,7 +92,7 @@ read-only NSX account is enough; the built-in `audit` account was tested.
 | `tools/schemas/` | The SDK schema files for alert definitions and traversal specs. They must stay out of `pack/content` (see the blog) |
 | `tooling/Dockerfile` | An image with the SDK tools (`mp-init`, `mp-test`, `mp-build`) |
 | `install/` | Scripts for the scripted install of an unsigned pack (with the signature check of `verify_pak.sh`), the per-federation groups, the notification rule and the diagnostics |
-| `tests/` | Test suite with a mock NSX (an anonymised recording of a small federation) |
+| `tests/` | Test suite with a mock NSX (an anonymised recording of a small federation). `test_alerts_fire.py` injects one fault at a time and checks, with the offline evaluator `alert_engine.py`, that each alert definition fires on its object (85 of 87; the other two use dynamic thresholds only, which VCF Operations learns from history) |
 | `docs/FEATURES.md`, `docs/FEATURES.fr.md` | Every object type, metric, property and alert of the pack, in English and in French (generated) |
 | `docs/INSTALL.md` | Install guide: checklist and the commands for each step, with the machine they run on ([French](docs/INSTALL.fr.md)) |
 | `tools/gen_diagrams.py` | Draws the diagrams of the install guides and of the release guide into `docs/img`, in English and French |
