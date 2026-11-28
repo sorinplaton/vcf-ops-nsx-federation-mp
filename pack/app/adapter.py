@@ -1805,7 +1805,6 @@ class Collector:
         self.cache.put("realization", fresh)
 
         by_path: Dict[str, Object] = {}
-        budget_hit = False
         for kind, o, st in realized:
             so = self.obj(kind, o.get("display_name") or o["id"], f"{kind}:{o['path']}")
             self.at(so, *[ep.get("site_path") for ep in (st or {}).get("consolidated_status_per_enforcement_point") or []])
@@ -1833,8 +1832,7 @@ class Collector:
                 if rules is not None:
                     self.metrics(so, {"rules_total": o.get("rule_count", len(rules)),
                                       "rules_disabled": sum(1 for r in rules if r.get("disabled"))})
-            if st and st.get("_budget"):
-                budget_hit = True
+            if st and st.get("_budget"):  # not read: the client counts the budget, the federation reports it
                 continue
             if not st:
                 self.props(so, {"status": "UNKNOWN"})
